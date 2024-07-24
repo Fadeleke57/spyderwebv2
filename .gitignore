@@ -61,6 +61,7 @@ venv.bak/
 # Scrapy -----------------------------------------------------------------
 .scrapy
 scrapy.cfg
+result.json
 
 # Docker ------------------------------------------------------------------
 docker-compose.override.yml
