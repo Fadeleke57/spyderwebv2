@@ -7,6 +7,6 @@
 -It uses a selenium (headless) middleware to parse dynamic web pages and a custom TF-IDF relevance model I made with genism and an optional nltk parameter for better precision.<br>
 -Weights between article nodes are determined by the relevance model.<br>
 -Right now, I use the news api to train it on a corpus that pertains to the search topic, but will probably update this logic later.
--Each article is treated as a node and I uses TextBlob to do a e2e analysis on an article including sentiment and subjectivity analysis.
+-Each article is treated as a node and I use TextBlob to do a e2e analysis on an article including sentiment and subjectivity analysis.
 
 Will make this readme look nice eventually
