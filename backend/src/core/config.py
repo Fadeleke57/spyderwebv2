@@ -1,4 +1,9 @@
 from pydantic import BaseSettings
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 class Settings(BaseSettings):
     mongo_url: str

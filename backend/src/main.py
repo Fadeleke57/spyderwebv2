@@ -25,7 +25,7 @@ def read_root():
 def read_mongo_item(collection_name: str, item_id: str):
     item = get_item_by_id(collection_name, item_id)
     if item:
-        item["_id"] = str(item["_id"])  # Convert ObjectId to string for JSON serialization
+        item["_id"] = str(item["_id"])  #for JSON serialization
         return item
     return {"error": "Item not found"}
 
