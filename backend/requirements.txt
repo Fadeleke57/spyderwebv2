@@ -3,3 +3,4 @@ pymongo
 neo4j
 uvicorn
 python-dotenv
+pydantic-settings

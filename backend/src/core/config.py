@@ -1,11 +1,9 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
-import os
-
-# Load environment variables from .env file
 load_dotenv()
 
-class Settings(BaseSettings):
+class Settings(BaseSettings): #maps to .env
+    mongo_initdb_database: str
     mongo_url: str
     neo4j_uri: str
     neo4j_user: str

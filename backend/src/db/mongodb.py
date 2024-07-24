@@ -1,12 +1,9 @@
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-import os
-from dotenv import load_dotenv
-load_dotenv()
+from src.core.config import settings
 
-MONGO_URL = os.getenv("MONGO_URL")
-client = MongoClient(MONGO_URL)
-database = client[os.getenv("MONGO_INITDB_DATABASE")]
+client = MongoClient(settings.mongo_url)
+database = settings.mongo_initdb_database
 
 def get_collection(collection_name):
     return database[collection_name]
