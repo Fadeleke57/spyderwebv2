@@ -3,11 +3,47 @@
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-from scrapy import signals
-
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
 
+from scrapy import signals
+from scrapy.http import HtmlResponse
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+
+class SeleniumMiddleware:
+    @classmethod
+    def from_crawler(cls, crawler):
+        s = cls()
+        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
+        crawler.signals.connect(s.spider_closed, signal=signals.spider_closed)
+        return s
+
+    def __init__(self):
+        print("Initializing SeleniumMiddleware...")
+        options = Options()
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--window-size=1920,1080')
+        options.add_argument('--disable-setuid-sandbox')
+        options.add_argument('--remote-debugging-port=9222')
+
+
+        self.driver = webdriver.Chrome(executable_path='C:\Windows\System32\chromedriver.exe', options=options)
+
+    def spider_opened(self, spider):
+        pass
+
+    def spider_closed(self, spider):
+        self.driver.quit()
+
+    def process_request(self, request, spider):
+        self.driver.get(request.url)
+        body = self.driver.page_source
+        return HtmlResponse(self.driver.current_url, body=body, encoding='utf-8', request=request)
 
 class NewsCrawlerSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
