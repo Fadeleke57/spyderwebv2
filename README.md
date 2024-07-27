@@ -9,4 +9,6 @@
 -Right now, I use the news api to train it on a corpus that pertains to the search topic, but will probably update this logic later.<br>
 -Each article is treated as a node and I use TextBlob to do a e2e analysis on an article including sentiment and subjectivity analysis.
 
+-Will host on Ec2
+
 Will make this readme look nice eventually lol
