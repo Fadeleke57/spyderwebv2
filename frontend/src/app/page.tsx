@@ -1,9 +1,13 @@
-import Image from "next/image";
+import LandingGrid from "@/components/landing/LandingGrid";
+import Header from "@/components/landing/Header";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">Welcome to SpyderWeb<br/>Ready to Crawl?</h1>
+    <main className="flex min-h-screen flex-col items-start justify-between p-24">
+      <div className="flex flex-col gap-8">
+        <Header/>
+        <LandingGrid/>
+      </div>
     </main>
   );
 }
