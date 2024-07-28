@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { useDispatch } from 'react-redux';
 import { login } from '../../store/slices/authSlice';
 
-const Login: React.FC = () => {
+const Login = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [email, setEmail] = useState('');

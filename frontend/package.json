@@ -11,6 +11,7 @@
   "dependencies": {
     "@radix-ui/react-navigation-menu": "^1.2.0",
     "@reduxjs/toolkit": "^2.2.7",
+    "axios": "^1.7.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "gsap": "^3.12.5",
