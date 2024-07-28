@@ -3,5 +3,5 @@ from src.schemas.article import Article
 
 def get_articles(db: Session):
     articles = db.execute("MATCH (a:Article) RETURN a").data()
-    #check if articles is not None
+    # Need to add more handling here
     return articles

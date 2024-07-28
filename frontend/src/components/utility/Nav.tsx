@@ -109,15 +109,15 @@ function NavigationMenuDemo() {
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Link href="/docs" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+          <Link href="/auth/login" legacyBehavior passHref>
+            <NavigationMenuLink className={navigationMenuTriggerStyle()}> {/**use context here eventually */}
               Spydr Terminal
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Link href="/docs" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+          <Link href="/auth/login" legacyBehavior passHref>
+            <NavigationMenuLink className={navigationMenuTriggerStyle()}> {/**use context here eventually */}
              Login
             </NavigationMenuLink>
           </Link>
@@ -156,8 +156,6 @@ ListItem.displayName = "ListItem"
 export function Navbar() {
   const [showNav, setShowNav] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -173,15 +171,12 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [prevScrollPos]);
 
-  const closeTab = () => {
-    setIsActive(false)
-    setMenuOpen(false)
-  }
-
   return (
     <div className={`flex items-center justify-between px-24 transition ease duration-300 ${showNav ? 'translate-y-0' : '-translate-y-full'} fixed top-0 left-0 bg-white z-50 w-full`}>
       <div className="flex items-center gap-2">
-        <Image src={logo} alt="logo" width={50} height={50} />
+        <Link href="/">
+          <Image src={logo} alt="logo" width={50} height={50} />
+        </Link>
         <NavigationMenuDemo />
       </div>
     </div>
