@@ -3,22 +3,19 @@ import { Inter as FontSans } from "next/font/google"
 import { cn } from "@/lib/utils"
 import "../styles/globals.css";
 import { Navbar } from "@/components/utility/Nav";
+import { AppProps } from 'next/app';
+import { Provider } from 'react-redux';
+import { wrapper } from '@/store'
 
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 })
 
-export const metadata: Metadata = {
-  title: "SpyderWeb",
-  description: "A new way to view the news.",
-};
+export default function RootLayout({children}: Readonly<{children: React.ReactNode}>) {
 
-export default function RootLayout({children,}: Readonly<{children: React.ReactNode}>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head />
-      <body
+      <div
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
           fontSans.variable
@@ -26,7 +23,6 @@ export default function RootLayout({children,}: Readonly<{children: React.ReactN
       >
         <Navbar />
         {children}
-      </body>
-    </html>
+      </div>
   );
 }

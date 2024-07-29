@@ -1,15 +1,19 @@
-import { AppProps } from 'next/app';
-import { Provider } from 'react-redux';
-import { wrapper } from '../store';
+import Layout from '@/app/layout'
+import '@/styles/globals.css'
+import type { AppProps } from 'next/app'
+import type { Metadata } from "next";
 
-const MyApp = ({ Component, ...rest }: AppProps) => {
-  const { store, props } = wrapper.useWrappedStore(rest);
-
-  return (
-    <Provider store={store}>
-      <Component {...props.pageProps} />
-    </Provider>
-  );
+export const metadata: Metadata = {
+    title: "SpyderWeb",
+    description: "A new way to view the news.",
 };
 
-export default wrapper.withRedux(MyApp);
+function App({ Component, pageProps }: AppProps) {
+    return (
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
+    );
+  }
+  
+  export default App;
