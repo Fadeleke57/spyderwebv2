@@ -12,8 +12,6 @@ OAUTH2_CLIENT_SECRET = os.getenv("OAUTH2_CLIENT_SECRET")
 OAUTH2_REDIRECT_URI = os.getenv("OAUTH2_REDIRECT_URI")
 SECRET_KEY = os.getenv("FASTAPI_SECRET_KEY")
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
