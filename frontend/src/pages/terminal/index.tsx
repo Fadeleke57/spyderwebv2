@@ -1,9 +1,36 @@
-import React from 'react'
+import { useUser } from "@/context/UserContext";
 
-function index() {
+export default function Terminal() {
+  const { user, logout } = useUser();
+
+  if (!user) {
+    return (
+      <>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+        <p>Loading...</p>
+      </>
+    );
+  }
+
   return (
-    <div>index</div>
-  )
+    <div>
+      <h1>Welcome, {user.full_name}</h1>
+      <button onClick={logout}>Logout</button>
+    </div>
+  );
 }
-
-export default index

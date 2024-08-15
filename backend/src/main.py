@@ -3,11 +3,12 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_login.exceptions import InvalidCredentialsException
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-from src.oauth2 import get_google_token, get_google_user, manager, get_password_hash, verify_password, get_user
+from src.oauth2 import get_google_token, get_google_user, get_password_hash, verify_password, get_user
 from src.db.mongodb import get_collection, get_item_by_id, client as mongo_client
 from src.db.neo4j import driver as neo4j_driver, run_query
 from src.models.user import UserCreate
 from datetime import timedelta
+from fastapi_login import LoginManager
 import os
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
@@ -19,16 +20,28 @@ logging.basicConfig(level=logging.DEBUG)
 OAUTH2_CLIENT_SECRET = os.getenv("OAUTH2_CLIENT_SECRET")
 OAUTH2_REDIRECT_URI = os.getenv("OAUTH2_REDIRECT_URI")
 OAUTH2_CLIENT_ID = os.getenv("OAUTH2_CLIENT_ID")
-
+SECRET_KEY = os.getenv("FASTAPI_SECRET_KEY")
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 
-@manager.user_loader
-def load_user(email: str):
-    logging.debug(f"Loading user with email: {email}")
-    collection = get_collection('users')
-    user = get_user(collection, email)
-    logging.debug(f"User found: {user}")
+manager = LoginManager(SECRET_KEY, token_url='/auth/token', use_cookie=True)
+manager.cookie_name = "access_token"
+logging.debug("LoginManager initialized with secret key and token_url")
+
+@manager.user_loader(db_session=get_collection('users'))
+def load_user(email: str, db_session):
+    logging.debug(f"Registering user_loader callback with email: {email}")
+    user = get_user(db_session, email)
+    if user:
+        logging.debug(f"User loaded successfully: {user}")
+    else:
+        logging.debug("No user found.")
     return user
+
+@manager.user_loader(db_session=get_collection('users'))
+def load_user(email: str, db_session):
+    return db_session.find_one({"email": email})
+
+logging.debug("user_loader callback registered with LoginManager")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -149,6 +162,9 @@ def get_current_user(user=Depends(manager)):
             logging.error("User not found in /auth/me")
             raise HTTPException(status_code=401, detail="Unauthorized")
         logging.debug(f"User found in /auth/me: {user}")
+        
+        user["_id"] = str(user["_id"])
+
         return user
     except Exception as e:
         logging.error(f"Exception in /auth/me: {e}")
