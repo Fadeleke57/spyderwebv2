@@ -1,12 +1,9 @@
 import os
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2AuthorizationCodeBearer, OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer
 from fastapi_login import LoginManager
 from passlib.context import CryptContext
 from aiohttp import ClientSession
 from dotenv import load_dotenv
-from src.db.mongodb import get_collection
-import logging
 
 load_dotenv()
 
@@ -19,6 +16,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+manager = LoginManager(SECRET_KEY, token_url='/auth/token', use_cookie=True)
+manager.cookie_name = "access_token"
 
 # Normal auth -------------------------------------------------------------------------
 def verify_password(plain_password, hashed_password):
