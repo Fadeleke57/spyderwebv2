@@ -1,18 +1,15 @@
-import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google"
 import { cn } from "@/lib/utils"
 import "../styles/globals.css";
 import { Navbar } from "@/components/utility/Nav";
-import { AppProps } from 'next/app';
-import { Provider } from 'react-redux';
-import { wrapper } from '@/store'
+import LoadingPage from "@/components/utility/LoadingPage";
 
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 })
 
-export default function RootLayout({children}: Readonly<{children: React.ReactNode}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
 
   return (
       <div

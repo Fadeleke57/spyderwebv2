@@ -1,9 +1,10 @@
-"use client"
- 
-import React, { useState, useEffect } from "react"
-import Link from "next/link"
- 
-import { cn } from "@/lib/utils"
+"use client";
+
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useUser } from "@/context/UserContext";
+
+import { cn } from "@/lib/utils";
 
 import {
   NavigationMenu,
@@ -13,11 +14,11 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
+} from "@/components/ui/navigation-menu";
 
-import Image from "next/image"
-import logo from '../../assets/s_logo.jpg'
- 
+import Image from "next/image";
+import logo from "../../assets/s_logo.jpg";
+
 const components: { title: string; href: string; description: string }[] = [
   {
     title: "Alert Dialog",
@@ -54,9 +55,11 @@ const components: { title: string; href: string; description: string }[] = [
     description:
       "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
   },
-]
- 
-function NavigationMenuDemo() {
+];
+
+function NavigationMenuFull() {
+  const { user, logout } = useUser();
+
   return (
     <NavigationMenu>
       <NavigationMenuList>
@@ -109,24 +112,35 @@ function NavigationMenuDemo() {
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Link href="/auth/login" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}> {/**use context here eventually */}
+          <Link href="/terminal" legacyBehavior passHref>
+            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              {" "}
+              {/**use context here eventually */}
               Spydr Terminal
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Link href="/auth/login" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}> {/**use context here eventually */}
-             Login
-            </NavigationMenuLink>
-          </Link>
+          {user ? (
+              <NavigationMenuLink
+                className={navigationMenuTriggerStyle()}
+                onClick={() => logout()}
+              >
+                Logout
+              </NavigationMenuLink>
+          ) : (
+            <Link href="/auth/login" legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                Login
+              </NavigationMenuLink>
+            </Link>
+          )}
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
-  )
+  );
 }
- 
+
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
   React.ComponentPropsWithoutRef<"a">
@@ -135,7 +149,7 @@ const ListItem = React.forwardRef<
     <li>
       <NavigationMenuLink asChild>
         <Link
-          href={'/'}
+          href={"/"}
           ref={ref}
           className={cn(
             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
@@ -150,9 +164,9 @@ const ListItem = React.forwardRef<
         </Link>
       </NavigationMenuLink>
     </li>
-  )
-})
-ListItem.displayName = "ListItem"
+  );
+});
+ListItem.displayName = "ListItem";
 
 export function Navbar() {
   const [showNav, setShowNav] = useState(true);
@@ -167,19 +181,23 @@ export function Navbar() {
       setPrevScrollPos(currentScrollPos);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, [prevScrollPos]);
 
   return (
-    <div className={`flex items-center justify-between px-24 transition ease duration-300 ${showNav ? 'translate-y-0' : '-translate-y-full'} fixed top-0 left-0 bg-white z-50 w-full`}>
+    <div
+      className={`flex items-center justify-between px-24 transition ease duration-300 ${
+        showNav ? "translate-y-0" : "-translate-y-full"
+      } fixed top-0 left-0 bg-white z-50 w-full`}
+    >
       <div className="flex items-center gap-2">
         <Link href="/">
           <Image src={logo} alt="logo" width={50} height={50} />
         </Link>
-        <NavigationMenuDemo />
+        <NavigationMenuFull />
       </div>
     </div>
-  )
+  );
 }

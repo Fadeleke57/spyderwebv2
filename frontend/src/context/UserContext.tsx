@@ -8,6 +8,8 @@ import {
 import { useRouter } from "next/router";
 import axios from "axios";
 
+import LoadingPage from "@/components/utility/LoadingPage";
+
 type User = {
   username: string;
   full_name: string;
@@ -24,6 +26,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
 useEffect(() => {
@@ -42,6 +45,7 @@ useEffect(() => {
       });
 
       setUser(response.data);
+      setLoading(false);
     } catch (error) {
       console.error("Failed to fetch user", error);
       setUser(null);
@@ -58,7 +62,7 @@ useEffect(() => {
 
   return (
     <UserContext.Provider value={{ user, setUser, logout }}>
-      {children}
+      {loading ? <LoadingPage /> : children}
     </UserContext.Provider>
   );
 };
