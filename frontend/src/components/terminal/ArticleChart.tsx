@@ -1,10 +1,8 @@
 "use client";
 
-import axios from "axios";
 import Link from "next/link";
 
-import { useEffect, useState } from "react";
-import { Article, ArticleAsNode } from "@/types/article";
+import { ArticleAsNode } from "@/types/article";
 import { TrendingUp, TrendingDown, SquareArrowOutUpRight } from "lucide-react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import {

@@ -12,15 +12,6 @@ import {
   FormLabel,
   FormDescription,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectTrigger,
-  SelectValue,
-  SelectItem,
-  SelectGroup,
-  SelectLabel,
-} from "@radix-ui/react-select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Search } from "lucide-react";
