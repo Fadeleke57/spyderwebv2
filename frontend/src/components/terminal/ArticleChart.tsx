@@ -4,8 +4,8 @@ import axios from "axios";
 import Link from "next/link";
 
 import { useEffect, useState } from "react";
-import { Article } from "@/types/article";
-import { TrendingUp } from "lucide-react";
+import { Article, ArticleAsNode } from "@/types/article";
+import { TrendingUp, TrendingDown, SquareArrowOutUpRight } from "lucide-react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import {
   Card,
@@ -23,74 +23,56 @@ import {
 } from "@/components/ui/chart";
 
 const chartConfig = {
+  //change chart to be negative - see shadcn docs
   desktop: {
-    label: "Score",
-    color: "hsl(var(--chart-1))",
+    label: "score",
+    color: "#5ea4ff",
   },
 } satisfies ChartConfig;
 
-export function ArticleChart({ article_id }: { article_id: string }) {
-  const [data, setData] = useState<Article | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function ArticleChart({ article }: { article: ArticleAsNode }) {
+  let chart_sentiment_score = article.sentiment ? article.sentiment : 0;
+  if (chart_sentiment_score < 0) {
+    chart_sentiment_score = 0;
+  }
 
   const chartData = [
     {
       data_point: "stmt",
-      desktop: data?.sentiment ? data.sentiment : 0,
+      desktop: chart_sentiment_score,
     },
     {
       data_point: "subj",
-      desktop: data?.subjectivity ? data.subjectivity : 0,
+      desktop: article.subjectivity ? article.subjectivity : 0,
     },
   ];
 
-  function calc_reliability(polarity : GLfloat, subjectivity : GLfloat) {
-        const reliability_subjectivity = 1.0 - subjectivity;
-        const reliability_polarity = 1.0 - Math.abs(polarity);
-        const reliability_index = reliability_subjectivity * reliability_polarity;
-        return reliability_index;
+  function calc_reliability(polarity: GLfloat, subjectivity: GLfloat) {
+    const reliability_subjectivity = 1.0 - subjectivity;
+    const reliability_polarity = 1.0 - Math.abs(polarity);
+    const reliability_index = reliability_subjectivity * reliability_polarity;
+    return reliability_index;
   }
 
-  const article_reliability = data?.sentiment && data?.subjectivity ? calc_reliability(data?.sentiment, data?.subjectivity) * 100 : 0;
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(
-          `http://localhost:8000/article/${article_id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const articleData = response.data?.result?.[0]?.[0];
-        setData(articleData);
-      } catch (error) {
-        setError("Failed to fetch article data");
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [article_id]);
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
-  if (!data) return <p>No data available</p>;
+  const article_reliability =
+    article.sentiment && article?.subjectivity
+      ? calc_reliability(article?.sentiment, article?.subjectivity) * 100
+      : 0;
 
   return (
-    <Card>
+    <Card className="relative">
+      <Link href={article.link} target="_blank">
+        <SquareArrowOutUpRight size={15} className="absolute right-4 top-4" />
+      </Link>
       <CardHeader>
-        <Link href={data.link} target="_blank">
-          <CardTitle>{data.header}</CardTitle>
+        <Link href={article.link} target="_blank" className="max-w-64">
+          <CardTitle>{article.header}</CardTitle>
         </Link>
         <CardDescription>
-          {data.author} - {data.date_published}
+          {article.author ? article.author : "No Author"} -{" "}
+          {article.date_published
+            ? article.date_published
+            : "No Published Date"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -122,7 +104,12 @@ export function ArticleChart({ article_id }: { article_id: string }) {
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 font-medium leading-none">
-          Article calculated at {article_reliability.toFixed(1)}% reliablily <TrendingUp className="h-4 w-4" />
+          Article calculated at {article_reliability.toFixed(1)}% reliablily{" "}
+          {article_reliability > 50 ? (
+            <TrendingDown className="h-4 w-4" />
+          ) : (
+            <TrendingUp className="h-4 w-4" />
+          )}
         </div>
         <div className="leading-none text-muted-foreground">
           Score based on sentiment and subjectivity.

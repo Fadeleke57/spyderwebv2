@@ -13,10 +13,10 @@ function LoadingPage() {
   }, []);
 
   return (
-    <div className="w-screen h-screen flex justify-center items-center">
+    <div className="w-full h-full flex justify-center items-center z-50">
       <l-quantum size="150" speed="2.4" color="black"></l-quantum>
     </div>
   );
 }
 
-export default LoadingPage;
+export { LoadingPage };

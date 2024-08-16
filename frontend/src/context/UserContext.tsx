@@ -62,7 +62,7 @@ useEffect(() => {
 
   return (
     <UserContext.Provider value={{ user, setUser, logout }}>
-      {loading ? <LoadingPage /> : children}
+      {children}
     </UserContext.Provider>
   );
 };
