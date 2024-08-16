@@ -6,13 +6,13 @@ import logging
 
 router = APIRouter()
 
-@router.get("/articles")
-def read_neo4j_data(user=Depends(manager)):
+@router.get("/articles/{limit}")
+def read_neo4j_data(limit: int, user=Depends(manager)):
     if not user:
         logging.error("Not authorized!")
         raise HTTPException(status_code=401, detail="Unauthorized")
-    
-    result = run_query(queries["GET_ALL_ARTICLES"])
+
+    result = run_query(f"{queries['GET_ALL_ARTICLES']} LIMIT {limit}")
     return {"result": result}
 
 @router.get("/article/{article_id}")
