@@ -7,3 +7,4 @@ pydantic-settings
 passlib[bcrypt] 
 fastapi-login 
 aiohttp
+dnspython
