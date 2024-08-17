@@ -3,14 +3,12 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi_login import LoginManager
 from passlib.context import CryptContext
 from aiohttp import ClientSession
-from dotenv import load_dotenv
+from src.core.config import settings
 
-load_dotenv()
-
-OAUTH2_CLIENT_ID = os.getenv("OAUTH2_CLIENT_ID")
-OAUTH2_CLIENT_SECRET = os.getenv("OAUTH2_CLIENT_SECRET")
-OAUTH2_REDIRECT_URI = os.getenv("OAUTH2_REDIRECT_URI")
-SECRET_KEY = os.getenv("FASTAPI_SECRET_KEY")
+OAUTH2_CLIENT_ID = settings.oauth2_client_id
+OAUTH2_CLIENT_SECRET = settings.oauth2_client_secret
+OAUTH2_REDIRECT_URI = settings.oauth2_redirect_uri
+SECRET_KEY = settings.fastapi_secret_key
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

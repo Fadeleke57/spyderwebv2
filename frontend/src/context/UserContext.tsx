@@ -6,8 +6,7 @@ import {
   useEffect,
 } from "react";
 import { useRouter } from "next/router";
-import axios from "axios";
-import { LoadingPage } from "@/components/utility/Loading";
+import api from "@/lib/api";
 
 type User = {
   username: string;
@@ -28,31 +27,27 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-useEffect(() => {
-  const fetchUser = async () => {
-    try {
-      const token = localStorage.getItem("token");
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
-      if (!token) {
-        throw new Error("No token found");
+        if (!token) {
+          throw new Error("No token found");
+        }
+
+        const response = await api.get("/auth/me");
+
+        setUser(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch user", error);
+        setUser(null);
       }
-      console.log("Request Url", `${process.env.NEXT_PUBLIC_API_URL}/auth/me`)
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    };
 
-      setUser(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch user", error);
-      setUser(null);
-    }
-  };
-
-  fetchUser();
-}, []);
+    fetchUser();
+  }, []);
 
   const logout = () => {
     setUser(null);

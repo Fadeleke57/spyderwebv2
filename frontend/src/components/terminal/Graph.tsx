@@ -6,6 +6,7 @@ import { DataDrawer } from "./DataDrawer";
 import axios from "axios";
 import { toast } from "@/components/ui/use-toast";
 import { LoadingPage } from "@/components/utility/Loading";
+import api from "@/lib/api";
 
 interface GraphProps {
   limit: number;
@@ -23,15 +24,7 @@ function Graph({ limit }: GraphProps) {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem("token");
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/articles/${limit}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await api.get(`/articles/${limit}`);
 
         const fetchedArticles: Article[] = response.data.result.flatMap(
           (innerArray: Article[]) => innerArray
@@ -141,7 +134,7 @@ function Graph({ limit }: GraphProps) {
         d.fx = null;
         d.fy = null;
       });
-    setLoading(false); 
+    setLoading(false);
 
     // Cleanup
     return () => {

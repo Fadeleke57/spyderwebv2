@@ -1,8 +1,12 @@
 from pydantic_settings import BaseSettings
+import os
 from dotenv import load_dotenv
-load_dotenv()
 
-class Settings(BaseSettings): #maps to .env
+env = os.getenv("ENV", "prod")
+load_dotenv(f".env.{env}")
+print(f"Loading .env.{env}")
+
+class Settings(BaseSettings):
     mongo_initdb_database: str
     mongo_url: str
     neo4j_uri: str
@@ -10,8 +14,12 @@ class Settings(BaseSettings): #maps to .env
     neo4j_password: str
     fastapi_env: str
     fastapi_secret_key: str
+    oauth2_client_id: str
+    oauth2_client_secret: str
+    oauth2_redirect_uri: str
 
     class Config:
-        env_file = ".env"
+        env_file = f".env.{env}"
+        extra = "ignore"
 
 settings = Settings()

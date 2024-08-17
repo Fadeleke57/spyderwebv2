@@ -35,7 +35,8 @@ coverage.xml
 .python-version
 
 # Environments
-.env
+.env.local
+.env.prod
 .venv
 env/
 venv/

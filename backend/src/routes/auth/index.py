@@ -3,21 +3,18 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_login.exceptions import InvalidCredentialsException
 from fastapi.responses import JSONResponse, RedirectResponse
 from src.routes.auth.oauth2 import get_google_token, get_google_user, manager, get_password_hash, verify_password, get_user
+from src.core.config import settings
 from src.models.user import UserCreate
 from src.db.mongodb import get_collection
 from datetime import timedelta
-import os
-from dotenv import load_dotenv
 import logging
-
 from fastapi import APIRouter
 
-load_dotenv()
 logging.basicConfig(level=logging.DEBUG)
 
-OAUTH2_CLIENT_SECRET = os.getenv("OAUTH2_CLIENT_SECRET")
-OAUTH2_REDIRECT_URI = os.getenv("OAUTH2_REDIRECT_URI")
-OAUTH2_CLIENT_ID = os.getenv("OAUTH2_CLIENT_ID")
+OAUTH2_CLIENT_SECRET = settings.oauth2_client_secret
+OAUTH2_REDIRECT_URI = settings.oauth2_redirect_uri
+OAUTH2_CLIENT_ID = settings.oauth2_client_id
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 

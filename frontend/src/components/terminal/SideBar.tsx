@@ -1,5 +1,4 @@
 import React from "react";
-import { useUser } from "@/context/UserContext";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,16 +16,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Search } from "lucide-react";
 
 function SideBar() {
-  const { user } = useUser();
   const form = useForm<any>({
     resolver: zodResolver(z.object({})),
   });
 
   const onSubmit: SubmitHandler<any> = async (data: any) => {};
-
-  if (!user) {
-    return <p>Loading...</p>;
-  }
 
   return (
     <div className="flex h-full justify-center px-6 py-6">
@@ -47,7 +41,9 @@ function SideBar() {
                 <FormControl>
                   <div className="flex w-full max-w-sm items-center space-x-2">
                     <Input placeholder="2024 Election" {...field} />
-                    <Button type="submit"><ArrowRight size={16} /></Button>
+                    <Button type="submit">
+                      <ArrowRight size={16} />
+                    </Button>
                   </div>
                 </FormControl>
                 <FormDescription>
