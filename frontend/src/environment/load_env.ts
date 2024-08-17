@@ -11,4 +11,3 @@ export const environment = {
   api_url: where === "dev" ? local_api_url : prod_api_url,
   client_url: where === "dev" ? local_client_url : prod_client_url,
 };
-console.log("environment: ", environment);
