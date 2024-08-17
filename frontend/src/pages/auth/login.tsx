@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/router";
 import { useToast } from "@/components/ui/use-toast";
-import axios from "axios";
+import api from "@/lib/api";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { googleIcon } from "@/components/utility/Icons";
+import { environment } from "@/environment/load_env";
 
 
 const loginSchema = z.object({
@@ -49,8 +50,8 @@ const Login = () => {
 
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     try {
-      const response = await axios.post(
-        "http://localhost:8000/auth/token",
+      const response = await api.post(
+        "/auth/token",
         new URLSearchParams({
           username: data.email,
           password: data.password,
@@ -80,7 +81,7 @@ const Login = () => {
   };
 
   const handleGoogleSignIn = () => {
-    window.location.href = "http://localhost:8000/auth/login/google";
+    window.location.href = `${environment.api_url}/auth/login/google`;
     toast({
       title: "Login successful",
       description: "Redirecting to the terminal.",

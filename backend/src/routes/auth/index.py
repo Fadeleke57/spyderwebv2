@@ -63,7 +63,7 @@ async def auth_callback(code: str):
         data={"sub": email},
         expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    response = RedirectResponse(url=f"http://localhost:3000/auth/google-callback?token={access_token}&email={email}&name={user_data['name']}")
+    response = RedirectResponse(url=f"{settings.next_url}/auth/google-callback?token={access_token}&email={email}&name={user_data['name']}")
     manager.set_cookie(response, access_token)
     return response
 

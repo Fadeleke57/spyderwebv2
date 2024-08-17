@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     oauth2_client_id: str
     oauth2_client_secret: str
     oauth2_redirect_uri: str
+    next_url: str
 
     class Config:
         env_file = f".env.{env}"

@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
+import api from "@/lib/api";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { z } from "zod";
@@ -10,9 +10,8 @@ import { z } from "zod";
 import {
   Form,
   FormControl,
-  FormDescription,
-  FormField,
   FormItem,
+  FormField,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
@@ -28,6 +27,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { googleIcon } from "@/components/utility/Icons";
+import { environment } from "@/environment/load_env";
 
 const registerSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
@@ -48,8 +48,8 @@ const Register = () => {
 
   async function onSubmit(values: RegisterFormInputs) {
     try {
-      const response = await axios.post(
-        "http://localhost:8000/auth/register",
+      const response = await api.post(
+        "/auth/register",
         values
       );
       if (response.status === 200) {
@@ -71,7 +71,7 @@ const Register = () => {
   }
 
   const handleGoogleSignUp = () => {
-    window.location.href = "http://localhost:8000/auth/login/google";
+    window.location.href = `${environment.api_url}/auth/login/google`;
   };
 
   return (

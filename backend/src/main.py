@@ -13,6 +13,7 @@ app = FastAPI(lifespan=lifespan)
 origins = [
     "http://localhost:3000",
     "http://localhost:8000",
+    "https://spyderweb.vercel.app",
 ]
 
 app.add_middleware(
