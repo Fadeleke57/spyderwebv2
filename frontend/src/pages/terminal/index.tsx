@@ -8,7 +8,6 @@ import {
 
 import SideBar from "@/components/terminal/SideBar";
 import Graph from "@/components/terminal/Graph";
-import { Article } from "@/types/article";
 import {
   Select,
   SelectContent,
@@ -20,7 +19,6 @@ import {
 } from "@/components/ui/select";
 
 function Terminal() {
-  const [articles, setArticles] = useState([] as Article[]);
   const [limit, setLimit] = useState(10);
 
   return (

@@ -25,7 +25,7 @@ function Graph({ limit }: GraphProps) {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          `http://localhost:8000/articles/${limit}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/articles/${limit}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

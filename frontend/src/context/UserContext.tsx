@@ -7,8 +7,7 @@ import {
 } from "react";
 import { useRouter } from "next/router";
 import axios from "axios";
-
-import LoadingPage from "@/components/utility/LoadingPage";
+import { LoadingPage } from "@/components/utility/Loading";
 
 type User = {
   username: string;
@@ -37,8 +36,8 @@ useEffect(() => {
       if (!token) {
         throw new Error("No token found");
       }
-
-      const response = await axios.get("http://localhost:8000/auth/me", {
+      console.log("Request Url", `${process.env.NEXT_PUBLIC_API_URL}/auth/me`)
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
