@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.db.index import lifespan
 from src.routes.auth.index import router as auth_router
 from src.routes.graph.index import router as graph_router
+from src.core.config import settings
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -14,6 +15,9 @@ origins = [
     "http://localhost:3000",
     "http://localhost:8000",
     "https://spyderweb.vercel.app",
+    "https://www.spydr.dev",
+    "https://spydr.dev",
+    "api.spydr.dev",
 ]
 
 app.add_middleware(
