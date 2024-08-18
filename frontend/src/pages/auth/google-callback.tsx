@@ -9,10 +9,10 @@ const GoogleCallback: React.FC = () => {
     const { token, email, name } = router.query;
 
     if (token && email && name) {
+      localStorage.setItem("token", token as string);
       setTimeout(() => {
-        localStorage.setItem("token", token as string);
-      }, 5000);
-      router.push("/terminal");
+        router.push("/terminal");
+      }, 5000); 
     }
   }, [router.query, router]);
 

@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -6,10 +5,8 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { ArticleChart } from "./ArticleChart";
-import Link from "next/link";
 import { ArticleAsNode } from "@/types/article";
 
 interface DataDrawerProps {

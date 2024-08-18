@@ -47,12 +47,7 @@ function Graph({ limit }: GraphProps) {
       toast({
         title: `Loaded ${articles.length} articles.`,
       });
-    } else {
-      toast({
-        title: "Welcome to SpydrWeb!",
-        description: "Loading articles...",
-      });
-    }
+    } 
   }, [articles]);
 
   useEffect(() => {

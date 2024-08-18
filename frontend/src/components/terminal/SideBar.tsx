@@ -14,18 +14,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Search } from "lucide-react";
+import api from "@/lib/api";
 
 function SideBar() {
   const form = useForm<any>({
     resolver: zodResolver(z.object({})),
   });
 
-  const onSubmit: SubmitHandler<any> = async (data: any) => {};
-
   return (
     <div className="flex h-full justify-center px-6 py-6">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-8">
+        <form className="space-y-8 mt-8">
           <div className="">
             <h4 className=" text-xl font-semibold tracking-tight">
               Sypdr Terminal

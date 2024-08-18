@@ -23,3 +23,12 @@ def get_article_by_id(article_id: str, user=Depends(manager)):
     
     result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': article_id})
     return {"result": result}
+
+@router.get("/articles/q?{query}")
+def get_articles_by_query(query: str, user=Depends(manager)):
+    if not user:
+        logging.error("Not authorized!")
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    result = run_query(queries["GET_ARTICLE_BY_HEADER"], {'header': query})
+    return {"result": result}
