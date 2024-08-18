@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 
 import { cn } from "@/lib/utils";
-
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -17,43 +16,31 @@ import {
 } from "@/components/ui/navigation-menu";
 
 import Image from "next/image";
-import logo from "../../assets/s_logo.jpg";
+import logo from "@/assets/s_logo.jpg";
 
 const components: { title: string; href: string; description: string }[] = [
   {
-    title: "Alert Dialog",
-    href: "/docs/primitives/alert-dialog",
+    title: "Walkthrough Video",
+    href: "/",
     description:
-      "A modal dialog that interrupts the user with important content and expects a response.",
+      "A quick loom video showing how to get started with the app and its features.",
   },
   {
-    title: "Hover Card",
-    href: "/docs/primitives/hover-card",
+    title: "API Docs",
+    href: "/",
     description:
-      "For sighted users to preview content available behind a link.",
+      "Still in development. Public documentation for the API.",
   },
   {
-    title: "Progress",
-    href: "/docs/primitives/progress",
+    title: "Analytics",
+    href: "/",
     description:
-      "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
+      "How are scores and relevance between articles calculated?",
   },
   {
-    title: "Scroll-area",
-    href: "/docs/primitives/scroll-area",
-    description: "Visually or semantically separates content.",
-  },
-  {
-    title: "Tabs",
-    href: "/docs/primitives/tabs",
-    description:
-      "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
-  },
-  {
-    title: "Tooltip",
-    href: "/docs/primitives/tooltip",
-    description:
-      "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
+    title: "Your Contribution",
+    href: "/",
+    description: "Adding your own articles or contributing to the app.",
   },
 ];
 
@@ -73,24 +60,22 @@ function NavigationMenuFull() {
                     className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
                     href="/"
                   >
-                    <div className="mb-2 mt-4 text-lg font-medium">
-                      shadcn/ui
-                    </div>
+                    <Image src={logo} alt="logo" className="w-full h-full rounded-md" />
+                    <div className="mb-2 mt-4 text-lg font-medium">Spydr</div>
                     <p className="text-sm leading-tight text-muted-foreground">
-                      Beautifully designed components built with Radix UI and
-                      Tailwind CSS.
+                      Access to the latest news and information.
                     </p>
                   </Link>
                 </NavigationMenuLink>
               </li>
-              <ListItem href="/docs" title="Introduction">
-                Re-usable components built using Radix UI and Tailwind CSS.
+              <ListItem href="/" title="About Spydr">
+                Learn more about what we do and why we&apos;re different
               </ListItem>
-              <ListItem href="/docs/installation" title="Installation">
-                How to install dependencies and structure your app.
+              <ListItem href="/about/privacy-policy" title="Privacy Policy">
+                Learn about our privacy policy.
               </ListItem>
-              <ListItem href="/docs/primitives/typography" title="Typography">
-                Styles for headings, paragraphs, lists...etc
+              <ListItem href="/about/terms-of-service" title="Terms of Service">
+                Terms and conditions to using Spydr.
               </ListItem>
             </ul>
           </NavigationMenuContent>
@@ -122,12 +107,12 @@ function NavigationMenuFull() {
         </NavigationMenuItem>
         <NavigationMenuItem>
           {user ? (
-              <NavigationMenuLink
-                className={navigationMenuTriggerStyle()}
-                onClick={() => logout()}
-              >
-                Logout
-              </NavigationMenuLink>
+            <NavigationMenuLink
+              className={navigationMenuTriggerStyle()}
+              onClick={() => logout()}
+            >
+              Logout
+            </NavigationMenuLink>
           ) : (
             <Link href="/auth/login" legacyBehavior passHref>
               <NavigationMenuLink className={navigationMenuTriggerStyle()}>
