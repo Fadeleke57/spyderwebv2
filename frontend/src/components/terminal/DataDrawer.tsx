@@ -21,8 +21,8 @@ export function DataDrawer({ open, setOpen, article }: DataDrawerProps) {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side={"left"} className="w-[400px] sm:w-[540px]">
           <SheetHeader className="border-b pb-4">
-            <SheetTitle>Article Insights</SheetTitle>
-            <SheetDescription>
+            <SheetTitle className="text-left w-[300px] lg:w-content">Article Insights</SheetTitle>
+            <SheetDescription className="text-left">
               Using sentiment analysis, subjectivity analysis, and a customized
               relevance score to deliver data.
             </SheetDescription>

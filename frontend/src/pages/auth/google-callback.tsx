@@ -17,7 +17,7 @@ const GoogleCallback: React.FC = () => {
   }, [router.query, router]);
 
   return (
-    <div className="w-full min-h-screen flex justify-center items-center">
+    <div className="w-full h-7/8 lg:h-screen flex justify-center items-center">
       <LoadingPage />
     </div>
   );

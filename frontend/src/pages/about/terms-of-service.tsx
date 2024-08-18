@@ -1,6 +1,6 @@
 const TermsOfService: React.FC = () => {
   return (
-    <div className="p-20">
+    <div className="p-6 lg:p-20">
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Terms of Service
       </h1>
@@ -10,26 +10,26 @@ const TermsOfService: React.FC = () => {
 
       <p>
         Welcome to Spydr! These terms of service apply to your access
-        and use of our application. By using our App, you agree to be
+        and use of our application. By using Spydr, you agree to be
         bound by these Terms. Please read them carefully.
       </p>
 
       <h2>1. Acceptance of Terms</h2>
       <p>
-        By accessing or using our App, you agree to comply with and be bound by
+        By accessing or using Spydr, you agree to comply with and be bound by
         these Terms, as well as any other policies referenced in these Terms.
       </p>
 
-      <h2>2. Use of the App</h2>
+      <h2>2. Use of Spydr</h2>
       <p>
-        You may use the App only in compliance with these Terms and all
-        applicable laws, rules, and regulations. Any use of the App that is
+        You may use Spydr only in compliance with these Terms and all
+        applicable laws, rules, and regulations. Any use of Spydr that is
         unlawful or prohibited by these Terms is not allowed.
       </p>
 
       <h2>3. User Accounts</h2>
       <p>
-        To use certain features of the App, you may be required to create an
+        To use certain features of Spydr, you may be required to create an
         account. You are responsible for maintaining the confidentiality of your
         account credentials and for all activities that occur under your
         account. You agree to notify us immediately of any unauthorized use of
@@ -39,7 +39,7 @@ const TermsOfService: React.FC = () => {
       <h2>4. User Content</h2>
       <p>
         You retain ownership of any content you submit, post, or display on or
-        through the App. By submitting User Content, you grant
+        through Spydr. By submitting User Content, you grant
         us a worldwide, non-exclusive, royalty-free license to use, copy,
         reproduce, process, adapt, publish, transmit, display, and distribute
         such content.
@@ -50,28 +50,28 @@ const TermsOfService: React.FC = () => {
         You agree not to engage in any of the following prohibited activities:
       </p>
       <ul>
-        <li>Using the App for any unlawful purpose.</li>
+        <li>Using Spydr for any unlawful purpose.</li>
         <li>
-          Accessing or using the App for the purpose of creating a competing
+          Accessing or using Spydr for the purpose of creating a competing
           product or service.
         </li>
         <li>
           Posting or transmitting any content that is offensive, defamatory, or
           otherwise inappropriate.
         </li>
-        <li>Interfering with the security or integrity of the App.</li>
+        <li>Interfering with the security or integrity of Spydr.</li>
       </ul>
 
       <h2>6. Termination</h2>
       <p>
-        We reserve the right to suspend or terminate your access to the App at
+        We reserve the right to suspend or terminate your access to Spydr at
         any time for any reason, including if you violate these Terms. Upon
-        termination, your right to use the App will immediately cease.
+        termination, your right to use the Spydr will immediately cease.
       </p>
 
       <h2>7. Disclaimer of Warranties</h2>
       <p>
-        The App is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any
+        Spydr is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any
         kind, either express or implied, including, but not limited to, implied
         warranties of merchantability, fitness for a particular purpose, or
         non-infringement.
@@ -81,7 +81,7 @@ const TermsOfService: React.FC = () => {
       <p>
         In no event shall we be liable for any indirect, incidental, special,
         consequential, or punitive damages arising out of or related to your use
-        of the App.
+        of Spydr.
       </p>
 
       <h2>9. Governing Law</h2>

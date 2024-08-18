@@ -13,16 +13,16 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import ConfigGraphModal from "@/components/terminal/ConfigGraphModal";
 
 function Terminal() {
   const [limit, setLimit] = useState(10);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex min-h-screen flex-col items-center justify-between p-6 lg:p-24">
       <div
         style={{ height: "80vh" }}
         className="border border-border/50 rounded-xl bg-background p-1.5 text-xs shadow-md w-full"
@@ -52,13 +52,20 @@ function Terminal() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="absolute right-3 top-14 bg-background border rounded-md">
+              <ConfigGraphModal />
+            </div>
 
             <div className="bg-muted h-full w-full whitespace-nowrap">
               <Graph limit={limit} />
             </div>
           </ResizablePanel>
-          <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={25} maxSize={40}>
+          <ResizableHandle withHandle className="hidden lg:flex" />
+          <ResizablePanel
+            defaultSize={25}
+            maxSize={40}
+            className="hidden lg:block"
+          >
             <SideBar />
           </ResizablePanel>
         </ResizablePanelGroup>

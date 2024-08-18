@@ -14,11 +14,13 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { MobileNav } from "./Mobile-Nav";
 
 import Image from "next/image";
 import logo from "@/assets/s_logo.jpg";
+import useMediaQuery from "@/hooks/general";
 
-const components: { title: string; href: string; description: string }[] = [
+const components = [
   {
     title: "Walkthrough Video",
     href: "/",
@@ -28,14 +30,12 @@ const components: { title: string; href: string; description: string }[] = [
   {
     title: "API Docs",
     href: "/",
-    description:
-      "Still in development. Public documentation for the API.",
+    description: "Still in development. Public documentation for the API.",
   },
   {
     title: "Analytics",
     href: "/",
-    description:
-      "How are scores and relevance between articles calculated?",
+    description: "How are scores and relevance between articles calculated?",
   },
   {
     title: "Your Contribution",
@@ -60,7 +60,11 @@ function NavigationMenuFull() {
                     className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
                     href="/"
                   >
-                    <Image src={logo} alt="logo" className="w-full h-full rounded-md" />
+                    <Image
+                      src={logo}
+                      alt="logo"
+                      className="w-full h-full rounded-md"
+                    />
                     <div className="mb-2 mt-4 text-lg font-medium">Spydr</div>
                     <p className="text-sm leading-tight text-muted-foreground">
                       Access to the latest news and information.
@@ -99,8 +103,6 @@ function NavigationMenuFull() {
         <NavigationMenuItem>
           <Link href="/terminal" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              {" "}
-              {/**use context here eventually */}
               Spydr Terminal
             </NavigationMenuLink>
           </Link>
@@ -154,10 +156,14 @@ const ListItem = React.forwardRef<
 ListItem.displayName = "ListItem";
 
 export function Navbar() {
+  const [isMounted, setIsMounted] = useState(false);
+  const matches = useMediaQuery("(max-width: 768px)");
   const [showNav, setShowNav] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
 
   useEffect(() => {
+    setIsMounted(true);
+
     const handleScroll = () => {
       const currentScrollPos = window.pageYOffset;
       const visible = prevScrollPos > currentScrollPos || currentScrollPos < 10;
@@ -171,7 +177,11 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [prevScrollPos]);
 
-  return (
+  if (!isMounted) {
+    return null;
+  }
+
+  const desktopNav = (
     <div
       className={`flex items-center justify-between px-24 transition ease duration-300 ${
         showNav ? "translate-y-0" : "-translate-y-full"
@@ -185,4 +195,8 @@ export function Navbar() {
       </div>
     </div>
   );
+
+  const mobileNav = <MobileNav />;
+
+  return <div className="w-full p-6 lg:p-0">{matches ? mobileNav : desktopNav}</div>;
 }

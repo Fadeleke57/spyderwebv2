@@ -5,8 +5,6 @@ from src.db.neo4j import driver as neo4j_driver, run_query
 from contextlib import asynccontextmanager
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     mongo_client.server_info()  # Connect to both

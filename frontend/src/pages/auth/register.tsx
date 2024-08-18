@@ -75,7 +75,7 @@ const Register = () => {
   };
 
   return (
-    <div className="w-full flex items-center justify-center h-screen">
+    <div className="w-full flex items-center justify-center h-7/8 lg:h-screen p-6 lg:p-0">
       <Card className="w-[500px]">
         <CardHeader>
           <CardTitle className="font-bold mb-2">Create An Account</CardTitle>
