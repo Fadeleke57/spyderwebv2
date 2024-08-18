@@ -11,7 +11,7 @@ const GoogleCallback: React.FC = () => {
     if (token && email && name) {
       setTimeout(() => {
         localStorage.setItem("token", token as string);
-      }, 2000);
+      }, 5000);
       router.push("/terminal");
     }
   }, [router.query, router]);
