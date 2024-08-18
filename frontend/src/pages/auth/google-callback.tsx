@@ -12,11 +12,15 @@ const GoogleCallback: React.FC = () => {
       localStorage.setItem("token", token as string);
       setTimeout(() => {
         router.push("/terminal");
-      }, 5000); 
+      }, 2000);
     }
   }, [router.query, router]);
 
-  return <LoadingPage />;
+  return (
+    <div className="w-full min-h-screen flex justify-center items-center">
+      <LoadingPage />
+    </div>
+  );
 };
 
 export default GoogleCallback;
