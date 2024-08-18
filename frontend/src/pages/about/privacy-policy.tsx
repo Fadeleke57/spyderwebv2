@@ -7,7 +7,7 @@ const PrivacyPolicy: React.FC = () => {
         Privacy Policy
       </h1>
       <p className="text-xl text-muted-foreground mb-8">
-        <strong>Last updated: 8/28/2024</strong>
+        <strong>Last updated: 8/18/2024</strong>
       </p>
 
       <p>
