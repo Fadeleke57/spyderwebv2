@@ -48,7 +48,7 @@ function Terminal() {
                     <SelectItem value="20">{20}</SelectItem>
                     <SelectItem value="50">{50}</SelectItem>
                     <SelectItem value="100">{100}</SelectItem>
-                    <SelectItem value="200000">All</SelectItem>
+                    <SelectItem value="1000">{1000}</SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
