@@ -14,10 +14,10 @@ function useFetchArticles(
 
   useEffect(() => {
     const fetchData = async () => {
-
+      const formattedLimit = limit === 1000 ? 200000 : limit;
       try {
         const response = await api.get("/articles/", {
-          params: { limit, query },
+          params: { formattedLimit, query },
         });
 
         const fetchedArticles: Article[] = response.data.result.flatMap(
