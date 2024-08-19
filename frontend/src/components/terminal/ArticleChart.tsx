@@ -107,7 +107,7 @@ export function ArticleChart({ article }: { article: ArticleAsNode }) {
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 font-medium leading-none">
           Article calculated at {article_reliability.toFixed(1)}% reliablily{" "}
-          {article_reliability > 50 ? (
+          {article_reliability < 50 ? (
             <TrendingDown className="h-4 w-4" />
           ) : (
             <TrendingUp className="h-4 w-4" />
