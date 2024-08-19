@@ -20,6 +20,4 @@ export interface ArticleAsNode {
   subjectivity: number;
   x: number;
   y: number;
-  fx: number;
-  fy: number;
 }
