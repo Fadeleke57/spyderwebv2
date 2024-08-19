@@ -9,7 +9,7 @@ function useFetchArticles(
   setQuery: (value: string) => void
 ) {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

@@ -106,7 +106,7 @@ function Graph({ limit, query, setQuery }: GraphProps) {
     };
   }, [articles]);
 
-  if (graphloading) {
+  if (loading || graphloading) {
     return <LoadingPage></LoadingPage>;
   }
 
