@@ -20,6 +20,7 @@ import ConfigGraphModal from "@/components/terminal/ConfigGraphModal";
 
 function Terminal() {
   const [limit, setLimit] = useState(10);
+  const [query, setQuery] = useState("");
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-6 lg:p-24">
@@ -52,12 +53,12 @@ function Terminal() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="absolute right-3 top-14 bg-background border rounded-md">
-              <ConfigGraphModal />
+            <div className="absolute right-3 top-14 bg-background border rounded-md lg:hidden">
+              <ConfigGraphModal setQuery={setQuery} />
             </div>
 
             <div className="bg-muted h-full w-full whitespace-nowrap">
-              <Graph limit={limit} />
+              <Graph limit={limit} query={query} setQuery={setQuery} />
             </div>
           </ResizablePanel>
           <ResizableHandle withHandle className="hidden lg:flex" />
@@ -66,7 +67,7 @@ function Terminal() {
             maxSize={40}
             className="hidden lg:block"
           >
-            <SideBar />
+            <SideBar setQuery={setQuery} />
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

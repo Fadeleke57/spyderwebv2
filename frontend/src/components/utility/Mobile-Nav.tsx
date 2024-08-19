@@ -140,12 +140,14 @@ function MobileLink({
 }: MobileLinkProps) {
   const router = useRouter();
 
+  if (!href) {
+    return <div className={cn(className)}>{children}</div>;
+  }
+
   return (
     <Link
       href={href}
       onClick={(e) => {
-        e.preventDefault();
-        router.push(href.toString());
         onOpenChange?.(false);
       }}
       className={cn(className)}

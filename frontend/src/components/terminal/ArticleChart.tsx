@@ -59,11 +59,15 @@ export function ArticleChart({ article }: { article: ArticleAsNode }) {
 
   return (
     <Card className="relative">
-      <Link href={article.link} target="_blank">
+      <Link href={article.link ? article.link : "/"} target="_blank">
         <SquareArrowOutUpRight size={15} className="absolute right-4 top-4" />
       </Link>
       <CardHeader>
-        <Link href={article.link} target="_blank" className="max-w-64">
+        <Link
+          href={article.link ? article.link : "/"}
+          target="_blank"
+          className="max-w-64"
+        >
           <CardTitle>{article.header}</CardTitle>
         </Link>
         <CardDescription>

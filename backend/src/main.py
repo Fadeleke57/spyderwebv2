@@ -4,6 +4,9 @@ from src.db.index import lifespan
 from src.routes.auth.index import router as auth_router
 from src.routes.graph.index import router as graph_router
 from src.core.config import settings
+import logging
+
+logging.basicConfig(level=logging.ERROR)
 
 app = FastAPI(lifespan=lifespan)
 

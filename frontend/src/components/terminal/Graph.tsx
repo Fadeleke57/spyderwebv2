@@ -3,52 +3,21 @@ import * as d3 from "d3";
 import { Article, ArticleAsNode } from "@/types/article";
 import { useState } from "react";
 import { DataDrawer } from "./DataDrawer";
-import axios from "axios";
-import { toast } from "@/components/ui/use-toast";
 import { LoadingPage } from "@/components/utility/Loading";
-import api from "@/lib/api";
+import useFetchArticles from "@/hooks/articles";
 
 interface GraphProps {
   limit: number;
+  query: string;
+  setQuery: (value: string) => void;
 }
 
-function Graph({ limit }: GraphProps) {
+function Graph({ limit, query, setQuery }: GraphProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const [articles, setArticles] = useState<Article[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get(`/articles/${limit}`);
-
-        const fetchedArticles: Article[] = response.data.result.flatMap(
-          (innerArray: Article[]) => innerArray
-        );
-        setArticles(fetchedArticles);
-      } catch (error) {
-        setError("Failed to fetch article data");
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [limit]);
-
-  useEffect(() => {
-    if (articles.length) {
-      setLoading(false);
-      toast({
-        title: `Loaded ${articles.length} articles.`,
-      });
-    } 
-  }, [articles]);
+  const { articles, loading, error } = useFetchArticles(limit, query, setQuery);
+  const [graphloading, setLoading] = useState(false);
 
   useEffect(() => {
     const width = 3200;
