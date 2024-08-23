@@ -31,8 +31,8 @@ class SeleniumMiddleware:
         options.add_argument('--disable-setuid-sandbox')
         options.add_argument('--remote-debugging-port=9222')
 
-
-        self.driver = webdriver.Chrome(executable_path='C:\Windows\System32\chromedriver.exe', options=options)
+        service = Service('/Applications/chromedriver')
+        self.driver = webdriver.Chrome(service=service, options=options)
 
     def spider_opened(self, spider):
         pass

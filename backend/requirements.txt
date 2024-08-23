@@ -8,3 +8,4 @@ passlib[bcrypt]
 fastapi-login 
 aiohttp
 dnspython
+python-multipart
