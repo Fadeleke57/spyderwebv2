@@ -35,41 +35,39 @@ class Neo4jConnection:
                 from_id=from_id, to_id=to_id, score=score)
 
 class TimeSpider(scrapy.Spider):
-    name = "time"
+    name = "time_with_topics"
     article_ids = {}
 
-    def __init__(self, search_term=None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(TimeSpider, self).__init__(*args, **kwargs)
-        self.search_term = search_term
-        if not self.search_term:
-            self.logger.error("No search term provided. The spider will not run.")
-            return
         URI = os.getenv("NEO4J_URI")
         USERNAME = os.getenv("NEO4J_USER")
         PASSWORD = os.getenv("NEO4J_PASSWORD")
         self.conn = Neo4jConnection(uri=URI, user=USERNAME, password=PASSWORD)
-        central_corpus = build_central_corpus(self.search_term, output_dir="../data") # needs to be changed depending on where "scrapy crawl time" is run
-        self.relevance_model = RelevanceModel(corpus=central_corpus, use_nltk=False)
 
     def start_requests(self):
-        search_term = "+".join(self.search_term.split(" ")) #this is how Time's url is formatted for spaces
-        start_urls = [f'https://time.com/search/?q={search_term}']
-        for url in start_urls:
-            yield SeleniumRequest(url=url, callback=self.parse_search_results)
+        topics = ['politics', 'business', 'entertainment', 'climate', 'science', 'sports', 'world', 'tech', 'health']
+        for topic in topics:
+            url = f'https://time.com/section/{topic}/'
+            central_corpus = build_central_corpus(topic, output_dir="../data") # needs to be changed depending on where "scrapy crawl time" is run
+            self.relevance_model = RelevanceModel(corpus=central_corpus, use_nltk=True)
+            yield SeleniumRequest(url=url, callback=self.parse_page_results)
 
-    def parse_search_results(self, response):
+    def parse_page_results(self, response):
         if response.status != 200:
             self.logger.error(f"Failed to retrieve search results: {response.url} with status {response.status}")
             return
 
-        articles = response.css('article.partial.tile.media.image-top.search-result')
+        articles = response.css('div.taxonomy-tout').getall()
         if not articles:
             self.logger.warning(f"No articles found on search results page: {response.url}")
 
         for article in articles:
-            article_link = article.css('div.headline a::attr(href)').get()
+            baseUrl='https://time.com'
+            article_link = article.css('a::attr(href)').get()
             if article_link:
-                yield SeleniumRequest(url=article_link, callback=self.parse_article)
+                full_link = baseUrl + article_link
+                yield SeleniumRequest(url=full_link, callback=self.parse_article)
 
     def parse_article(self, response):
         if response.status != 200:
@@ -93,6 +91,7 @@ class TimeSpider(scrapy.Spider):
         article_blob = TextBlob(full_text)
         article_polarity, article_subjectivity = article_blob.sentiment
         
+        topics = response.css('header ul li a::text').getall()
 
         nested_links = response.css('p a::attr(href)').getall()  # nested links are <a> tags within <p> tags
         nested_links = [response.urljoin(url) for url in nested_links]
@@ -120,6 +119,7 @@ class TimeSpider(scrapy.Spider):
             'header': header,
             'author': author,
             'update_date/publish_date': date,
+            'topics': topics,
             'link_to_article': link_to_article,
             'text': full_text,
             'nested_links': filtered_links,
