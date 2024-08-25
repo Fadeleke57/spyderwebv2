@@ -5,7 +5,7 @@ from gensim.corpora import Dictionary
 from gensim.models import TfidfModel
 from gensim.similarities import MatrixSimilarity
 
-nltk.download('punkt_tab')
+nltk.download('punkt')
 
 class RelevanceModel:
     def __init__(self, corpus : str, use_nltk=False):
