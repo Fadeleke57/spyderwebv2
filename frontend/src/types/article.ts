@@ -21,3 +21,8 @@ export interface ArticleAsNode {
   x: number;
   y: number;
 }
+
+export interface ConfigFormValues {
+  query: string;
+  topic: string;
+}

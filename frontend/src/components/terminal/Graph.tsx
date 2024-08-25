@@ -5,18 +5,19 @@ import { useState } from "react";
 import { DataDrawer } from "./DataDrawer";
 import { LoadingPage } from "@/components/utility/Loading";
 import useFetchArticles from "@/hooks/articles";
+import { ConfigFormValues } from "@/types/article";
 
 interface GraphProps {
   limit: number;
-  query: string;
-  setQuery: (value: string) => void;
+  config: ConfigFormValues;
+  setConfig: (value: ConfigFormValues) => void;
 }
 
-function Graph({ limit, query, setQuery }: GraphProps) {
+function Graph({ limit, config, setConfig }: GraphProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const { articles, loading, error } = useFetchArticles(limit, query, setQuery);
+  const { articles, loading, error } = useFetchArticles(limit, config, setConfig);
   const [graphloading, setLoading] = useState(false);
 
   useEffect(() => {

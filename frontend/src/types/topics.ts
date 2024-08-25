@@ -7,6 +7,12 @@ import climate from '@/assets/climate.webp'
 import health from '@/assets/health.webp'
 import entertainment from '@/assets/entertainment.webp'
 import tech from '@/assets/tech.webp'
+import { StaticImageData } from "next/image";
+
+export interface Topic {
+  name: string;
+  image: StaticImageData;
+}
 
 export const topics = [
     {

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { Article } from "@/types/article";
+import { Article, ConfigFormValues } from "@/types/article";
 import { toast } from "@/components/ui/use-toast";
 
 function useFetchArticles(
   limit: number,
-  query: string,
-  setQuery: (value: string) => void
+  config: ConfigFormValues,
+  setConfig: (value: ConfigFormValues) => void
 ) {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -14,10 +14,11 @@ function useFetchArticles(
 
   useEffect(() => {
     const fetchData = async () => {
-
+      const query = config.query;
+      const topic = config.topic;
       try {
         const response = await api.get("/articles/", {
-          params: { limit, query },
+          params: { limit, query, topic },
         });
 
         const fetchedArticles: Article[] = response.data.result.flatMap(
@@ -37,7 +38,7 @@ function useFetchArticles(
     };
 
     fetchData();
-  }, [limit, query, setQuery]);
+  }, [limit, config, setConfig]);
 
   return { articles, loading, error };
 }

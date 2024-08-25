@@ -1,5 +1,5 @@
 import withAuth from "@/hoc/withAuth";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -17,10 +17,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ConfigGraphModal from "@/components/terminal/ConfigGraphModal";
+import { ConfigFormValues } from "@/types/article";
 
 function Terminal() {
   const [limit, setLimit] = useState(10);
-  const [query, setQuery] = useState("");
+  const [config, setConfig] = useState<ConfigFormValues>({
+    query: "",
+    topic: "",
+  });
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-6 lg:p-24">
@@ -54,11 +58,11 @@ function Terminal() {
               </Select>
             </div>
             <div className="absolute right-3 top-14 bg-background border rounded-md lg:hidden">
-              <ConfigGraphModal setQuery={setQuery} />
+              <ConfigGraphModal setConfig={setConfig} />
             </div>
 
             <div className="bg-muted h-full w-full whitespace-nowrap">
-              <Graph limit={limit} query={query} setQuery={setQuery} />
+              <Graph limit={limit} config={config} setConfig={setConfig} />
             </div>
           </ResizablePanel>
           <ResizableHandle withHandle className="hidden lg:flex" />
@@ -67,7 +71,7 @@ function Terminal() {
             maxSize={40}
             className="hidden lg:block"
           >
-            <SideBar setQuery={setQuery} />
+            <SideBar setConfig={setConfig} />
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

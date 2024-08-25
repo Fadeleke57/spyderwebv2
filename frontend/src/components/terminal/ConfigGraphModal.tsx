@@ -11,12 +11,13 @@ import {
 } from "@/components/ui/dialog";
 import { Search } from "lucide-react";
 import ConfigForm from "./ConfigForm";
+import { ConfigFormValues } from "@/types/article";
 
 type ConfigGraphModalProps = {
-  setQuery: (value: string) => void;
+  setConfig: (value: ConfigFormValues) => void;
 };
 
-export default function ConfigGraphModal({ setQuery }: ConfigGraphModalProps) {
+export default function ConfigGraphModal({ setConfig}: ConfigGraphModalProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -28,7 +29,7 @@ export default function ConfigGraphModal({ setQuery }: ConfigGraphModalProps) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[300px]">
         <div className="flex flex-col gap-6 py-2">
-          <ConfigForm setIsOpen={setIsOpen} setQuery={setQuery} />
+          <ConfigForm setIsOpen={setIsOpen} setConfig={setConfig} />
         </div>
       </DialogContent>
     </Dialog>

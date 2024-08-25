@@ -20,12 +20,12 @@ class Neo4jConnection:
             result = session.run("MATCH (a:Article {id: $article_id}) RETURN a.id AS id, a.text AS text", article_id=article_id)
             return result.single()
 
-    def create_article_node(self, article_id, header, author, date_published, link, text, sentiment, subjectivity):
+    def create_article_node(self, article_id, header, author, date_published, topics, link, text, sentiment, subjectivity):
         with self.driver.session() as session:
             session.run(
                 "MERGE (a:Article {id: $article_id}) "
-                "ON CREATE SET a.header = $header, a.author = $author, a.date_published = $date_published, a.link = $link, a.text = $text, a.sentiment = $sentiment, a.subjectivity = $subjectivity",
-                article_id=article_id, header=header, author=author, date_published=date_published, link=link, text=text, sentiment=sentiment, subjectivity=subjectivity)
+                "ON CREATE SET a.header = $header, a.author = $author, a.date_published = $date_published, a.topics = $topics, a.link = $link, a.text = $text, a.sentiment = $sentiment, a.subjectivity = $subjectivity",
+                article_id=article_id, header=header, author=author, date_published=date_published, topics=topics, link=link, text=text, sentiment=sentiment, subjectivity=subjectivity)
 
     def create_relationship_with_score(self, from_id, to_id, score):
         with self.driver.session() as session:
@@ -49,16 +49,17 @@ class TimeSpider(scrapy.Spider):
         topics = ['politics', 'business', 'entertainment', 'climate', 'science', 'sports', 'world', 'tech', 'health']
         for topic in topics:
             url = f'https://time.com/section/{topic}/'
-            central_corpus = build_central_corpus(topic, output_dir="../data") # needs to be changed depending on where "scrapy crawl time" is run
+            central_corpus = build_central_corpus(topic, output_dir="../data")
             self.relevance_model = RelevanceModel(corpus=central_corpus, use_nltk=True)
             yield SeleniumRequest(url=url, callback=self.parse_page_results)
 
     def parse_page_results(self, response):
         if response.status != 200:
             self.logger.error(f"Failed to retrieve search results: {response.url} with status {response.status}")
-            return
+            return      
 
-        articles = response.css('div.taxonomy-tout').getall()
+        articles = response.css('div.taxonomy-tout')
+
         if not articles:
             self.logger.warning(f"No articles found on search results page: {response.url}")
 
@@ -97,7 +98,7 @@ class TimeSpider(scrapy.Spider):
         nested_links = [response.urljoin(url) for url in nested_links]
 
         article_id = link_to_article.split("/")[4]
-        self.conn.create_article_node(article_id, header, author, date, link_to_article, full_text, article_polarity, article_subjectivity)
+        self.conn.create_article_node(article_id, header, author, date, topics, link_to_article, full_text, article_polarity, article_subjectivity)
 
         if parent_id:
             parent_article = self.conn.get_article_by_id(parent_id)
