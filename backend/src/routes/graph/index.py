@@ -7,15 +7,39 @@ import logging
 router = APIRouter()
 
 @router.get("/articles/")
-def get_articles(limit: int = 10, query: str = None, user=Depends(manager)):
+def get_articles(limit: int = 10, query: str = None, topic: str = None, user=Depends(manager)):
     if not user:
         logging.error("Not authorized!")
         raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    query_clauses = []
+    params = {'limit': limit}
 
+    # search query
     if query:
-        result = run_query(f"{queries['GET_ARTICLE_BY_TEXT']} LIMIT {limit}", {'text': query})
-    else:
-        result = run_query(f"{queries['GET_ALL_ARTICLES']} LIMIT {limit}")
+        query_clauses.append("""
+            (toLower(a.text) CONTAINS toLower($text) 
+            OR toLower(a.header) CONTAINS toLower($text) 
+            OR toLower(a.author) CONTAINS toLower($text))
+        """)
+        params['text'] = query
+
+    # topic filter
+    if topic:
+        query_clauses.append("$topic IN a.topics")
+        params['topic'] = topic
+
+    #final query
+    where_clause = " AND ".join(query_clauses)
+    full_where_clause = f"WHERE {where_clause}" if where_clause else ""
+    cypher_query = f"""
+        MATCH (a:Article)
+        {full_where_clause}
+        RETURN a
+        LIMIT $limit
+    """
+    
+    result = run_query(cypher_query, params)
 
     return {"result": result}
 
