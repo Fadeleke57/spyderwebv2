@@ -1,4 +1,5 @@
 import scrapy
+from scrapy_selenium import SeleniumRequest
 from neo4j import GraphDatabase
 from textblob import TextBlob
 from ..models.relevance_model import RelevanceModel
@@ -50,7 +51,7 @@ class TimeSpider(scrapy.Spider):
             url = f'https://time.com/section/{topic}/'
             central_corpus = build_central_corpus(topic, output_dir="../data")
             self.relevance_model = RelevanceModel(corpus=central_corpus, use_nltk=True)
-            yield scrapy.Request(url, callback=self.parse_page_results)
+            yield SeleniumRequest(url=url, callback=self.parse_page_results)
 
     def parse_page_results(self, response):
         if response.status != 200:
@@ -67,7 +68,7 @@ class TimeSpider(scrapy.Spider):
             article_link = article.css('a::attr(href)').get()
             if article_link:
                 full_link = baseUrl + article_link
-                yield scrapy.Request(full_link, callback=self.parse_article)
+                yield SeleniumRequest(url=full_link, callback=self.parse_article)
 
     def parse_article(self, response):
         if response.status != 200:
@@ -128,7 +129,7 @@ class TimeSpider(scrapy.Spider):
         }
 
         for nested_link in filtered_links:
-            yield scrapy.Request(nested_link, callback=self.parse_article, meta={'parent_id': article_id})
+            yield SeleniumRequest(url=nested_link, callback=self.parse_article, meta={'parent_id': article_id})
 
     def closed(self, reason):
         self.conn.close()
