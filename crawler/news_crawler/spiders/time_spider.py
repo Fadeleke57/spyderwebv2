@@ -20,12 +20,12 @@ class Neo4jConnection:
             result = session.run("MATCH (a:Article {id: $article_id}) RETURN a.id AS id, a.text AS text", article_id=article_id)
             return result.single()
 
-    def create_article_node(self, article_id, header, author, date_published, link, text, sentiment, subjectivity):
+    def create_article_node(self, article_id, header, author, date_published, topics, link, text, sentiment, subjectivity):
         with self.driver.session() as session:
             session.run(
                 "MERGE (a:Article {id: $article_id}) "
-                "ON CREATE SET a.header = $header, a.author = $author, a.date_published = $date_published, a.link = $link, a.text = $text, a.sentiment = $sentiment, a.subjectivity = $subjectivity",
-                article_id=article_id, header=header, author=author, date_published=date_published, link=link, text=text, sentiment=sentiment, subjectivity=subjectivity)
+                "ON CREATE SET a.header = $header, a.author = $author, a.date_published = $date_published, a.topics = $topics, a.link = $link, a.text = $text, a.sentiment = $sentiment, a.subjectivity = $subjectivity",
+                article_id=article_id, header=header, author=author, date_published=date_published, topics=topics, link=link, text=text, sentiment=sentiment, subjectivity=subjectivity)
 
     def create_relationship_with_score(self, from_id, to_id, score):
         with self.driver.session() as session:
@@ -33,6 +33,14 @@ class Neo4jConnection:
                 "MATCH (a:Article {id: $from_id}), (b:Article {id: $to_id}) "
                 "MERGE (a)-[:REFERENCES {score: $score}]->(b)",
                 from_id=from_id, to_id=to_id, score=score)
+    
+    def clean_graph(self):
+        with self.driver.session() as session:
+            session.run(
+                "MATCH (a:Article) "
+                "WHERE a.sentiment = 0 AND a.subjectivity = 0 "
+                "DETACH DELETE a"
+            )
 
 class TimeSpider(scrapy.Spider):
     name = "time"
@@ -93,12 +101,13 @@ class TimeSpider(scrapy.Spider):
         article_blob = TextBlob(full_text)
         article_polarity, article_subjectivity = article_blob.sentiment
         
+        topics = response.css('header ul li a::text').getall()
 
         nested_links = response.css('p a::attr(href)').getall()  # nested links are <a> tags within <p> tags
         nested_links = [response.urljoin(url) for url in nested_links]
 
         article_id = link_to_article.split("/")[4]
-        self.conn.create_article_node(article_id, header, author, date, link_to_article, full_text, article_polarity, article_subjectivity)
+        self.conn.create_article_node(article_id, header, author, date, topics, link_to_article, full_text, article_polarity, article_subjectivity)
 
         if parent_id:
             parent_article = self.conn.get_article_by_id(parent_id)
@@ -120,6 +129,7 @@ class TimeSpider(scrapy.Spider):
             'header': header,
             'author': author,
             'update_date/publish_date': date,
+            'topics': topics,
             'link_to_article': link_to_article,
             'text': full_text,
             'nested_links': filtered_links,
@@ -131,6 +141,7 @@ class TimeSpider(scrapy.Spider):
             yield SeleniumRequest(url=nested_link, callback=self.parse_article, meta={'parent_id': article_id})
 
     def closed(self, reason):
+        self.conn.clean_graph()
         self.conn.close()
 """
 ------------------DEBUGGING UTILITY-----------------------------------------------      

@@ -33,6 +33,14 @@ class Neo4jConnection:
                 "MATCH (a:Article {id: $from_id}), (b:Article {id: $to_id}) "
                 "MERGE (a)-[:REFERENCES {score: $score}]->(b)",
                 from_id=from_id, to_id=to_id, score=score)
+            
+    def clean_graph(self):
+        with self.driver.session() as session:
+            session.run(
+                "MATCH (a:Article) "
+                "WHERE a.sentiment = 0 AND a.subjectivity = 0 "
+                "DETACH DELETE a"
+            )
 
 class TimeSpider(scrapy.Spider):
     name = "time_with_topics"
@@ -46,7 +54,7 @@ class TimeSpider(scrapy.Spider):
         self.conn = Neo4jConnection(uri=URI, user=USERNAME, password=PASSWORD)
 
     def start_requests(self):
-        topics = ['politics', 'business', 'entertainment', 'climate', 'science', 'sports', 'world', 'tech', 'health']
+        topics = ['tech', 'business', 'health', 'climate', 'world', 'politics', 'science', 'entertainment', 'sports']
         for topic in topics:
             url = f'https://time.com/section/{topic}/'
             central_corpus = build_central_corpus(topic, output_dir="../data")
@@ -132,6 +140,7 @@ class TimeSpider(scrapy.Spider):
             yield SeleniumRequest(url=nested_link, callback=self.parse_article, meta={'parent_id': article_id})
 
     def closed(self, reason):
+        self.conn.clean_graph()
         self.conn.close()
 """
 ------------------DEBUGGING UTILITY-----------------------------------------------      

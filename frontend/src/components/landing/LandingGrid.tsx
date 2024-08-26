@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { topics } from "@/types/topics";
+import { topicsWithSubtopics } from "@/types/topics";
 import Image from "next/image";
 import Link from "next/link";
 import { Topic } from "@/types/topics";
@@ -16,7 +16,7 @@ function LandingGrid() {
   const [shuffledTopics, setShuffledTopics] = useState<Topic[]>([]);
 
   useEffect(() => {
-    const shuffled = shuffleArray([...topics]);
+    const shuffled = shuffleArray([...topicsWithSubtopics]);
     setShuffledTopics(shuffled);
   }, []);
 

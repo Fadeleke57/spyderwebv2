@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/select";
 import ConfigGraphModal from "@/components/terminal/ConfigGraphModal";
 import { ConfigFormValues } from "@/types/article";
+import { Button } from "@/components/ui/button";
+import { Expand } from "lucide-react";
 
 function Terminal() {
   const [limit, setLimit] = useState(10);
@@ -56,6 +58,11 @@ function Terminal() {
                   </SelectGroup>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="absolute left-3 top-3 bg-background border rounded-md ">
+              <Button>
+                <Expand size={16}/>
+              </Button>
             </div>
             <div className="absolute right-3 top-14 bg-background border rounded-md lg:hidden">
               <ConfigGraphModal setConfig={setConfig} />

@@ -14,8 +14,8 @@ function useFetchArticles(
 
   useEffect(() => {
     const fetchData = async () => {
-      const query = config.query;
-      const topic = config.topic;
+      setLoading(true);
+      const { query, topic } = config;
       try {
         const response = await api.get("/articles/", {
           params: { limit, query, topic },

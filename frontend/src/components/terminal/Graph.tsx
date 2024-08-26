@@ -18,7 +18,6 @@ function Graph({ limit, config, setConfig }: GraphProps) {
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const { articles, loading, error } = useFetchArticles(limit, config, setConfig);
-  const [graphloading, setLoading] = useState(false);
 
   useEffect(() => {
     const width = 3200;
@@ -31,7 +30,6 @@ function Graph({ limit, config, setConfig }: GraphProps) {
       .select(svgRef.current)
       .attr("width", width)
       .attr("height", height);
-    setLoading(true);
     svg.selectAll("*").remove();
 
     const g = svg.append("g");
@@ -99,7 +97,6 @@ function Graph({ limit, config, setConfig }: GraphProps) {
         d.fx = null;
         d.fy = null;
       });
-    setLoading(false);
 
     // Cleanup
     return () => {
@@ -107,7 +104,7 @@ function Graph({ limit, config, setConfig }: GraphProps) {
     };
   }, [articles]);
 
-  if (loading || graphloading) {
+  if (loading) {
     return <LoadingPage></LoadingPage>;
   }
 

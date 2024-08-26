@@ -1,7 +1,5 @@
-import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -24,6 +22,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { ConfigFormValues } from "@/types/article";
+import { topicsWithSubtopics } from "@/types/topics";
 
 type ConfigFormProps = {
   setIsOpen?: (value: boolean) => void;
@@ -42,7 +41,7 @@ function ConfigForm({ setIsOpen, setConfig }: ConfigFormProps) {
 
   const onSubmit: SubmitHandler<ConfigFormValues> = (data) => {
     setConfig({ query: data.query, topic: data.topic });
-    
+
     if (setIsOpen) {
       setIsOpen(false);
     }
@@ -94,125 +93,25 @@ function ConfigForm({ setIsOpen, setConfig }: ConfigFormProps) {
                       <SelectValue placeholder="Select a topic" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectGroup>
-                        <SelectItem value="None" className="px-4">
-                          None
-                        </SelectItem>
-                        <SelectLabel className="px-4">Politics</SelectLabel>
-                        <SelectItem value="Politics" className="px-4">
-                          All
-                        </SelectItem>
-                        <SelectItem value="republican" className="px-4">
-                          Republican
-                        </SelectItem>
-                        <SelectItem value="democrats" className="px-4">
-                          Democrats
-                        </SelectItem>
-                        <SelectItem value="2024 Elections" className="px-4">
-                          2024 Elections
-                        </SelectItem>
-                        <SelectItem value="Kamala Harris" className="px-4">
-                          Kamala Harris
-                        </SelectItem>
-                        <SelectItem value="Donald Trump" className="px-4">
-                          Donald Trump
-                        </SelectItem>
-                      </SelectGroup>
-                      <SelectGroup>
-                        <SelectLabel className="px-4">World</SelectLabel>
-                        <SelectItem value="World" className="px-4">
-                          All
-                        </SelectItem>
-                        <SelectItem value="Israel-Hamas War" className="px-4">
-                          Israel-Hamas War
-                        </SelectItem>
-                        <SelectItem value="South Korea" className="px-4">
-                          South Korea
-                        </SelectItem>
-                        <SelectItem value="Italy" className="px-4">
-                          Italy
-                        </SelectItem>
-                        <SelectItem value="Germany" className="px-4">
-                          Germany
-                        </SelectItem>
-                        <SelectItem value="Botswana" className="px-4">
-                          Botswana
-                        </SelectItem>
-                      </SelectGroup>
-                      <SelectGroup>
-                        <SelectLabel className="px-4">Business</SelectLabel>
-                        <SelectItem value="Business" className="px-4">
-                          All
-                        </SelectItem>
-                        <SelectItem value="Economy" className="px-4">
-                          Economy
-                        </SelectItem>
-                        <SelectItem value="Brands" className="px-4">
-                          Brands
-                        </SelectItem>
-                        <SelectItem value="Companies" className="px-4">
-                          Companies
-                        </SelectItem>
-                        <SelectItem
-                          value="The Leadership Brief"
-                          className="px-4"
-                        >
-                          Leaders
-                        </SelectItem>
-                        <SelectItem value="Cryptocurrency" className="px-4">
-                          Cryptocurrency
-                        </SelectItem>
-                      </SelectGroup>
-                      <SelectGroup>
-                        <SelectLabel className="px-4">Health</SelectLabel>
-                        <SelectItem value="Health" className="px-4">
-                          All
-                        </SelectItem>
-                        <SelectItem value="Disease" className="px-4">
-                          Disease
-                        </SelectItem>
-                        <SelectItem value="COVID-19" className="px-4">
-                          COVID-19
-                        </SelectItem>
-                      </SelectGroup>
-                      <SelectGroup>
-                        <SelectLabel className="px-4">Science</SelectLabel>
-                        <SelectItem value="Science" className="px-4">
-                          All
-                        </SelectItem>
-                        <SelectItem value="remembrance" className="px-4">
-                          Remembrance
-                        </SelectItem>
-                        <SelectItem value="Space" className="px-4">
-                          Space
-                        </SelectItem>
-                      </SelectGroup>
-                      <SelectGroup>
-                        <SelectLabel className="px-4">Climate</SelectLabel>
-                        <SelectItem value="Climate" className="px-4">
-                          All
-                        </SelectItem>
-                      </SelectGroup>
-                      <SelectGroup>
-                        <SelectLabel className="px-4">
-                          Entertainment
-                        </SelectLabel>
-                        <SelectItem value="Entertainment" className="px-4">
-                          All
-                        </SelectItem>
-                      </SelectGroup>
-                      <SelectGroup>
-                        <SelectLabel className="px-4">Tech</SelectLabel>
-                        <SelectItem
-                          value="Artificial Intelligence"
-                          className="px-4"
-                        >
-                          AI
-                        </SelectItem>
-                        <SelectItem value="Security" className="px-4">
-                          Security
-                        </SelectItem>
-                      </SelectGroup>
+                      <SelectItem value="None" className="px-4">
+                        None
+                      </SelectItem>
+                      {topicsWithSubtopics.map((topic) => (
+                        <SelectGroup key={topic.name}>
+                          <SelectLabel className="px-4">
+                            {topic.name}
+                          </SelectLabel>
+                          {topic.subtopics.map((subtopic) => (
+                            <SelectItem
+                              key={subtopic.value}
+                              value={subtopic.value}
+                              className="px-4 cursor-pointer"
+                            >
+                              {subtopic.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      ))}
                     </SelectContent>
                   </Select>
                 </FormControl>

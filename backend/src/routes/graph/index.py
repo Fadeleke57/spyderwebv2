@@ -25,7 +25,7 @@ def get_articles(limit: int = 10, query: str = None, topic: str = None, user=Dep
         params['text'] = query
 
     # topic filter
-    if topic:
+    if (topic and topic != "None"):
         query_clauses.append("$topic IN a.topics")
         params['topic'] = topic
 
