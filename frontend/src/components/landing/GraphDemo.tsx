@@ -2,9 +2,8 @@ import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
 import { Article, ArticleAsNode } from "@/types/article";
 import { useState } from "react";
-import { DataDrawer } from "./DataDrawer";
 import { LoadingPage } from "@/components/utility/Loading";
-import { useFetchArticles } from "@/hooks/articles";
+import { useFetchArticlesDemo } from "@/hooks/articles";
 import { ConfigFormValues } from "@/types/article";
 
 interface GraphProps {
@@ -17,13 +16,13 @@ function Graph({ limit, config, setConfig }: GraphProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const { articles, loading, error } = useFetchArticles(limit, config, setConfig);
+  const { articles, loading, error } = useFetchArticlesDemo(limit, config, setConfig);
 
   useEffect(() => {
     const width = 3200;
     const height = 2400;
-    const centerX = width / 8 + 80;
-    const centerY = height / 8;
+    const centerX = width / 8 - 90;
+    const centerY = height / 8 - 10;
     const circleRadius = Math.min(width, height) / 2 - 50;
 
     const svg = d3
@@ -111,11 +110,6 @@ function Graph({ limit, config, setConfig }: GraphProps) {
   return (
     <>
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
-      <DataDrawer
-        article={selectedArticle as ArticleAsNode}
-        open={isDrawerOpen}
-        setOpen={setDrawerOpen}
-      />
     </>
   );
 }

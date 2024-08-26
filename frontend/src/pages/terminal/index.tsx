@@ -20,12 +20,15 @@ import ConfigGraphModal from "@/components/terminal/ConfigGraphModal";
 import { ConfigFormValues } from "@/types/article";
 import { Button } from "@/components/ui/button";
 import { Expand } from "lucide-react";
+import { useRouter } from "next/router";
 
 function Terminal() {
-  const [limit, setLimit] = useState(10);
+  const router = useRouter();
+  const { topic } = router.query;
+  const [limit, setLimit] = useState(50);
   const [config, setConfig] = useState<ConfigFormValues>({
     query: "",
-    topic: "",
+    topic: `${topic ? topic : ""}`,
   });
 
   return (

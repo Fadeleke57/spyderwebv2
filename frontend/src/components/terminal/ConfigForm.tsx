@@ -122,7 +122,7 @@ function ConfigForm({ setIsOpen, setConfig }: ConfigFormProps) {
           />
 
           <FormMessage>
-            <Button type="submit">Save changes</Button>
+            <Button type="submit">Search</Button>
           </FormMessage>
         </form>
       </Form>

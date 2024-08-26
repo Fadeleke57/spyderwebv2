@@ -18,6 +18,7 @@ import { MobileNav } from "./Mobile-Nav";
 
 import Image from "next/image";
 import logo from "@/assets/s_logo.jpg";
+import { gsap } from "gsap";
 import useMediaQuery from "@/hooks/general";
 
 const components = [
@@ -189,7 +190,7 @@ export function Navbar() {
     >
       <div className="flex items-center gap-2">
         <Link href="/">
-          <Image src={logo} alt="logo" width={50} height={50} />
+          <Image id="nav-logo" src={logo} alt="logo" width={50} height={50} />
         </Link>
         <NavigationMenuFull />
       </div>
@@ -198,5 +199,7 @@ export function Navbar() {
 
   const mobileNav = <MobileNav />;
 
-  return <div className="w-full p-6 lg:p-0">{matches ? mobileNav : desktopNav}</div>;
+  return (
+    <div className="w-full p-6 lg:p-0">{matches ? mobileNav : desktopNav}</div>
+  );
 }

@@ -20,7 +20,7 @@ export const topicsWithSubtopics = [
     name: "Politics",
     image: politics,
     subtopics: [
-      { value: "Politics", label: "All" },
+      { value: "Politics", label: "Politics - All" },
       { value: "republican", label: "Republican" },
       { value: "democrats", label: "Democrats" },
       { value: "2024 Elections", label: "2024 Elections" },
@@ -32,7 +32,7 @@ export const topicsWithSubtopics = [
     name: "World",
     image: world,
     subtopics: [
-      { value: "World", label: "All" },
+      { value: "World", label: "World - All" },
       { value: "Israel-Hamas War", label: "Israel-Hamas War" },
       { value: "South Korea", label: "South Korea" },
       { value: "Italy", label: "Italy" },
@@ -44,7 +44,7 @@ export const topicsWithSubtopics = [
     name: "Business",
     image: business,
     subtopics: [
-      { value: "Business", label: "All" },
+      { value: "Business", label: "Business - All" },
       { value: "Economy", label: "Economy" },
       { value: "Brands", label: "Brands" },
       { value: "Companies", label: "Companies" },
@@ -56,7 +56,7 @@ export const topicsWithSubtopics = [
     name: "Health",
     image: health,
     subtopics: [
-      { value: "Health", label: "All" },
+      { value: "Health", label: "Health - All" },
       { value: "Disease", label: "Disease" },
       { value: "COVID-19", label: "COVID-19" },
     ],
@@ -65,7 +65,7 @@ export const topicsWithSubtopics = [
     name: "Science",
     image: science,
     subtopics: [
-      { value: "Science", label: "All" },
+      { value: "Science", label: "Science - All" },
       { value: "remembrance", label: "Remembrance" },
       { value: "Space", label: "Space" },
     ],
@@ -73,18 +73,19 @@ export const topicsWithSubtopics = [
   {
     name: "Climate",
     image: climate,
-    subtopics: [{ value: "Climate", label: "All" }],
+    subtopics: [{ value: "Climate", label: "Climate - All" }],
   },
   {
     name: "Entertainment",
     image: entertainment,
-    subtopics: [{ value: "Entertainment", label: "All" }],
+    subtopics: [{ value: "Entertainment", label: "Entertainment - All" }],
   },
   {
-    name: "Tech",
+    name: "Technology",
     image: tech,
     subtopics: [
-      { value: "Artificial Intelligence", label: "AI" },
+      { value: "Technology", label: "Technology - All" },
+      { value: "Artificial Intelligence", label: "Artifical intelligence" },
       { value: "Security", label: "Security" },
     ],
   },
@@ -92,7 +93,7 @@ export const topicsWithSubtopics = [
     name: "Sports",
     image: sports,
     subtopics: [
-      { value: "Sports", label: "All" },
+      { value: "Sports", label: "Sports - All" },
       { value: "Soccer", label: "Soccer" },
       { value: "Olympics 2024", label: "Olympics 2024" },
     ],

@@ -7,7 +7,7 @@ import logging
 router = APIRouter()
 
 @router.get("/articles/")
-def get_articles(limit: int = 10, query: str = None, topic: str = None, user=Depends(manager)):
+def get_articles(limit: int = 50, query: str = None, topic: str = None, user=Depends(manager)):
     if not user:
         logging.error("Not authorized!")
         raise HTTPException(status_code=401, detail="Unauthorized")
@@ -26,8 +26,8 @@ def get_articles(limit: int = 10, query: str = None, topic: str = None, user=Dep
 
     # topic filter
     if (topic and topic != "None"):
-        query_clauses.append("$topic IN a.topics")
-        params['topic'] = topic
+        query_clauses.append("any(t IN a.topics WHERE toLower(t) = toLower($topic))")
+        params['topic'] = topic.lower()
 
     #final query
     where_clause = " AND ".join(query_clauses)

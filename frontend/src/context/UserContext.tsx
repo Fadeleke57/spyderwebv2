@@ -30,6 +30,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
+        setLoading(true);
         const token = localStorage.getItem("token");
 
         if (!token) {
@@ -39,10 +40,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         const response = await api.get("/auth/me");
 
         setUser(response.data);
-        setLoading(false);
       } catch (error) {
         console.error("Failed to fetch user", error);
         setUser(null);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -53,6 +55,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
     router.push("/auth/login");
   };
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <UserContext.Provider value={{ user, setUser, logout }}>

@@ -36,7 +36,7 @@ function LandingGrid() {
           alt="logo"
           className="w-full h-full object-cover rounded-2xl transform transition-transform duration-500 group-hover:scale-110"
         />
-        <Link href={"/terminal"}>
+        <Link href={{ pathname: "/terminal", query: { topic: firstItem.name.toLowerCase() } }}>
           <div className="w-full h-full absolute top-0 left-0 bg-neutral-950/70 group-hover:bg-transparent rounded-2xl"></div>
           <h5 className="absolute bottom-5 left-5 text-lg font-bold tracking-tight text-white dark:text-white lg:text-2xl">
             {firstItem.name}
@@ -45,7 +45,10 @@ function LandingGrid() {
       </div>
 
       {firstBlock.map((topic, id) => (
-        <Link href={"/terminal"} key={id}>
+        <Link
+          href={{ pathname: "/terminal", query: { topic: topic.name.toLowerCase() } }}
+          key={id}
+        >
           <div className="w-full h-full row-span-2 lg:row-span-1 relative rounded-2xl border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
             <Image
               src={topic.image}
@@ -61,7 +64,10 @@ function LandingGrid() {
       ))}
 
       {lastBlock.map((topic, id) => (
-        <Link href={"/terminal"} key={id}>
+        <Link
+          href={{ pathname: "/terminal", query: { topic: topic.name.toLowerCase() } }}
+          key={id}
+        >
           <div className="w-full h-full relative rounded-2xl border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
             <Image
               src={topic.image}
