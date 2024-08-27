@@ -19,6 +19,8 @@ import { MobileNav } from "./Mobile-Nav";
 import Image from "next/image";
 import logo from "@/assets/s_logo.jpg";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
+
 import useMediaQuery from "@/hooks/general";
 
 const components = [
@@ -162,8 +164,21 @@ export function Navbar() {
   const [showNav, setShowNav] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
 
-  useEffect(() => {
+  useGSAP(() => {
     setIsMounted(true);
+
+    gsap.fromTo(
+      "#nav-logo",
+      {
+        translateY: -100,
+        transformOrigin: "top",
+      },
+      {
+        translateY: 0,
+        duration: 0.5,
+        ease: "power2.out",
+      }
+    );
 
     const handleScroll = () => {
       const currentScrollPos = window.pageYOffset;
@@ -175,7 +190,6 @@ export function Navbar() {
 
     window.addEventListener("scroll", handleScroll);
 
-    return () => window.removeEventListener("scroll", handleScroll);
   }, [prevScrollPos]);
 
   if (!isMounted) {
