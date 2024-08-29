@@ -3,7 +3,7 @@
 -Frontend: Next.js with Typescript and Tailwind
 
 -The crawler directory is where I dump to my neo4j graph via 'scrapy crawl {spider_name}' -a search_term="{search term} -s MAX_DEPTH={farthest layer}".<br>
--By default, items will be scraped using a breadth-first search which makes the most sense. <br>
+-By default, items will be scraped using a breadth-first search <br>
 -Eventually, I'll add this to a cronjob to keep me from doing this manually.<br>
 -It uses selenium (headless) middleware to parse dynamic web pages, a custom TF-IDF relevance model I made with genism, and an optional nltk parameter for better precision. The nltk option is significantly slower in tokenization so I usually defer it.<br>
 -Weights between article nodes are determined by the relevance model.<br>
