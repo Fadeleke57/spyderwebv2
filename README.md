@@ -7,9 +7,9 @@
 -Eventually, I'll add this to a cronjob to keep me from doing this manually.<br>
 -It uses selenium (headless) middleware to parse dynamic web pages, a custom TF-IDF relevance model I made with genism, and an optional nltk parameter for better precision. The nltk option is significantly slower in tokenization so I usually defer it.<br>
 -Weights between article nodes are determined by the relevance model.<br>
--Right now, I use the news API to train it on a corpus that pertains to the search topic, but I will probably update this logic later.<br>
+-Right now, I use the news API to render information about a topic, then train the model instance on a corpus that's fed from the rendered text, but I will probably update this logic later.<br>
 -Each article is treated as a node and I use TextBlob to do an e2e analysis on an article including sentiment and subjectivity analysis. I'll probably integrate some sort of summary API or agent as well but I'm trying to avoid having to rely on a GPT or LLM.
 
--the backend is hosted in a docker container on ec2 but i'll leave the client on vercel because of ci/cd compatibility with next.js.
+-the backend is hosted in a docker container on ec2 but I'll leave the client on Vercel because of ci/cd compatibility with next.js.
 
 Will make this readme look pretty eventually lol
