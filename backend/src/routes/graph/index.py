@@ -43,6 +43,40 @@ def get_articles(limit: int = 50, query: str = None, topic: str = None, user=Dep
 
     return {"result": result}
 
+@router.get("/articles/demo/")
+def get_articles(limit: int = 50, query: str = None, topic: str = None):
+    
+    query_clauses = []
+    params = {'limit': limit}
+
+    # search query
+    if query:
+        query_clauses.append("""
+            (toLower(a.text) CONTAINS toLower($text) 
+            OR toLower(a.header) CONTAINS toLower($text) 
+            OR toLower(a.author) CONTAINS toLower($text))
+        """)
+        params['text'] = query
+
+    # topic filter
+    if (topic and topic != "None"):
+        query_clauses.append("any(t IN a.topics WHERE toLower(t) = toLower($topic))")
+        params['topic'] = topic.lower()
+
+    #final query
+    where_clause = " AND ".join(query_clauses)
+    full_where_clause = f"WHERE {where_clause}" if where_clause else ""
+    cypher_query = f"""
+        MATCH (a:Article)
+        {full_where_clause}
+        RETURN a
+        LIMIT $limit
+    """
+    
+    result = run_query(cypher_query, params)
+
+    return {"result": result}
+
 @router.get("/article/{article_id}")
 def get_article_by_id(article_id: str, user=Depends(manager)):
     if not user:
