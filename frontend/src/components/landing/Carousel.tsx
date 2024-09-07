@@ -45,7 +45,7 @@ export function CarouselPlugin() {
           Unbiased, accurate, and easy-to-use. Thousands of news articles all in
           one place.
         </h1>
-        <Button variant={"link"} onClick={() => router.push("/auth/login")} className="text-xl p-0">Login</Button>
+        <Button variant={"link"} onClick={() => router.push("/auth/login")} className="text-xl p-0">Learn how to use</Button>
       </div>
     </div>
   );
