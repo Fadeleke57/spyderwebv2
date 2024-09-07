@@ -30,6 +30,7 @@ function Terminal() {
     query: "",
     topic: `${topic ? topic : ""}`,
   });
+  const [graphColor, setGraphColor] = useState("#5ea4ff");
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-6 lg:p-24">
@@ -72,7 +73,7 @@ function Terminal() {
             </div>
 
             <div className="bg-muted h-full w-full whitespace-nowrap">
-              <Graph limit={limit} config={config} setConfig={setConfig} />
+              <Graph limit={limit} config={config} setConfig={setConfig} color={graphColor} />
             </div>
           </ResizablePanel>
           <ResizableHandle withHandle className="hidden lg:flex" />

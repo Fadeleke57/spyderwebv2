@@ -11,9 +11,10 @@ interface GraphProps {
   limit: number;
   config: ConfigFormValues;
   setConfig: (value: ConfigFormValues) => void;
+  color: string;
 }
 
-function Graph({ limit, config, setConfig }: GraphProps) {
+function Graph({ limit, config, setConfig, color }: GraphProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -62,7 +63,7 @@ function Graph({ limit, config, setConfig }: GraphProps) {
           .attr("cx", (d) => d.x)
           .attr("cy", (d) => d.y)
           .attr("r", 15)
-          .attr("fill", () => "#5ea4ff")
+          .attr("fill", () => color)
           .call(drag as any)
           .on("click", (event, d) => {
             setSelectedArticle(d);
@@ -78,7 +79,7 @@ function Graph({ limit, config, setConfig }: GraphProps) {
           .style("font-size", "12px")
           .style("font-weight", "bold")
           .text((d) => (d.header ? d.header.slice(0, 10) + "..." : ""))
-          .attr("fill", "#5ea4ff");
+          .attr("fill", color);
       });
 
     const drag = d3
@@ -115,6 +116,7 @@ function Graph({ limit, config, setConfig }: GraphProps) {
         article={selectedArticle as ArticleAsNode}
         open={isDrawerOpen}
         setOpen={setDrawerOpen}
+        color={color}
       />
     </>
   );
