@@ -19,7 +19,7 @@ const mainLinks = [
     subItems: [
       {
         title: "About Spydr",
-        href: "/",
+        href: "/about",
       },
       {
         title: "Privacy Policy",

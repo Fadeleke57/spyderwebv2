@@ -5,18 +5,24 @@ import { useState } from "react";
 import { LoadingPage } from "@/components/utility/Loading";
 import { useFetchArticlesDemo } from "@/hooks/articles";
 import { ConfigFormValues } from "@/types/article";
+import { DataDrawerDemo } from "./DataDrawerDemo";
 
 interface GraphProps {
   limit: number;
   config: ConfigFormValues;
   setConfig: (value: ConfigFormValues) => void;
+  color: string;
 }
 
-function Graph({ limit, config, setConfig }: GraphProps) {
+function Graph({ limit, config, setConfig, color }: GraphProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const { articles, loading, error } = useFetchArticlesDemo(limit, config, setConfig);
+  const { articles, loading, error } = useFetchArticlesDemo(
+    limit,
+    config,
+    setConfig
+  );
 
   useEffect(() => {
     const width = 3200;
@@ -42,6 +48,15 @@ function Graph({ limit, config, setConfig }: GraphProps) {
 
     svg.call(zoom as any);
 
+    const colorScale = d3
+      .scaleLinear<string>()
+      .domain([-1, 1])
+      .interpolate(d3.interpolateRgb)
+      .range([
+        d3.rgb(color).darker(0.2).toString(),
+        d3.rgb(color).brighter(0.2).toString(),
+      ]);
+
     const nodes: ArticleAsNode[] = articles.map((d, i) => {
       const angle = (i / articles.length) * 2 * Math.PI;
       const x = centerX + circleRadius * Math.cos(angle);
@@ -53,7 +68,7 @@ function Graph({ limit, config, setConfig }: GraphProps) {
       .forceSimulation(nodes)
       .force("x", d3.forceX(centerX).strength(0.05))
       .force("y", d3.forceY(centerY).strength(0.05))
-      .force("collision", d3.forceCollide(30)) //spacing so make it dynamic later
+      .force("collision", d3.forceCollide(30)) // Spacing; make dynamic later
       .on("tick", () => {
         g.selectAll("circle")
           .data(nodes)
@@ -61,7 +76,7 @@ function Graph({ limit, config, setConfig }: GraphProps) {
           .attr("cx", (d) => d.x)
           .attr("cy", (d) => d.y)
           .attr("r", 15)
-          .attr("fill", () => "#5ea4ff")
+          .attr("fill", (d) => colorScale(d.sentiment)) // Use the sentiment score to determine the fill color
           .call(drag as any)
           .on("click", (event, d) => {
             setSelectedArticle(d);
@@ -77,7 +92,7 @@ function Graph({ limit, config, setConfig }: GraphProps) {
           .style("font-size", "12px")
           .style("font-weight", "bold")
           .text((d) => (d.header ? d.header.slice(0, 10) + "..." : ""))
-          .attr("fill", "#5ea4ff");
+          .attr("fill", (d) => colorScale(d.sentiment));
       });
 
     const drag = d3
@@ -101,7 +116,7 @@ function Graph({ limit, config, setConfig }: GraphProps) {
     return () => {
       simulation.stop();
     };
-  }, [articles]);
+  }, [articles, color]);
 
   if (loading) {
     return <LoadingPage></LoadingPage>;
@@ -110,6 +125,12 @@ function Graph({ limit, config, setConfig }: GraphProps) {
   return (
     <>
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
+      <DataDrawerDemo
+        open={isDrawerOpen}
+        setOpen={setDrawerOpen}
+        article={selectedArticle as ArticleAsNode}
+        color={color}
+      />
     </>
   );
 }

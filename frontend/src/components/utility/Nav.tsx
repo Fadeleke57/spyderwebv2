@@ -75,7 +75,7 @@ function NavigationMenuFull() {
                   </Link>
                 </NavigationMenuLink>
               </li>
-              <ListItem href="/" title="About Spydr">
+              <ListItem href="/about" title="About Spydr">
                 Learn more about what we do and why we&apos;re different
               </ListItem>
               <ListItem href="/about/privacy-policy" title="Privacy Policy">
@@ -189,7 +189,6 @@ export function Navbar() {
     };
 
     window.addEventListener("scroll", handleScroll);
-
   }, [prevScrollPos]);
 
   if (!isMounted) {

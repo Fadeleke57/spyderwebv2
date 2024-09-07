@@ -7,8 +7,8 @@ import { UserProvider } from "@/context/UserContext";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
-  title: "SpyderWeb",
-  description: "The new way to news.",
+  title: "Spydr - The new way to news.",
+  description: "Your all-in-one news platform.",
 };
 
 function App({ Component, pageProps }: AppProps) {

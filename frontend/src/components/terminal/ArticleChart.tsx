@@ -20,19 +20,24 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-const chartConfig = {
-  //change chart to be negative - see shadcn docs
-  desktop: {
-    label: "score",
-    color: "#5ea4ff",
-  },
-} satisfies ChartConfig;
+type ArticleChartProps = {
+  article: ArticleAsNode;
+  color?: string;
+};
 
-export function ArticleChart({ article }: { article: ArticleAsNode }) {
+export function ArticleChart({ article, color }: ArticleChartProps) {
   let chart_sentiment_score = article.sentiment ? article.sentiment : 0;
   if (chart_sentiment_score < 0) {
     chart_sentiment_score = 0;
   }
+
+  const chartConfig = {
+    //change chart to be negative - see shadcn docs
+    desktop: {
+      label: "score",
+      color: color,
+    },
+  } satisfies ChartConfig;
 
   const chartData = [
     {

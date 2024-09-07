@@ -25,16 +25,15 @@ export function useFetchArticles(
         const fetchedArticles: Article[] = response.data.result.flatMap(
           (article: any) => article
         );
-          setArticles(fetchedArticles);
-          toast({
-              title: `Found ${fetchedArticles.length} articles`,
-          })
+        setArticles(fetchedArticles);
+        toast({
+          title: `Found ${fetchedArticles.length} articles`,
+        });
       } catch (err) {
         setError("Failed to fetch article data");
         console.error(err);
       } finally {
         setLoading(false);
-      
       }
     };
 
@@ -58,8 +57,8 @@ export function useFetchArticlesDemo(
     //const queryCount = parseInt(localStorage.getItem("queryCount") || "0", 10);
 
     //if (queryCount >= 5) {
-      //router.push("/login");
-      //return;
+    //router.push("/login");
+    //return;
     //}
 
     const fetchData = async () => {
@@ -73,7 +72,7 @@ export function useFetchArticlesDemo(
         );
         setArticles(fetchedArticles);
 
-  //      localStorage.setItem("queryCount", (queryCount + 1).toString());
+        //      localStorage.setItem("queryCount", (queryCount + 1).toString());
       } catch (err) {
         setError("Failed to fetch article data");
         console.error(err);
