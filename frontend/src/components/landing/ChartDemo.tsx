@@ -31,11 +31,12 @@ export function ChartDemo({ article }: { article: demoArticleType }) {
     <Card>
       <CardHeader className="flex flex-col items-start gap-1">
         <div className="flex inline-flex gap-2 text-sm">
-          {article.topics.map((topic, index) => (
-            <span key={index} className={`text-${topic.color}-500`}>
-              {topic.name}
-            </span>
-          ))}
+          <span className={`text-${article.topics[0].color}-500`}>
+            {article.topics[0].name}
+          </span>
+          <span className={`text-${article.topics[1].color}-500`}>
+            {article.topics[1].name}
+          </span>
         </div>
         <span className="text-xl font-semibold">{article.title}</span>
       </CardHeader>
