@@ -22,7 +22,7 @@ function Footer() {
             className="inline p-0 decoration-none hover:text-slate-700"
           >
             <small className="text-sm font-medium leading-none">
-              Terms of Service
+              Terms <span className="hidden lg:inline">of Service</span>
             </small>
           </Link>
           <Link
@@ -30,12 +30,12 @@ function Footer() {
             className="inline p-0 decoration-none hover:text-slate-700"
           >
             <small className="text-sm font-medium leading-none">
-              Privacy Policy
+              Privacy <span className="hidden lg:inline">Policy</span>
             </small>
           </Link>
         </div>
         <div>
-          <small className="text-sm font-medium leading-none text-slate-500 italic">
+          <small className="hidden lg:inline text-sm font-medium leading-none text-slate-500 italic">
             The new way to news.
           </small>
         </div>

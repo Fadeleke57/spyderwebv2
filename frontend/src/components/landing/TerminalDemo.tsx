@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Info } from "lucide-react";
 import Router from "next/router";
+import useMediaQuery from "@/hooks/general";
 
 export default function TerminalDemo() {
   const [config, setConfig] = useState<ConfigFormValues>({
@@ -31,6 +32,7 @@ export default function TerminalDemo() {
     topic: "",
   });
   const [graphColor, setGraphColor] = useState<string>("#5ea4ff");
+  const isMobileScreen = useMediaQuery("(max-width: 768px)");
 
   const inputRef = useRef<HTMLInputElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -41,13 +43,13 @@ export default function TerminalDemo() {
   useGSAP(() => {
     if (inputVisible) {
       gsap.to(inputRef.current, {
-        width: 230,
+        width: isMobileScreen ? 180 : 230,
         duration: 0.4,
         opacity: 1,
         ease: "power2.out",
       });
       gsap.to(buttonRef.current, {
-        translateX: 181,
+        translateX: isMobileScreen ? 131 : 181,
         duration: 0.4,
         ease: "power2.out",
       });
@@ -151,14 +153,14 @@ export default function TerminalDemo() {
             />
           </div>
 
-          <div className=" flex w-full bg-background absolute bottom-0 p-6 text-base font-semibold items-center">
-            <Info className="text-black mr-2 inline" /> Search a topic, then
-            click on the nodes to view insights.
+          <div className="flex flex-col gap-2 lg:flex-row w-full bg-background absolute bottom-0 p-6 text-base font-semibold items-center justify-center lg:text-left">
+            <Info className="text-black mr-2 lg:inline" />
+            <p className="text-center lg:text-left">Search a topic, then click on the nodes to view insights.</p>
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
-      <div className="flex text-center items-center justify-center flex-row gap-4 mt-6">
-        <p className="text-base font-semibold">
+      <div className="hidden lg:flex text-center items-center justify-center flex-row mt-6 gap-4">
+        <p className="text-sm lg:text-base font-semibold">
           Experience the full querying terminal
         </p>
         <Button onClick={() => router.push("/terminal")}>Try Now</Button>
