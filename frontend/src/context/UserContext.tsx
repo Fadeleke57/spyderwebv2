@@ -7,6 +7,7 @@ import {
 } from "react";
 import { useRouter } from "next/router";
 import api from "@/lib/api";
+import { toast } from "@/components/ui/use-toast";
 
 type User = {
   username: string;
@@ -51,8 +52,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     fetchUser();
   }, []);
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
+    await api.post("/auth/logout"); //backend session
+    localStorage.removeItem("token"); //frontend session
+    toast({
+      title: "Logged out",
+      description: "You have been logged out.",
+    })
     router.push("/auth/login");
   };
 
