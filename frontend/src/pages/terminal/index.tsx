@@ -1,5 +1,5 @@
 import withAuth from "@/hoc/withAuth";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -17,10 +17,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ConfigGraphModal from "@/components/terminal/ConfigGraphModal";
+import { ConfigFormValues } from "@/types/article";
+import { Button } from "@/components/ui/button";
+import { Expand } from "lucide-react";
+import { useRouter } from "next/router";
 
 function Terminal() {
-  const [limit, setLimit] = useState(10);
-  const [query, setQuery] = useState("");
+  const router = useRouter();
+  const { topic } = router.query;
+  const [limit, setLimit] = useState(50);
+  const [config, setConfig] = useState<ConfigFormValues>({
+    query: "",
+    topic: `${topic ? topic : ""}`,
+  });
+  const [graphColor, setGraphColor] = useState("#5ea4ff");
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-6 lg:p-24">
@@ -53,12 +63,17 @@ function Terminal() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="absolute left-3 top-3 bg-background border rounded-md ">
+              <Button>
+                <Expand size={16}/>
+              </Button>
+            </div>
             <div className="absolute right-3 top-14 bg-background border rounded-md lg:hidden">
-              <ConfigGraphModal setQuery={setQuery} />
+              <ConfigGraphModal setConfig={setConfig} />
             </div>
 
             <div className="bg-muted h-full w-full whitespace-nowrap">
-              <Graph limit={limit} query={query} setQuery={setQuery} />
+              <Graph limit={limit} config={config} setConfig={setConfig} color={graphColor} />
             </div>
           </ResizablePanel>
           <ResizableHandle withHandle className="hidden lg:flex" />
@@ -67,7 +82,7 @@ function Terminal() {
             maxSize={40}
             className="hidden lg:block"
           >
-            <SideBar setQuery={setQuery} />
+            <SideBar setConfig={setConfig} />
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

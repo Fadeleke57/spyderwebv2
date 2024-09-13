@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_login.exceptions import InvalidCredentialsException
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -109,3 +109,8 @@ def get_current_user(user=Depends(manager)):
     except Exception as e:
         logging.error(f"Exception in /auth/me: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+@router.post("/logout")
+async def logout(response: Response, user=Depends(manager)):
+    manager.set_cookie(response, "")
+    return {"message": "Successfully logged out"}

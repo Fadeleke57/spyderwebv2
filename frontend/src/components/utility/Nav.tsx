@@ -18,6 +18,9 @@ import { MobileNav } from "./Mobile-Nav";
 
 import Image from "next/image";
 import logo from "@/assets/s_logo.jpg";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
+
 import useMediaQuery from "@/hooks/general";
 
 const components = [
@@ -72,7 +75,7 @@ function NavigationMenuFull() {
                   </Link>
                 </NavigationMenuLink>
               </li>
-              <ListItem href="/" title="About Spydr">
+              <ListItem href="/about" title="About Spydr">
                 Learn more about what we do and why we&apos;re different
               </ListItem>
               <ListItem href="/about/privacy-policy" title="Privacy Policy">
@@ -161,8 +164,21 @@ export function Navbar() {
   const [showNav, setShowNav] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
 
-  useEffect(() => {
+  useGSAP(() => {
     setIsMounted(true);
+
+    gsap.fromTo(
+      "#nav-logo",
+      {
+        translateY: -100,
+        transformOrigin: "top",
+      },
+      {
+        translateY: 0,
+        duration: 0.5,
+        ease: "power2.out",
+      }
+    );
 
     const handleScroll = () => {
       const currentScrollPos = window.pageYOffset;
@@ -173,8 +189,6 @@ export function Navbar() {
     };
 
     window.addEventListener("scroll", handleScroll);
-
-    return () => window.removeEventListener("scroll", handleScroll);
   }, [prevScrollPos]);
 
   if (!isMounted) {
@@ -183,13 +197,13 @@ export function Navbar() {
 
   const desktopNav = (
     <div
-      className={`flex items-center justify-between px-24 transition ease duration-300 ${
+      className={`flex items-center justify-between px-10 transition ease duration-300 ${
         showNav ? "translate-y-0" : "-translate-y-full"
       } fixed top-0 left-0 bg-white z-50 w-full`}
     >
       <div className="flex items-center gap-2">
         <Link href="/">
-          <Image src={logo} alt="logo" width={50} height={50} />
+          <Image id="nav-logo" src={logo} alt="logo" width={50} height={50} />
         </Link>
         <NavigationMenuFull />
       </div>
@@ -198,5 +212,7 @@ export function Navbar() {
 
   const mobileNav = <MobileNav />;
 
-  return <div className="w-full p-6 lg:p-0">{matches ? mobileNav : desktopNav}</div>;
+  return (
+    <div className="w-full p-6 lg:p-0">{matches ? mobileNav : desktopNav}</div>
+  );
 }

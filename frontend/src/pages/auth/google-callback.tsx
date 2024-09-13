@@ -18,7 +18,7 @@ const GoogleCallback: React.FC = () => {
 
   return (
     <div className="w-full h-7/8 lg:h-screen flex justify-center items-center">
-      <LoadingPage />
+      <p>Loading...</p>
     </div>
   );
 };

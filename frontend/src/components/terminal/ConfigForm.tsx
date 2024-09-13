@@ -1,8 +1,5 @@
-import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -24,29 +21,27 @@ import {
   FormLabel,
   FormDescription,
 } from "@/components/ui/form";
-import { ArrowRight } from "lucide-react";
-
-type FormValues = {
-  query: string;
-  topic: string;
-};
+import { ConfigFormValues } from "@/types/article";
+import { topicsWithSubtopics } from "@/types/topics";
 
 type ConfigFormProps = {
   setIsOpen?: (value: boolean) => void;
-  setQuery: (value: string) => void;
+  setConfig: (value: ConfigFormValues) => void;
 };
 
-function ConfigForm({ setIsOpen, setQuery }: ConfigFormProps) {
-  const form = useForm<FormValues>({
+function ConfigForm({ setIsOpen, setConfig }: ConfigFormProps) {
+  const form = useForm<ConfigFormValues>({
     resolver: zodResolver(
       z.object({
-        query: z.string().min(1, "Please provide a valid search term."),
+        query: z.string().optional(),
+        topic: z.string().optional(),
       })
     ),
   });
 
-  const onSubmit: SubmitHandler<FormValues> = (data) => {
-    setQuery(data.query);
+  const onSubmit: SubmitHandler<ConfigFormValues> = (data) => {
+    setConfig({ query: data.query, topic: data.topic });
+
     if (setIsOpen) {
       setIsOpen(false);
     }
@@ -75,9 +70,6 @@ function ConfigForm({ setIsOpen, setQuery }: ConfigFormProps) {
                 <FormControl>
                   <div className="flex w-full max-w-sm items-center space-x-2">
                     <Input placeholder="2024 Election" {...field} />
-                    <Button type="submit">
-                      <ArrowRight size={16} />
-                    </Button>
                   </div>
                 </FormControl>
                 <FormDescription>
@@ -96,23 +88,41 @@ function ConfigForm({ setIsOpen, setQuery }: ConfigFormProps) {
               <FormItem>
                 <FormLabel>Topic</FormLabel>
                 <FormControl>
-                  <Select disabled>
+                  <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger className="w-[280px]">
                       <SelectValue placeholder="Select a topic" />
                     </SelectTrigger>
-                    <SelectContent>{/* Select Groups */}</SelectContent>
+                    <SelectContent>
+                      <SelectItem value="None" className="px-4">
+                        None
+                      </SelectItem>
+                      {topicsWithSubtopics.map((topic) => (
+                        <SelectGroup key={topic.name}>
+                          <SelectLabel className="px-4">
+                            {topic.name}
+                          </SelectLabel>
+                          {topic.subtopics.map((subtopic) => (
+                            <SelectItem
+                              key={subtopic.value}
+                              value={subtopic.value}
+                              className="px-4 cursor-pointer"
+                            >
+                              {subtopic.label}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </FormControl>
-                <FormDescription>
-                  Choose a relevant topic.
-                </FormDescription>
+                <FormDescription>Choose a relevant topic.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
 
           <FormMessage>
-            <Button type="submit">Save changes</Button>
+            <Button type="submit">Search</Button>
           </FormMessage>
         </form>
       </Form>

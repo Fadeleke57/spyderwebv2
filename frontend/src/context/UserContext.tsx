@@ -7,6 +7,7 @@ import {
 } from "react";
 import { useRouter } from "next/router";
 import api from "@/lib/api";
+import { toast } from "@/components/ui/use-toast";
 
 type User = {
   username: string;
@@ -30,6 +31,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
+        setLoading(true);
         const token = localStorage.getItem("token");
 
         if (!token) {
@@ -39,20 +41,31 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         const response = await api.get("/auth/me");
 
         setUser(response.data);
-        setLoading(false);
       } catch (error) {
         console.error("Failed to fetch user", error);
         setUser(null);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUser();
   }, []);
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
+    await api.post("/auth/logout"); //backend session
+    localStorage.removeItem("token"); //frontend session
+    toast({
+      title: "Logged out",
+      description: "You have been logged out.",
+    })
     router.push("/auth/login");
   };
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <UserContext.Provider value={{ user, setUser, logout }}>
