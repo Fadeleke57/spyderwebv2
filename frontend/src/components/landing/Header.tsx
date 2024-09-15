@@ -15,7 +15,7 @@ function Header() {
         Ready to <span className="bg-blue-400">Explore?</span>
       </h1>
       <p className="leading-7 mt-4 text-base sm:text-lg font-medium max-w-full sm:max-w-sm lg:max-w-xl mx-auto sm:mx-0">
-        Research tool that helps quickly explore and analyze
+        Research platform that helps quickly explore and analyze
         real-time news articles, and soon research papers, on any topic.
       </p>
       <div className="mt-6 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center sm:justify-start">
