@@ -1,7 +1,7 @@
 import LandingGrid from "@/components/landing/LandingGrid";
 import Header from "@/components/landing/Header";
 import Demo from "@/components/landing/Demo";
-import CarouselPlugin from "@/components/landing/Carousel";
+import LandingCarousel from "@/components/landing/Carousel";
 
 export default function Home() {
   return (
@@ -10,7 +10,7 @@ export default function Home() {
         <Header />
         <LandingGrid />
         <Demo />
-        <CarouselPlugin/>
+        <LandingCarousel/>
       </div>
     </main>
   );

@@ -28,7 +28,7 @@ export function ChartDemo({ article }: { article: demoArticleType }) {
   } satisfies ChartConfig;
 
   return (
-    <Card>
+    <Card className="min-h-96">
       <CardHeader className="flex flex-col items-start gap-1">
         <div className="flex inline-flex gap-2 text-sm">
           <span className={`text-${article.topics[0].color}-500`}>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 
@@ -163,22 +163,25 @@ export function Navbar() {
   const matches = useMediaQuery("(max-width: 768px)");
   const [showNav, setShowNav] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
+  const logoRef = useRef<HTMLImageElement>(null);
 
   useGSAP(() => {
     setIsMounted(true);
 
-    gsap.fromTo(
-      "#nav-logo",
-      {
-        translateY: -100,
-        transformOrigin: "top",
-      },
-      {
-        translateY: 0,
-        duration: 0.5,
-        ease: "power2.out",
-      }
-    );
+    if (logoRef.current) {
+      gsap.fromTo(
+        logoRef.current,
+        {
+          translateY: -100,
+          transformOrigin: "top",
+        },
+        {
+          translateY: 0,
+          duration: 0.5,
+          ease: "power2.out",
+        }
+      );
+    }
 
     const handleScroll = () => {
       const currentScrollPos = window.pageYOffset;
@@ -203,7 +206,7 @@ export function Navbar() {
     >
       <div className="flex items-center gap-2">
         <Link href="/">
-          <Image id="nav-logo" src={logo} alt="logo" width={50} height={50} />
+          <Image ref={logoRef} src={logo} alt="logo" width={50} height={50} />
         </Link>
         <NavigationMenuFull />
       </div>
