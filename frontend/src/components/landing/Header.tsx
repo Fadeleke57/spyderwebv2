@@ -19,7 +19,7 @@ function Header() {
         real-time news articles, and soon research papers, on any topic.
       </p>
       <div className="mt-6 flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center sm:justify-start">
-        <Button onClick={() => router.push("/auth/register")}>
+        <Button onClick={() => router.push("/home")}>
           Get Started
         </Button>
         <Button variant="link" onClick={() => router.push("/about")}>
