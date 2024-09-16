@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import useMediaQuery from "@/hooks/general";
 
 type CarouselApi = UseEmblaCarouselType[1];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
@@ -199,6 +200,7 @@ const CarouselPrevious = React.forwardRef<
   React.ComponentProps<typeof Button>
 >(({ className, variant = "outline", size = "icon", ...props }, ref) => {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel();
+  const isMediaScreen = useMediaQuery("(max-width: 768px)");
 
   return (
     <Button
@@ -210,7 +212,7 @@ const CarouselPrevious = React.forwardRef<
         orientation === "horizontal"
           ? "-left-12 top-1/2 -translate-y-1/2"
           : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
-        `${!canScrollPrev ? "hidden" : ""}`,
+        `${!canScrollPrev && !isMediaScreen ? "hidden" : ""}`,
         className
       )}
       disabled={!canScrollPrev}
@@ -229,6 +231,7 @@ const CarouselNext = React.forwardRef<
   React.ComponentProps<typeof Button>
 >(({ className, variant = "outline", size = "icon", ...props }, ref) => {
   const { orientation, scrollNext, canScrollNext } = useCarousel();
+  const isMediaScreen = useMediaQuery("(max-width: 768px)");
 
   return (
     <Button
@@ -240,7 +243,7 @@ const CarouselNext = React.forwardRef<
         orientation === "horizontal"
           ? "-right-12 top-1/2 -translate-y-1/2"
           : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
-        `${!canScrollNext ? "hidden" : ""}`,
+        `${!canScrollNext && !isMediaScreen ? "hidden" : ""}`,
         className
       )}
       disabled={!canScrollNext}

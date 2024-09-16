@@ -1,5 +1,3 @@
-import { title } from "process";
-
 export interface Article {
   id: string;
   header: string;
@@ -9,6 +7,7 @@ export interface Article {
   text: string;
   sentiment: number;
   subjectivity: number;
+  reliability_score: number;
 }
 
 export interface ArticleAsNode {
@@ -20,6 +19,7 @@ export interface ArticleAsNode {
   text: string;
   sentiment: number;
   subjectivity: number;
+  reliability_score: number;
   x: number;
   y: number;
 }

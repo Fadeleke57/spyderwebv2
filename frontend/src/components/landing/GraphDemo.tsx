@@ -27,8 +27,8 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
   useEffect(() => {
     const width = 3200;
     const height = 2400;
-    const centerX = width / 8 - 90;
-    const centerY = height / 8 - 10;
+    const centerX = width / 8 - 100;
+    const centerY = height / 8 -20;
     const circleRadius = Math.min(width, height) / 2 - 50;
 
     const svg = d3
@@ -48,15 +48,6 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
 
     svg.call(zoom as any);
 
-    const colorScale = d3
-      .scaleLinear<string>()
-      .domain([-1, 1])
-      .interpolate(d3.interpolateRgb)
-      .range([
-        d3.rgb(color).darker(0.2).toString(),
-        d3.rgb(color).brighter(0.2).toString(),
-      ]);
-
     const nodes: ArticleAsNode[] = articles.map((d, i) => {
       const angle = (i / articles.length) * 2 * Math.PI;
       const x = centerX + circleRadius * Math.cos(angle);
@@ -64,23 +55,33 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
       return { ...d, x, y };
     });
 
+    const sizeScale = d3
+      .scalePow()
+      .exponent(2) // more or less exponential scaling
+      .domain([0, 100])
+      .range([5, 50]);
+
     const simulation = d3
       .forceSimulation(nodes)
       .force("x", d3.forceX(centerX).strength(0.05))
       .force("y", d3.forceY(centerY).strength(0.05))
-      .force("collision", d3.forceCollide(30)) // Spacing; make dynamic later
+      .force("collision", d3.forceCollide(35)) //spacing
       .on("tick", () => {
         g.selectAll("circle")
           .data(nodes)
           .join("circle")
           .attr("cx", (d) => d.x)
           .attr("cy", (d) => d.y)
-          .attr("r", 15)
-          .attr("fill", (d) => colorScale(d.sentiment)) // Use the sentiment score to determine the fill color
+          .attr("r", (d) => {
+            const reliabilityScore = d.reliability_score ?? 0;
+            return sizeScale(reliabilityScore);
+          })
+          .attr("fill", color)
           .call(drag as any)
           .on("click", (event, d) => {
             setSelectedArticle(d);
             setDrawerOpen(true);
+            d3.select(event.currentTarget).attr("fill", "red");
           });
 
         g.selectAll("text")
@@ -92,7 +93,7 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
           .style("font-size", "12px")
           .style("font-weight", "bold")
           .text((d) => (d.header ? d.header.slice(0, 10) + "..." : ""))
-          .attr("fill", (d) => colorScale(d.sentiment));
+          .attr("fill", color);
       });
 
     const drag = d3
@@ -112,7 +113,7 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
         d.fy = null;
       });
 
-    // Cleanup
+    // cleanup
     return () => {
       simulation.stop();
     };

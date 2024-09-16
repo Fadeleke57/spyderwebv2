@@ -21,7 +21,7 @@ function LandingGrid() {
   }, []);
 
   if (shuffledTopics.length === 0) {
-    return null; // id probably avoid adding a loading state here, i dont really see a use case for it
+    return null
   }
 
   const firstItem = shuffledTopics[0];

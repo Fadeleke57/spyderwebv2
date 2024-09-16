@@ -166,9 +166,10 @@ export function Navbar() {
   const logoRef = useRef<HTMLImageElement>(null);
 
   useGSAP(() => {
+    
     setIsMounted(true);
 
-    if (logoRef.current) {
+    if (logoRef.current && !matches) {
       gsap.fromTo(
         logoRef.current,
         {

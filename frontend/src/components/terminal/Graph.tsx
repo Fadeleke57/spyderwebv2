@@ -18,12 +18,16 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const { articles, loading, error } = useFetchArticles(limit, config, setConfig);
+  const { articles, loading, error } = useFetchArticles(
+    limit,
+    config,
+    setConfig
+  );
 
   useEffect(() => {
     const width = 3200;
     const height = 2400;
-    const centerX = width / 8 + 80;
+    const centerX = width / 8 + 40;
     const centerY = height / 8;
     const circleRadius = Math.min(width, height) / 2 - 50;
 
@@ -51,23 +55,33 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
       return { ...d, x, y };
     });
 
+    const sizeScale = d3
+      .scalePow()
+      .exponent(2) // more or less exponential scaling
+      .domain([0, 100])
+      .range([5, 50]);
+
     const simulation = d3
       .forceSimulation(nodes)
       .force("x", d3.forceX(centerX).strength(0.05))
       .force("y", d3.forceY(centerY).strength(0.05))
-      .force("collision", d3.forceCollide(30)) //spacing so make it dynamic later
+      .force("collision", d3.forceCollide(35)) //spacing
       .on("tick", () => {
         g.selectAll("circle")
           .data(nodes)
           .join("circle")
           .attr("cx", (d) => d.x)
           .attr("cy", (d) => d.y)
-          .attr("r", 15)
-          .attr("fill", () => color)
+          .attr("r", (d) => {
+            const reliabilityScore = d.reliability_score ?? 0;
+            return sizeScale(reliabilityScore);
+          })
+          .attr("fill", (d) => color)
           .call(drag as any)
-          .on("click", (event, d) => {
+          .on("click", function (event, d) {
+            event.stopPropagation();
             setSelectedArticle(d);
-            setDrawerOpen(true);
+            setDrawerOpen(true); //add an effect that shows which article was selected
           });
 
         g.selectAll("text")
@@ -99,11 +113,11 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
         d.fy = null;
       });
 
-    // Cleanup
+    // cleanup
     return () => {
       simulation.stop();
     };
-  }, [articles]);
+  }, [articles, color]);
 
   if (loading) {
     return <LoadingPage></LoadingPage>;

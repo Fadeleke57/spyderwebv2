@@ -19,9 +19,11 @@ export default function RootLayout({
         fontSans.variable
       )}
     >
-      <Navbar />
-      {children}
-      <Footer/>
+      <div className="relative max-w-[1440px] mx-auto">
+        <Navbar />
+        {children}
+        <Footer />
+      </div>
     </div>
   );
 }
