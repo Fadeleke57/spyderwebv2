@@ -5,8 +5,8 @@ import LandingCarousel from "@/components/landing/Carousel";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-start justify-between p-6 lg:px-10 lg:py-24">
-      <div className="flex flex-col gap-8">
+    <main className="flex min-h-screen flex-col items-start justify-between p-6 lg:px-10 lg:py-24 overflow-x-hidden">
+      <div className="flex flex-col gap-8 w-full mx-auto">
         <Header />
         <LandingGrid />
         <Demo />

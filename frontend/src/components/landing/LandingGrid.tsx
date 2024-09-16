@@ -71,7 +71,7 @@ function LandingGrid() {
         </Link>
       ))}
 
-      <div className="lg:hidden w-full h-full col-span-2 row-span-2 relative rounded-2xl border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
+      <div className="lg:hidden w-full h-full row-span-2 relative rounded-2xl border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
         <Image
           src={firstItem.image}
           alt="logo"

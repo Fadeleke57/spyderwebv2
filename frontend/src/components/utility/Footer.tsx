@@ -3,7 +3,7 @@ import HyperText from "@/components/magicui/hyper-text";
 
 function Footer() {
   return (
-    <footer className="static bottom-0 w-full flex flex-col px-10">
+    <footer className="static bottom-0 w-full flex flex-col px-6 lg:px-10">
       <div className="flex justify-between items-center border-b border-b-1 border-slate-400 py-4 px-1">
         <Link href="/">
           <HyperText

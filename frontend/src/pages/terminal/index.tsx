@@ -31,25 +31,39 @@ function Terminal() {
     topic: `${topic ? topic : ""}`,
   });
   const [graphColor, setGraphColor] = useState("#5ea4ff");
+  const [expanded, setExpanded] = useState(false);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-6 lg:p-24">
+    <main
+      className={`flex min-h-screen flex-col items-center justify-between p-6 lg:p-24 ${
+        expanded ? "overflow-hidden" : ""
+      }`}
+    >
       <div
-        style={{ height: "80vh" }}
-        className="border border-border/50 rounded-xl bg-background p-1.5 text-xs shadow-md w-full"
+        style={{
+          height: expanded ? "100vh" : "80vh",
+          zIndex: expanded ? 50 : "auto",
+        }}
+        className={`border border-border/50 rounded-xl bg-background p-1.5 text-xs shadow-md w-full ${
+          expanded ? "fixed top-0 left-0 right-0 bottom-0" : ""
+        }`}
       >
         <ResizablePanelGroup
           direction="horizontal"
           className="min-h-[200px] w-full rounded-xl border"
         >
           <ResizablePanel defaultSize={75} className="relative">
-            <div className="w-44 absolute right-3 top-3 bg-background border rounded-md">
+            <div
+              className={`w-44 absolute right-3 top-3 bg-background border rounded-md ${
+                expanded ? "hidden" : ""
+              }`}
+            >
               <Select
                 defaultValue={String(limit)}
                 onValueChange={(value: string) => setLimit(Number(value))}
                 value={String(limit)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="z-60">
                   <SelectValue placeholder="Limit" />
                 </SelectTrigger>
                 <SelectContent>
@@ -64,23 +78,35 @@ function Terminal() {
               </Select>
             </div>
             <div className="absolute left-3 top-3 bg-background border rounded-md ">
-              <Button>
-                <Expand size={16}/>
+              <Button onClick={() => setExpanded(!expanded)}>
+                <Expand size={16} />
               </Button>
             </div>
-            <div className="absolute right-3 top-14 bg-background border rounded-md lg:hidden">
+            <div
+              className={`absolute right-3 top-14 bg-background border rounded-md lg:hidden ${
+                expanded ? "hidden" : ""
+              }`}
+            >
               <ConfigGraphModal setConfig={setConfig} />
             </div>
 
             <div className="bg-muted h-full w-full whitespace-nowrap">
-              <Graph limit={limit} config={config} setConfig={setConfig} color={graphColor} />
+              <Graph
+                limit={limit}
+                config={config}
+                setConfig={setConfig}
+                color={graphColor}
+              />
             </div>
           </ResizablePanel>
-          <ResizableHandle withHandle className="hidden lg:flex" />
+          <ResizableHandle
+            withHandle
+            className={`hidden lg:flex ${expanded ? "hidden" : ""}`}
+          />
           <ResizablePanel
             defaultSize={25}
             maxSize={40}
-            className="hidden lg:block"
+            className={`hidden lg:block ${expanded ? "hidden" : ""}`}
           >
             <SideBar setConfig={setConfig} />
           </ResizablePanel>

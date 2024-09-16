@@ -84,7 +84,7 @@ export function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="pr-0">
-        <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
+        <ScrollArea className="my-4 h-[calc(100vh-1rem)] pl-6">
           <div className="flex flex-col space-y-2">
             <MobileLink
               href="/"
@@ -94,7 +94,7 @@ export function MobileNav() {
               <Image
                 src={logo}
                 alt="Spydr Logo"
-                className="w-3/4 h-75 rounded-lg"
+                className="w-16 h-16 rounded-lg"
               />
             </MobileLink>
             {mainLinks.map((item, index) => (
