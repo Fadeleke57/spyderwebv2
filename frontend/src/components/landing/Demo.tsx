@@ -4,7 +4,7 @@ import { ChartBarBig } from "lucide-react";
 
 export default function Demo() {
   return (
-    <div className="relative mt-6 lg:mt-20 flex flex-col gap-10 lg:flex-row rounded-xl lg:bg-muted lg:p-10 ">
+    <div className="relative mt-16 lg:mt-20 flex flex-col gap-10 lg:flex-row rounded-xl lg:bg-muted lg:p-10 ">
       <div className="pt-0 lg:px-0 lg:pt-0">
         <h1 className="text-3xl sm:text-4xl lg:text-4xl font-bold tracking-tight mb-2 sm:mb-4 max-w-7xl mx-auto">
           An <span className="text-blue-500">all-in-one</span> research tool for
