@@ -99,13 +99,12 @@ export function useFetchArticleRelevantSentences(
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await api.get(`/sentences/`, {
+        const response = await api.get(`/articles/sentences/`, {
           params: {
             article_id: article_id || "",
             query: query ||  "",
           },
         });
-        console.log("response", response.data)
         setSentences(response.data.result.sentences);
       } catch (err) {
         setError("Failed to fetch article data");

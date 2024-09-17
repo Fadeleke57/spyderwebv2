@@ -126,13 +126,13 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
   return (
     <>
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
-      <DataDrawer
+      {isDrawerOpen && <DataDrawer
         article={selectedArticle as ArticleAsNode}
         open={isDrawerOpen}
         setOpen={setDrawerOpen}
         color={color}
         config={config}
-      />
+      />}
     </>
   );
 }

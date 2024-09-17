@@ -83,7 +83,7 @@ def get_article_by_id(article_id: str, user=Depends(manager)):
     result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': article_id})
     return {"result": result}
 
-@router.get("/sentences/")
+@router.get("/articles/sentences/")
 def get_sentences_by_id(article_id: str, query: str, user=Depends(manager)):
     check_user(user)
     
