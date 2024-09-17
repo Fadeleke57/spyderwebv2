@@ -1,17 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from src.db.neo4j import driver as neo4j_driver, run_query
+from fastapi import APIRouter, Depends
+from src.db.neo4j import driver as Neo4jDriver, run_query
 from src.routes.auth.oauth2 import manager
-from src.routes.graph.queries import queries
-import logging
+from src.utils.queries import queries
 import re
-
+from src.utils.graph import split_into_sentences_nltk, highlight_match
+from src.utils.exceptions import check_user
 router = APIRouter()
 
 @router.get("/articles/")
 def get_articles(limit: int = 50, query: str = None, topic: str = None, user=Depends(manager)):
-    if not user:
-        logging.error("Not authorized!")
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    check_user(user)
     
     query_clauses = []
     params = {'limit': limit}
@@ -80,30 +78,23 @@ def get_articles(limit: int = 50, query: str = None, topic: str = None):
 
 @router.get("/article/{article_id}")
 def get_article_by_id(article_id: str, user=Depends(manager)):
-    if not user:
-        logging.error("Not authorized!")
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    check_user(user)
     
     result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': article_id})
     return {"result": result}
 
 @router.get("/sentences/")
 def get_sentences_by_id(article_id: str, query: str, user=Depends(manager)):
-    if not user:
-        logging.error("Not authorized!")
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    check_user(user)
     
     result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': article_id})
     article_text = result[0]['a']['text']
-    article_sentences = article_text.split('.')
+    article_sentences = split_into_sentences_nltk(article_text)
 
     if not query:
         return {"result": {'article_id': article_id, 'sentences': [], 'count': 0}}
 
     query_regex = re.compile(re.escape(query), re.IGNORECASE)
-
-    def highlight_match(match): #for frontend highlight
-        return f'<span class="font-bold text-blue-400">{match.group(0)}</span>'
 
     highlighted_sentences = [
         query_regex.sub(highlight_match, sentence.strip())
