@@ -19,6 +19,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { ScrollArea } from "../ui/scroll-area";
 
 type ArticleChartProps = {
   article: ArticleAsNode;
@@ -52,6 +53,7 @@ export function ArticleChart({ article, color }: ArticleChartProps) {
 
   return (
     <Card className="relative">
+      <ScrollArea className="h-[calc(76vh-80px)]">
       <Link href={article.link ? article.link : "/"} target="_blank">
         <SquareArrowOutUpRight size={15} className="absolute right-4 top-4" />
       </Link>
@@ -109,7 +111,8 @@ export function ArticleChart({ article, color }: ArticleChartProps) {
         <div className="leading-none text-muted-foreground">
           Score based on sentiment and subjectivity.
         </div>
-      </CardFooter>
+        </CardFooter>
+      </ScrollArea>
     </Card>
   );
 }
