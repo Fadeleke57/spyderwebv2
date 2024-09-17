@@ -131,6 +131,7 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
         open={isDrawerOpen}
         setOpen={setDrawerOpen}
         color={color}
+        config={config}
       />
     </>
   );

@@ -86,3 +86,37 @@ export function useFetchArticlesDemo(
 
   return { articles, loading, error };
 }
+
+export function useFetchArticleRelevantSentences(
+  article_id: string,
+  query: string
+) {
+  const [sentences, setSentences] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get(`/sentences/`, {
+          params: {
+            article_id: article_id || "",
+            query: query ||  "",
+          },
+        });
+        console.log("response", response.data)
+        setSentences(response.data.result.sentences);
+      } catch (err) {
+        setError("Failed to fetch article data");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [article_id, query]);
+
+  return { sentences, loading, error };
+}
