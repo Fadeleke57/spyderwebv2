@@ -7,7 +7,7 @@ from src.utils.graph import split_into_sentences_nltk, highlight_match
 from src.utils.exceptions import check_user
 router = APIRouter()
 
-@router.get("/articles/")
+@router.get("/")
 def get_articles(limit: int = 50, query: str = None, topic: str = None, user=Depends(manager)):
     check_user(user)
     
@@ -42,7 +42,7 @@ def get_articles(limit: int = 50, query: str = None, topic: str = None, user=Dep
 
     return {"result": result}
 
-@router.get("/articles/demo/")
+@router.get("/demo")
 def get_articles(limit: int = 50, query: str = None, topic: str = None):
     
     query_clauses = []
@@ -76,14 +76,7 @@ def get_articles(limit: int = 50, query: str = None, topic: str = None):
 
     return {"result": result}
 
-@router.get("/article/{article_id}")
-def get_article_by_id(article_id: str, user=Depends(manager)):
-    check_user(user)
-    
-    result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': article_id})
-    return {"result": result}
-
-@router.get("/articles/sentences/")
+@router.get("/sentences")
 def get_sentences_by_id(article_id: str, query: str, user=Depends(manager)):
     check_user(user)
     
