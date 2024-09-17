@@ -18,6 +18,7 @@ origins = [
     "https://www.spydr.dev",
     "https://spydr.dev",
     "https://api.spydr.dev",
+    "https://vercel.spydr.dev"
 ]
 
 app.add_middleware(
