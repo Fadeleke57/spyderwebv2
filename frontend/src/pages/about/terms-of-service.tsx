@@ -1,6 +1,6 @@
 const TermsOfService: React.FC = () => {
   return (
-    <div className="p-6 lg:px-10 py-0 py-24">
+    <div className="p-6 lg:px-10 py-0 lg:py-24">
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Terms of Service
       </h1>
