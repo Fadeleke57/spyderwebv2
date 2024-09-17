@@ -46,37 +46,41 @@ export function DataDrawer({
               relevance score to deliver data.
             </SheetDescription>
           </SheetHeader>
-          <div className="flex flex-col py-6 gap-4 h-[calc(90vh-1rem)] overflow-auto">
-            <ArticleChart article={article} color={color} />
-            {config?.query && (
-              <div className="border rounded-lg">
-                <ScrollArea className="h-40 p-4">
-                  {!loading && (
-                    <>
-                      <h4 className="scroll-m-20 text-xl font-semibold tracking-tigh mb-4">
-                        Mentions{" "}
-                        <span className="font-bold text-blue-400">
-                          &ldquo;{config?.query}&ldquo;
-                        </span>
-                        :
-                      </h4>
-                      <ul className="flex flex-col gap-2">
-                        {sentences.map((sentence, index) => (
-                          <li key={index} className="flex flex-row gap-2">
-                            <p className="font-bold text-blue-400">
-                              {index + 1}.
-                            </p>
-                            <p dangerouslySetInnerHTML={{ __html: sentence }} />
-                          </li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
-                  {loading && <p>Loading...</p>}
-                </ScrollArea>
-              </div>
-            )}
-          </div>
+          <ScrollArea className="py-6 h-[calc(80vh-1rem)]">
+            <div className="flex flex-col gap-4">
+              <ArticleChart article={article} color={color} />
+              {config?.query && (
+                <div className="border rounded-lg">
+                  <ScrollArea className="h-40 p-4">
+                    {!loading && (
+                      <>
+                        <h4 className="scroll-m-20 text-xl font-semibold tracking-tigh mb-4">
+                          Mentions{" "}
+                          <span className="font-bold text-blue-400">
+                            &ldquo;{config?.query}&ldquo;
+                          </span>
+                          :
+                        </h4>
+                        <ul className="flex flex-col gap-2">
+                          {sentences.map((sentence, index) => (
+                            <li key={index} className="flex flex-row gap-2">
+                              <p className="font-bold text-blue-400">
+                                {index + 1}.
+                              </p>
+                              <p
+                                dangerouslySetInnerHTML={{ __html: sentence }}
+                              />
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+                    {loading && <p>Loading...</p>}
+                  </ScrollArea>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
           <SheetFooter></SheetFooter>
         </SheetContent>
       </Sheet>
