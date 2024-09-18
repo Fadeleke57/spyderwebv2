@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from src.db.neo4j import driver as Neo4jDriver, run_query
 from src.routes.auth.oauth2 import manager
 from src.utils.queries import queries
@@ -96,10 +97,16 @@ def get_sentences_by_id(article_id: str, query: str, user=Depends(manager)):
     
     count = len(highlighted_sentences)
 
-    return {
-        "result": {
-            'article_id': article_id,
-            'sentences': highlighted_sentences,
-            'count': count
+    return JSONResponse(
+        {
+            "result": {
+                'article_id': article_id,
+                'sentences': highlighted_sentences,
+                'count': count
+            }
+        },
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Cache-Control": "no-store"
         }
-    }
+    )
