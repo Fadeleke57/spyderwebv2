@@ -3,6 +3,7 @@ import { topicsWithSubtopics } from "@/types/topics";
 import Image from "next/image";
 import Link from "next/link";
 import { Topic } from "@/types/topics";
+import { LandingLoader } from "../utility/Loading";
 
 function shuffleArray(array: Topic[]) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -16,17 +17,17 @@ function LandingGrid() {
   const [shuffledTopics, setShuffledTopics] = useState<Topic[]>([]);
 
   useEffect(() => {
-    const shuffled = shuffleArray([...topicsWithSubtopics]);
+    const shuffled : Topic[] = shuffleArray([...topicsWithSubtopics]);
     setShuffledTopics(shuffled);
   }, []);
 
   if (shuffledTopics.length === 0) {
-    return null
+    return null;
   }
 
-  const firstItem = shuffledTopics[0];
-  const firstBlock = shuffledTopics.slice(1, 5);
-  const lastBlock = shuffledTopics.slice(5, 9);
+  const firstItem : Topic = shuffledTopics[0];
+  const firstBlock : Topic[] = shuffledTopics.slice(1, 5);
+  const lastBlock : Topic[] = shuffledTopics.slice(5, 9);
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
