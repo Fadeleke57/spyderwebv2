@@ -1,4 +1,5 @@
 import nltk
+nltk.download('punkt')
 from nltk.tokenize import sent_tokenize
 
 def split_into_sentences_nltk(text):

@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-from fastapi.responses import JSONResponse
 from src.db.neo4j import driver as Neo4jDriver, run_query
 from src.routes.auth.oauth2 import manager
 from src.utils.queries import queries
@@ -11,40 +10,6 @@ router = APIRouter()
 @router.get("/")
 def get_articles(limit: int = 50, query: str = None, topic: str = None, user=Depends(manager)):
     check_user(user)
-    
-    query_clauses = []
-    params = {'limit': limit}
-
-    # search query
-    if query:
-        query_clauses.append("""
-            (toLower(a.text) CONTAINS toLower($text) 
-            OR toLower(a.header) CONTAINS toLower($text) 
-            OR toLower(a.author) CONTAINS toLower($text))
-        """)
-        params['text'] = query
-
-    # topic filter
-    if (topic and topic != "None"):
-        query_clauses.append("any(t IN a.topics WHERE toLower(t) = toLower($topic))")
-        params['topic'] = topic.lower()
-
-    #final query
-    where_clause = " AND ".join(query_clauses)
-    full_where_clause = f"WHERE {where_clause}" if where_clause else ""
-    cypher_query = f"""
-        MATCH (a:Article)
-        {full_where_clause}
-        RETURN a
-        LIMIT $limit
-    """
-    
-    result = run_query(cypher_query, params)
-
-    return {"result": result}
-
-@router.get("/demo")
-def get_articles(limit: int = 50, query: str = None, topic: str = None):
     
     query_clauses = []
     params = {'limit': limit}
@@ -97,16 +62,44 @@ def get_sentences_by_id(article_id: str, query: str, user=Depends(manager)):
     
     count = len(highlighted_sentences)
 
-    return JSONResponse(
-        {
-            "result": {
-                'article_id': article_id,
-                'sentences': highlighted_sentences,
-                'count': count
-            }
-        },
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Cache-Control": "no-store"
+    return {
+        "result": {
+            'article_id': article_id,
+            'sentences': highlighted_sentences,
+            'count': count
         }
-    )
+    }
+
+@router.get("/demo")
+def get_articles(limit: int = 50, query: str = None, topic: str = None):
+    
+    query_clauses = []
+    params = {'limit': limit}
+
+    # search query
+    if query:
+        query_clauses.append("""
+            (toLower(a.text) CONTAINS toLower($text) 
+            OR toLower(a.header) CONTAINS toLower($text) 
+            OR toLower(a.author) CONTAINS toLower($text))
+        """)
+        params['text'] = query
+
+    # topic filter
+    if (topic and topic != "None"):
+        query_clauses.append("any(t IN a.topics WHERE toLower(t) = toLower($topic))")
+        params['topic'] = topic.lower()
+
+    #final query
+    where_clause = " AND ".join(query_clauses)
+    full_where_clause = f"WHERE {where_clause}" if where_clause else ""
+    cypher_query = f"""
+        MATCH (a:Article)
+        {full_where_clause}
+        RETURN a
+        LIMIT $limit
+    """
+    
+    result = run_query(cypher_query, params)
+
+    return {"result": result}

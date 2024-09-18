@@ -1,6 +1,6 @@
 import React from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { ArticleAsNode } from "@/types/article";
 import Link from "next/link";
 import { SquareArrowOutUpRight } from "lucide-react";
@@ -34,11 +34,14 @@ function Mentions({ article, query, sentences, loading }: MentionsProps) {
                     className="max-w-64"
                   >
                     Keyword:{" "}
-                    <span className="font-bold text-blue-400">
+                    <span className="text-blue-400">
                       &ldquo;{query}&ldquo;
                     </span>
                   </Link>
                 </CardTitle>
+                <CardDescription>
+                  This phrase was found {sentences.length} time{sentences.length === 1 ? "" : "s"} in the article.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="flex flex-col gap-2">
