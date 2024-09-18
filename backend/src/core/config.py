@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 env = os.getenv("ENV", "prod")
 load_dotenv(f".env.{env}")
-print(f"Loading .env.{env}")
+print(f"Loading .env.{env}...")
 
 class Settings(BaseSettings):
     mongo_initdb_database: str

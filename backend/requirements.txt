@@ -9,3 +9,4 @@ fastapi-login
 aiohttp
 dnspython
 python-multipart
+nltk

@@ -18,6 +18,7 @@ origins = [
     "https://www.spydr.dev",
     "https://spydr.dev",
     "https://api.spydr.dev",
+    "https://vercel.spydr.dev"
 ]
 
 app.add_middleware(
@@ -29,7 +30,7 @@ app.add_middleware(
 )
 
 app.include_router(auth_router, prefix="/auth")
-app.include_router(graph_router)
+app.include_router(graph_router, prefix="/articles")
 
 @app.get("/")
 def read_root():

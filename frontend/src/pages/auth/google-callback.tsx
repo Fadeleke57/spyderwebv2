@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { LoadingPage } from "@/components/utility/Loading";
 
 const GoogleCallback: React.FC = () => {
   const router = useRouter();

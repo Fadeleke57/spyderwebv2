@@ -1,16 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from src.db.neo4j import driver as neo4j_driver, run_query
+from fastapi import APIRouter, Depends
+from src.db.neo4j import driver as Neo4jDriver, run_query
 from src.routes.auth.oauth2 import manager
-from src.routes.graph.queries import queries
-import logging
-
+from src.utils.queries import queries
+import re
+from src.utils.graph import split_into_sentences_nltk, highlight_match
+from src.utils.exceptions import check_user
 router = APIRouter()
 
-@router.get("/articles/")
+@router.get("/")
 def get_articles(limit: int = 50, query: str = None, topic: str = None, user=Depends(manager)):
-    if not user:
-        logging.error("Not authorized!")
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    check_user(user)
     
     query_clauses = []
     params = {'limit': limit}
@@ -43,7 +42,35 @@ def get_articles(limit: int = 50, query: str = None, topic: str = None, user=Dep
 
     return {"result": result}
 
-@router.get("/articles/demo/")
+@router.get("/sentences")
+def get_sentences_by_id(article_id: str, query: str, user=Depends(manager)):
+    check_user(user)
+    
+    result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': article_id})
+    article_text = result[0]['a']['text']
+    article_sentences = split_into_sentences_nltk(article_text)
+
+    if not query:
+        return {"result": {'article_id': article_id, 'sentences': [], 'count': 0}}
+
+    query_regex = re.compile(re.escape(query), re.IGNORECASE)
+
+    highlighted_sentences = [
+        query_regex.sub(highlight_match, sentence.strip())
+        for sentence in article_sentences if query.lower() in sentence.lower()
+    ]
+    
+    count = len(highlighted_sentences)
+
+    return {
+        "result": {
+            'article_id': article_id,
+            'sentences': highlighted_sentences,
+            'count': count
+        }
+    }
+
+@router.get("/demo")
 def get_articles(limit: int = 50, query: str = None, topic: str = None):
     
     query_clauses = []
@@ -75,13 +102,4 @@ def get_articles(limit: int = 50, query: str = None, topic: str = None):
     
     result = run_query(cypher_query, params)
 
-    return {"result": result}
-
-@router.get("/article/{article_id}")
-def get_article_by_id(article_id: str, user=Depends(manager)):
-    if not user:
-        logging.error("Not authorized!")
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    
-    result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': article_id})
     return {"result": result}

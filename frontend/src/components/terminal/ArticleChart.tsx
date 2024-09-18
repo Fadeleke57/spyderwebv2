@@ -19,6 +19,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { ScrollArea } from "../ui/scroll-area";
 
 type ArticleChartProps = {
   article: ArticleAsNode;
@@ -50,20 +51,9 @@ export function ArticleChart({ article, color }: ArticleChartProps) {
     },
   ];
 
-  function calc_reliability(polarity: GLfloat, subjectivity: GLfloat) {
-    const reliability_subjectivity = 1.0 - subjectivity;
-    const reliability_polarity = 1.0 - Math.abs(polarity);
-    const reliability_index = reliability_subjectivity * reliability_polarity;
-    return reliability_index;
-  }
-
-  const article_reliability =
-    article.sentiment && article?.subjectivity
-      ? calc_reliability(article?.sentiment, article?.subjectivity) * 100
-      : 0;
-
   return (
     <Card className="relative">
+      <ScrollArea className="h-[calc(76vh-80px)]">
       <Link href={article.link ? article.link : "/"} target="_blank">
         <SquareArrowOutUpRight size={15} className="absolute right-4 top-4" />
       </Link>
@@ -111,8 +101,8 @@ export function ArticleChart({ article, color }: ArticleChartProps) {
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 font-medium leading-none">
-          Article calculated at {article_reliability.toFixed(1)}% reliablily{" "}
-          {article_reliability < 50 ? (
+          Article calculated at {article.reliability_score.toFixed(1)}% reliablily
+          {article.reliability_score < 50 ? (
             <TrendingDown className="h-4 w-4" />
           ) : (
             <TrendingUp className="h-4 w-4" />
@@ -121,7 +111,8 @@ export function ArticleChart({ article, color }: ArticleChartProps) {
         <div className="leading-none text-muted-foreground">
           Score based on sentiment and subjectivity.
         </div>
-      </CardFooter>
+        </CardFooter>
+      </ScrollArea>
     </Card>
   );
 }

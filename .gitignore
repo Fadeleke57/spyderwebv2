@@ -67,3 +67,5 @@ result.json
 # Docker ------------------------------------------------------------------
 docker-compose.override.yml
 docker-compose.yml
+
+.DS_Store

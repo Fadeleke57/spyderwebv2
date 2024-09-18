@@ -86,7 +86,7 @@ export default function TerminalDemo() {
         direction="horizontal"
         className="min-h-[200px] w-full rounded-xl border"
       >
-        <ResizablePanel defaultSize={75} className="relative">
+        <ResizablePanel defaultSize={100} className="relative">
           <div className="absolute left-3 top-3 bg-background rounded-md flex items-center">
             <div className="relative bg-background rounded-md flex items-center">
               <TooltipProvider>
@@ -153,17 +153,17 @@ export default function TerminalDemo() {
             />
           </div>
 
-          <div className="flex flex-col gap-2 lg:flex-row w-full bg-background absolute bottom-0 p-6 text-base font-semibold items-center justify-center lg:text-left">
-            <Info className="text-black mr-2 lg:inline" />
-            <p className="text-center lg:text-left">Search a topic, then click on the nodes to view insights.</p>
+          <div className="flex flex-row gap-2 lg:flex-row w-full bg-background absolute bottom-0 p-6 text-base font-semibold justify-center lg:text-left">
+            <Info className="text-slate-500 mr-2 lg:inline" />
+            <p className="text-slate-500">Search a topic, then click on the nodes to view insights.</p>
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
-      <div className="hidden lg:flex text-center items-center justify-center flex-row mt-6 gap-4">
-        <p className="text-sm lg:text-base font-semibold">
-          Experience the full querying terminal
+      <div className="lg:flex flex-row mt-6 gap-4 lg:items-center lg:justify-center">
+        <p className="text-sm mb-2 lg:mb-0 lg:text-base font-semibold">
+          Experience the full <strong>Spydr Web</strong> <a className="decoration-blue-500 underline lg:hidden">here</a>
         </p>
-        <Button onClick={() => router.push("/terminal")}>Try Now</Button>
+        <Button onClick={() => router.push("/terminal")} className="hidden lg:inline">Try Now</Button>
       </div>
     </div>
   );
