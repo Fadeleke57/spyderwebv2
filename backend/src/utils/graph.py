@@ -1,5 +1,10 @@
 import nltk
-nltk.download('punkt')
+import os
+
+current_dir = os.path.dirname(__file__)
+nltk_data_path = os.path.join(current_dir, '..', 'nltk_data')
+nltk.data.path.append(os.path.abspath(nltk_data_path))
+
 from nltk.tokenize import sent_tokenize
 
 def split_into_sentences_nltk(text):
