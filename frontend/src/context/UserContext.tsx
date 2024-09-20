@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
 
-type User = {
+export type User = {
   username: string;
   full_name: string;
   email: string;
@@ -59,7 +59,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     toast({
       title: "Logged out",
       description: "You have been logged out.",
-    })
+    });
     router.push("/auth/login");
   };
 

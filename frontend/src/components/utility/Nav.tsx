@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/router";
 
 import { cn } from "@/lib/utils";
 import {
@@ -15,6 +16,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { MobileNav } from "./Mobile-Nav";
+import { UserDropDown } from "./UserDropDown";
 
 import Image from "next/image";
 import logo from "@/assets/s_logo.jpg";
@@ -50,8 +52,10 @@ const components = [
 function NavigationMenuFull() {
   const { user, logout } = useUser();
 
+  const router = useRouter();
+
   return (
-    <NavigationMenu>
+    <NavigationMenu className="w-screen max-w-full justify-between">
       <NavigationMenuList>
         <NavigationMenuItem>
           <NavigationMenuTrigger>About</NavigationMenuTrigger>
@@ -110,20 +114,26 @@ function NavigationMenuFull() {
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
+      </NavigationMenuList>
+      <NavigationMenuList>
         <NavigationMenuItem>
           {user ? (
-            <NavigationMenuLink
-              className={navigationMenuTriggerStyle()}
-              onClick={() => logout()}
-            >
-              Logout
-            </NavigationMenuLink>
+            <UserDropDown user={user} logout={logout} />
           ) : (
-            <Link href="/auth/login" legacyBehavior passHref>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+            <div className="flex flex-row items-center justify-center gap-2">
+              <NavigationMenuLink
+                className={navigationMenuTriggerStyle()}
+                onClick={() => router.push("/terminal")}
+              >
                 Login
               </NavigationMenuLink>
-            </Link>
+              <NavigationMenuLink
+                className={navigationMenuTriggerStyle()}
+                onClick={() => router.push("/home")}
+              >
+                Register
+              </NavigationMenuLink>
+            </div>
           )}
         </NavigationMenuItem>
       </NavigationMenuList>
@@ -166,7 +176,6 @@ export function Navbar() {
   const logoRef = useRef<HTMLImageElement>(null);
 
   useGSAP(() => {
-    
     setIsMounted(true);
 
     if (logoRef.current && !matches) {
@@ -205,7 +214,7 @@ export function Navbar() {
         showNav ? "translate-y-0" : "-translate-y-full"
       } fixed top-0 left-0 bg-white z-50 w-full`}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 w-full">
         <Link href="/">
           <Image ref={logoRef} src={logo} alt="logo" width={50} height={50} />
         </Link>
