@@ -31,7 +31,7 @@ export default function ConfigGraphModal({ setConfig }: ConfigGraphModalProps) {
       </DialogTrigger>
       <DialogContent
         aria-describedby="description"
-        className="max-w-screen h-screen flex flex-col items-center px-6 py-10 lg:p-20"
+        className="max-w-screen h-screen flex flex-col items-center px-6 pt-15 lg:p-20 overflow-y-auto"
       >
         <DialogHeader className="w-full mx-auto flex flex-row justify-between items-start">
           <div>
