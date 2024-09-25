@@ -16,10 +16,10 @@ export function useFetchArticles(
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const { query, topic } = config;
+      const { query, topic, enableSpydrSearch } = config;
       try {
         const response = await api.get("/articles/", {
-          params: { limit, query, topic },
+          params: { limit, query, topic, enableSpydrSearch },
         });
 
         const fetchedArticles: Article[] = response.data.result.flatMap(

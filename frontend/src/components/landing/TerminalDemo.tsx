@@ -30,6 +30,7 @@ export default function TerminalDemo() {
   const [config, setConfig] = useState<ConfigFormValues>({
     query: "",
     topic: "",
+    enableSpydrSearch: false,
   });
   const [graphColor, setGraphColor] = useState<string>("#5ea4ff");
   const isMobileScreen = useMediaQuery("(max-width: 768px)");
