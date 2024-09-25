@@ -27,7 +27,7 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
   useEffect(() => {
     const width = 3200;
     const height = 2400;
-    const centerX = width / 8 + 40;
+    const centerX = width / 8 + 150;
     const centerY = height / 8;
     const circleRadius = Math.min(width, height) / 2 - 50;
 

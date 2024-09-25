@@ -8,7 +8,7 @@ from src.utils.exceptions import check_user
 router = APIRouter()
 
 @router.get("/")
-def get_articles(limit: int = 50, query: str = None, topic: str = None, user=Depends(manager)):
+def get_articles(limit: int = 50, query: str = None, topic: str = None, enableSpydrSearch: bool = False, user=Depends(manager)):
     check_user(user)
     
     query_clauses = []

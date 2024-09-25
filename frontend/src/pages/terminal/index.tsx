@@ -29,6 +29,7 @@ function Terminal() {
   const [config, setConfig] = useState<ConfigFormValues>({
     query: "",
     topic: `${topic ? topic : ""}`,
+    enableSpydrSearch: true,
   });
   const [graphColor, setGraphColor] = useState("#5ea4ff");
   const [expanded, setExpanded] = useState(false);
@@ -52,7 +53,7 @@ function Terminal() {
           direction="horizontal"
           className="min-h-[200px] w-full rounded-xl border"
         >
-          <ResizablePanel defaultSize={75} className="relative">
+          <ResizablePanel defaultSize={100} className="relative">
             <div
               className={`w-44 absolute right-3 top-3 bg-background border rounded-md ${
                 expanded ? "hidden" : ""
@@ -83,7 +84,7 @@ function Terminal() {
               </Button>
             </div>
             <div
-              className={`absolute right-3 top-14 bg-background border rounded-md lg:hidden ${
+              className={`absolute right-3 top-14 bg-background border rounded-md ${
                 expanded ? "hidden" : ""
               }`}
             >
@@ -104,11 +105,11 @@ function Terminal() {
             className={`hidden lg:flex ${expanded ? "hidden" : ""}`}
           />
           <ResizablePanel
-            defaultSize={25}
-            maxSize={40}
+            defaultSize={0}
+            maxSize={0}
             className={`hidden lg:block ${expanded ? "hidden" : ""}`}
           >
-            <SideBar setConfig={setConfig} />
+            {expanded && <SideBar setConfig={setConfig} />}
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
