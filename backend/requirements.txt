@@ -11,3 +11,5 @@ dnspython
 python-multipart
 nltk
 pinecone
+uuid
+sentence_transformers
