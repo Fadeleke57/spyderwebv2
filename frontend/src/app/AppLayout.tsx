@@ -1,15 +1,14 @@
 import { Inter as FontSans } from "next/font/google";
 import { cn } from "@/lib/utils";
-import "../styles/globals.css";
-import { Navbar } from "@/components/utility/Nav";
-import Footer from "@/components/utility/Footer";
+import "@/styles/globals.css";
+import Sidebar from "@/components/utility/Sidebar";
 
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 });
 
-export default function RootLayout({
+export default function AppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -19,11 +18,12 @@ export default function RootLayout({
         fontSans.variable
       )}
     >
-      <div className="relative max-w-[1440px] mx-auto">
-        <Navbar />
+      <main
+        className={`flex min-h-screen flex-col items-center justify-center pl-14`}
+      >
+        <Sidebar />
         {children}
-        <Footer />
-      </div>
+      </main>
     </div>
   );
 }

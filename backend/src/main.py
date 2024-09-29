@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.db.index import lifespan
 from src.routes.auth.index import router as auth_router
 from src.routes.graph.index import router as graph_router
+from src.routes.user.index import router as user_router
+from src.routes.buckets.index import router as buckets_router
 from src.core.config import settings
 import logging
 
@@ -31,6 +33,8 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/auth")
 app.include_router(graph_router, prefix="/articles")
+app.include_router(user_router, prefix="/users")
+app.include_router(buckets_router, prefix="/buckets")
 
 @app.get("/")
 def read_root():

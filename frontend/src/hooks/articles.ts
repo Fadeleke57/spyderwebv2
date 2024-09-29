@@ -54,13 +54,6 @@ export function useFetchArticlesDemo(
   const router = useRouter();
 
   useEffect(() => {
-    //const queryCount = parseInt(localStorage.getItem("queryCount") || "0", 10);
-
-    //if (queryCount >= 5) {
-    //router.push("/login");
-    //return;
-    //}
-
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -71,8 +64,6 @@ export function useFetchArticlesDemo(
           (article: any) => article
         );
         setArticles(fetchedArticles);
-
-        //      localStorage.setItem("queryCount", (queryCount + 1).toString());
       } catch (err) {
         setError("Failed to fetch article data");
         console.error(err);
@@ -89,7 +80,8 @@ export function useFetchArticlesDemo(
 
 export function useFetchArticleRelevantSentences(
   article_id: string,
-  query: string
+  query: string,
+  enableSpyderSearch: boolean
 ) {
   const [sentences, setSentences] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -98,11 +90,15 @@ export function useFetchArticleRelevantSentences(
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      if (!enableSpyderSearch) {
+        setLoading(false);
+        return;
+      }
       try {
         const response = await api.get(`/articles/sentences/`, {
           params: {
             article_id: article_id || "",
-            query: query ||  "",
+            query: query || "",
           },
         });
         setSentences(response.data.result.sentences);
@@ -115,7 +111,7 @@ export function useFetchArticleRelevantSentences(
     };
 
     fetchData();
-  }, [article_id, query]);
+  }, [article_id, query, enableSpyderSearch]);
 
   return { sentences, loading, error };
 }

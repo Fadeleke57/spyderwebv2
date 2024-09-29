@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
-import { useRouter } from "next/router";
 
 import { cn } from "@/lib/utils";
 import {
@@ -16,8 +15,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { MobileNav } from "./Mobile-Nav";
-import { UserDropDown } from "./UserDropDown";
-
+import { useRouter } from "next/router";
 import Image from "next/image";
 import logo from "@/assets/s_logo.jpg";
 import { gsap } from "gsap";
@@ -51,11 +49,14 @@ const components = [
 
 function NavigationMenuFull() {
   const { user, logout } = useUser();
-
   const router = useRouter();
 
+  const handleLogout = async () => {
+    logout();
+    router.push("/auth/login");
+  }
   return (
-    <NavigationMenu className="w-screen max-w-full justify-between">
+    <NavigationMenu>
       <NavigationMenuList>
         <NavigationMenuItem>
           <NavigationMenuTrigger>About</NavigationMenuTrigger>
@@ -114,26 +115,20 @@ function NavigationMenuFull() {
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
-      </NavigationMenuList>
-      <NavigationMenuList>
         <NavigationMenuItem>
           {user ? (
-            <UserDropDown user={user} logout={logout} />
+            <NavigationMenuLink
+              className={navigationMenuTriggerStyle()}
+              onClick={handleLogout}
+            >
+              Logout
+            </NavigationMenuLink>
           ) : (
-            <div className="flex flex-row items-center justify-center gap-2">
-              <NavigationMenuLink
-                className={navigationMenuTriggerStyle()}
-                onClick={() => router.push("/terminal")}
-              >
+            <Link href="/auth/login" legacyBehavior passHref>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                 Login
               </NavigationMenuLink>
-              <NavigationMenuLink
-                className={navigationMenuTriggerStyle()}
-                onClick={() => router.push("/home")}
-              >
-                Register
-              </NavigationMenuLink>
-            </div>
+            </Link>
           )}
         </NavigationMenuItem>
       </NavigationMenuList>
@@ -214,7 +209,7 @@ export function Navbar() {
         showNav ? "translate-y-0" : "-translate-y-full"
       } fixed top-0 left-0 bg-white z-50 w-full`}
     >
-      <div className="flex items-center gap-2 w-full">
+      <div className="flex items-center gap-2">
         <Link href="/">
           <Image ref={logoRef} src={logo} alt="logo" width={50} height={50} />
         </Link>

@@ -25,6 +25,7 @@ import {
 import { Info } from "lucide-react";
 import Router from "next/router";
 import useMediaQuery from "@/hooks/general";
+import { colorOptions } from "@/types/design";
 
 export default function TerminalDemo() {
   const [config, setConfig] = useState<ConfigFormValues>({
@@ -75,8 +76,6 @@ export default function TerminalDemo() {
     }
     setClickCount(clickCount + 1);
   };
-
-  const colorOptions = ["#5ea4ff", "#ff6f61", "#6b5b95", "#88b04b", "#f7cac9"];
 
   return (
     <div

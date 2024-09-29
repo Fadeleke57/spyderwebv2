@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 import os
 from dotenv import load_dotenv
 
-env = os.getenv("ENV", "prod")
+env = os.getenv("ENV", "local")
 load_dotenv(f".env.{env}")
 print(f"Loading .env.{env}...")
 
@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     oauth2_client_secret: str
     oauth2_redirect_uri: str
     next_url: str
+    pinecone_api_key: str
 
     class Config:
         env_file = f".env.{env}"

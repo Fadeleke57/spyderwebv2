@@ -6,7 +6,6 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 
-import SideBar from "@/components/terminal/SideBar";
 import Graph from "@/components/terminal/Graph";
 import {
   Select,
@@ -19,101 +18,111 @@ import {
 import ConfigGraphModal from "@/components/terminal/ConfigGraphModal";
 import { ConfigFormValues } from "@/types/article";
 import { Button } from "@/components/ui/button";
-import { Expand } from "lucide-react";
+import { Expand, Settings2 } from "lucide-react";
 import { useRouter } from "next/router";
+import { colorOptions } from "@/types/design";
 
 function Terminal() {
   const router = useRouter();
-  const { topic } = router.query;
+  const { topic, query } = router.query;
   const [limit, setLimit] = useState(50);
   const [config, setConfig] = useState<ConfigFormValues>({
-    query: "",
+    query: `${query ? query : ""}`,
     topic: `${topic ? topic : ""}`,
-    enableSpydrSearch: true,
+    enableSpydrSearch: false,
   });
   const [graphColor, setGraphColor] = useState("#5ea4ff");
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-6 lg:p-24 ${
-        expanded ? "overflow-hidden" : ""
+    <div
+      style={{
+        height: expanded ? "100vh" : "100vh",
+        zIndex: expanded ? 50 : "auto",
+      }}
+      className={`bg-background p-1.5 text-xs shadow-md w-full ${
+        expanded ? "fixed top-0 left-0 right-0 bottom-0" : ""
       }`}
     >
-      <div
-        style={{
-          height: expanded ? "100vh" : "80vh",
-          zIndex: expanded ? 50 : "auto",
-        }}
-        className={`border border-border/50 rounded-xl bg-background p-1.5 text-xs shadow-md w-full ${
-          expanded ? "fixed top-0 left-0 right-0 bottom-0" : ""
-        }`}
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="min-h-[200px] w-full"
       >
-        <ResizablePanelGroup
-          direction="horizontal"
-          className="min-h-[200px] w-full rounded-xl border"
-        >
-          <ResizablePanel defaultSize={100} className="relative">
-            <div
-              className={`w-44 absolute right-3 top-3 bg-background border rounded-md ${
-                expanded ? "hidden" : ""
-              }`}
+        <ResizablePanel defaultSize={expanded ? 100 : 80} className="relative">
+          <div className={`w-44 absolute right-3 top-3 bg-background`}>
+            <Select
+              defaultValue={String(limit)}
+              onValueChange={(value: string) => setLimit(Number(value))}
+              value={String(limit)}
             >
-              <Select
-                defaultValue={String(limit)}
-                onValueChange={(value: string) => setLimit(Number(value))}
-                value={String(limit)}
-              >
-                <SelectTrigger className="z-60">
-                  <SelectValue placeholder="Limit" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="10">{10}</SelectItem>
-                    <SelectItem value="20">{20}</SelectItem>
-                    <SelectItem value="50">{50}</SelectItem>
-                    <SelectItem value="100">{100}</SelectItem>
-                    <SelectItem value="200000">All</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="absolute left-3 top-3 bg-background border rounded-md ">
-              <Button onClick={() => setExpanded(!expanded)}>
-                <Expand size={16} />
-              </Button>
-            </div>
-            <div
-              className={`absolute right-3 top-14 bg-background border rounded-md ${
-                expanded ? "hidden" : ""
-              }`}
-            >
+              <SelectTrigger className="z-60">
+                <SelectValue placeholder="Limit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="10">{10}</SelectItem>
+                  <SelectItem value="20">{20}</SelectItem>
+                  <SelectItem value="50">{50}</SelectItem>
+                  <SelectItem value="100">{100}</SelectItem>
+                  <SelectItem value="200000">All</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="absolute left-3 top-3 bg-background border rounded-md ">
+            <Button variant={"outline"} onClick={() => setExpanded(!expanded)}>
+              <Expand size={16} />
+            </Button>
+          </div>
+
+          <div className="flex flex-row items-center justify-center gap-2 absolute right-3 top-14 ">
+            <div className={`bg-background border rounded-md`}>
               <ConfigGraphModal setConfig={setConfig} />
             </div>
-
-            <div className="bg-muted h-full w-full whitespace-nowrap">
-              <Graph
-                limit={limit}
-                config={config}
-                setConfig={setConfig}
-                color={graphColor}
-              />
+            <div className="bg-background border rounded-md">
+              <Button variant={"outline"}>
+                {" "}
+                {/**TODO: pull this out and make it design configuratiosn for the graph */}
+                <Settings2 size={16} />
+              </Button>
             </div>
-          </ResizablePanel>
-          <ResizableHandle
-            withHandle
-            className={`hidden lg:flex ${expanded ? "hidden" : ""}`}
-          />
-          <ResizablePanel
-            defaultSize={0}
-            maxSize={0}
-            className={`hidden lg:block ${expanded ? "hidden" : ""}`}
-          >
-            {expanded && <SideBar setConfig={setConfig} />}
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
-    </main>
+          </div>
+
+          <div className="bg-muted h-full w-full whitespace-nowrap">
+            <Graph
+              limit={limit}
+              config={config}
+              setConfig={setConfig}
+              color={graphColor}
+            />
+          </div>
+        </ResizablePanel>
+        <ResizableHandle
+          withHandle
+          className={`hidden lg:flex ${expanded ? "hidden" : ""}`}
+        />
+        <ResizablePanel defaultSize={expanded ? 0 : 20} maxSize={20}>
+          <ResizablePanelGroup direction="vertical">
+            <ResizablePanel
+              defaultSize={50}
+              className="flex items-center justify-center border"
+            >
+              Drop articles here
+            </ResizablePanel>
+            <ResizableHandle
+              className={`hidden lg:flex ${expanded ? "hidden" : ""}`}
+            />
+            <ResizablePanel
+              defaultSize={50}
+              className="flex items-center justify-center border"
+            >
+              article results are listed here
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </div>
   );
 }
 
