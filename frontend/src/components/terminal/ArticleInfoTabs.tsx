@@ -17,7 +17,8 @@ export function ArticleInfoTabs({
 }: ArticleInfoTabsProps) {
   const { sentences, loading, error } = useFetchArticleRelevantSentences(
     article?.id || "",
-    config?.query || ""
+    config?.query || "",
+    config?.enableSpydrSearch || false
   );
   return (
     <Tabs defaultValue="chart" className="w-full">

@@ -26,7 +26,9 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { googleIcon } from "@/components/utility/Icons";
 import { environment } from "@/environment/load_env";
-
+import { ReactElement } from "react";
+import { useEffect } from "react";
+import PublicLayout from "@/app/PublicLayout";
 
 const loginSchema = z.object({
   email: z
@@ -47,6 +49,13 @@ const Login = () => {
   const form = useForm<LoginFormInputs>({
     resolver: zodResolver(loginSchema),
   });
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.push("/terminal");
+    }
+  }, [router]);
 
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     try {
@@ -172,6 +181,10 @@ const Login = () => {
       </Card>
     </div>
   );
+};
+
+Login.getLayout = (page: ReactElement) => {
+  return <PublicLayout>{page}</PublicLayout>;
 };
 
 export default Login;

@@ -1,5 +1,8 @@
 import Image from "next/image";
 import BGImage from "@/assets/question.jpg";
+import PublicLayout from "@/app/PublicLayout";
+import { ReactElement } from "react";
+
 function index() {
   return (
     <div className="min-h-screen flex flex-col lg:pt-10">
@@ -108,15 +111,15 @@ function index() {
         </h2>
 
         <p>
-          Go to any reputable publisher and read their articles. Every article often links to other articles for clarity and
-          evidence—just like research papers reference other works. Spydr takes
-          this concept and visualizes it in an interactive graph. Parent
-          articles are connected to their referenced children articles, forming
-          a network of knowledge that&#39;s easy to explore. For research
-          papers, Spydr generates a similar graph using “cited by”
-          relationships. Our relevance scoring system adds even more value by
-          showing how closely connected these articles are based on sentiment,
-          subjectivity, and content.
+          Go to any reputable publisher and read their articles. Every article
+          often links to other articles for clarity and evidence—just like
+          research papers reference other works. Spydr takes this concept and
+          visualizes it in an interactive graph. Parent articles are connected
+          to their referenced children articles, forming a network of knowledge
+          that&#39;s easy to explore. For research papers, Spydr generates a
+          similar graph using “cited by” relationships. Our relevance scoring
+          system adds even more value by showing how closely connected these
+          articles are based on sentiment, subjectivity, and content.
         </p>
 
         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
@@ -150,5 +153,9 @@ function index() {
     </div>
   );
 }
+
+index.getLayout = (page: ReactElement) => {
+  return <PublicLayout>{page}</PublicLayout>;
+};
 
 export default index;

@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+#this script is for adding a reliability score to scraped articles
 
 uri = os.getenv("NEO4J_URI")
 user = os.getenv("NEO4J_USER")

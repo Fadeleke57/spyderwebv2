@@ -4,11 +4,12 @@ from fastapi_login.exceptions import InvalidCredentialsException
 from fastapi.responses import JSONResponse, RedirectResponse
 from src.routes.auth.oauth2 import get_google_token, get_google_user, manager, get_password_hash, verify_password, get_user
 from src.core.config import settings
-from src.models.user import UserCreate
+from src.models.user import User
 from src.db.mongodb import get_collection
 from datetime import timedelta
 import logging
 from fastapi import APIRouter
+import uuid
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -52,10 +53,11 @@ async def auth_callback(code: str):
     
     if not user:
         collection.insert_one({
+            "id": str(uuid.uuid4()),
             "username": user_data["name"],
             "full_name": user_data["name"],
             "email": user_data["email"],
-            "hashed_password": None,  # No password for OAuth2 users
+            "hashed_password": None,  # no password for google registrations
             "disabled": False,
         })
     
@@ -82,17 +84,19 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
     return response
 
 @router.post('/register')
-def register(user: UserCreate):
+def register(user: User):
     collection = get_collection('users')
     if collection.find_one({"email": user.email}):
         raise HTTPException(status_code=400, detail="Email already registered")
     hashed_password = get_password_hash(user.password)
     user_data = {
+        "id": str(uuid.uuid4()),
         "username": user.username,
         "full_name": user.username,
         "email": user.email,
         "hashed_password": hashed_password,
         "disabled": False,
+        "analytics": {"searches": []}
     }
     collection.insert_one(user_data)
     return {"msg": "User registered successfully"}
