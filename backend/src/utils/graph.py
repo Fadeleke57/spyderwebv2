@@ -1,6 +1,7 @@
 import nltk
 import os
-from src.lib.pinecone.index import PC, PCINDEX, embedding_model
+from src.lib.pinecone.index import PC, PCINDEX
+#from src.lib.huggingface.index import get_embedding
 from src.db.neo4j import driver as Neo4jDriver, run_query
 current_dir = os.path.dirname(__file__)
 nltk_data_path = os.path.join(current_dir, '..', 'nltk_data')
@@ -43,11 +44,12 @@ def run_keyword_search(query: str, topic: str, limit: int):
 
 
 ### execute semantic search
-def run_semantic_search(query: str, limit: int):
-    query_embedding = embedding_model.encode(query).tolist()
-    pinecone_response = PCINDEX.query(vector=query_embedding, top_k=limit, include_metadata=True)
-    results = []
-    for match in pinecone_response['matches']:
-        result = match['metadata']
-        results.append(result)
-    return results
+def run_semantic_search(query: str,limit: int):
+   # query_embedding = get_embedding(query)
+    #pinecone_response = PCINDEX.query(vector=query_embedding, top_k=limit, include_metadata=True)
+   # results = []
+   # for match in pinecone_response['matches']:
+    #    result = match['metadata']
+    #    results.append(result)
+   # return results
+   pass
