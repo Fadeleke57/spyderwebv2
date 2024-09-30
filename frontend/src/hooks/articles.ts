@@ -90,10 +90,10 @@ export function useFetchArticleRelevantSentences(
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      if (!enableSpyderSearch) {
-        setLoading(false);
-        return;
-      }
+      //if (!enableSpyderSearch) {
+       // setLoading(false);
+       // return;
+      //}
       try {
         const response = await api.get(`/articles/sentences/`, {
           params: {
