@@ -14,8 +14,6 @@ from datetime import datetime
 @router.get("/")
 def get_articles(limit: int = 50, query: str = None, topic: str = None, enableSpydrSearch: bool = False, user: User = Depends(manager)):
     check_user(user)
-    return {"result": run_keyword_search(query, topic, limit)}
-"""
     if query:
         new_search = {
             "query": query,
@@ -34,13 +32,14 @@ def get_articles(limit: int = 50, query: str = None, topic: str = None, enableSp
             result = run_keyword_search("", "", limit)
 
     return {"result": result}
-"""
 
 @router.get("/sentences")
 def get_sentences_by_id(article_id: str, query: str, user=Depends(manager)):
     check_user(user)
     
     result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': article_id})
+    if not result:
+        return {"result": {'article_id': article_id, 'sentences': [], 'count': 0}}
     article_text = result[0]['a']['text']
     article_sentences = split_into_sentences_nltk(article_text)
 

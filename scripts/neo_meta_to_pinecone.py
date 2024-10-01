@@ -19,12 +19,12 @@ class Neo4jToPinecone:
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
         
         pinecone = Pinecone(api_key=pinecone_api_key)
-        self.index_name = "article-embeddings"
+        self.index_name = "article-embeddings2"
         
         if self.index_name not in pinecone.list_indexes().names():
             pinecone.create_index(
                 name=self.index_name, 
-                dimension=384, 
+                dimension=1024, 
                 metric="cosine",
                 spec=ServerlessSpec(cloud="aws", region=pinecone_env)
             )
