@@ -11,3 +11,5 @@ dnspython
 python-multipart
 nltk
 pinecone
+google 
+googleapis-common-protos
