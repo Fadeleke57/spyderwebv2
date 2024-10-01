@@ -10,4 +10,4 @@ aiohttp
 dnspython
 python-multipart
 nltk
-pinecone[gprc]
+pinecone
