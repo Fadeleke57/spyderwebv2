@@ -1,11 +1,11 @@
 from neo4j import GraphDatabase
-from sentence_transformers import SentenceTransformer
 from pinecone import Pinecone, ServerlessSpec
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
-# this script is for adding embeddings from neo4j article text to pinecone (depreceating soon to be replaced with new embedding system)
+# this script is for switching from sentence_transformers to pinecone embeddings support
+# i need to support streamling the embedding process so keeping everything in pinecone
 uri = os.getenv("NEO4J_URI")
 user = os.getenv("NEO4J_USER")
 password = os.getenv("NEO4J_PASSWORD")
@@ -19,28 +19,32 @@ class Neo4jToPinecone:
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
         
         pinecone = Pinecone(api_key=pinecone_api_key)
-        self.index_name = "article-embeddings"
+        self.index_name = "article-embeddings2"
         
         if self.index_name not in pinecone.list_indexes().names():
             pinecone.create_index(
                 name=self.index_name, 
-                dimension=384, 
+                dimension=1024, 
                 metric="cosine",
                 spec=ServerlessSpec(cloud="aws", region=pinecone_env)
             )
         self.pinecone_index = pinecone.Index(name=self.index_name)
-        
-        self.model = SentenceTransformer('all-MiniLM-L6-v2')
+        self.pincecone_reference = pinecone
 
     def close(self):
         self.driver.close()
 
-    def generate_embeddings(self, header: str, text: str, header_weight: int = 2) -> list:
+    def generate_embeddings(self, header: str, text: str, header_weight: int = 3) -> any:
         """
         Generate vector embeddings by giving more weight to the header.
         """
         weighted_input = (header + ' ') * header_weight + text
-        return self.model.encode(weighted_input).tolist()
+        embeddings = self.pincecone_reference.inference.embed(
+            model="multilingual-e5-large",
+            inputs=[weighted_input],
+             parameters={"input_type": "passage", "truncate": "END"}
+)
+        return embeddings
 
     def process_articles(self):
         """
@@ -79,10 +83,12 @@ class Neo4jToPinecone:
                 tx.run(delete_query, id=article_id)
             else:
                 # generate embeddings and upload to Pinecone
+                existing_vector = pineconeIndex.fetch([article_id]).vectors.get(article_id, None)
+                if existing_vector is not None:
+                    print(f"Article {article_id} already exists in Pinecone. Skipping...")
+                    continue
                 embedding = Neo4jToPinecone(uri, user, password, PINECONE_API_KEY, PINECONE_ENVIRONMENT).generate_embeddings(header, text)
-
-                # prepare for Pinecone upsert
-                vector_data = [(article_id, embedding)]
+                vector_data = [(article_id, embedding.data[0].values)]
                 print(f"Upserting embedding for article {article_id} to Pinecone...")
                 pineconeIndex.upsert(vector_data)
 
