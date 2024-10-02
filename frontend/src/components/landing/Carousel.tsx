@@ -1,6 +1,6 @@
 import React from "react";
 import Autoplay from "embla-carousel-autoplay";
-
+import dynamic from "next/dynamic";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,

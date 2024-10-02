@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Topic } from "@/types/topics";
 import { LandingLoader } from "../utility/Loading";
+import { Skeleton } from "../ui/skeleton";
 
 function shuffleArray(array: Topic[]) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -15,10 +16,12 @@ function shuffleArray(array: Topic[]) {
 
 function LandingGrid() {
   const [shuffledTopics, setShuffledTopics] = useState<Topic[]>([]);
+  const [loading, setLoading] = useState<boolean | null>(null);
 
   useEffect(() => {
     const shuffled : Topic[] = shuffleArray([...topicsWithSubtopics]);
     setShuffledTopics(shuffled);
+    setLoading(false);
   }, []);
 
   if (shuffledTopics.length === 0) {
@@ -29,7 +32,18 @@ function LandingGrid() {
   const firstBlock : Topic[] = shuffledTopics.slice(1, 5);
   const lastBlock : Topic[] = shuffledTopics.slice(5, 9);
 
-  return (
+  return loading ? (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <Skeleton className="w-full h-60" />
+      <Skeleton className="w-full h-60" />
+      <Skeleton className="w-full h-60" />
+      <Skeleton className="w-full h-60" />
+      <Skeleton className="w-full h-60" />
+      <Skeleton className="w-full h-60" />
+      <Skeleton className="w-full h-60" />
+      <Skeleton className="w-full h-60" />
+    </div>
+  ) : (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <div className="hidden lg:block w-full h-full col-span-2 row-span-2 relative rounded-2xl border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
         <Image

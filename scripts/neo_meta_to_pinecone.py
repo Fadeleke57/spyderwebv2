@@ -12,7 +12,6 @@ password = os.getenv("NEO4J_PASSWORD")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_ENVIRONMENT = os.getenv("PINECONE_ENVIRONMENT", "us-east-1")
 
-
 class Neo4jToPinecone:
     
     def __init__(self, uri, user, password, pinecone_api_key, pinecone_env):

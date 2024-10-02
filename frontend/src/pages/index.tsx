@@ -4,12 +4,11 @@ import Demo from "@/components/landing/Demo";
 import LandingCarousel from "@/components/landing/Carousel";
 import { useEffect, useState } from "react";
 import { LandingLoader } from "@/components/utility/Loading";
-import { useRouter } from "next/router";
 import PublicLayout from "@/app/PublicLayout";
 import { ReactElement } from "react";
+import dynamic from "next/dynamic";
 
 export default function Home() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
