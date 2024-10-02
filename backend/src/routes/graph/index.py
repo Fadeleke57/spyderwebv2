@@ -27,9 +27,9 @@ def get_articles(limit: int = 50, query: str = None, topic: str = None, enableSp
             result = run_semantic_search(query, limit)
     else:
         if topic:
-            result = run_semantic_search(topic, limit)
+            result = run_keyword_search("", topic, limit)
         else:
-            result = run_keyword_search("", "", limit)
+            result = run_semantic_search("latest", limit)
 
     return {"result": result}
 
