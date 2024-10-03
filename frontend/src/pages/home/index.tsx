@@ -5,6 +5,7 @@ import { ProjectsCarousel } from "@/components/home/ProjectsCarousel";
 import { useUser } from "@/context/UserContext";
 import SearchHistoryBlock from "@/components/home/SearchHistoryBlock";
 import FindBucketsBlock from "@/components/home/FindBucketsBlock";
+import Link from "next/link";
 
 function Index() {
   const { user } = useUser();
@@ -17,15 +18,31 @@ function Index() {
       </div>
       <div className="w-11/12 mx-auto my-0 flex flex-col gap-20 overflow-x-hidden">
         <div className="flex flex-col gap-4">
-          <small className="text-sm font-medium leading-none flex inline items-center ml-2">
-            Explore
-          </small>
+          <div className="w-full flex justify-between items-center">
+            <small className="text-sm font-medium leading-noneflex inline items-center ml-2">
+              Explore
+            </small>
+            <Link
+              href="/explore"
+              className="inline p-0 underline text-blue-800 hover:text-slate-700 mr-2"
+            >
+              <small>See more</small>
+            </Link>
+          </div>
           <TrendingSearchCarousel />
         </div>
         <div className="flex flex-col gap-4">
-          <small className="text-sm font-medium leading-noneflex inline items-center ml-2">
-            Project Buckets
-          </small>
+          <div className="w-full flex justify-between items-center">
+            <small className="text-sm font-medium leading-noneflex inline items-center ml-2">
+              Your buckets
+            </small>
+            <Link
+              href="/buckets"
+              className="inline p-0 underline text-blue-800 hover:text-slate-700 mr-2"
+            >
+              <small>View all</small>
+            </Link>
+          </div>
           <ProjectsCarousel />
         </div>
         <div className="flex flex-row gap-4">

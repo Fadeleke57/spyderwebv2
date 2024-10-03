@@ -136,7 +136,7 @@ function Index() {
         />
       </div>
 
-      <div className="w-full">
+      <div className="w-full lg:min-h-[62vh]">
         {loading ? (
           <p>Loading...</p>
         ) : error ? (
