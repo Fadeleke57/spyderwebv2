@@ -11,8 +11,11 @@ import {
 import { CopyPlus } from "lucide-react";
 import Link from "next/link";
 import { useFetchBuckets } from "@/hooks/buckets";
+import { formatText } from "@/lib/utils";
+import { useRouter } from "next/router";
 export function ProjectsCarousel() {
   const { buckets, loading, error } = useFetchBuckets();
+  const router = useRouter();
   return (
     <div className="group pl-6">
       <Carousel
@@ -37,16 +40,16 @@ export function ProjectsCarousel() {
             </div>
           </CarouselItem>
           {buckets?.map((bucket, index) => (
-            <CarouselItem key={index} className="basis-1/2 lg:basis-1/3">
-              <div className="p-1">
+            <CarouselItem key={index} className="basis-1/2 lg:basis-1/3" onClick={() => router.push(`/buckets/bucket/${bucket.bucketId}`)}>
+              <div className="p-1 cursor-pointer">
                 <Card className="">
                   <CardContent className="flex aspect-square items-center justify-center p-10">
-                    <div className="w-full flex flex-col overflow-hidden">
-                      <h1 className="text-3xl font-semibold">
-                        {bucket.name}
+                    <div className="w-full flex flex-col overflow-hidden hyphens-auto break-words">
+                      <h1 className="text-3xl font-semibold hyphens-auto">
+                        {formatText(bucket.name, 50)}
                       </h1>
                       <p className="text-slate-700">
-                        {bucket.description}
+                        {formatText(bucket.description, 100)}
                       </p>
                     </div>
                   </CardContent>

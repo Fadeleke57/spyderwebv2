@@ -33,7 +33,7 @@ function SearchHistoryBlock() {
           <Ellipsis className="text-slate-500 absolute top-1 right-1 cursor-pointer" />
         </PopoverTrigger>
         <PopoverContent
-          className="mt-10 w-40 text-red-500 cursor-pointer"
+          className="mt-10 w-40 text-red-500 cursor-pointer hover:text-red-700 hover:bg-slate-100"
           onClick={handleClearSearchHistory}
         >
           Clear History

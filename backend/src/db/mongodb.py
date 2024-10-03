@@ -41,7 +41,7 @@ def get_item_by_id(collection_name: str, id: str) -> Dict[str, Any]:
     collection = get_collection(collection_name)
     return collection.find_one({"id": id})
 
-def get_items_by_field(collection_name: str, field: str, value: Any) -> List[Any]:
+def get_items_by_field(collection_name: str, field: str, value: Any, ascending: bool = True) -> List[Any]:
     """Get items by a specific field and value.
 
     Args:

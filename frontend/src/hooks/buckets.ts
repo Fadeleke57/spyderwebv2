@@ -11,11 +11,8 @@ export function useFetchBuckets() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await api.get("/buckets/all");
+        const response = await api.get("/buckets/all/user");
         setBuckets(response.data.result);
-        toast({
-          title: `Found ${response.data.result.length} buckets`,
-        });
       } catch (err) {
         setError("Failed to fetch bucket data");
         console.error(err);
@@ -39,15 +36,13 @@ export function useCreateBucket() {
     console.log(config);
     try {
       const response = await api.post("/buckets/create", config);
-
-      toast({
-        title: "Bucket created",
-        description: response.data.result,
-      });
     } catch (err) {
       setError("Failed to create bucket");
       console.error(err);
     } finally {
+      toast({
+        title: "Bucket created",
+      });
       setLoading(false);
     }
   };
@@ -80,14 +75,14 @@ export function useDeleteBucket() {
   return { deleteBucket, loading, error };
 }
 
-export function useUpdateBucket() {
+export function useUpdateBucket(bucketId: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const updateBucket = async (config: any) => {
     setLoading(true);
     try {
-      const response = await api.put("/buckets/update", config);
+      const response = await api.put(`/buckets/update/${bucketId}`, config);
       toast({
         title: "Bucket updated",
         description: response.data.result,
@@ -101,4 +96,56 @@ export function useUpdateBucket() {
   };
 
   return { updateBucket, loading, error };
+}
+
+export function useFetchPublicBuckets() {
+  const [buckets, setBuckets] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get("/buckets/all/public");
+        setBuckets(response.data.result);
+      } catch (err) {
+        setError("Failed to fetch bucket data");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { buckets, loading, error };
+}
+
+export function useFetchBucketById(bucketId: string) {
+  const [bucket, setBucket] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get(`/buckets/id`, {
+          params: { bucketId },
+        });
+        setBucket(response.data.result);
+      } catch (err) {
+        setError("Failed to fetch bucket data");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [bucketId]);
+
+  return { bucket, loading, error };
 }

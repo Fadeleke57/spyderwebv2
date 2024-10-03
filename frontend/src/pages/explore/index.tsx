@@ -1,7 +1,187 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useFetchPublicBuckets } from "@/hooks/buckets";
+import { BucketCard } from "@/components/explore/BucketCard";
+import { Bucket } from "@/types/bucket";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuCheckboxItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { PlusCircle, File, ListFilter } from "lucide-react";
+import { useRouter } from "next/router";
+function Index() {
+  const { buckets, loading, error } = useFetchPublicBuckets();
+  const [query, setQuery] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [active, setActive] = useState<boolean>(false);
+  const searchInputWrapperRef = useRef<any>(null);
+  const bucketsPerPage = 6;
+  const router = useRouter();
 
-function index() {
-  return <div>index</div>;
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        searchInputWrapperRef.current &&
+        !searchInputWrapperRef.current.contains(event.target)
+      ) {
+        setActive(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(event.target.value);
+    setCurrentPage(1); // Reset pagination when searching
+  };
+
+  const getHighlightedText = (text: string, highlight: string) => {
+    if (!highlight.trim()) return text;
+
+    const regex = new RegExp(`(${highlight})`, "gi");
+    const parts = text.split(regex);
+    return parts.map((part, index) =>
+      regex.test(part) ? (
+        <span key={index} className="bg-yellow-200">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
+
+  const filteredBuckets =
+    buckets?.filter(
+      (bucket) =>
+        bucket.name.toLowerCase().includes(query.toLowerCase()) ||
+        bucket.description?.toLowerCase().includes(query.toLowerCase())
+    ) || [];
+
+  const indexOfLastBucket = currentPage * bucketsPerPage;
+  const indexOfFirstBucket = indexOfLastBucket - bucketsPerPage;
+  const currentBuckets = filteredBuckets.slice(
+    indexOfFirstBucket,
+    indexOfLastBucket
+  );
+
+  const totalPages = Math.ceil(filteredBuckets.length / bucketsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  return (
+    <div className="w-full flex flex-col gap-8 p-8">
+      <div className="flex justify-between">
+        <div>
+          <h1 className="text-4xl font-extrabold">Explore Buckets</h1>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8 gap-1">
+                <ListFilter className="h-3.5 w-3.5" />
+                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                  Filter
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuCheckboxItem checked>
+                Active
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem>Draft</DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem>Archived</DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button size="sm" variant="outline" className="h-8 gap-1">
+            <File className="h-3.5 w-3.5" />
+            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+              Export
+            </span>
+          </Button>
+          <Button size="sm" className="h-8 gap-1" onClick={() => router.push("/buckets/create")}>
+            <PlusCircle className="h-3.5 w-3.5" />
+            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+              Create bucket
+            </span>
+          </Button>
+        </div>
+      </div>
+
+      <div
+        ref={searchInputWrapperRef}
+        className={`w-full ${active ? "active" : ""}`}
+      >
+        <Input
+          type="text"
+          placeholder="Search for a bucket"
+          value={query}
+          onChange={handleSearch}
+          className="border border-gray-300 rounded-lg p-2 w-full"
+          onClick={() => setActive(true)}
+        />
+      </div>
+
+      <div className="w-full">
+        {loading ? (
+          <p>Loading...</p>
+        ) : error ? (
+          <p>Error loading buckets</p>
+        ) : currentBuckets.length > 0 ? (
+          <div className="w-full flex flex-wrap gap-10">
+            {currentBuckets.map((bucket: Bucket, index: number) => (
+              <div key={index} className="cursor-pointer">
+                <BucketCard
+                  bucket={{
+                    ...bucket,
+                    name: getHighlightedText(bucket.name, query) as string,
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>No buckets found</p>
+        )}
+      </div>
+
+      <div className="flex justify-between items-center mt-4">
+        <p>
+          {currentBuckets.length > 0
+            ? `Showing ${indexOfFirstBucket + 1} - ${Math.min(
+                indexOfLastBucket,
+                filteredBuckets.length
+              )} of ${filteredBuckets.length} results`
+            : "0 results"}
+        </p>
+        <div className="flex gap-2">
+          <Button onClick={handlePreviousPage} disabled={currentPage === 1}>
+            Previous
+          </Button>
+          <Button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export default index;
+export default Index;
