@@ -12,5 +12,7 @@ class User(BaseModel):
     full_name: str
     username: str
     email: str
+    disabled: bool
     hashed_password: str
     analytics: Analytics
+    profile_picture_url: str
