@@ -47,4 +47,6 @@ async def get_google_user(token: str):
             "https://www.googleapis.com/oauth2/v1/userinfo",
             params={"access_token": token},
         ) as response:
-            return await response.json()
+            user_info = await response.json()
+            profile_picture_url = user_info.get("picture")  # Extract the profile picture URL
+            return user_info, profile_picture_url

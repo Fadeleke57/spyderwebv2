@@ -11,6 +11,8 @@ class Bucket(BaseModel):
     created: str
     updated: str
     private: bool
+    likes: int
+    iterations: int
 
 class BucketConfig(BaseModel):
     name: str

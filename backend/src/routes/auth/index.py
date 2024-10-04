@@ -45,7 +45,7 @@ def login():
 @router.get("/callback")
 async def auth_callback(code: str):
     token_data = await get_google_token(code)
-    user_data = await get_google_user(token_data["access_token"])
+    user_data, profile_picture_url = await get_google_user(token_data["access_token"])
     email = user_data["email"]
     
     collection = get_collection('users')
@@ -59,6 +59,8 @@ async def auth_callback(code: str):
             "email": user_data["email"],
             "hashed_password": None,  # no password for google registrations
             "disabled": False,
+            "profile_picture_url": profile_picture_url,
+            "analytics": { "searches": [] }
         })
     
     access_token = manager.create_access_token(
@@ -96,6 +98,7 @@ def register(user: User):
         "email": user.email,
         "hashed_password": hashed_password,
         "disabled": False,
+        "profile_picture_url": None,
         "analytics": {"searches": []}
     }
     collection.insert_one(user_data)

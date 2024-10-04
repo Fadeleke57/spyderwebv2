@@ -16,7 +16,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
     <Link href={`/buckets/bucket/${bucket.bucketId}`}>
       <Card className="w-[350px] h-[200px]">
         <CardHeader>
-          <CardTitle className="break-words">
+          <CardTitle className="break-words hover:cursor-pointer hover:text-blue-500">
             <h3 className="hyphens-auto">{formatText(bucket.name, 50)}</h3>
           </CardTitle>
           <CardDescription className="hyphens-auto">

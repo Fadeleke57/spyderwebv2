@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
+import { Bucket } from "@/types/bucket";
 
 export function useFetchBuckets() {
-  const [buckets, setBuckets] = useState<any[]>([]);
+  const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
