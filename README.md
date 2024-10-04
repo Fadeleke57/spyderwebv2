@@ -8,11 +8,11 @@
 -Frontend: Next.js with Typescript and Tailwind<br><br>
 
 -Currently supporting: <br>
-Semantic Search
-Keyword Search
-Creating Buckets
-Reliability Scoring
-Managing Buckets
+Semantic Search<br>
+Keyword Search<br>
+Creating Buckets<br>
+Reliability Scoring<br>
+Managing Buckets<br>
 
 ![image](https://github.com/user-attachments/assets/6d385351-0c9d-46bc-a3db-02d6d85f6d7f)
 ![image](https://github.com/user-attachments/assets/cac2cfb7-58fd-4cb2-818c-992dee48be85)
