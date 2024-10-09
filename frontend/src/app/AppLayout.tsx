@@ -8,6 +8,11 @@ const fontSans = FontSans({
   variable: "--font-sans",
 });
 
+export const metadata = {
+  title: "spydr - Collaborative Research Platform",
+  description: "Spydr is working to democratize research.",
+};
+
 export default function AppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

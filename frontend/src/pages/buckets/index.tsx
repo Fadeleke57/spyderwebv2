@@ -14,8 +14,9 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { formatText } from "@/lib/utils";
 import { useRouter } from "next/router";
+import withAuth from "@/hoc/withAuth";
 
-export default function Index() {
+function Index() {
   const { user } = useFetchUser();
   const { buckets, loading, error } = useFetchBuckets();
   const router = useRouter();
@@ -573,3 +574,5 @@ export default function Index() {
     </div>
   );
 }
+
+export default withAuth(Index);

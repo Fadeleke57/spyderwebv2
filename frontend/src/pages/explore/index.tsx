@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuCheckboxItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { PlusCircle, File, ListFilter } from "lucide-react";
 import { useRouter } from "next/router";
+import { formatText } from "@/lib/utils";
+
 function Index() {
   const { buckets, loading, error } = useFetchPublicBuckets();
   const [query, setQuery] = useState<string>("");
@@ -148,7 +150,7 @@ function Index() {
                 <BucketCard
                   bucket={{
                     ...bucket,
-                    name: getHighlightedText(bucket.name, query) as string,
+                    name: getHighlightedText(formatText(bucket.name, 140), query) as string,
                   }}
                 />
               </div>
