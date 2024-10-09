@@ -29,6 +29,7 @@ import { environment } from "@/environment/load_env";
 import { ReactElement } from "react";
 import { useEffect } from "react";
 import PublicLayout from "@/app/PublicLayout";
+import AppLayout from "@/app/AppLayout";
 
 const loginSchema = z.object({
   email: z
@@ -184,7 +185,7 @@ const Login = () => {
 };
 
 Login.getLayout = (page: ReactElement) => {
-  return <PublicLayout>{page}</PublicLayout>;
+  return <AppLayout>{page}</AppLayout>;
 };
 
 export default Login;

@@ -30,6 +30,7 @@ import { googleIcon } from "@/components/utility/Icons";
 import { environment } from "@/environment/load_env";
 import { ReactElement, useEffect } from "react";
 import PublicLayout from "@/app/PublicLayout";
+import AppLayout from "@/app/AppLayout";
 
 const registerSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
@@ -185,7 +186,7 @@ const Register = () => {
 };
 
 Register.getLayout = (page: ReactElement) => {
-  return <PublicLayout>{page}</PublicLayout>;
+  return <AppLayout>{page}</AppLayout>;
 };
 
 export default Register;

@@ -12,7 +12,7 @@ router = APIRouter()
 from datetime import datetime
 
 @router.get("/")
-def get_articles(limit: int = 50, query: str = None, topic: str = None, enableSpydrSearch: bool = False, user = Depends(manager, use_cache=False)):
+def get_articles(limit: int = 50, query: str = None, topic: str = None, enableSpydrSearch: bool = False, user = Depends(manager.optional)):
     if user:
         check_user(user)
     if query:
@@ -36,8 +36,9 @@ def get_articles(limit: int = 50, query: str = None, topic: str = None, enableSp
     return {"result": result}
 
 @router.get("/sentences")
-def get_sentences_by_id(article_id: str, query: str):
-    
+def get_sentences_by_id(article_id: str, query: str, user = Depends(manager.optional)):
+    if user:
+        check_user(user)
     result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': article_id})
     if not result:
         return {"result": {'article_id': article_id, 'sentences': [], 'count': 0}}
