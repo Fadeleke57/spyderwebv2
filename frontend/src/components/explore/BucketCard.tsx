@@ -15,7 +15,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
   return (
     <Link href={`/buckets/bucket/${bucket.bucketId}`}>
       <Card className="w-[350px] h-[200px]">
-        <CardHeader>
+        <CardHeader className="overflow-hidden">
           <CardTitle className="break-words hover:cursor-pointer hover:text-blue-500">
             <h3 className="hyphens-auto">{formatText(bucket.name, 50)}</h3>
           </CardTitle>
@@ -24,9 +24,6 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
-            <div className="grid w-full items-center gap-4"></div>
-          </form>
         </CardContent>
       </Card>
     </Link>

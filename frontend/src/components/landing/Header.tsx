@@ -17,7 +17,7 @@ function Header() {
         explore and analyze real-time news and research.
       </p>
       <div className="mt-6 flex flex-row gap-2 sm:gap-4 justify-start">
-        <Button>Get Started</Button>
+        <Button onClick={() => router.push("/register")}>Get Started</Button>
         <Button variant="link" onClick={() => router.push("/about")}>
           Learn More
         </Button>

@@ -1,4 +1,3 @@
-import withAuth from "@/hoc/withAuth";
 import { useState } from "react";
 import {
   ResizableHandle,
@@ -126,4 +125,4 @@ function Terminal() {
   );
 }
 
-export default withAuth(Terminal);
+export default Terminal;

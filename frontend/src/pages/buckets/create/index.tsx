@@ -45,6 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { TagsPopover } from "@/components/home/TagsPopover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRouter } from "next/router";
+import withAuth from "@/hoc/withAuth";
 export const description =
   "An AI playground with a sidebar navigation and a main content area. The playground has a header with a settings drawer and a share button. The sidebar has navigation links and a user menu. The main content area shows a form to configure the model and messages.";
 
@@ -56,7 +57,7 @@ const bucketSchema = z.object({
   }),
 });
 type BucketFormValues = z.infer<typeof bucketSchema>;
-export default function Bucket() {
+function Bucket() {
   const router = useRouter();
   const { toast } = useToast();
   const { createBucket, loading } = useCreateBucket(); // Hook to create a bucket
@@ -347,3 +348,5 @@ export default function Bucket() {
     </div>
   );
 }
+
+export default withAuth(Bucket);

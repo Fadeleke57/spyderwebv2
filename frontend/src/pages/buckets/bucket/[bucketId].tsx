@@ -103,7 +103,7 @@ function Index() {
       <div className="flex flex-col">
         <header className="sticky top-0 z-10 flex h-[57px] items-center gap-1 border-b bg-background px-4">
           <h1 className="text-xl font-semibold text-blue-500">
-            {formatText(bucket?.name, 70)}
+            {bucket?.name && formatText(bucket.name, 90)}
           </h1>
           <Drawer>
             <DrawerTrigger asChild>
@@ -324,16 +324,18 @@ function Index() {
             {bucket?.articleIds.length === 0 && (
               <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/4 flex flex-col items-center gap-1 text-center">
                 <h3 className="text-2xl font-bold tracking-tight">
-                  You have no data
+                  {user ? "Iterate" : "Sign in to iterate on this bucket"}
                 </h3>
-                <p className="text-sm text-muted-foreground">
-                  Start collecting data to add your bucket here.
-                </p>
+                {user && (
+                  <p className="text-sm text-muted-foreground">
+                    Start collecting data to add your bucket here.
+                  </p>
+                )}
                 <Button
                   className="mt-4"
-                  onClick={() => router.push("/terminal")}
+                  onClick={() => router.push(`${user ? "/terminal" : "/auth/login"}`)}
                 >
-                  Terminal Search
+                  {user ? "Open Terminal" : "Login"}
                 </Button>
               </div>
             )}

@@ -12,14 +12,16 @@ router = APIRouter()
 from datetime import datetime
 
 @router.get("/")
-def get_articles(limit: int = 50, query: str = None, topic: str = None, enableSpydrSearch: bool = False, user: User = Depends(manager)):
-    check_user(user)
+def get_articles(limit: int = 50, query: str = None, topic: str = None, enableSpydrSearch: bool = False, user = Depends(manager, use_cache=False)):
+    if user:
+        check_user(user)
     if query:
         new_search = {
             "query": query,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
-        add_search_to_user(user['email'], new_search)
+        if user:
+            add_search_to_user(user['email'], new_search)
 
         if enableSpydrSearch:
             result = run_keyword_search(query, topic, limit)
@@ -34,8 +36,7 @@ def get_articles(limit: int = 50, query: str = None, topic: str = None, enableSp
     return {"result": result}
 
 @router.get("/sentences")
-def get_sentences_by_id(article_id: str, query: str, user=Depends(manager)):
-    check_user(user)
+def get_sentences_by_id(article_id: str, query: str):
     
     result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': article_id})
     if not result:
@@ -95,4 +96,11 @@ def get_articles(limit: int = 50, query: str = None, topic: str = None):
     
     result = run_query(cypher_query, params)
 
+    return {"result": result}
+
+@router.get("/:id")
+def get_article_by_id(id: str):
+    result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': id})
+    if not result:
+        return {"result": []}
     return {"result": result}
