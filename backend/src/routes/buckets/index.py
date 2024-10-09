@@ -56,8 +56,7 @@ def update_bucket(config : BucketConfig, bucketId : str, user=Depends(manager)):
     return {"result": "Bucket updated"}
 
 @router.get("/id")
-def get_bucket_by_id(bucketId : str, user=Depends(manager)):
-    check_user(user)
+def get_bucket_by_id(bucketId : str):
     buckets=get_collection("buckets")
     bucket = buckets.find_one({"bucketId" : bucketId}, {"_id": 0})
     if bucket:
