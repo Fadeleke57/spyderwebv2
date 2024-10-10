@@ -207,7 +207,7 @@ export function Navbar() {
     <div
       className={`flex items-center justify-between px-10 transition ease duration-300 ${
         showNav ? "translate-y-0" : "-translate-y-full"
-      } absolute top-0 left-0 bg-white z-50 w-full`}
+      } fixed top-0 left-0 bg-white z-50 w-full`}
     >
       <div className="flex items-center gap-2">
         <Link href="/">
