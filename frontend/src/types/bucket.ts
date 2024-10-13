@@ -9,4 +9,13 @@ export interface Bucket {
   created: string;
   updated: string;
   private: boolean;
+  likes: string[];
+  iterations: string[];
+}
+
+export interface UpdateBucket {
+  name: string;
+  description: string;
+  private: boolean;
+  tags?: string[];
 }

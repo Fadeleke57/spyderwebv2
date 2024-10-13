@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
-import { Bucket } from "@/types/bucket";
+import { Bucket, UpdateBucket } from "@/types/bucket";
 
 export function useFetchBuckets() {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
@@ -80,17 +80,16 @@ export function useUpdateBucket(bucketId: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const updateBucket = async (config: any) => {
+  const updateBucket = async (config: UpdateBucket) => {
     setLoading(true);
     try {
-      const response = await api.put(`/buckets/update/${bucketId}`, config);
-      toast({
-        title: "Bucket updated",
-        description: response.data.result,
+      const response = await api.patch(`/buckets/update/${bucketId}`, config, {
+        headers: { "Content-Type": "application/json" }, 
       });
     } catch (err) {
       setError("Failed to update bucket");
       console.error(err);
+      return;
     } finally {
       setLoading(false);
     }
@@ -149,4 +148,46 @@ export function useFetchBucketById(bucketId: string) {
   }, [bucketId]);
 
   return { bucket, loading, error };
+}
+
+export function useLikeBucket(bucketId: string) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const likeBucket = async () : Promise<number | null | undefined> => {
+    setLoading(true);
+    try {
+      const response = await api.post(`/buckets/like/${bucketId}`);
+      return response.data.result;
+    } catch (err) {
+      setError("Failed to like bucket");
+      console.error(err);
+      return;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { likeBucket, loading, error };
+}
+
+export function useUnlikeBucket(bucketId: string) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);  
+
+  const unlikeBucket = async () : Promise<number | null | undefined> => {
+    setLoading(true);
+    try {
+      const response = await api.post(`/buckets/unlike/${bucketId}`);
+      return response.data.result;
+    } catch (err) {
+      setError("Failed to unlike bucket");
+      console.error(err);
+      return;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { unlikeBucket, loading, error };
 }

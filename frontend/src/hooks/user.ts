@@ -95,3 +95,29 @@ export function useClearSearchHistory() {
   };
   return { loading, error, clearSearchHistory };
 }
+
+export function useFetchUserById(userId: string) {
+  const [user, setUser] = useState<PublicUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get(`/users/`, {
+          params: { userId },
+        });
+        setUser(response.data.result);
+      } catch (error) {
+        console.error("Failed to fetch user", error);
+        setError("Failed to fetch user:" + error);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [userId]);
+  return { user, loading, error };
+}

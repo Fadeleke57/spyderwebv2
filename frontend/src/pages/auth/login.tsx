@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { useToast } from "@/components/ui/use-toast";
 import api from "@/lib/api";
 import Link from "next/link";
-
+import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -45,6 +45,7 @@ const loginSchema = z.object({
 type LoginFormInputs = z.infer<typeof loginSchema>;
 
 const Login = () => {
+  const { user } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const form = useForm<LoginFormInputs>({
@@ -52,11 +53,10 @@ const Login = () => {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
+    if (user) {
       router.push("/terminal");
     }
-  }, [router]);
+  }, [router, user]);
 
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     try {

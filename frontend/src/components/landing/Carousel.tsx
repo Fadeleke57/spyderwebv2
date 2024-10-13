@@ -49,7 +49,7 @@ export default function LandingCarousel() {
 
       <div className="lg:w-7/12">
         <h1 className="scroll-m-20 text-3xl font-bold tracking-tight lg:text-5xl mb-2 lg:mb-4 text-blue-500">
-          Unbiased, accurate, and easy-to-use. Thousands of news articles all in
+          Unbiased, accurate, and easy-to-use. Thousands of ideas and research all in
           one place.
         </h1>
         <Button

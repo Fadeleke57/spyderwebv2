@@ -1,12 +1,40 @@
 import React, { useState } from "react";
 import Image from "next/image";
-import { File, ListFilter, MoreHorizontal, PlusCircle, Search } from "lucide-react";
+import {
+  File,
+  ListFilter,
+  MoreHorizontal,
+  PlusCircle,
+  Search,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFetchUser } from "@/hooks/user";
 import { useFetchBuckets } from "@/hooks/buckets";
@@ -17,20 +45,17 @@ import { useRouter } from "next/router";
 import withAuth from "@/hoc/withAuth";
 
 function Index() {
-  const { user } = useFetchUser();
+  const { user, Logout } = useFetchUser();
   const { buckets, loading, error } = useFetchBuckets();
   const router = useRouter();
 
-  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Calculate the indices for pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentBuckets = buckets.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Handle pagination change
   const handleNextPage = () => {
     if (currentPage < Math.ceil(buckets.length / itemsPerPage)) {
       setCurrentPage(currentPage + 1);
@@ -41,6 +66,11 @@ function Index() {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
+  };
+
+  const handleLogout = async () => {
+    router.push("/auth/login");
+    await Logout();
   };
 
   return (
@@ -74,10 +104,15 @@ function Index() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">Support</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer text-destructive hover:text-destructive"
+                onClick={handleLogout}
+              >
+                Logout
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
@@ -106,11 +141,11 @@ function Index() {
                     <DropdownMenuLabel>Filter by</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuCheckboxItem checked>
-                      Active
+                      Created At
                     </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>Draft</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem>Likes</DropdownMenuCheckboxItem>
                     <DropdownMenuCheckboxItem>
-                      Archived
+                      Iterations
                     </DropdownMenuCheckboxItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -132,7 +167,7 @@ function Index() {
                 </Button>
               </div>
             </div>
-            <TabsContent value="all" className="min-h-full">
+            <TabsContent value="all">
               <Card x-chunk="dashboard-06-chunk-0">
                 <CardHeader>
                   <CardTitle>Buckets</CardTitle>
@@ -140,7 +175,7 @@ function Index() {
                     Manage your buckets and view their data.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="md:min-h-[410px]">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -174,10 +209,10 @@ function Index() {
                             </Badge>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            15
+                            {bucket.likes.length}
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            25
+                            {bucket.iterations.length}
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
                             {format(
@@ -241,7 +276,7 @@ function Index() {
                 </CardFooter>
               </Card>
             </TabsContent>
-            <TabsContent value="active">
+            <TabsContent value="active" className="min-h-full">
               <Card x-chunk="dashboard-06-chunk-0">
                 <CardHeader>
                   <CardTitle>Buckets</CardTitle>
@@ -249,7 +284,7 @@ function Index() {
                     Manage your buckets and view their data.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="md:min-h-[410px]">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -283,10 +318,10 @@ function Index() {
                             </Badge>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            15
+                            {bucket.likes.length}
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            25
+                            {bucket.iterations.length}
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
                             {format(
@@ -358,7 +393,7 @@ function Index() {
                     Manage your buckets and view their data.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="md:min-h-[410px]">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -392,10 +427,10 @@ function Index() {
                             </Badge>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            15
+                            {bucket.likes.length}
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            25
+                            {bucket.iterations.length}
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
                             {format(
@@ -467,7 +502,7 @@ function Index() {
                     Manage your buckets and view their data.
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="md:min-h-[410px]">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -501,10 +536,10 @@ function Index() {
                             </Badge>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            15
+                            {bucket.likes.length}
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            25
+                            {bucket.iterations.length}
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
                             {format(

@@ -7,7 +7,7 @@ class Search(BaseModel):
 class Analytics(BaseModel):
     searches: list[Search]
 
-class User(BaseModel):
+class User(BaseModel): #user
     id: str
     full_name: str
     username: str
@@ -16,3 +16,12 @@ class User(BaseModel):
     hashed_password: str
     analytics: Analytics
     profile_picture_url: str
+
+class CreateUser(BaseModel): #creating user
+    id: str
+    full_name: str
+    username: str
+    email: str
+    hashed_password: str
+    profile_picture_url: str
+    analytics: Analytics
