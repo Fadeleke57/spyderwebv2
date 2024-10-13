@@ -9,3 +9,4 @@ class Article(BaseModel):
     sentiment: float
     subjectivity: float
     reliability_score: float
+    attachments: list[str] = []

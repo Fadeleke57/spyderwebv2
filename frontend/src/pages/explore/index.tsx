@@ -4,7 +4,7 @@ import { BucketCard } from "@/components/explore/BucketCard";
 import { Bucket } from "@/types/bucket";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuCheckboxItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuCheckboxItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { PlusCircle, File, ListFilter } from "lucide-react";
 import { useRouter } from "next/router";
 import { formatText } from "@/lib/utils";
@@ -36,7 +36,7 @@ function Index() {
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
-    setCurrentPage(1); // Reset pagination when searching
+    setCurrentPage(1);
   };
 
   const getHighlightedText = (text: string, highlight: string) => {
@@ -145,8 +145,8 @@ function Index() {
           <p>Error loading buckets</p>
         ) : currentBuckets.length > 0 ? (
           <div className="w-full flex flex-wrap gap-10">
-            {currentBuckets.map((bucket: Bucket, index: number) => (
-              <div key={index} className="cursor-pointer">
+            {currentBuckets.map((bucket: Bucket) => (
+              <div key={bucket.bucketId} className="cursor-pointer">
                 <BucketCard
                   bucket={{
                     ...bucket,

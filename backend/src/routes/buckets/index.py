@@ -7,8 +7,16 @@ from src.models.article import Article
 from src.models.user import User
 router = APIRouter()
 from datetime import datetime
-from src.models.bucket import BucketConfig
+from src.models.bucket import BucketConfig, UpdateBucket
 from fastapi.exceptions import HTTPException
+
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
+from fastapi.exception_handlers import request_validation_exception_handler
+from pydantic import ValidationError
+from pymongo import ReturnDocument
+
 @router.get("/all/user") # get all buckets belonging to a user
 def get_user_buckets(user: User = Depends(manager)):
     check_user(user)
@@ -37,7 +45,9 @@ def create_bucket(config : BucketConfig, user=Depends(manager)):
         "created": datetime.now(),
         "updated": datetime.now(),
         "private": config.private,
-        "tags": config.tags
+        "tags": config.tags,
+        "likes": [],
+        "iterations": [],
     })
     return {"result": "Bucket created"}
 
@@ -48,11 +58,12 @@ def delete_bucket(bucketId: str, user=Depends(manager)):
     buckets.delete_one({"bucketId": bucketId, "userId": user["id"]})
     return {"result": "Bucket deleted"}
 
-@router.put("/update")
-def update_bucket(config : BucketConfig, bucketId : str, user=Depends(manager)):
+@router.patch("/update/{bucketId}")
+def update_bucket(bucketId: str, config: UpdateBucket, user=Depends(manager)):
     check_user(user)
     buckets= get_collection("buckets")
-    buckets.update_one({"bucketId": bucketId, "userId": user["id"]}, {"$set": {"name": config.name, "description": config.description, "private": config.private}})
+    buckets.update_one({"bucketId": bucketId, "userId": user["id"]}, {"$set": config.model_dump()})
+    buckets.update_one({"bucketId": bucketId, "userId": user["id"]}, {"$set": {"updated": datetime.now()}})
     return {"result": "Bucket updated"}
 
 @router.get("/id")
@@ -67,3 +78,29 @@ def get_bucket_by_id(bucketId : str, user=Depends(manager.optional)):
         raise HTTPException(status_code=404, detail="Item not found")
     else: 
         return {"result": bucket}
+    
+@router.post("/like/{bucket_id}")
+def like_bucket(bucket_id: str, user=Depends(manager)):
+    check_user(user)
+    buckets = get_collection("buckets")
+    result = buckets.find_one_and_update(
+        {"bucketId": bucket_id, "likes": {"$ne": user["id"]}},
+        {"$addToSet": {"likes": user["id"]}},
+        return_document=ReturnDocument.AFTER
+    )
+    if not result:
+        raise HTTPException(status_code=400, detail="Already liked or bucket not found")
+    return {"result": len(result["likes"])}
+
+@router.post("/unlike/{bucket_id}")
+def unlike_bucket(bucket_id: str, user=Depends(manager)):
+    check_user(user)
+    buckets = get_collection("buckets")
+    result = buckets.find_one_and_update(
+        {"bucketId": bucket_id, "likes": user["id"]},
+        {"$pull": {"likes": user["id"]}}, 
+        return_document=ReturnDocument.AFTER
+    )
+    if not result:
+        raise HTTPException(status_code=400, detail="Not liked yet or bucket not found")
+    return {"result": len(result["likes"])}

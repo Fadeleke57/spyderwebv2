@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Expand, Settings2 } from "lucide-react";
 import { useRouter } from "next/router";
 import { colorOptions } from "@/types/design";
+import useMediaQuery from "@/hooks/general";
 
 function Terminal() {
   const router = useRouter();
@@ -30,6 +31,7 @@ function Terminal() {
     topic: `${topic ? topic : ""}`,
     enableSpydrSearch: false,
   });
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [graphColor, setGraphColor] = useState("#5ea4ff");
   const [expanded, setExpanded] = useState(false);
 
@@ -47,7 +49,10 @@ function Terminal() {
         direction="horizontal"
         className="min-h-[200px] w-full"
       >
-        <ResizablePanel defaultSize={expanded ? 100 : 80} className="relative">
+        <ResizablePanel
+          defaultSize={expanded ? 100 : isMobile ? 100 : 80}
+          className="relative"
+        >
           <div className={`w-44 absolute right-3 top-3 bg-background`}>
             <Select
               defaultValue={String(limit)}
@@ -97,11 +102,11 @@ function Terminal() {
             />
           </div>
         </ResizablePanel>
-        <ResizableHandle
-          withHandle
-          className={`hidden lg:flex ${expanded ? "hidden" : ""}`}
-        />
-        <ResizablePanel defaultSize={expanded ? 0 : 20} maxSize={20}>
+        <ResizableHandle withHandle className={`${expanded ? "hidden" : ""}`} />
+        <ResizablePanel
+          defaultSize={expanded ? 0 : isMobile ? 0 : 20}
+          maxSize={isMobile ? 50 : 20}
+        >
           <ResizablePanelGroup direction="vertical">
             <ResizablePanel
               defaultSize={50}

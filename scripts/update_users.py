@@ -11,15 +11,16 @@ mongoInitdbDatabase = os.getenv('MONGO_INITDB_DATABASE')
 
 client = MongoClient(mongoUrl)
 db = client[mongoInitdbDatabase]
-collection = db['users']
+users = db['users']
+buckets = db['buckets']
 
 def add_uuid_to_users():
-    users_without_id = collection.find({"id": {"$exists": False}})
+    users_without_id = users.find({"id": {"$exists": False}})
     updated_count = 0
 
     for user in users_without_id:
         new_uuid = str(uuid.uuid4())
-        collection.update_one(
+        users.update_one(
             {"_id": user["_id"]},
             {"$set": {"id": new_uuid}}
         )
@@ -29,5 +30,19 @@ def add_uuid_to_users():
 
     print(f"Total users updated: {updated_count}")
 
+def add_empty_likes_and_iterations_to_users():
+    buckets_without_likes = buckets.find({"likes": {"$exists": True}})
+    buckets_without_iterations = buckets.find({"iterations": {"$exists": True}})
+    updated_count = 0
+
+    for bucket in buckets_without_likes:
+        buckets.update_one(
+            {"_id": bucket["_id"]},
+            {"$set": {"likes": []}}
+        )
+        updated_count += 1
+        print(f"Updated bucket {bucket['_id']} with new likes: []")
+    print(f"Total buckets updated: {updated_count}")
+
 if __name__ == "__main__":
-    add_uuid_to_users()
+    add_empty_likes_and_iterations_to_users()

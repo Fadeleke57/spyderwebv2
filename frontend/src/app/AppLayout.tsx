@@ -24,7 +24,7 @@ export default function AppLayout({
       )}
     >
       <main
-        className={`flex min-h-screen flex-col items-center justify-center pl-14`}
+        className={`flex min-h-screen flex-col items-center justify-center sm:pl-14`}
       >
         <Sidebar />
         {children}

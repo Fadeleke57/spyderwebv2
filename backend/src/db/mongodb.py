@@ -14,7 +14,7 @@ def get_collection(collection_name: str) -> Collection:
 
 def get_item_by_id(collection_name: str, id: str) -> Dict[str, Any]:
     collection = get_collection(collection_name)
-    return collection.find_one({"id": id})
+    return collection.find_one({"id": id}, {"_id": 0})
 
 def get_items_by_field(collection_name: str, field: str, value: Any, ascending: bool = True) -> List[Any]:
     collection = get_collection(collection_name)
