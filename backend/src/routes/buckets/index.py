@@ -32,6 +32,14 @@ def get_public_buckets():
     buckets = sorted(buckets, key=lambda x: x["created"], reverse=True)
     return {"result": buckets}
 
+@router.get("/liked/user") # get all liked buckets belonging to a user
+def get_user_liked_buckets(user: User = Depends(manager)):
+    check_user(user)
+    buckets = get_items_by_field("buckets", "likes", user["id"])
+    buckets = [bucket for bucket in buckets]
+    buckets = sorted(buckets, key=lambda x: x["created"], reverse=True)
+    return {"result": buckets}
+
 @router.post("/create")
 def create_bucket(config : BucketConfig, user=Depends(manager)):
     check_user(user)

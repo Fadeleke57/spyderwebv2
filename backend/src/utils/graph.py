@@ -49,5 +49,6 @@ def run_semantic_search(query: str,limit: int):
     results = []
     for match in pinecone_response['matches']:
         result = match['metadata']
+        result['id'] = match['id']
         results.append(result)
     return results
