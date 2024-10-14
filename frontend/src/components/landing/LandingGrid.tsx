@@ -53,7 +53,7 @@ function LandingGrid() {
         />
         <Link
           href={{
-            pathname: "/terminal",
+            pathname: "/explore",
             query: { topic: firstItem.name.toLowerCase() },
           }}
         >
@@ -67,7 +67,7 @@ function LandingGrid() {
       {firstBlock.map((topic, id) => (
         <Link
           href={{
-            pathname: "/terminal",
+            pathname: "/explore",
             query: { topic: topic.name.toLowerCase() },
           }}
           key={id}
@@ -94,7 +94,7 @@ function LandingGrid() {
         />
         <Link
           href={{
-            pathname: "/terminal",
+            pathname: "/explore",
             query: { topic: firstItem.name.toLowerCase() },
           }}
         >
@@ -108,7 +108,7 @@ function LandingGrid() {
       {lastBlock.map((topic, id) => (
         <Link
           href={{
-            pathname: "/terminal",
+            pathname: "/explore",
             query: { topic: topic.name.toLowerCase() },
           }}
           key={id}

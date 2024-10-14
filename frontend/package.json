@@ -35,7 +35,7 @@
     "embla-carousel-autoplay": "^8.2.1",
     "embla-carousel-react": "^8.2.1",
     "form": "^0.2.4",
-    "framer-motion": "^11.3.30",
+    "framer-motion": "^11.11.8",
     "gsap": "^3.12.5",
     "ldrs": "^1.0.2",
     "lucide-react": "^0.414.0",

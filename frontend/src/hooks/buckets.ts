@@ -28,6 +28,31 @@ export function useFetchBuckets() {
   return { buckets, loading, error };
 }
 
+export function useFetchLikedBuckets() {
+  const [buckets, setBuckets] = useState<Bucket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get("/buckets/liked/user");
+        setBuckets(response.data.result);
+      } catch (err) {
+        setError("Failed to fetch bucket data");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return { buckets, loading, error };
+}
+
 export function useCreateBucket() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

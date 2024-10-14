@@ -62,8 +62,10 @@ function ConfigForm({ setIsOpen, setConfig }: ConfigFormProps) {
   return (
     <>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-3 w-full">
-
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6 mt-3 w-full"
+        >
           <FormField
             control={form.control}
             name="query"
@@ -107,7 +109,10 @@ function ConfigForm({ setIsOpen, setConfig }: ConfigFormProps) {
             )}
           />
 
-          <FormField
+          {/**
+          * 
+          * 
+          * <FormField
             key={"topic"}
             control={form.control}
             name="topic"
@@ -149,6 +154,8 @@ function ConfigForm({ setIsOpen, setConfig }: ConfigFormProps) {
               </FormItem>
             )}
           />
+          * 
+          */}
 
           <FormMessage>
             <Button type="submit">Search</Button>
