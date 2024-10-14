@@ -11,9 +11,11 @@ import { Bucket } from "@/types/bucket";
 import { formatText } from "@/lib/utils";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Heart, IterationCcw } from "lucide-react";
+import { Heart, IterationCcw, BookMarked } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import { useLikeBucket, useUnlikeBucket } from "@/hooks/buckets";
+import LoginModal from "../utility/LoginModal";
+import { Skeleton } from "../ui/skeleton";
 
 export function BucketCard({ bucket }: { bucket: Bucket}) {
   const [bucketLikedCount, setBucketLikedCount] = React.useState(
@@ -32,6 +34,10 @@ export function BucketCard({ bucket }: { bucket: Bucket}) {
   const handleLikeBucket = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    if (!user) {
+      return;
+    }
 
     if (bucketLiked) {
       unlikeBucket().then((numLikes) => {
@@ -72,14 +78,14 @@ export function BucketCard({ bucket }: { bucket: Bucket}) {
           <div className="flex flex-row items-center space-x-1">
             <p
               className={`text-s ${
-                bucketLiked ? "text-red-500" : "text-slate-500"
+                bucketLiked ? "text-blue-400" : "text-slate-500"
               }`}
             >
               {bucketLikedCount}
             </p>
-            <Heart
+            <BookMarked
               size={20}
-              className={`${bucketLiked ? "text-red-500" : "text-slate-500"}`}
+              className={`${bucketLiked ? "text-blue-400" : "text-slate-500"}`}
               onClick={handleLikeBucket}
             />
           </div>

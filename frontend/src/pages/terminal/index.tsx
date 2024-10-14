@@ -15,16 +15,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import ConfigGraphModal from "@/components/terminal/ConfigGraphModal";
-import { ConfigFormValues } from "@/types/article";
+import { ConfigFormValues, Article } from "@/types/article";
 import { Button } from "@/components/ui/button";
 import { Expand, Settings2 } from "lucide-react";
 import { useRouter } from "next/router";
 import { colorOptions } from "@/types/design";
 import useMediaQuery from "@/hooks/general";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import Link from "next/link";
+import { formatText } from "@/lib/utils";
+import WordFadeIn from "@/components/ui/word-fade-in";
 
 function Terminal() {
   const router = useRouter();
   const { topic, query } = router.query;
+  const [fetchedArticles, setFetchedArticles] = useState<Article[]>([]);
+  const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
   const [limit, setLimit] = useState(50);
   const [config, setConfig] = useState<ConfigFormValues>({
     query: `${query ? query : ""}`,
@@ -34,7 +40,6 @@ function Terminal() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [graphColor, setGraphColor] = useState("#5ea4ff");
   const [expanded, setExpanded] = useState(false);
-
   return (
     <div
       style={{
@@ -49,10 +54,7 @@ function Terminal() {
         direction="horizontal"
         className="min-h-[200px] w-full"
       >
-        <ResizablePanel
-          defaultSize={expanded ? 100 : isMobile ? 100 : 80}
-          className="relative"
-        >
+        <ResizablePanel defaultSize={70} className="relative">
           <div className={`w-44 absolute right-3 top-3 bg-background`}>
             <Select
               defaultValue={String(limit)}
@@ -99,31 +101,56 @@ function Terminal() {
               config={config}
               setConfig={setConfig}
               color={graphColor}
+              fetchedArticles={fetchedArticles}
+              setFetchedArticles={setFetchedArticles}
+              selectedArticleId={selectedArticleId}
+              setSelectedArticleId={setSelectedArticleId}
             />
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle className={`${expanded ? "hidden" : ""}`} />
-        <ResizablePanel
-          defaultSize={expanded ? 0 : isMobile ? 0 : 20}
-          maxSize={isMobile ? 50 : 20}
-        >
-          <ResizablePanelGroup direction="vertical">
-            <ResizablePanel
-              defaultSize={50}
-              className="flex items-center justify-center border"
-            >
-              Drop articles here
-            </ResizablePanel>
-            <ResizableHandle
-              className={`hidden lg:flex ${expanded ? "hidden" : ""}`}
-            />
-            <ResizablePanel
-              defaultSize={50}
-              className="flex items-center justify-center border"
-            >
-              article results are listed here
-            </ResizablePanel>
-          </ResizablePanelGroup>
+        <ResizablePanel defaultSize={30} maxSize={50}>
+          <ScrollArea className="relative p-6 w-full rounded-md flex-col h-screen">
+            <div className="max-w-3xl mx-auto font-sans space-y-4">
+              <div>
+                <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+                  Results
+                </h3>
+              </div>
+              <div className="space-y-4">
+                {fetchedArticles.length &&
+                  fetchedArticles.map((article, index) => {
+                    const formattedHeader = formatText(
+                      article.header || "Loading...",
+                      70
+                    );
+                    const formattedLink = formatText(
+                      article.link || "Loading...",
+                      70
+                    );
+                    return (
+                      <div key={index} className="max-w-2xl">
+                        <div
+                          className=""
+                          onClick={() => setSelectedArticleId(article.id)}
+                        >
+                          <WordFadeIn
+                            words={formattedHeader}
+                            className={`text-left text-base font-medium ${selectedArticleId === article.id ? "text-purple-500" : "text-blue-700"} cursor-pointer duration-00 transition ease-in`}
+                          />
+                        </div>
+                        <Link href={article.link} target="_blank">
+                          <WordFadeIn
+                            words={formattedLink}
+                            className="text-left mt-1 text-sm text-muted-foreground group-hover:underline transition duration-1000 hover:underline"
+                          />
+                        </Link>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+          </ScrollArea>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

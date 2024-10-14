@@ -13,6 +13,7 @@ import MobileBucketForm from "@/components/buckets/MobileBucketForm";
 import PublicBucketView from "@/components/buckets/PublicBucketView";
 import { useFetchUserById } from "@/hooks/user";
 import { formatDistanceToNow } from "date-fns";
+import { ShareButton } from "@/components/utility/ShareButton";
 
 function Index() {
   const router = useRouter();
@@ -35,14 +36,7 @@ function Index() {
             {formatDistanceToNow(new Date(bucket.updated), { addSuffix: true })}
           </h1>
           <MobileBucketForm bucket={bucket} user={user} />
-          <Button
-            variant="outline"
-            size="sm"
-            className="ml-auto gap-1.5 text-sm"
-          >
-            <Share className="size-3.5" />
-            Share
-          </Button>
+          <ShareButton link={`${window.location.origin}/buckets/bucket/${bucketId}`} />
         </header>
         <main className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3">
           <ScrollArea
