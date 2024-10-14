@@ -19,7 +19,8 @@ origins = [
     "https://www.spydr.dev",
     "https://spydr.dev",
     "https://api.spydr.dev",
-    "https://vercel.spydr.dev"
+    "https://vercel.spydr.dev",
+    "https://spydrweb-git-feature-farouk-adelekes-projects.vercel.app"
 ]
 
 app.add_middleware(
