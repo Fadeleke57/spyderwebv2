@@ -142,7 +142,7 @@ function Graph({
     return () => {
       simulation.stop();
     };
-  }, [articles, color]);
+  }, [articles, color, selectedArticleId]);
 
   if (loading) {
     return <LoadingPage></LoadingPage>;

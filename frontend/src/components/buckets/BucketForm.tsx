@@ -27,9 +27,11 @@ type FormProps = {
 const bucketSchema = z.object({
   name: z.string().min(1, { message: "Claim is required" }),
   description: z.string().min(1, { message: "Description is required" }),
-  visibility: z.enum(["private", "public", "invite"], {
-    required_error: "Visibility is required",
-  }).optional(),
+  visibility: z
+    .enum(["private", "public", "invite"], {
+      required_error: "Visibility is required",
+    })
+    .optional(),
 });
 
 type BucketFormValues = z.infer<typeof bucketSchema>;
@@ -100,7 +102,7 @@ function BucketForm({ bucket, user }: FormProps) {
           </small>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <TagsPopover />
+          <TagsPopover bucket={bucket} />
         </div>
       </fieldset>
       <fieldset className="grid gap-6 rounded-lg border p-4">

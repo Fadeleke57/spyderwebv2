@@ -7,8 +7,13 @@ import {
 } from "@/components/ui/popover";
 import { Check } from "lucide-react";
 import { ScrollArea } from "../ui/scroll-area";
+import { Bucket } from "@/types/bucket";
+import { useAddTagToBucket } from "@/hooks/buckets";
+import { useRemoveTagFromBucket } from "@/hooks/buckets";
 
-export function TagsPopover() {
+export function TagsPopover({ bucket }: { bucket: Bucket }) {
+  const { addTagToBucket, loading: tagLoading, error } = useAddTagToBucket(bucket?.bucketId);
+  const { removeTagFromBucket, loading: removeTagLoading, error: removeTagError } = useRemoveTagFromBucket(bucket?.bucketId);
   const tagsList = [
     "Research",
     "Climate",
@@ -18,13 +23,15 @@ export function TagsPopover() {
     "Politics",
     "Business",
   ];
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>(bucket?.tags || []);
 
   const toggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter((t) => t !== tag));
+      removeTagFromBucket(tag);
     } else {
       setSelectedTags([...selectedTags, tag]);
+      addTagToBucket(tag);
     }
   };
 

@@ -5,8 +5,10 @@ from src.db.neo4j import driver as Neo4jDriver, run_query
 current_dir = os.path.dirname(__file__)
 nltk_data_path = os.path.join(current_dir, '..', 'nltk_data')
 nltk.data.path.append(os.path.abspath(nltk_data_path))
-
+from typing import List
 from nltk.tokenize import sent_tokenize
+from neo4j import Record
+from src.utils.queries import queries
 
 def split_into_sentences_nltk(text):
     return sent_tokenize(text)
@@ -51,4 +53,13 @@ def run_semantic_search(query: str,limit: int):
         result = match['metadata']
         result['id'] = match['id']
         results.append(result)
+    return results
+
+### execute an exact match search for article ids in neo4j
+def get_articles_by_ids(ids: List[str]) -> List[Record]:
+    results : List[Record] = []
+    for article_id in ids:
+        result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': article_id})
+        if result:
+            results.append(result[0])
     return results

@@ -69,8 +69,8 @@ function Index() {
   };
 
   const handleLogout = async () => {
-    router.push("/auth/login");
     await Logout();
+    window.location.href = "/";
   };
 
   return (
@@ -104,8 +104,15 @@ function Index() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/settings")}>Settings</DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">Support</DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => router.push("/settings")}
+              >
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer">
+                Support
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer text-destructive hover:text-destructive"

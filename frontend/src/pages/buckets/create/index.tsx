@@ -259,9 +259,6 @@ function Bucket() {
                     {form.formState.errors.description?.message}
                   </small>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <TagsPopover />
-                </div>
               </fieldset>
               <fieldset className="grid gap-6 rounded-lg border p-4">
                 <legend className="-ml-1 px-1 text-sm font-medium">

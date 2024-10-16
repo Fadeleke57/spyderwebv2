@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart";
-import { PolarAngleAxis, RadialBar, RadialBarChart } from "recharts";
 
 function PublicBucketView({
   bucket,
@@ -56,7 +55,7 @@ function PublicBucketView({
                 }}
                 data={[
                   {
-                    date: "2024",
+                    date: "Number of Sources in Bucket",
                     steps: 12435,
                   },
                 ]}
@@ -107,7 +106,7 @@ function PublicBucketView({
                 }}
                 data={[
                   {
-                    date: "2023",
+                    date: "Average Reliability Score",
                     steps: 10103,
                   },
                 ]}
@@ -130,84 +129,6 @@ function PublicBucketView({
                 <XAxis dataKey="steps" type="number" hide />
               </BarChart>
             </ChartContainer>
-            {/* circle chart*/}
-            <CardContent className="flex gap-4 p-4 max-w-s">
-              <div className="grid items-center gap-2">
-                <div className="grid flex-1 auto-rows-min gap-0.5">
-                  <div className="text-sm text-muted-foreground">Perspectives</div>
-                  <div className="flex items-baseline gap-1 text-xl font-bold tabular-nums leading-none">
-                    562/600
-                  </div>
-                </div>
-                <div className="grid flex-1 auto-rows-min gap-0.5">
-                  <div className="text-sm text-muted-foreground">Insights</div>
-                  <div className="flex items-baseline gap-1 text-xl font-bold tabular-nums leading-none">
-                    73/120
-                  </div>
-                </div>
-                <div className="grid flex-1 auto-rows-min gap-0.5">
-                  <div className="text-sm text-muted-foreground">Completion</div>
-                  <div className="flex items-baseline gap-1 text-xl font-bold tabular-nums leading-none">
-                    8/12
-                  </div>
-                </div>
-              </div>
-              <ChartContainer
-                config={{
-                  move: {
-                    label: "Move",
-                    color: "hsl(var(--chart-1))",
-                  },
-                  exercise: {
-                    label: "Exercise",
-                    color: "hsl(var(--chart-2))",
-                  },
-                  stand: {
-                    label: "Stand",
-                    color: "hsl(var(--chart-3))",
-                  },
-                }}
-                className="mx-auto aspect-square w-full max-w-[80%]"
-              >
-                <RadialBarChart
-                  margin={{
-                    left: -10,
-                    right: -10,
-                    top: -10,
-                    bottom: -10,
-                  }}
-                  data={[
-                    {
-                      activity: "stand",
-                      value: (8 / 12) * 100,
-                      fill: "var(--color-stand)",
-                    },
-                    {
-                      activity: "exercise",
-                      value: (46 / 60) * 100,
-                      fill: "var(--color-exercise)",
-                    },
-                    {
-                      activity: "move",
-                      value: (245 / 360) * 100,
-                      fill: "var(--color-move)",
-                    },
-                  ]}
-                  innerRadius="20%"
-                  barSize={24}
-                  startAngle={90}
-                  endAngle={450}
-                >
-                  <PolarAngleAxis
-                    type="number"
-                    domain={[0, 100]}
-                    dataKey="value"
-                    tick={false}
-                  />
-                  <RadialBar dataKey="value" background cornerRadius={5} />
-                </RadialBarChart>
-              </ChartContainer>
-            </CardContent>
           </div>
         </CardContent>
       </Card>
