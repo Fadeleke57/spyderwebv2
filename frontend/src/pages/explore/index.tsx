@@ -84,7 +84,7 @@ function Index() {
   };
 
   return (
-    <div className="w-full flex flex-col gap-8 p-8">
+    <div className="max-w-[1200px] mx-auto flex flex-col gap-8 p-8">
       <div className="flex justify-between">
         <div>
           <h1 className="text-4xl font-extrabold">Explore Buckets</h1>

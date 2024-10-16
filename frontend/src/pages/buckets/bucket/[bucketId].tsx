@@ -14,6 +14,7 @@ import PublicBucketView from "@/components/buckets/PublicBucketView";
 import { useFetchUserById } from "@/hooks/user";
 import { formatDistanceToNow } from "date-fns";
 import { ShareButton } from "@/components/utility/ShareButton";
+import Image from "next/image";
 
 function Index() {
   const router = useRouter();
@@ -31,12 +32,21 @@ function Index() {
     <div className="grid h-screen w-full">
       <div className="flex flex-col">
         <header className="sticky top-0 z-10 flex h-[57px] items-center justify-between gap-1 border-b bg-background px-4">
-          <h1 className="text-xs md:text-md lg:text-lg font-semibold">
+          <Image
+            src={`https://robohash.org/${bucketOwner?.id}?size=300x300`}
+            width={30}
+            height={30}
+            alt="Avatar"
+            className="overflow-hidden rounded-full"
+          />
+          <h1 className="text-xs md:text-base lg:text-base font-semibold">
             {bucketOwner?.full_name || "Bucket"} -{" "}
-            {formatDistanceToNow(new Date(bucket.updated), { addSuffix: true })}
+            <span className="text-sm text-muted-foreground font-normal">{formatDistanceToNow(new Date(bucket.updated), { addSuffix: true })}</span>
           </h1>
           <MobileBucketForm bucket={bucket} user={user} />
-          <ShareButton link={`${window.location.origin}/buckets/bucket/${bucketId}`} />
+          <ShareButton
+            link={`${window.location.origin}/buckets/bucket/${bucketId}`}
+          />
         </header>
         <main className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3">
           <ScrollArea

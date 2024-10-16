@@ -4,7 +4,7 @@ from fastapi_login.exceptions import InvalidCredentialsException
 from fastapi.responses import JSONResponse, RedirectResponse
 from src.routes.auth.oauth2 import get_google_token, get_google_user, manager, get_password_hash, verify_password, get_user
 from src.core.config import settings
-from src.models.user import User
+from src.models.user import User, CreateUser
 from src.db.mongodb import get_collection
 from datetime import timedelta
 import logging
@@ -86,7 +86,7 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
     return response
 
 @router.post('/register')
-def register(user: User):
+def register(user: CreateUser):
     collection = get_collection('users')
     if collection.find_one({"email": user.email}):
         raise HTTPException(status_code=400, detail="Email already registered")
