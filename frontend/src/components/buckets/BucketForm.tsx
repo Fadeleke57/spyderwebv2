@@ -25,7 +25,7 @@ type FormProps = {
 };
 
 const bucketSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
+  name: z.string().min(1, { message: "Claim is required" }),
   description: z.string().min(1, { message: "Description is required" }),
   visibility: z.enum(["private", "public", "invite"], {
     required_error: "Visibility is required",
@@ -71,12 +71,12 @@ function BucketForm({ bucket, user }: FormProps) {
         <legend className="-ml-1 px-1 text-sm font-medium">Information</legend>
         <div className="grid gap-3">
           <div className="grid gap-3">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">Claim</Label>
             <Input
               id="name"
               type="text"
               defaultValue={bucket?.name}
-              placeholder="i.e. Elon Musk's Twitter Scandals"
+              placeholder="Enter a claim, something that can be proven or disproved..."
               {...form.register("name")}
               disabled={!isOwner}
             />
@@ -89,7 +89,7 @@ function BucketForm({ bucket, user }: FormProps) {
           <Label htmlFor="description">Description</Label>
           <Textarea
             id="description"
-            placeholder="This bucket contains a map of all of Elon's twitter slip ups.."
+            placeholder="Enter a brief description of the claim..."
             className="min-h-[9.5rem]"
             defaultValue={bucket?.description}
             {...form.register("description")}
