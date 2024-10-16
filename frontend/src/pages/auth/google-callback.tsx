@@ -10,7 +10,7 @@ const GoogleCallback: React.FC = () => {
     if (token && email && name) {
       localStorage.setItem("token", token as string);
       setTimeout(() => {
-        router.push("/terminal");
+        window.location.href = "/explore";
       }, 2000);
     }
   }, [router.query, router]);

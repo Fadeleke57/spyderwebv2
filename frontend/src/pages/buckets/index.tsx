@@ -93,7 +93,9 @@ function Index() {
                 className="overflow-hidden rounded-full"
               >
                 <Image
-                  src={user?.profile_picture_url || ""}
+                  src={
+                    `https://robohash.org/${user?.id}?size=300x300`
+                  }
                   width={36}
                   height={36}
                   alt="Avatar"

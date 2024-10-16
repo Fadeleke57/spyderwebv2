@@ -78,7 +78,7 @@ const Login = () => {
           description: "Redirecting to the terminal.",
         });
         localStorage.setItem("token", response.data.access_token);
-        router.push("/terminal");
+        window.location.href = "/home";
       }
     } catch (error) {
       console.error("Login failed", error);

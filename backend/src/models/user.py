@@ -18,10 +18,6 @@ class User(BaseModel): #user
     profile_picture_url: str
 
 class CreateUser(BaseModel): #creating user
-    id: str
-    full_name: str
     username: str
     email: str
-    hashed_password: str
-    profile_picture_url: str
-    analytics: Analytics
+    password: str
