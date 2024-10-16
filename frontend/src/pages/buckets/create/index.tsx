@@ -235,11 +235,11 @@ function Bucket() {
                 </legend>
                 <div className="grid gap-3">
                   <div className="grid gap-3">
-                    <Label htmlFor="name">Name</Label>
+                    <Label htmlFor="name">Claim</Label>
                     <Input
                       id="name"
                       type="text"
-                      placeholder="i.e. Elon Musk's Twitter Scandals"
+                      placeholder="Enter a claim, something that can be proven or disproved..."
                       {...form.register("name")}
                     />
                     <small className="text-red-500">
@@ -251,16 +251,13 @@ function Bucket() {
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
-                    placeholder="This bucket contains a map of all of Elon's twitter slip ups.."
+                    placeholder="Enter a brief description of the claim..."
                     className="min-h-[9.5rem]"
                     {...form.register("description")}
                   />
                   <small className="text-red-500">
                     {form.formState.errors.description?.message}
                   </small>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <TagsPopover />
                 </div>
               </fieldset>
               <fieldset className="grid gap-6 rounded-lg border p-4">

@@ -9,7 +9,7 @@ router = APIRouter()
 from datetime import datetime
 from src.models.bucket import BucketConfig, UpdateBucket
 from fastapi.exceptions import HTTPException
-
+from src.utils.graph import get_articles_by_ids
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
@@ -112,3 +112,43 @@ def unlike_bucket(bucket_id: str, user=Depends(manager)):
     if not result:
         raise HTTPException(status_code=400, detail="Not liked yet or bucket not found")
     return {"result": len(result["likes"])}
+
+@router.patch("/add/tag/{bucket_id}/{tag}")
+def add_tag(bucket_id: str, tag: str, user=Depends(manager)):
+    print("Tag is ", tag)
+    check_user(user)
+    buckets = get_collection("buckets")
+    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$push": {"tags": tag}})
+    return {"result": True}
+
+@router.patch("/remove/tag/{bucket_id}/{tag}")
+def remove_tag(bucket_id: str, tag: str, user=Depends(manager)):
+    check_user(user)
+    buckets = get_collection("buckets")
+    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$pull": {"tags": tag}})
+    return {"result": True}
+
+@router.patch("/add/article/{bucket_id}/{article_id}")
+def add_article(bucket_id: str, article_id: str, user=Depends(manager)):
+    check_user(user)
+    buckets = get_collection("buckets")
+    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$push": {"articleIds": article_id}})
+    return {"result": True}
+
+@router.patch("/remove/article/{bucket_id}/{article_id}")
+def remove_article(bucket_id: str, article_id: str, user=Depends(manager)):
+    check_user(user)
+    buckets = get_collection("buckets")
+    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$pull": {"articleIds": article_id}})
+    return {"result": True}
+
+@router.get("/articles/{bucket_id}")
+def get_articles(bucket_id: str, user=Depends(manager)):
+    check_user(user)
+    buckets = get_collection("buckets")
+    bucket = buckets.find_one({"bucketId": bucket_id, "userId": user["id"]})
+    if not bucket:
+        raise HTTPException(status_code=404, detail="Bucket not found")
+    articleIds = bucket["articleIds"]
+    articles = get_articles_by_ids(articleIds)
+    return {"result": articles}

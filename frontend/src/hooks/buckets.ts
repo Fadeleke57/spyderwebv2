@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
 import { Bucket, UpdateBucket } from "@/types/bucket";
+import { Article } from "@/types/article";
 
 export function useFetchBuckets() {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
@@ -59,7 +60,6 @@ export function useCreateBucket() {
 
   const createBucket = async (config: any) => {
     setLoading(true);
-    console.log(config);
     try {
       const response = await api.post("/buckets/create", config);
     } catch (err) {
@@ -109,7 +109,7 @@ export function useUpdateBucket(bucketId: string) {
     setLoading(true);
     try {
       const response = await api.patch(`/buckets/update/${bucketId}`, config, {
-        headers: { "Content-Type": "application/json" }, 
+        headers: { "Content-Type": "application/json" },
       });
     } catch (err) {
       setError("Failed to update bucket");
@@ -179,7 +179,7 @@ export function useLikeBucket(bucketId: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const likeBucket = async () : Promise<number | null | undefined> => {
+  const likeBucket = async (): Promise<number | null | undefined> => {
     setLoading(true);
     try {
       const response = await api.post(`/buckets/like/${bucketId}`);
@@ -198,9 +198,9 @@ export function useLikeBucket(bucketId: string) {
 
 export function useUnlikeBucket(bucketId: string) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);  
+  const [error, setError] = useState<string | null>(null);
 
-  const unlikeBucket = async () : Promise<number | null | undefined> => {
+  const unlikeBucket = async (): Promise<number | null | undefined> => {
     setLoading(true);
     try {
       const response = await api.post(`/buckets/unlike/${bucketId}`);
@@ -215,4 +215,71 @@ export function useUnlikeBucket(bucketId: string) {
   };
 
   return { unlikeBucket, loading, error };
+}
+
+export function useAddTagToBucket(bucketId: string) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const addTagToBucket = async (tag: string) => {
+    setLoading(true);
+    try {
+      const response = await api.patch(`/buckets/add/tag/${bucketId}/${tag}`);
+    } catch (err) {
+      setError("Failed to add tag to bucket");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { addTagToBucket, loading, error };
+}
+
+export function useRemoveTagFromBucket(bucketId: string) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const removeTagFromBucket = async (tag: string) => {
+    setLoading(true);
+    try {
+      const response = await api.patch(
+        `/buckets/remove/tag/${bucketId}/${tag}`
+      );
+    } catch (err) {
+      setError("Failed to remove tag from bucket");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  return { removeTagFromBucket, loading, error };
+}
+
+export function useFetchArticlesForBucket(bucketId: string) {
+  const [articles, setArticles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get(`/buckets/articles/${bucketId}`);
+        const fetchedArticles: Article[] = response.data.result.flatMap(
+          (article: any) => article
+        );
+        setArticles(fetchedArticles);
+      } catch (err) {
+        setError("Failed to fetch bucket data");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [bucketId]);
+
+  return { articles, loading, error };
 }

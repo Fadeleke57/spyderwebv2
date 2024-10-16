@@ -10,17 +10,17 @@ function FindBucketsBlock() {
   const loadedBuckets = buckets.slice(0, 5);
   const router = useRouter();
   return (
-    <ScrollArea className="relative p-2 w-full rounded-md flex-col border h-80">
+    <ScrollArea className="relative p-2 w-full rounded-md border h-80">
       <div className="max-w-3xl mx-auto p-4 font-sans">
-        <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           {loadedBuckets.map((bucket, index) => (
             <div
               key={index}
-              className="max-w-2xl bg-slate-100 rounded-lg p-4 cursor-pointer hover:scale-110 duration-200 transition ease-in"
+              className="max-w-2xl border rounded-lg p-4 cursor-pointer hover:scale-110 duration-200 transition ease-in"
               onClick={() => router.push(`/buckets/bucket/${bucket.bucketId}`)}
             >
               <div className="group">
-                <h3 className="text-2xl font-medium">
+                <h3 className="text-md font-medium">
                   {formatText(bucket.name, 45)}
                 </h3>
               </div>
