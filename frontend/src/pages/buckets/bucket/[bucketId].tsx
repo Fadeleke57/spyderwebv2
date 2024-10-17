@@ -15,6 +15,7 @@ import { useFetchUserById } from "@/hooks/user";
 import { formatDistanceToNow } from "date-fns";
 import { ShareButton } from "@/components/utility/ShareButton";
 import Image from "next/image";
+import UserAvatar from "@/components/utility/UserAvatar";
 
 function Index() {
   const router = useRouter();
@@ -32,16 +33,14 @@ function Index() {
     <div className="grid h-screen w-full">
       <div className="flex flex-col">
         <header className="sticky top-0 z-10 flex h-[57px] items-center justify-between gap-1 border-b bg-background px-4">
-          <Image
-            src={`https://robohash.org/${bucketOwner?.id}?size=300x300`}
-            width={30}
-            height={30}
-            alt="Avatar"
-            className="overflow-hidden rounded-full"
-          />
+          <UserAvatar userId={bucket.userId} />
           <h1 className="text-xs md:text-base lg:text-base font-semibold">
             {bucketOwner?.full_name || "Bucket"} -{" "}
-            <span className="text-sm text-muted-foreground font-normal">{formatDistanceToNow(new Date(bucket.updated), { addSuffix: true })}</span>
+            <span className="text-sm text-muted-foreground font-normal">
+              {formatDistanceToNow(new Date(bucket.updated), {
+                addSuffix: true,
+              })}
+            </span>
           </h1>
           <MobileBucketForm bucket={bucket} user={user} />
           <ShareButton
