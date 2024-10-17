@@ -51,17 +51,29 @@ export const description =
 
 const bucketSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  description: z.string().min(1, { message: "Description is required" }),
-  visibility: z.enum(["private", "public", "invite"], {
-    required_error: "Visibility is required",
-  }),
+  description: z.string().min(0, { message: "Description is required" }),
+  visibility: z.enum(["private", "public", "invite"]).default("private"),
 });
+import { useEffect, useState } from "react";
+import { formatText } from "@/lib/utils";
+
 type BucketFormValues = z.infer<typeof bucketSchema>;
+
+type BucketConfig = {
+  name: string;
+  description: string;
+  visibility: "private" | "public" | "invite";
+};
+
 function Bucket() {
   const router = useRouter();
   const { toast } = useToast();
-  const { createBucket, loading } = useCreateBucket(); // Hook to create a bucket
-
+  const { createBucket, loading } = useCreateBucket();
+  const [bucketConfig, setBucketConfig] = useState<BucketConfig>({
+    name: "Untitled",
+    description: "",
+    visibility: "private",
+  });
   const form = useForm<BucketFormValues>({
     resolver: zodResolver(bucketSchema),
   });
@@ -69,9 +81,9 @@ function Bucket() {
   const onSubmit: SubmitHandler<BucketFormValues> = async (data) => {
     try {
       await createBucket({
-        name: data.name,
-        description: data.description,
-        private: data.visibility === "private",
+        name: bucketConfig.name,
+        description: bucketConfig.description,
+        private: bucketConfig.visibility === "private",
         tags: [], // add selected tags here, if applicable
         articleIds: [], // empty list for now
         imageKeys: [], // empty list for now
@@ -87,11 +99,37 @@ function Bucket() {
       });
     }
   };
+
+  const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.value === "") {
+      setBucketConfig({
+        ...bucketConfig,
+        name: "Untitled",
+      });
+      return;
+    }
+    setBucketConfig({
+      ...bucketConfig,
+      name: event.target.value,
+    });
+  };
+
+  const onDescriptionChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setBucketConfig({
+      ...bucketConfig,
+      description: event.target.value,
+    });
+  };
+
   return (
     <div className="grid h-screen w-full">
       <div className="flex flex-col">
         <header className="sticky top-0 z-10 flex h-[57px] items-center gap-1 border-b bg-background px-4">
-          <h1 className="text-xl font-semibold">New Bucket</h1>
+          <h1 className="text-xl font-semibold text-slate-500">
+            {formatText(bucketConfig.name, 100)}
+          </h1>
           <Drawer>
             <DrawerTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
@@ -211,14 +249,6 @@ function Bucket() {
               </form>
             </DrawerContent>
           </Drawer>
-          <Button
-            variant="outline"
-            size="sm"
-            className="ml-auto gap-1.5 text-sm"
-          >
-            <Share className="size-3.5" />
-            Share
-          </Button>
         </header>
         <main className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3">
           <ScrollArea
@@ -229,43 +259,8 @@ function Bucket() {
               onSubmit={form.handleSubmit(onSubmit)}
               className="grid w-full items-start gap-6"
             >
-              <fieldset className="grid gap-2 rounded-lg border p-4">
-                <legend className="-ml-1 px-1 text-sm font-medium">
-                  Information
-                </legend>
-                <div className="grid gap-3">
-                  <div className="grid gap-3">
-                    <Label htmlFor="name">Claim</Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="Enter a claim, something that can be proven or disproved..."
-                      {...form.register("name")}
-                    />
-                    <small className="text-red-500">
-                      {form.formState.errors.name?.message}
-                    </small>
-                  </div>
-                </div>
-                <div className="grid gap-3">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Enter a brief description of the claim..."
-                    className="min-h-[9.5rem]"
-                    {...form.register("description")}
-                  />
-                  <small className="text-red-500">
-                    {form.formState.errors.description?.message}
-                  </small>
-                </div>
-              </fieldset>
-              <fieldset className="grid gap-6 rounded-lg border p-4">
-                <legend className="-ml-1 px-1 text-sm font-medium">
-                  Settings
-                </legend>
-                <div className="grid gap-3">
-                  <Label htmlFor="visibility">Privacy</Label>
+              <fieldset className="grid gap-6 rounded-lg py-8 px-4">
+                <div className="flex flex-row items-center space-x-2">
                   <Select
                     onValueChange={(value) =>
                       form.setValue(
@@ -273,8 +268,12 @@ function Bucket() {
                         value as "private" | "public" | "invite"
                       )
                     }
+                    defaultValue="private"
                   >
-                    <SelectTrigger id="visibility">
+                    <SelectTrigger
+                      id="visibility"
+                      className="w-[160px] hover:cursor-pointer bg-muted"
+                    >
                       <SelectValue placeholder="Select visibility" />
                     </SelectTrigger>
                     <SelectContent>
@@ -287,10 +286,44 @@ function Bucket() {
                     {form.formState.errors.visibility?.message}
                   </small>
                 </div>
+                <div>
+                  <div className="flex flex-col space-y-2">
+                    <Textarea
+                      id="name"
+                      rows={1}
+                      placeholder="Give it a title..."
+                      {...form.register("name")}
+                      className="w-full min-h-[2rem] bg-transparent p-0 text-3xl font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-2xl font-semibold"
+                      onInput={(e: any) => {
+                        e.target.style.height = "auto";
+                        e.target.style.height = `${e.target.scrollHeight}px`;
+                        form.trigger("name");
+                      }}
+                      onChange={(e: any) => onTitleChange(e)}
+                    />
+                    <Textarea
+                      id="description"
+                      rows={1}
+                      placeholder="Enter a brief description of your bucket..."
+                      {...form.register("description")}
+                      className="w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-muted-foreground"
+                      onInput={(e: any) => {
+                        e.target.style.height = "auto";
+                        e.target.style.height = `${e.target.scrollHeight}px`;
+                      }}
+                      onChange={(e: any) => onDescriptionChange(e)}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <small className="text-red-500">
+                    {form.formState.errors.description?.message}
+                  </small>
+                </div>
+                <Button disabled={loading} type="submit" className="w-[100px]">
+                  {loading ? "Saving..." : "Save"}
+                </Button>
               </fieldset>
-              <Button disabled={loading} type="submit">
-                {loading ? "Saving..." : "Save"}
-              </Button>
             </form>
           </ScrollArea>
           <div className="relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 p-4 lg:col-span-2">

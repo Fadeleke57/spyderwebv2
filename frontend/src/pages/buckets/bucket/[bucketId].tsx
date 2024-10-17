@@ -1,11 +1,7 @@
 import React from "react";
 import { useRouter } from "next/router";
 import { useFetchBucketById } from "@/hooks/buckets";
-import { Share } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { z } from "zod";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatText } from "@/lib/utils";
 import { useUser } from "@/context/UserContext";
 import BucketPlayground from "@/components/buckets/BucketPlayground";
 import BucketForm from "@/components/buckets/BucketForm";
@@ -14,7 +10,6 @@ import PublicBucketView from "@/components/buckets/PublicBucketView";
 import { useFetchUserById } from "@/hooks/user";
 import { formatDistanceToNow } from "date-fns";
 import { ShareButton } from "@/components/utility/ShareButton";
-import Image from "next/image";
 import UserAvatar from "@/components/utility/UserAvatar";
 
 function Index() {
