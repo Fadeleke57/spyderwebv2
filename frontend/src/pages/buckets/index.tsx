@@ -43,6 +43,7 @@ import { format } from "date-fns";
 import { formatText } from "@/lib/utils";
 import { useRouter } from "next/router";
 import withAuth from "@/hoc/withAuth";
+import UserAvatar from "@/components/utility/UserAvatar";
 
 function Index() {
   const { user, Logout } = useFetchUser();
@@ -87,21 +88,7 @@ function Index() {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="overflow-hidden rounded-full"
-              >
-                <Image
-                  src={
-                    `https://robohash.org/${user?.id}?size=300x300`
-                  }
-                  width={36}
-                  height={36}
-                  alt="Avatar"
-                  className="overflow-hidden rounded-full"
-                />
-              </Button>
+            <UserAvatar userId={user?.id} />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
