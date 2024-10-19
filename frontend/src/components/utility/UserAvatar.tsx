@@ -9,7 +9,7 @@ function UserAvatar({ userId }: { userId?: string }) {
     <Button
       variant="outline"
       size="icon"
-      className="overflow-hidden rounded-full"
+      className="rounded-full"
     >
       {userId ? (
         <Image
@@ -17,7 +17,7 @@ function UserAvatar({ userId }: { userId?: string }) {
           width={36}
           height={36}
           alt="Avatar"
-          className="overflow-hidden rounded-full"
+          className="rounded-full"
         />
       ) : (
         <Skeleton className="w-[36px] h-[36px]" />

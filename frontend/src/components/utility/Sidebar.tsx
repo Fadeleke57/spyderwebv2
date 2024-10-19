@@ -50,7 +50,7 @@ export default function Sidebar() {
           </Tooltip>
         </TooltipProvider>
 
-        <TooltipProvider>
+        {/* <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild onClick={() => setActive(2)}>
               <button
@@ -67,7 +67,7 @@ export default function Sidebar() {
             </TooltipTrigger>
             <TooltipContent side="right">Search</TooltipContent>
           </Tooltip>
-        </TooltipProvider>
+        </TooltipProvider> */}
 
         <TooltipProvider>
           <Tooltip>

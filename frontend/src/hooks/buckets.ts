@@ -66,9 +66,6 @@ export function useCreateBucket() {
       setError("Failed to create bucket");
       console.error(err);
     } finally {
-      toast({
-        title: "Bucket created",
-      });
       setLoading(false);
     }
   };
@@ -85,10 +82,6 @@ export function useDeleteBucket() {
     try {
       const response = await api.delete("/buckets/delete", {
         params: { bucketId },
-      });
-      toast({
-        title: "Bucket deleted",
-        description: response.data.result,
       });
     } catch (err) {
       setError("Failed to delete bucket");

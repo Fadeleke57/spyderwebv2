@@ -11,7 +11,7 @@ import { Bucket } from "@/types/bucket";
 import { formatText } from "@/lib/utils";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Heart, IterationCcw, BookMarked } from "lucide-react";
+import { Heart, IterationCcw, BookMarked, ArrowBigUpDash } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import { useLikeBucket, useUnlikeBucket } from "@/hooks/buckets";
 import LoginModal from "../utility/LoginModal";
@@ -83,10 +83,11 @@ export function BucketCard({ bucket }: { bucket: Bucket}) {
             >
               {bucketLikedCount}
             </p>
-            <BookMarked
-              size={20}
+            <ArrowBigUpDash
+              size={28}
               className={`${bucketLiked ? "text-blue-400" : "text-slate-500"}`}
               onClick={handleLikeBucket}
+              strokeWidth={1.4}
             />
           </div>
           <div className="flex flex-row items-center space-x-1">

@@ -44,6 +44,7 @@ import { formatText } from "@/lib/utils";
 import { useRouter } from "next/router";
 import withAuth from "@/hoc/withAuth";
 import UserAvatar from "@/components/utility/UserAvatar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function Index() {
   const { user, Logout } = useFetchUser();
@@ -88,7 +89,23 @@ function Index() {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-            <UserAvatar userId={user?.id} />
+              <Button
+                variant="outline"
+                size="icon"
+                className="overflow-hidden rounded-full"
+              >
+                {user?.id ? (
+                  <Image
+                    src={`https://robohash.org/${user.id}?size=300x300`}
+                    width={36}
+                    height={36}
+                    alt="Avatar"
+                    className="rounded-full"
+                  />
+                ) : (
+                  <Skeleton className="w-[36px] h-[36px]" />
+                )}
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
@@ -243,7 +260,7 @@ function Index() {
                 <CardFooter>
                   <div className="flex justify-between items-center w-full">
                     <div className="text-xs text-muted-foreground">
-                      Showing <strong>{indexOfFirstItem + 1}</strong> to{" "}
+                      <strong>{indexOfFirstItem + 1}</strong> to{" "}
                       <strong>
                         {Math.min(indexOfLastItem, buckets.length)}
                       </strong>{" "}
@@ -352,7 +369,7 @@ function Index() {
                 <CardFooter>
                   <div className="flex justify-between items-center w-full">
                     <div className="text-xs text-muted-foreground">
-                      Showing <strong>{indexOfFirstItem + 1}</strong> to{" "}
+                      <strong>{indexOfFirstItem + 1}</strong> to{" "}
                       <strong>
                         {Math.min(indexOfLastItem, buckets.length)}
                       </strong>{" "}
@@ -461,7 +478,7 @@ function Index() {
                 <CardFooter>
                   <div className="flex justify-between items-center w-full">
                     <div className="text-xs text-muted-foreground">
-                      Showing <strong>{indexOfFirstItem + 1}</strong> to{" "}
+                      <strong>{indexOfFirstItem + 1}</strong> to{" "}
                       <strong>
                         {Math.min(indexOfLastItem, buckets.length)}
                       </strong>{" "}
@@ -570,7 +587,7 @@ function Index() {
                 <CardFooter>
                   <div className="flex justify-between items-center w-full">
                     <div className="text-xs text-muted-foreground">
-                      Showing <strong>{indexOfFirstItem + 1}</strong> to{" "}
+                      <strong>{indexOfFirstItem + 1}</strong> to{" "}
                       <strong>
                         {Math.min(indexOfLastItem, buckets.length)}
                       </strong>{" "}
