@@ -8,7 +8,7 @@ const TermsOfService = () => {
         Terms of Service
       </h1>
       <p className="text-xl text-muted-foreground mb-8">
-        <strong>Last updated: 8/18/2024</strong>
+        <strong>Last updated: 10/20/2024</strong>
       </p>
 
       <p>
@@ -89,7 +89,7 @@ const TermsOfService = () => {
       <h2>9. Governing Law</h2>
       <p>
         These Terms shall be governed by and construed in accordance with the
-        laws of [Your Jurisdiction], without regard to its conflict of laws
+        laws of the United States, without regard to its conflict of laws
         principles.
       </p>
 
