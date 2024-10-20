@@ -45,7 +45,7 @@ export default function BucketSearchModal({
               Spydr Search
             </h1>
             <p className="text-md text-muted-foreground text-left">
-              It isn't about the answers, it's the steps that'll get you there.
+              It isn&apos;t about the answers, it&apos;s the steps that&apos;will get you there.
             </p>
           </div>
           <div

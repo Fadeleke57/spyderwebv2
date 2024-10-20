@@ -7,11 +7,11 @@ export interface TextareaProps
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, ...props }, ref) => {
     const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
-
+    let textAreaCurrent = textAreaRef.current;
     const adjustHeight = () => {
-      if (textAreaRef.current) {
-        textAreaRef.current.style.height = "auto";
-        textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
+      if (textAreaCurrent) {
+        textAreaCurrent.style.height = "auto";
+        textAreaCurrent.style.height = `${textAreaCurrent.scrollHeight}px`;
       }
     };
 
@@ -31,7 +31,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           className
         )}
         ref={(instance) => {
-          textAreaRef.current = instance;
+          textAreaCurrent = instance;
           if (typeof ref === "function") {
             ref(instance);
           } else if (ref) {
