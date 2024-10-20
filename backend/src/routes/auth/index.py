@@ -10,6 +10,7 @@ from datetime import timedelta
 import logging
 from fastapi import APIRouter
 import uuid
+from datetime import datetime
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -48,11 +49,12 @@ async def auth_callback(code: str):
     user_data, profile_picture_url = await get_google_user(token_data["access_token"])
     email = user_data["email"]
     
-    collection = get_collection('users')
-    user = collection.find_one({"email": email})
+    Users = get_collection('users')
+    Buckets = get_collection('buckets')
+    user = Users.find_one({"email": email})
     
     if not user:
-        collection.insert_one({
+        Users.insert_one({
             "id": str(uuid.uuid4()),
             "username": user_data["name"],
             "full_name": user_data["name"],
@@ -62,6 +64,20 @@ async def auth_callback(code: str):
             "profile_picture_url": profile_picture_url,
             "analytics": { "searches": [] }
         })
+        Buckets.insert_one({
+            "bucketId": str(uuid.uuid4()),
+            "name": "Welcome to Spydr!",
+            "description": "This is your first bucket! Create a new bucket to get started.",
+            "userId": Users.find_one({"email": email})["id"],
+            "articleIds": [],
+            "created": datetime.now(),
+            "updated": datetime.now(),
+            "private": True,
+            "tags": [],
+            "likes": [],
+            "iterations": []
+        })
+        user = Users.find_one({"email": email})
     
     access_token = manager.create_access_token(
         data={"sub": email},
@@ -87,10 +103,13 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
 
 @router.post('/register')
 def register(user: CreateUser):
-    collection = get_collection('users')
-    if collection.find_one({"email": user.email}):
+    Users = get_collection('users')
+    Buckets = get_collection('buckets')
+    if Users.find_one({"email": user.email}):
         raise HTTPException(status_code=400, detail="Email already registered")
+    
     hashed_password = get_password_hash(user.password)
+
     user_data = {
         "id": str(uuid.uuid4()),
         "username": user.username,
@@ -101,7 +120,23 @@ def register(user: CreateUser):
         "profile_picture_url": None,
         "analytics": {"searches": []}
     }
-    collection.insert_one(user_data)
+
+    Users.insert_one(user_data)
+
+    Buckets.insert_one({
+        "bucketId": str(uuid.uuid4()),
+        "name": "Welcome to Spydr!",
+        "description": "This is your first bucket! Create a new bucket to get started.",
+        "userId": Users.find_one({"email": user.email})["id"],
+        "articleIds": [],
+        "created": datetime.now(),
+        "updated": datetime.now(),
+        "private": True,
+        "tags": [],
+        "likes": [],
+        "iterations": []
+    })
+
     return {"msg": "User registered successfully"}
 
 @router.get("/me")

@@ -52,12 +52,15 @@ function Index() {
             </small>
             <SearchHistoryBlock />
           </div>
-          <div className="w-full flex flex-col gap-4">
+          {/**
+           * 
+           *           <div className="w-full flex flex-col gap-4">
             <small className="text-sm font-medium leading-none flex inline items-center ml-2">
               Saved Buckets
             </small>
             <FindBucketsBlock />
           </div>
+           */}
         </div>
       </div>
     </div>

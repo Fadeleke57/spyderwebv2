@@ -54,7 +54,7 @@ class TimeSpider(scrapy.Spider):
         self.conn = Neo4jConnection(uri=URI, user=USERNAME, password=PASSWORD)
 #['climate', 'sports', 'health', 'tech', , 'science', 'entertainment', 'sports']
     def start_requests(self):
-        topics = ['business', 'tech', 'world', 'sports', 'science', 'health', 'entertainment']
+        topics = ['politics', 'climate', 'world', 'sports', 'science', 'health', 'entertainment']
         for topic in topics:
             url = f'https://time.com/section/{topic}/'
             central_corpus = build_central_corpus(topic, output_dir="../data")

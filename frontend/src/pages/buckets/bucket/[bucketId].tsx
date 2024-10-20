@@ -15,7 +15,7 @@ import UserAvatar from "@/components/utility/UserAvatar";
 function Index() {
   const router = useRouter();
   const { bucketId } = router.query;
-  const { bucket, loading, error } = useFetchBucketById(bucketId as string);
+  const { bucket, loading, error, refetch } = useFetchBucketById(bucketId as string);
   const { user: bucketOwner, loading: bucketOwnerLoading } = useFetchUserById(
     bucket?.userId as string
   );
@@ -28,19 +28,24 @@ function Index() {
     <div className="grid h-screen w-full">
       <div className="flex flex-col">
         <header className="sticky top-0 z-10 flex h-[57px] items-center justify-between gap-1 border-b bg-background px-4">
-          <UserAvatar userId={bucket.userId} />
-          <h1 className="text-xs md:text-base lg:text-base font-semibold">
-            {bucketOwner?.full_name || "Bucket"} -{" "}
-            <span className="text-sm text-muted-foreground font-normal">
-              {formatDistanceToNow(new Date(bucket.updated), {
-                addSuffix: true,
-              })}
-            </span>
-          </h1>
-          <MobileBucketForm bucket={bucket} user={user} />
-          <ShareButton
-            link={`${window.location.origin}/buckets/bucket/${bucketId}`}
-          />
+          <div className="flex items-center gap-2">
+            <UserAvatar userId={bucket.userId} />
+            <div className="flex flex-col gap-0">
+              <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
+                {bucketOwner?.full_name || "Bucket"}{" "}
+              </h1>
+              <span className="text-xs text-muted-foreground font-normal m-0">
+                {formatDistanceToNow(new Date(bucket.updated), {
+                  addSuffix: true,})}
+              </span>
+            </div>
+          </div>
+          <div>
+            <MobileBucketForm bucket={bucket} user={user} />
+            <ShareButton
+              link={`${window.location.origin}/buckets/bucket/${bucketId}`}
+            />
+          </div>
         </header>
         <main className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3">
           <ScrollArea
@@ -53,7 +58,7 @@ function Index() {
               <PublicBucketView bucket={bucket} user={user} />
             )}
           </ScrollArea>
-          <BucketPlayground bucket={bucket} user={user} />
+          <BucketPlayground bucket={bucket} user={user} refetch={refetch} />
         </main>
       </div>
     </div>

@@ -9,6 +9,7 @@ from typing import List
 from nltk.tokenize import sent_tokenize
 from neo4j import Record
 from src.utils.queries import queries
+from typing import Optional
 
 def split_into_sentences_nltk(text):
     return sent_tokenize(text)
@@ -57,9 +58,16 @@ def run_semantic_search(query: str,limit: int):
 
 ### execute an exact match search for article ids in neo4j
 def get_articles_by_ids(ids: List[str]) -> List[Record]:
-    results : List[Record] = []
-    for article_id in ids:
-        result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': article_id})
-        if result:
-            results.append(result[0])
-    return results
+    query = """
+    MATCH (a:Article)
+    WHERE a.id IN $article_ids
+    RETURN a
+    """
+    articles = run_query(query, {'article_ids': ids})
+    return articles
+
+def get_article_by_id(id: str) -> Optional[Record]:
+    result = run_query(queries["GET_ARTICLE_BY_ID"], {'article_id': id})
+    if not result:
+        return None
+    return result

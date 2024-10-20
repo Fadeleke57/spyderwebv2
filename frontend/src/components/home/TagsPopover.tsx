@@ -38,10 +38,10 @@ export function TagsPopover({ bucket }: { bucket: Bucket }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline">Tags</Button>
+        <Button className="w-[80px]" variant="outline">Tags</Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 h-80">
-        <ScrollArea className="h-80 p-4 w-full">
+      <PopoverContent className="w-64 h-64">
+        <ScrollArea className="h-64 p-4 w-full">
           <div className="w-full h-fit rounded-md inline-flex justify-start flex-wrap gap-2">
             {tagsList.map((tag) => {
               const isSelected = selectedTags.includes(tag);

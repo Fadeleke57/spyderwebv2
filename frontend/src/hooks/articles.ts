@@ -91,8 +91,8 @@ export function useFetchArticleRelevantSentences(
     const fetchData = async () => {
       setLoading(true);
       //if (!enableSpyderSearch) {
-       // setLoading(false);
-       // return;
+      // setLoading(false);
+      // return;
       //}
       try {
         const response = await api.get(`/articles/sentences/`, {

@@ -6,6 +6,7 @@ import {
   Lock,
   Mic,
   Paperclip,
+  Pencil,
   Rabbit,
   Settings,
   Share,
@@ -133,118 +134,57 @@ function Bucket() {
           <Drawer>
             <DrawerTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
-                <Settings className="size-4" />
+                <Pencil className="size-4" />
                 <span className="sr-only">Settings</span>
               </Button>
             </DrawerTrigger>
             <DrawerContent className="max-h-[80vh]">
-              <DrawerHeader>
-                <DrawerTitle>Configuration</DrawerTitle>
-                <DrawerDescription>
-                  Configure the settings for the model and messages.
-                </DrawerDescription>
-              </DrawerHeader>
-              <form className="grid w-full items-start gap-6 overflow-auto p-4 pt-0">
-                <fieldset className="grid gap-6 rounded-lg border p-4">
-                  <legend className="-ml-1 px-1 text-sm font-medium">
-                    Settings
-                  </legend>
-                  <div className="grid gap-3">
-                    <Label htmlFor="model">Model</Label>
-                    <Select>
-                      <SelectTrigger
-                        id="model"
-                        className="items-start [&_[data-description]]:hidden"
-                      >
-                        <SelectValue placeholder="Select a model" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="genesis">
-                          <div className="flex items-start gap-3 text-muted-foreground">
-                            <Rabbit className="size-5" />
-                            <div className="grid gap-0.5">
-                              <p>
-                                Neural{" "}
-                                <span className="font-medium text-foreground">
-                                  Genesis
-                                </span>
-                              </p>
-                              <p className="text-xs" data-description>
-                                Our fastest model for general use cases.
-                              </p>
-                            </div>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="explorer">
-                          <div className="flex items-start gap-3 text-muted-foreground">
-                            <Bird className="size-5" />
-                            <div className="grid gap-0.5">
-                              <p>
-                                Neural{" "}
-                                <span className="font-medium text-foreground">
-                                  Explorer
-                                </span>
-                              </p>
-                              <p className="text-xs" data-description>
-                                Performance and speed for efficiency.
-                              </p>
-                            </div>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="quantum">
-                          <div className="flex items-start gap-3 text-muted-foreground">
-                            <Turtle className="size-5" />
-                            <div className="grid gap-0.5">
-                              <p>
-                                Neural{" "}
-                                <span className="font-medium text-foreground">
-                                  Quantum
-                                </span>
-                              </p>
-                              <p className="text-xs" data-description>
-                                The most powerful model for complex
-                                computations.
-                              </p>
-                            </div>
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="grid w-full items-start gap-6"
+              >
+                <fieldset className="grid gap-6 rounded-lg py-8 px-4">
+                  <div>
+                    <div className="flex flex-col space-y-2">
+                      <Textarea
+                        id="name"
+                        rows={1}
+                        placeholder="Give it a title..."
+                        {...form.register("name")}
+                        className="w-full min-h-[2rem] bg-transparent p-0 text-3xl font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-2xl font-semibold"
+                        onInput={(e: any) => {
+                          e.target.style.height = "auto";
+                          e.target.style.height = `${e.target.scrollHeight}px`;
+                          form.trigger("name");
+                        }}
+                        onChange={(e: any) => onTitleChange(e)}
+                      />
+                      <Textarea
+                        id="description"
+                        rows={1}
+                        placeholder="Enter a brief description of your bucket..."
+                        {...form.register("description")}
+                        className="w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-muted-foreground"
+                        onInput={(e: any) => {
+                          e.target.style.height = "auto";
+                          e.target.style.height = `${e.target.scrollHeight}px`;
+                        }}
+                        onChange={(e: any) => onDescriptionChange(e)}
+                      />
+                    </div>
                   </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="temperature">Temperature</Label>
-                    <Input id="temperature" type="number" placeholder="0.4" />
+                  <div>
+                    <small className="text-red-500">
+                      {form.formState.errors.description?.message}
+                    </small>
                   </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="top-p">Top P</Label>
-                    <Input id="top-p" type="number" placeholder="0.7" />
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="top-k">Top K</Label>
-                    <Input id="top-k" type="number" placeholder="0.0" />
-                  </div>
-                </fieldset>
-                <fieldset className="grid gap-6 rounded-lg border p-4">
-                  <legend className="-ml-1 px-1 text-sm font-medium">
-                    Messages
-                  </legend>
-                  <div className="grid gap-3">
-                    <Label htmlFor="role">Role</Label>
-                    <Select defaultValue="system">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="system">System</SelectItem>
-                        <SelectItem value="user">User</SelectItem>
-                        <SelectItem value="assistant">Assistant</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="content">Content</Label>
-                    <Textarea id="content" placeholder="You are a..." />
-                  </div>
+                  <Button
+                    disabled={loading}
+                    type="submit"
+                    className="w-[100px]"
+                  >
+                    {loading ? "Saving..." : "Save Draft"}
+                  </Button>
                 </fieldset>
               </form>
             </DrawerContent>
@@ -260,32 +200,6 @@ function Bucket() {
               className="grid w-full items-start gap-6"
             >
               <fieldset className="grid gap-6 rounded-lg py-8 px-4">
-                <div className="flex flex-row items-center space-x-2">
-                  <Select
-                    onValueChange={(value) =>
-                      form.setValue(
-                        "visibility",
-                        value as "private" | "public" | "invite"
-                      )
-                    }
-                    defaultValue="private"
-                  >
-                    <SelectTrigger
-                      id="visibility"
-                      className="w-[160px] hover:cursor-pointer bg-muted"
-                    >
-                      <SelectValue placeholder="Select visibility" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="private">Private</SelectItem>
-                      <SelectItem value="public">Public</SelectItem>
-                      <SelectItem value="invite">Invite-Only</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <small className="text-red-500">
-                    {form.formState.errors.visibility?.message}
-                  </small>
-                </div>
                 <div>
                   <div className="flex flex-col space-y-2">
                     <Textarea
@@ -321,7 +235,7 @@ function Bucket() {
                   </small>
                 </div>
                 <Button disabled={loading} type="submit" className="w-[100px]">
-                  {loading ? "Saving..." : "Save"}
+                  {loading ? "Saving..." : "Save Draft"}
                 </Button>
               </fieldset>
             </form>

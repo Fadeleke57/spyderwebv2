@@ -1,28 +1,32 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
-import { Article, ArticleAsNode } from "@/types/article";
+import {
+  Article,
+  ArticleAsNode,
+  BucketConfigFormValues,
+} from "@/types/article";
 import { useState, Dispatch, SetStateAction } from "react";
-import { DataDrawer } from "./DataDrawer";
+import { DataDrawer } from "../terminal/DataDrawer";
 import { LoadingPage } from "@/components/utility/Loading";
-import { useFetchArticles } from "@/hooks/articles";
-import { ConfigFormValues } from "@/types/article";
+import { useCollectSourcesForBucket } from "@/hooks/generation";
+import { useFetchArticlesForBucket } from "@/hooks/buckets";
 
 interface GraphProps {
-  limit: number;
-  config: ConfigFormValues;
-  setConfig: (value: ConfigFormValues) => void;
-  color: string;
+  config: BucketConfigFormValues;
+  setConfig: (value: BucketConfigFormValues) => void;
+  bucketId: string;
+  hasArticles: boolean;
   fetchedArticles: Article[];
   setFetchedArticles: Dispatch<SetStateAction<Article[]>>;
-  selectedArticleId?: string | null;
+  selectedArticleId: string | null;
   setSelectedArticleId: Dispatch<SetStateAction<string | null>>;
 }
 
-function Graph({
-  limit,
+function BucketGraph({
   config,
   setConfig,
-  color,
+  bucketId,
+  hasArticles,
   fetchedArticles,
   setFetchedArticles,
   selectedArticleId,
@@ -31,26 +35,27 @@ function Graph({
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const { articles, loading, error } = useFetchArticles(
-    limit,
+  const { generateSourcesForBucket, loading, error } = useCollectSourcesForBucket(
+    bucketId,
     config,
-    setConfig
   );
-
+  const { articles, loading: articlesLoading, error: articlesError } = useFetchArticlesForBucket(
+    bucketId
+  )
 
   useEffect(() => {
     setFetchedArticles(articles);
     const width = 3200;
     const height = 2400;
     const centerX = width / 8 + 40;
-    const centerY = height / 8 + 40;
+    const centerY = height / 8 - 70;
     const circleRadius = Math.min(width, height) / 2 - 50;
 
     const zoomToNode = (event: MouseEvent | null, d: ArticleAsNode) => {
       if (event) event.stopPropagation();
 
       const scale = 3;
-      const [x, y] = [d.x + centerX - 100, d.y + centerY - 100];
+      const [x, y] = [d.x + centerX - 20, d.y + centerY + 40];
 
       const transform = d3.zoomIdentity
         .translate(width / 2, height / 2)
@@ -90,6 +95,7 @@ function Graph({
       const y = centerY + circleRadius * Math.sin(angle);
       return { ...d, x, y };
     });
+    console.log("nodes", nodes);
 
     const sizeScale = d3
       .scalePow()
@@ -112,7 +118,7 @@ function Graph({
             const reliabilityScore = d.reliability_score ?? 0;
             return sizeScale(reliabilityScore);
           })
-          .attr("fill", (d) => (selectedArticleId === d.id ? "#4338ca" : color))
+          .attr("fill", (d) => "#5ea4ff")
           .call(drag as any)
           .on("click", function (event, d) {
             event.stopPropagation();
@@ -141,26 +147,25 @@ function Graph({
     return () => {
       simulation.stop();
     };
-  }, [articles, color, selectedArticleId]);
+  }, [articles]);
 
-  if (loading) {
+  if (articlesLoading && hasArticles) {
     return <LoadingPage></LoadingPage>;
   }
 
   return (
     <>
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
-      {isDrawerOpen && (
+      {/*isDrawerOpen && (
         <DataDrawer
           article={selectedArticle as ArticleAsNode}
           open={isDrawerOpen}
           setOpen={setDrawerOpen}
-          color={color}
           config={config}
         />
-      )}
+      )*/}
     </>
   );
 }
 
-export default Graph;
+export default BucketGraph;
