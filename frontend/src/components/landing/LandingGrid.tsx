@@ -24,15 +24,11 @@ function LandingGrid() {
     setLoading(false);
   }, []);
 
-  if (shuffledTopics.length === 0) {
-    return null;
-  }
-
   const firstItem : Topic = shuffledTopics[0];
   const firstBlock : Topic[] = shuffledTopics.slice(1, 5);
   const lastBlock : Topic[] = shuffledTopics.slice(5, 9);
 
-  return loading ? (
+  return loading || !shuffledTopics.length ? (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <Skeleton className="w-full h-60" />
       <Skeleton className="w-full h-60" />
