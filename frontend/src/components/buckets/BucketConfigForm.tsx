@@ -1,17 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Input, SearchInput } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Calendar } from "@/components/ui/calendar";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SearchInput } from "@/components/ui/input";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,37 +12,40 @@ import {
   FormLabel,
   FormDescription,
 } from "@/components/ui/form";
-import { ConfigFormValues } from "@/types/article";
-import { topicsWithSubtopics } from "@/types/topics";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { CalendarIcon, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { BucketConfigFormValues } from "@/types/article";
 import { Bucket } from "@/types/bucket";
+import { useCollectSourcesForBucket } from "@/hooks/generation";
 
 type ConfigFormProps = {
   setIsOpen?: (value: boolean) => void;
-  setConfig: (value: ConfigFormValues) => void;
+  config: BucketConfigFormValues;
+  setConfig: (value: BucketConfigFormValues) => void;
   bucket: Bucket;
+  refetch: () => void;
 };
 
-function BucketConfigForm({ setIsOpen, setConfig, bucket }: ConfigFormProps) {
-  const form = useForm<ConfigFormValues>({
+function BucketConfigForm({ setIsOpen, config, setConfig, bucket, refetch }: ConfigFormProps) {
+  const { generateSourcesForBucket, loading, error } = useCollectSourcesForBucket(
+    bucket.bucketId,
+    config,
+  )
+  const form = useForm<BucketConfigFormValues>({
     resolver: zodResolver(
       z.object({
-        query: z.string().optional(),
-        topic: z.string().optional(),
-        enableSpydrSearch: z.boolean().optional(),
+        title: z.string().optional(),
+        description: z.string().optional(),
       })
     ),
   });
 
-  const onSubmit: SubmitHandler<ConfigFormValues> = (data) => {
+  const onSubmit: SubmitHandler<BucketConfigFormValues> = async (data) => {
     setConfig({
-      query: data.query,
-      topic: data.topic,
-      enableSpydrSearch: data.enableSpydrSearch,
+      title: data.title,
+      description: data.description,
     });
+
+    await generateSourcesForBucket();
+    refetch();
 
     if (setIsOpen) {
       setIsOpen(false);
@@ -70,7 +61,7 @@ function BucketConfigForm({ setIsOpen, setConfig, bucket }: ConfigFormProps) {
         >
           <FormField
             control={form.control}
-            name="query"
+            name="title"
             render={({ field }) => (
               <FormItem className="w-full">
                 <FormLabel className="hidden">Search</FormLabel>
@@ -88,80 +79,8 @@ function BucketConfigForm({ setIsOpen, setConfig, bucket }: ConfigFormProps) {
               </FormItem>
             )}
           />
-
-          {/*<FormField
-            control={form.control}
-            name="enableSpydrSearch"
-            render={({ field }) => (
-              <FormItem className="flex items-center space-x-2">
-                <FormLabel></FormLabel>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    aria-readonly
-                    id="ss"
-                    className="m-0 p-0"
-                  />
-                </FormControl>
-                <Label htmlFor="ss" className="">
-                  Enable Spydr Search
-                </Label>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
-
-          {/**
-          * 
-          * 
-          * <FormField
-            key={"topic"}
-            control={form.control}
-            name="topic"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Topic</FormLabel>
-                <FormControl>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <div className="flex w-full max-w-md items-center space-x-2">
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a topic" />
-                      </SelectTrigger>
-                    </div>
-                    <SelectContent className="max-h-[300px]">
-                      <SelectItem value="None" className="px-4">
-                        None
-                      </SelectItem>
-                      {topicsWithSubtopics.map((topic) => (
-                        <SelectGroup key={topic.name}>
-                          <SelectLabel className="px-4">
-                            {topic.name}
-                          </SelectLabel>
-                          {topic.subtopics.map((subtopic) => (
-                            <SelectItem
-                              key={subtopic.value}
-                              value={subtopic.value}
-                              className="px-4 cursor-pointer"
-                            >
-                              {subtopic.label}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormDescription>Choose a relevant topic.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          * 
-          */}
-
           <FormMessage>
-            <Button type="submit">Search</Button>
+            <Button disabled={loading} type="submit">{loading ? "Curating..." : "Save"}</Button>
           </FormMessage>
         </form>
       </Form>

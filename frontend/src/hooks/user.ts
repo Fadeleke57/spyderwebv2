@@ -14,7 +14,7 @@ export function useFetchUser() {
         const token = localStorage.getItem("token");
 
         if (!token) {
-          throw new Error("No token found");
+          return;
         }
 
         const response = await api.get("/auth/me");
@@ -104,6 +104,9 @@ export function useFetchUserById(userId: string) {
     const fetchUser = async () => {
       try {
         setLoading(true);
+        if (!userId) {
+          return;
+        }
         const response = await api.get(`/users/`, {
           params: { userId },
         });

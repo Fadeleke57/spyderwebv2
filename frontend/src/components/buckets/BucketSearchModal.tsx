@@ -8,19 +8,22 @@ import {
 } from "@/components/ui/dialog";
 import { Search, X } from "lucide-react";
 import ConfigForm from "../terminal/ConfigForm";
-import { ConfigFormValues } from "@/types/article";
-import { Undo2 } from "lucide-react";
+import { BucketConfigFormValues } from "@/types/article";
 import { Bucket } from "@/types/bucket";
 import BucketConfigForm from "./BucketConfigForm";
 
 type ConfigGraphModalProps = {
-    setConfig: (value: ConfigFormValues) => void;
-    bucket: Bucket
+  config: BucketConfigFormValues;
+  setConfig: (value: BucketConfigFormValues) => void;
+  bucket: Bucket;
+  refetch: () => void;
 };
 
 export default function BucketSearchModal({
-    setConfig,
-    bucket
+  config,
+  setConfig,
+  bucket,
+  refetch,
 }: ConfigGraphModalProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -53,7 +56,13 @@ export default function BucketSearchModal({
             <span>esc</span>
           </div>
         </DialogHeader>
-        <BucketConfigForm  bucket={bucket} setIsOpen={setIsOpen} setConfig={setConfig} />
+        <BucketConfigForm
+          config={config}
+          bucket={bucket}
+          setIsOpen={setIsOpen}
+          setConfig={setConfig}
+          refetch={refetch}
+        />
       </DialogContent>
     </Dialog>
   );

@@ -10,13 +10,6 @@ import { z } from "zod";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import BucketChart from "./BucketChart";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@radix-ui/react-select";
 
 type FormProps = {
   bucket: Bucket;

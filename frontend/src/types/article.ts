@@ -30,6 +30,11 @@ export interface ConfigFormValues {
   enableSpydrSearch: boolean;
 }
 
+export interface BucketConfigFormValues {
+  title: string;
+  description: string;
+}
+
 export type demoArticleType = {
   title: string;
   topics: {

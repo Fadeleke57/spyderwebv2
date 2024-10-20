@@ -146,6 +146,24 @@ export function useFetchBucketById(bucketId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const refetch = () => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await api.get(`/buckets/id`, {
+          params: { bucketId },
+        });
+        setBucket(response.data.result);
+      } catch (err) {
+        setError("Failed to fetch bucket data");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -165,7 +183,7 @@ export function useFetchBucketById(bucketId: string) {
     fetchData();
   }, [bucketId]);
 
-  return { bucket, loading, error };
+  return { bucket, loading, error, refetch };
 }
 
 export function useLikeBucket(bucketId: string) {
@@ -273,6 +291,5 @@ export function useFetchArticlesForBucket(bucketId: string) {
 
     fetchData();
   }, [bucketId]);
-
   return { articles, loading, error };
 }

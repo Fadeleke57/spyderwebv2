@@ -143,12 +143,14 @@ def remove_article(bucket_id: str, article_id: str, user=Depends(manager)):
     return {"result": True}
 
 @router.get("/articles/{bucket_id}")
-def get_articles(bucket_id: str, user=Depends(manager)):
-    check_user(user)
+def get_articles(bucket_id: str, user=Depends(manager.optional)):
+    if user:
+        check_user(user)
     buckets = get_collection("buckets")
-    bucket = buckets.find_one({"bucketId": bucket_id, "userId": user["id"]})
+    bucket = buckets.find_one({"bucketId": bucket_id})
     if not bucket:
         raise HTTPException(status_code=404, detail="Bucket not found")
     articleIds = bucket["articleIds"]
     articles = get_articles_by_ids(articleIds)
+    print("Found length of articles: ", len(articles))
     return {"result": articles}

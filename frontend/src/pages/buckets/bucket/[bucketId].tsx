@@ -15,7 +15,7 @@ import UserAvatar from "@/components/utility/UserAvatar";
 function Index() {
   const router = useRouter();
   const { bucketId } = router.query;
-  const { bucket, loading, error } = useFetchBucketById(bucketId as string);
+  const { bucket, loading, error, refetch } = useFetchBucketById(bucketId as string);
   const { user: bucketOwner, loading: bucketOwnerLoading } = useFetchUserById(
     bucket?.userId as string
   );
@@ -58,7 +58,7 @@ function Index() {
               <PublicBucketView bucket={bucket} user={user} />
             )}
           </ScrollArea>
-          <BucketPlayground bucket={bucket} user={user} />
+          <BucketPlayground bucket={bucket} user={user} refetch={refetch} />
         </main>
       </div>
     </div>

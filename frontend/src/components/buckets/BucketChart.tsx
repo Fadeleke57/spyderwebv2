@@ -35,7 +35,7 @@ function BucketChart({ bucket }: { bucket: Bucket }) {
             data={[
               {
                 date: "Number of Sources in Bucket",
-                steps: 12435,
+                steps: 5000,
               },
             ]}
           >
@@ -86,7 +86,7 @@ function BucketChart({ bucket }: { bucket: Bucket }) {
             data={[
               {
                 date: "Average Reliability Score",
-                steps: 10103,
+                steps: 3000,
               },
             ]}
           >

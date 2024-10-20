@@ -37,7 +37,6 @@ function Graph({
     setConfig
   );
 
-  useEffect(() => {}, [selectedArticleId]);
 
   useEffect(() => {
     setFetchedArticles(articles);
