@@ -30,14 +30,15 @@ function LandingGrid() {
 
   return loading || !shuffledTopics.length ? (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <Skeleton className="w-full h-60" />
-      <Skeleton className="w-full h-60" />
-      <Skeleton className="w-full h-60" />
-      <Skeleton className="w-full h-60" />
-      <Skeleton className="w-full h-60" />
-      <Skeleton className="w-full h-60" />
-      <Skeleton className="w-full h-60" />
-      <Skeleton className="w-full h-60" />
+      <Skeleton className="w-300 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
     </div>
   ) : (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

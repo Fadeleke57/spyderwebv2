@@ -10,6 +10,7 @@ import { DataDrawer } from "../terminal/DataDrawer";
 import { LoadingPage } from "@/components/utility/Loading";
 import { useCollectSourcesForBucket } from "@/hooks/generation";
 import { useFetchArticlesForBucket } from "@/hooks/buckets";
+import BucketDataDrawer from "./BucketDataDrawer";
 
 interface GraphProps {
   config: BucketConfigFormValues;
@@ -156,14 +157,14 @@ function BucketGraph({
   return (
     <>
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
-      {/*isDrawerOpen && (
-        <DataDrawer
-          article={selectedArticle as ArticleAsNode}
+      {isDrawerOpen && (
+        <BucketDataDrawer
+          source={selectedArticle as ArticleAsNode}
           open={isDrawerOpen}
           setOpen={setDrawerOpen}
           config={config}
         />
-      )*/}
+      )}
     </>
   );
 }
