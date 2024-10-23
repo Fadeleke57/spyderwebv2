@@ -34,7 +34,7 @@ function BucketChart({ bucket }: { bucket: Bucket }) {
             }}
             data={[
               {
-                date: "Number of Sources in Bucket",
+                date: "Number of Sources",
                 steps: 5000,
               },
             ]}
