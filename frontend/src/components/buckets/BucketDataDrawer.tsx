@@ -45,7 +45,7 @@ function BucketDataDrawer({
     //change chart to be negative - see shadcn docs
     desktop: {
       label: "score",
-      color: "#5f5f5f",
+      color: "#5ea4ff",
     },
   } satisfies ChartConfig;
 
