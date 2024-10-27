@@ -4,7 +4,6 @@ import type { ReactElement, ReactNode } from "react";
 import type { NextPage } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import { UserProvider } from "@/context/UserContext";
-import { SessionProvider } from "next-auth/react";
 import AppLayout from "@/app/AppLayout";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
@@ -23,10 +22,10 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <UserProvider>
       {getLayout(
-        <SessionProvider session={pageProps.session}>
+        <>
           <Component {...pageProps} />
           <Toaster />
-        </SessionProvider>
+        </>
       )}
     </UserProvider>
   );
