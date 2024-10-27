@@ -12,18 +12,18 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Settings } from "lucide-react";
-import { User } from "next-auth";
 import { useUser } from "@/context/UserContext";
 import { ChevronDown } from "lucide-react";
 import { LogOut } from "lucide-react";
 import { LayoutGrid } from "lucide-react";
 import { useRouter } from "next/router";
+import { PublicUser } from "@/types/user";
 
 export function UserDropDown({
   user,
   logout,
 }: {
-  user: User;
+  user: PublicUser;
   logout: () => void;
 }) {
   const router = useRouter();

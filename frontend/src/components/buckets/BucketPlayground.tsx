@@ -12,7 +12,7 @@ import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Paperclip, Mic, CornerDownLeft, Search } from "lucide-react";
 import { Bucket } from "@/types/bucket";
-import { User } from "next-auth";
+import { PublicUser } from "@/types/user";
 import BucketSearchModal from "./BucketSearchModal";
 import BucketGraph from "./BucketGraph";
 import {
@@ -27,7 +27,7 @@ function BucketPlayground({
   refetch,
 }: {
   bucket: Bucket;
-  user: User | null;
+  user: PublicUser | null;
   refetch: () => void;
 }) {
   const isOwner = user && user?.id === bucket?.userId;
