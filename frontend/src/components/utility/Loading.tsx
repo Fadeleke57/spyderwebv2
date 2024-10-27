@@ -22,7 +22,7 @@ function LoadingPage() {
 export const LandingLoader = () => {
   useEffect(() => {
     const loadGrid = async () => {
-      const { grid } = await import("ldrs"); 
+      const { grid } = await import("ldrs");
       console.log("grid", grid);
       grid.register();
     };
@@ -31,6 +31,26 @@ export const LandingLoader = () => {
   return (
     <div className="w-full h-full flex justify-center items-center z-50">
       <l-grid size="60" speed="1.5" color="black"></l-grid>
+    </div>
+  );
+};
+
+export const VideoLoader = () => {
+  useEffect(() => {
+    const loadVideo = async () => {
+      const { hourglass } = await import("ldrs");
+      hourglass.register();
+    };
+    loadVideo();
+  });
+  return (
+    <div className="w-full h-full flex justify-center items-center z-50">
+      <l-hourglass
+        size="40"
+        bg-opacity="0.1"
+        speed="1.75"
+        color="black"
+      ></l-hourglass>
     </div>
   );
 };
