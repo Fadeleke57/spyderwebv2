@@ -54,7 +54,7 @@ export default function LandingCarousel() {
         </h1>
         <Button
           variant={"link"}
-          onClick={() => router.push("/auth/login")}
+          onClick={() => router.push("/about/howto")}
           className="lg:inline text-xl p-0"
         >
           Learn how to use

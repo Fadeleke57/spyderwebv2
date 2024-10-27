@@ -26,7 +26,7 @@ import useMediaQuery from "@/hooks/general";
 const components = [
   {
     title: "Walkthrough Video",
-    href: "/",
+    href: "/about/howto",
     description:
       "A quick loom video showing how to get started with the app and its features.",
   },

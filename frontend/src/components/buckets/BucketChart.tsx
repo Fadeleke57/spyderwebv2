@@ -58,57 +58,6 @@ function BucketChart({ bucket }: { bucket: Bucket }) {
           </BarChart>
         </ChartContainer>
       </div>
-      <div className="grid auto-rows-min gap-2">
-        <div className="flex items-baseline gap-1 text-2xl font-bold tabular-nums leading-none">
-          {bucket.likes.length}
-          <span className="text-sm font-normal text-muted-foreground">
-            reliabillity
-          </span>
-        </div>
-        <ChartContainer
-          config={{
-            steps: {
-              label: "Sources",
-              color: "hsl(var(--muted))",
-            },
-          }}
-          className="aspect-auto h-[32px] w-full"
-        >
-          <BarChart
-            accessibilityLayer
-            layout="vertical"
-            margin={{
-              left: 0,
-              top: 0,
-              right: 0,
-              bottom: 0,
-            }}
-            data={[
-              {
-                date: "Average Reliability Score",
-                steps: 3000,
-              },
-            ]}
-          >
-            <Bar
-              dataKey="steps"
-              fill="var(--color-steps)"
-              radius={4}
-              barSize={32}
-            >
-              <LabelList
-                position="insideLeft"
-                dataKey="date"
-                offset={8}
-                fontSize={12}
-                fill="hsl(var(--muted-foreground))"
-              />
-            </Bar>
-            <YAxis dataKey="date" type="category" tickCount={1} hide />
-            <XAxis dataKey="steps" type="number" hide />
-          </BarChart>
-        </ChartContainer>
-      </div>
     </CardContent>
   );
 }

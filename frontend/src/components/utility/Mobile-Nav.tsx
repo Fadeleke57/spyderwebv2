@@ -37,7 +37,7 @@ const mainLinks = [
     subItems: [
       {
         title: "Walkthrough Video",
-        href: "/",
+        href: "/about/howto",
         label:
           "A quick loom video showing how to get started with the app and its features.",
       },
