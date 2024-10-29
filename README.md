@@ -1,15 +1,22 @@
- # spyderwebv2
--Backend: FastAPI with Mongo sotrage and Neo4j to store the weighted graph<br>
--Frontend: Next.js with Typescript and Tailwind
+ # Spydr is a research platform focused on redefining the search proccess for research ideas and reputable information.
+-Backend: <br>
+     Framework: FastAPI<br>
+     Misc. Storage: MongoDB<br>
+     Graph Storage: Neo4j<br>
+     Embeddings Storage: Pinecone<br><br>
+     
+-Frontend: Next.js with Typescript and Tailwind<br><br>
 
--The crawler directory is where I dump to my neo4j graph via 'scrapy crawl {spider_name}' -a search_term="{search term} -s MAX_DEPTH={farthest layer}".<br>
--By default, items will be scraped using a breadth-first search <br>
--Eventually, I'll add this to a cronjob to keep me from doing this manually.<br>
--It uses selenium (headless) middleware to parse dynamic web pages, a custom TF-IDF relevance model I made with genism, and an optional NLTK parameter for better precision. The NLTK option is significantly slower in tokenization so I usually defer it.<br>
--Weights between article nodes are determined by the relevance model.<br>
--Right now, I use the news API to render information about a topic, then train the model instance on a corpus that's fed from the rendered text. To speed up this process, I am caching general corpora (such as politics, sports, etc.) into an S3 bucket and feeding the cached documents directly into the model. <br>
--Each article is treated as a node and I use TextBlob to do an e2e analysis on an article including sentiment and subjectivity analysis. I'll probably integrate some sort of summary API or agent as well but I'm trying to avoid having to rely on a GPT or LLM.
+-Currently supporting: <br>
+Semantic Search<br>
+Keyword Search<br>
+Creating Buckets<br>
+Reliability Scoring<br>
+Managing Buckets<br>
+Curating sources to your argument<br>
 
--the backend is hosted in a docker container on ec2 but I'll leave the client on Vercel because of ci/cd compatibility with next.js.
+![image](https://github.com/user-attachments/assets/6d385351-0c9d-46bc-a3db-02d6d85f6d7f)
+![image](https://github.com/user-attachments/assets/cac2cfb7-58fd-4cb2-818c-992dee48be85)
+![image](https://github.com/user-attachments/assets/970d6fa5-3f37-4715-a334-1f200761ec29)
 
-Will make this readme look pretty eventually lol
+
