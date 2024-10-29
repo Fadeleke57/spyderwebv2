@@ -4,10 +4,20 @@ import { BucketCard } from "@/components/explore/BucketCard";
 import { Bucket } from "@/types/bucket";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuCheckboxItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { PlusCircle, File, ListFilter } from "lucide-react";
 import { useRouter } from "next/router";
 import { formatText } from "@/lib/utils";
+import { NewBucketModal } from "@/components/buckets/NewBucketModal";
+import { Skeleton } from "@/components/ui/skeleton";
+import { SkeletonCard } from "@/components/utility/SkeletonCard";
 
 function Index() {
   const { buckets, loading, error } = useFetchPublicBuckets();
@@ -15,7 +25,7 @@ function Index() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [active, setActive] = useState<boolean>(false);
   const searchInputWrapperRef = useRef<any>(null);
-  const bucketsPerPage = 6;
+  const bucketsPerPage = 12;
   const router = useRouter();
 
   useEffect(() => {
@@ -115,12 +125,7 @@ function Index() {
               Export
             </span>
           </Button>
-          <Button size="sm" className="h-8 gap-1" onClick={() => router.push("/buckets/create")}>
-            <PlusCircle className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Create bucket
-            </span>
-          </Button>
+          <NewBucketModal />
         </div>
       </div>
 
@@ -140,7 +145,14 @@ function Index() {
 
       <div className="w-full lg:min-h-[62vh]">
         {loading ? (
-          <p>Loading...</p>
+          <div className="w-full flex flex-wrap gap-10">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
         ) : error ? (
           <p>Error loading buckets</p>
         ) : currentBuckets.length > 0 ? (
@@ -150,7 +162,10 @@ function Index() {
                 <BucketCard
                   bucket={{
                     ...bucket,
-                    name: getHighlightedText(formatText(bucket.name, 140), query) as string,
+                    name: getHighlightedText(
+                      formatText(bucket.name, 140),
+                      query
+                    ) as string,
                   }}
                 />
               </div>

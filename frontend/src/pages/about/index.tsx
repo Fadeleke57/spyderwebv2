@@ -9,13 +9,13 @@ function index() {
       <div style={{ height: "60vh" }} className="w-full relative">
         <Image src={BGImage} alt="bg" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black opacity-50"></div>
-        <h1 className="absolute bottom-16 left-8 scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl max-w-2xl text-white">
-          Spydr: Build on Ideas, Don&apos;t Reinvent the Wheel
+        <h1 className="absolute bottom-16 left-8 scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl max-w-2xl text-white max-w-lg">
+          Build on Ideas, Don&apos;t Reinvent the Wheel
         </h1>
       </div>
       <div className="p-6 lg:px-10 py-0 py-10 flex flex-col gap-6">
         <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-          <span className="text-blue-500">The Problem:</span> Learning vs. Supporting
+          <span className="">The Problem:</span> Learning vs. Supporting
         </h2>
         <p>
           When people search online, their intent often falls into two
@@ -42,8 +42,7 @@ function index() {
         </p>
 
         <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
-          <span className="text-blue-500">Our Solution:</span> Spydr, Re-search without the
-          <span className="text-blue-500"> &ldquo;Re&rdquo;</span>
+          <span className="">An iterative solution</span> 
         </h2>
 
         <p>
@@ -60,7 +59,8 @@ function index() {
           top of reliable sources. Whether it&apos;s a political issue,
           business validation, academic research, or everyday questions, Spydr
           brings you the information that already exists—without summaries or
-          shortcuts.
+          shortcuts. The key idea is that some questions don&apos;t have answers,
+          and that&apos;s ok. Spydr&apos;s goal is to make it easy to get all the context.
         </p>
 
         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">

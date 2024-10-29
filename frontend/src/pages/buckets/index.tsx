@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFetchUser } from "@/hooks/user";
-import { useFetchBuckets } from "@/hooks/buckets";
+import { useDeleteBucket, useFetchBuckets } from "@/hooks/buckets";
 import Link from "next/link";
 import { format } from "date-fns";
 import { formatText } from "@/lib/utils";
@@ -45,10 +45,12 @@ import { useRouter } from "next/router";
 import withAuth from "@/hoc/withAuth";
 import UserAvatar from "@/components/utility/UserAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { NewBucketModal } from "@/components/buckets/NewBucketModal";
 
 function Index() {
   const { user, Logout } = useFetchUser();
-  const { buckets, loading, error } = useFetchBuckets();
+  const { buckets, loading, error, refetch } = useFetchBuckets();
+  const { deleteBucket, loading: deleteLoading } = useDeleteBucket();
   const router = useRouter();
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -73,6 +75,11 @@ function Index() {
   const handleLogout = async () => {
     await Logout();
     window.location.href = "/";
+  };
+
+  const handleDeleteBucket = async (id: string) => {
+    await deleteBucket(id);
+    refetch();
   };
 
   return (
@@ -168,16 +175,7 @@ function Index() {
                     Export
                   </span>
                 </Button>
-                <Button
-                  size="sm"
-                  className="h-8 gap-1"
-                  onClick={() => router.push("/buckets/create")}
-                >
-                  <PlusCircle className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Create Bucket
-                  </span>
-                </Button>
+                <NewBucketModal />
               </div>
             </div>
             <TabsContent value="all">
@@ -248,7 +246,7 @@ function Index() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuItem>Edit</DropdownMenuItem>
-                                <DropdownMenuItem>Delete</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDeleteBucket(bucket.bucketId)}>Delete</DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>

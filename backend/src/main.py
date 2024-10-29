@@ -6,6 +6,7 @@ from src.routes.graph.index import router as graph_router
 from src.routes.user.index import router as user_router
 from src.routes.buckets.index import router as buckets_router
 from src.routes.generation.index import router as generation_router
+from src.routes.notes.index import router as notes_router
 import logging
 
 logging.basicConfig(level=logging.ERROR)
@@ -37,6 +38,7 @@ app.include_router(graph_router, prefix="/articles")
 app.include_router(user_router, prefix="/users")
 app.include_router(buckets_router, prefix="/buckets")
 app.include_router(generation_router, prefix="/generation")
+app.include_router(notes_router, prefix="/notes")
 
 @app.get("/")
 def read_root():

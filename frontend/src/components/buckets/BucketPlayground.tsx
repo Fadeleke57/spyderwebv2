@@ -10,7 +10,7 @@ import {
 } from "../ui/tooltip";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
-import { Paperclip, Mic, CornerDownLeft, Search } from "lucide-react";
+import { Paperclip, Mic, CornerDownLeft, Search, ImageIcon } from "lucide-react";
 import { Bucket } from "@/types/bucket";
 import { PublicUser } from "@/types/user";
 import BucketSearchModal from "./BucketSearchModal";
@@ -104,15 +104,15 @@ function BucketPlayground({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="icon">
-                    <Mic className="size-4" />
-                    <span className="sr-only">Use Microphone</span>
+                    <ImageIcon className="size-4" />
+                    <span className="sr-only">Add Image</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="top">Use Microphone</TooltipContent>
+                <TooltipContent side="top">Add Image</TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <Button type="submit" size="sm" className="ml-auto gap-1.5">
-              Add Note
+              {isOwner ? " Add Note" : "Comment"}
               <CornerDownLeft className="size-3.5" />
             </Button>
           </div>
