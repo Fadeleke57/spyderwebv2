@@ -8,25 +8,27 @@ export function useFetchBuckets() {
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get("/buckets/all/user");
+      setBuckets(response.data.result);
+    } catch (err) {
+      setError("Failed to fetch bucket data");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const refetch = () => {
+    setLoading(true);
+    fetchData();
+  };
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get("/buckets/all/user");
-        setBuckets(response.data.result);
-      } catch (err) {
-        setError("Failed to fetch bucket data");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
-  return { buckets, loading, error };
+  return { buckets, loading, error, refetch };
 }
 
 export function useFetchLikedBuckets() {
@@ -125,6 +127,8 @@ export function useFetchPublicBuckets() {
     const fetchData = async () => {
       setLoading(true);
       try {
+        const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+        await delay(2000);
         const response = await api.get("/buckets/all/public");
         setBuckets(response.data.result);
       } catch (err) {
@@ -162,7 +166,7 @@ export function useFetchBucketById(bucketId: string) {
       }
     };
     fetchData();
-  }
+  };
 
   useEffect(() => {
     const fetchData = async () => {

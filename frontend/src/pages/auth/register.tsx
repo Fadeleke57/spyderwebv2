@@ -52,7 +52,7 @@ const Register = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      router.push("/terminal");
+      router.push("/explore");
     }
   }, [router]);
 
