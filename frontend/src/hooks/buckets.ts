@@ -127,8 +127,6 @@ export function useFetchPublicBuckets() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
-        await delay(2000);
         const response = await api.get("/buckets/all/public");
         setBuckets(response.data.result);
       } catch (err) {
