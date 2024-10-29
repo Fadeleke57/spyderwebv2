@@ -10,7 +10,7 @@ export default function Demo() {
       <div className="lg:px-0 h-fit lg:border-b-2 lg:border-slate-300 lg:pb-4">
         <h1 className="text-3xl sm:text-4xl lg:text-4xl font-bold tracking-tight mb-2 sm:mb-4 max-w-7xl mx-auto">
           An <span className="text-blue-500">all-in-one</span> research tool for
-          understanding the full context of your news.
+          understanding the full context of your ideas.
         </h1>
         <p className="leading-7 mt-4 text-base sm:text-lg font-medium max-w-full sm:max-w-sm lg:max-w-xl mx-auto sm:mx-0">
           Visualize connections between articles, track bias, and conduct deep,
