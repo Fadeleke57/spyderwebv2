@@ -3,7 +3,7 @@
      Framework: FastAPI<br>
      Misc. Storage: MongoDB<br>
      Graph Storage: Neo4j<br>
-     Embeddings Storage: Pinecone<br><br>
+     Embeddings: Pinecone<br><br>
      
 -Frontend: Next.js with Typescript and Tailwind<br><br>
 
