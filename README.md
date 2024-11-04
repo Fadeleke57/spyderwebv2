@@ -15,6 +15,8 @@ Reliability Scoring<br>
 Managing Buckets<br>
 Curating sources to your argument<br>
 
+-Future integrations: Considering introducing LightRag to provide retreival augmented generation on top of my neo4j graph
+
 ![image](https://github.com/user-attachments/assets/6d385351-0c9d-46bc-a3db-02d6d85f6d7f)
 ![image](https://github.com/user-attachments/assets/acb65a3a-6d6b-41a0-a37c-0879f7efec61)
 ![image](https://github.com/user-attachments/assets/970d6fa5-3f37-4715-a334-1f200761ec29)
