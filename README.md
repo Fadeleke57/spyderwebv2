@@ -1,8 +1,8 @@
  # Spydr is a research platform focused on redefining the search proccess for research ideas and reputable information.
 -Backend: <br>
      Framework: FastAPI<br>
-     Misc. Storage: MongoDB<br>
-     Graph Storage: Neo4j<br>
+     Misc. Storage: MongoDB with Pymongo interactions<br>
+     Graph Storage: Neo4j, using Cypher to query nodes<br>
      Embeddings: Pinecone<br><br>
      
 -Frontend: Next.js with Typescript and Tailwind<br><br>
