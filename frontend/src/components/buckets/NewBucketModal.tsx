@@ -98,10 +98,10 @@ export function NewBucketModal() {
           </span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] px-8">
+      <DialogContent className="max-w-[350px] px-8 rounded-md lg:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>What would you like to prove?</DialogTitle>
-          <DialogDescription>Create a new bucket.</DialogDescription>
+          <DialogTitle className="text-left">What would you like to start thinking about?</DialogTitle>
+          <DialogDescription className="text-left">Create a new mind bucket.</DialogDescription>
         </DialogHeader>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
