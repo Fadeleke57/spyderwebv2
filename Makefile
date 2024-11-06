@@ -15,5 +15,5 @@ start:
 
 stop:
 	@echo "Stopping all backend and frontend processes..."
-	pkill -f "uvicorn main:app --reload" || true
+	pkill -f "uvicorn src.main:app --reload" || true
 	pkill -f "npm run dev" || true
