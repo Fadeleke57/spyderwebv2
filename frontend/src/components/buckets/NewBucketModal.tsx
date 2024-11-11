@@ -46,7 +46,7 @@ export function NewBucketModal() {
 
   const onSubmit: SubmitHandler<BucketFormValues> = async (data) => {
     try {
-      await createBucket({
+      const bucketId = await createBucket({
         name: bucketConfig.name,
         description: bucketConfig.description,
         private: bucketConfig.visibility === "private",
@@ -54,9 +54,8 @@ export function NewBucketModal() {
         articleIds: [], // empty list for now
         imageKeys: [], // empty list for now
       });
-      toast({ title: "Bucket created successfully!" });
       form.reset(); // reset the form after successful submission
-      router.push("/buckets");
+      router.push("/buckets/bucket/" + bucketId);
     } catch (error: any) {
       toast({
         title: "Error creating bucket",
@@ -101,7 +100,7 @@ export function NewBucketModal() {
       <DialogContent className="max-w-[350px] px-8 rounded-md lg:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-left">What would you like to start thinking about?</DialogTitle>
-          <DialogDescription className="text-left">Create a new mind bucket.</DialogDescription>
+          <DialogDescription className="text-left">Create a second brain.</DialogDescription>
         </DialogHeader>
         <form
           onSubmit={form.handleSubmit(onSubmit)}

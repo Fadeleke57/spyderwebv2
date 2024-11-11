@@ -6,11 +6,9 @@ import {
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Search, X } from "lucide-react";
-import ConfigForm from "../terminal/ConfigForm";
+import { Link, Notebook, Plus, Search, Upload, X, Youtube } from "lucide-react";
 import { BucketConfigFormValues } from "@/types/article";
 import { Bucket } from "@/types/bucket";
-import BucketConfigForm from "./BucketConfigForm";
 
 type ConfigGraphModalProps = {
   config: BucketConfigFormValues;
@@ -31,21 +29,21 @@ export default function BucketSearchModal({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button onClick={() => setIsOpen(true)} className="mt-4">
-          <Search size={16} className="mr-2 cursor-pointer" />
-          Curate my sources
+          <Plus size={16} />
         </Button>
       </DialogTrigger>
       <DialogContent
         aria-describedby="description"
-        className="max-w-[80vw] h-[80vh] flex flex-col items-center px-6 pt-15 lg:p-20 overflow-y-auto"
+        className="max-w-[80vw] h-[80vh] flex flex-col gap-6 items-center px-6 lg:p-16 overflow-y-auto"
       >
         <DialogHeader className="w-full mx-auto flex flex-row justify-between items-start">
           <div className="space-y-4">
-            <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-7xl text-left">
-              Spydr Search
+            <h1 className="scroll-m-20 text-3xl font-extrabold tracking-tight lg:text-6xl text-left">
+              Upload
             </h1>
             <p className="text-md text-muted-foreground text-left">
-              It isn&apos;t about the answers, it&apos;s the steps that&apos;will get you there.
+              It isn&apos;t about the answers, it&apos;s the steps that will get
+              you there.
             </p>
           </div>
           <div
@@ -56,13 +54,65 @@ export default function BucketSearchModal({
             <span>esc</span>
           </div>
         </DialogHeader>
-        <BucketConfigForm
-          config={config}
-          bucket={bucket}
-          setIsOpen={setIsOpen}
-          setConfig={setConfig}
-          refetch={refetch}
-        />
+        <div className="w-full flex flex-col gap-8">
+          <div className="w-full bg-muted grid grid-cols-1 p-10 rounded-xl border-dashed border-2 border-slate-400">
+            <div className="flex flex-col gap-2 items-center">
+              <div>
+                <label htmlFor="file">
+                  <div className="relative p-4 rounded-full bg-slate-400 cursor-pointer hover:bg-slate-500">
+                    <Upload
+                      size={24}
+                      color="white"
+                      className="cursor-pointer"
+                    />
+                  </div>
+                </label>
+                <input
+                  type="file"
+                  id="file"
+                  multiple
+                  className="absolute inset-0 opacity-0 cursor-pointer"
+                  hidden
+                />
+              </div>
+              <div className="text-center">
+                <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight text-muted-foreground">
+                  Upload sources
+                </h3>
+                <p className="text-md text-muted-foreground text-center">
+                  Drag and drop or{" "}
+                  <label htmlFor="file">
+                    <span className="text-blue-500 cursor-pointer">
+                      choose file
+                    </span>{" "}
+                  </label>
+                  <input type="file" id="file" multiple hidden />
+                  to upload
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="w-full grid grid-cols-3 gap-4">
+            <div className="bg-muted rounded-xl p-4 flex flex-row gap-4 items-center cursor-pointer hover:scale-105 duration-00 transition ease-in">
+              <div className="bg-blue-500 rounded-full w-fit h-fit p-2">
+                <Link size={20} className="text-white" />
+              </div>
+              <p className="text-md text-muted-foreground">Website</p>
+            </div>
+            <div className="bg-muted rounded-xl p-4 flex flex-row gap-4 items-center cursor-pointer hover:scale-105 duration-00 transition ease-in">
+              <div className="bg-red-500 rounded-full w-fit h-fit p-2">
+                <Youtube size={20} className="text-white" />
+              </div>
+              <p className="text-md text-muted-foreground">Youtube</p>
+            </div>
+            <div className="bg-muted rounded-xl p-4 flex flex-row gap-4 items-center cursor-pointer hover:scale-105 duration-00 transition ease-in">
+              <div className="bg-purple-500 rounded-full w-fit h-fit p-2">
+                <Notebook size={20} className="text-white" />
+              </div>
+              <p className="text-md text-muted-foreground">Note</p>
+            </div>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

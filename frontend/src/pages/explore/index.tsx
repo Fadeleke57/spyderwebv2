@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useFetchPublicBuckets } from "@/hooks/buckets";
 import { BucketCard } from "@/components/explore/BucketCard";
 import { Bucket } from "@/types/bucket";
-import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -129,19 +129,13 @@ function Index() {
         </div>
       </div>
 
-      <div
-        ref={searchInputWrapperRef}
-        className={`w-full ${active ? "active" : ""}`}
-      >
-        <Input
-          type="text"
-          placeholder="Search for a bucket"
-          value={query}
-          onChange={handleSearch}
-          className="border border-gray-300 rounded-lg p-2 w-full"
-          onClick={() => setActive(true)}
-        />
-      </div>
+      <SearchInput
+        defaultValue={"whatever"}
+        placeholder="Search for a bucket"
+        onClick={() => setActive(true)}
+        onChange={handleSearch}
+        value={query}
+      ></SearchInput>
 
       <div className="w-full lg:min-h-[62vh]">
         {loading ? (

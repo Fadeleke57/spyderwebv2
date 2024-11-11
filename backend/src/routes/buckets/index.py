@@ -44,12 +44,14 @@ def get_user_liked_buckets(user: User = Depends(manager)):
 def create_bucket(config : BucketConfig, user=Depends(manager)):
     check_user(user)
     bucket = get_collection("buckets")
+    bucketId = str(uuid.uuid4())
     bucket.insert_one({
-        "bucketId": str(uuid.uuid4()),
+        "bucketId": bucketId,
         "name": config.name,
         "description": config.description,
         "userId": user["id"],
         "articleIds": config.articleIds,
+        "sourceIds": config.sourceIds or [],
         "created": datetime.now(),
         "updated": datetime.now(),
         "private": config.private,
@@ -57,7 +59,7 @@ def create_bucket(config : BucketConfig, user=Depends(manager)):
         "likes": [],
         "iterations": [],
     })
-    return {"result": "Bucket created"}
+    return {"result": bucketId}
 
 @router.delete("/delete")
 def delete_bucket(bucketId: str, user=Depends(manager)):
@@ -112,7 +114,7 @@ def unlike_bucket(bucket_id: str, user=Depends(manager)):
     if not result:
         raise HTTPException(status_code=400, detail="Not liked yet or bucket not found")
     return {"result": len(result["likes"])}
-
+"""
 @router.patch("/add/tag/{bucket_id}/{tag}")
 def add_tag(bucket_id: str, tag: str, user=Depends(manager)):
     print("Tag is ", tag)
@@ -127,22 +129,44 @@ def remove_tag(bucket_id: str, tag: str, user=Depends(manager)):
     buckets = get_collection("buckets")
     buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$pull": {"tags": tag}})
     return {"result": True}
+"""
+@router.patch("/add/source/{bucket_id}/{source_id}")
+def add_article(bucket_id: str, source_id: str, user=Depends(manager)):
+    """
+    Add a source to a bucket.
 
-@router.patch("/add/article/{bucket_id}/{article_id}")
-def add_article(bucket_id: str, article_id: str, user=Depends(manager)):
+    Args:
+        bucket_id (str): The ID of the bucket.
+        source_id (str): The ID of the source to add.
+        user (User): The user making the request.
+
+    Returns:
+        dict: A JSON response with a result key.
+    """
     check_user(user)
     buckets = get_collection("buckets")
-    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$push": {"articleIds": article_id}})
+    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$push": {"articleIds": source_id}})
     return {"result": True}
 
-@router.patch("/remove/article/{bucket_id}/{article_id}")
-def remove_article(bucket_id: str, article_id: str, user=Depends(manager)):
+@router.patch("/remove/source/{bucket_id}/{source_id}")
+def remove_article(bucket_id: str, source_id: str, user=Depends(manager)):
+    """
+    Remove a source from a bucket.
+
+    Args:
+        bucket_id (str): The ID of the bucket.
+        source_id (str): The ID of the source to remove.
+        user (User): The user making the request.
+
+    Returns:
+        dict: A JSON response of the form {"result": True} if the source was removed, or 404 if the bucket or source does not exist.
+    """
     check_user(user)
     buckets = get_collection("buckets")
-    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$pull": {"articleIds": article_id}})
+    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$pull": {"sourceIds": source_id}})
     return {"result": True}
 
-@router.get("/articles/{bucket_id}")
+@router.get("/articles/{bucket_id}") # to be depreceated
 def get_articles(bucket_id: str, user=Depends(manager.optional)):
     if user:
         check_user(user)
@@ -151,6 +175,19 @@ def get_articles(bucket_id: str, user=Depends(manager.optional)):
     if not bucket:
         raise HTTPException(status_code=404, detail="Bucket not found")
     articleIds = bucket["articleIds"]
+    articles = get_articles_by_ids(articleIds)
+    print("Found length of articles: ", len(articles))
+    return {"result": articles}
+
+@router.get("/sources/{bucket_id}")
+def get_articles(bucket_id: str, user=Depends(manager.optional)):
+    if user:
+        check_user(user)
+    buckets = get_collection("buckets")
+    bucket = buckets.find_one({"bucketId": bucket_id})
+    if not bucket:
+        raise HTTPException(status_code=404, detail="Bucket not found")
+    articleIds = bucket["sourceIds"]
     articles = get_articles_by_ids(articleIds)
     print("Found length of articles: ", len(articles))
     return {"result": articles}

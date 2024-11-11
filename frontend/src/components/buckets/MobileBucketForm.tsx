@@ -8,7 +8,9 @@ import {
 import { Button } from "../ui/button";
 import { Bird, Info, Rabbit, Settings, Turtle } from "lucide-react";
 import { PublicUser } from "@/types/user";
+import { useUser } from "@/context/UserContext";
 import BucketForm from "./BucketForm";
+import PublicBucketView from "./PublicBucketView";
 
 type FormProps = {
   bucket: Bucket;
@@ -25,7 +27,7 @@ function MobileBucketForm({ bucket, user }: FormProps) {
         </Button>
       </DrawerTrigger>
       <DrawerContent className="max-h-[80vh] p-4">
-        <BucketForm bucket={bucket} user={user} />
+        {bucket?.userId === user?.id ? <BucketForm bucket={bucket} user={user} /> : <PublicBucketView bucket={bucket} user={user} />}
       </DrawerContent>
     </Drawer>
   );

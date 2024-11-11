@@ -64,6 +64,7 @@ export function useCreateBucket() {
     setLoading(true);
     try {
       const response = await api.post("/buckets/create", config);
+      return response.data.result;
     } catch (err) {
       setError("Failed to create bucket");
       console.error(err);

@@ -7,6 +7,7 @@ class Bucket(BaseModel):
     tags: list[str]
     userId: str
     articleIds: list[str] #list of article ids to fetch from neo4j
+    sourceIds: list[str]
     imageKeys: list[str]
     created: str
     updated: str
@@ -20,6 +21,7 @@ class BucketConfig(BaseModel):
     private: bool
     tags: list[str] = []
     articleIds: list[str] = []
+    sourceIds: list[str] = []
     imageKeys: list[str] = []
 
 class UpdateBucket(BaseModel):

@@ -5,6 +5,7 @@ export interface Bucket {
   tags: string[];
   userId: string;
   articleIds: string[]; //list of article ids to fetch from neo4j
+  sourceIds?: string[]; //list of misc source ids
   imageKeys: string[];
   created: string;
   updated: string;

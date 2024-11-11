@@ -73,10 +73,6 @@ const Login = () => {
         }
       );
       if (response.status === 200) {
-        toast({
-          title: "Login successful",
-          description: "Redirecting to the terminal.",
-        });
         localStorage.setItem("token", response.data.access_token);
         window.location.href = "/home";
       }

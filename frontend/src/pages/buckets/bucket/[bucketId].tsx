@@ -27,7 +27,7 @@ function Index() {
     bucket?.userId as string
   );
   const { user } = useUser();
-  const isOwner = user && user?.id === bucket?.userId;
+  const isOwner = user?.id === bucket?.userId;
 
   return (
     <div className="grid h-screen w-full">
@@ -38,13 +38,13 @@ function Index() {
               <SkeletonUserCard />
             ) : (
               <>
-                <UserAvatar userId={bucket.userId} />{" "}
+                <UserAvatar userId={bucket?.userId} />{" "}
                 <div className="flex flex-col gap-0">
                   <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
                     {bucketOwner?.full_name || "Bucket"}{" "}
                   </h1>
                   <span className="text-xs text-muted-foreground font-normal m-0">
-                    {formatDistanceToNow(new Date(bucket.updated), {
+                    {bucket?.updated && formatDistanceToNow(new Date(bucket?.updated), {
                       addSuffix: true,
                     })}
                   </span>
@@ -52,7 +52,7 @@ function Index() {
               </>
             )}
           </div>
-          <div>
+          <div className="flex items-center gap-2">
             <MobileBucketForm bucket={bucket} user={user} />
             <ShareButton
               link={`${window.location.origin}/buckets/bucket/${bucketId}`}
