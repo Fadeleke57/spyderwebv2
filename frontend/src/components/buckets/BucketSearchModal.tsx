@@ -34,7 +34,7 @@ export default function BucketSearchModal({
       </DialogTrigger>
       <DialogContent
         aria-describedby="description"
-        className="max-w-[80vw] h-[80vh] flex flex-col gap-6 items-center px-6 lg:p-16 overflow-y-auto"
+        className="max-w-[80vw] h-[80vh] flex flex-col gap-6 items-center px-6 lg:p-12 overflow-y-auto"
       >
         <DialogHeader className="w-full mx-auto flex flex-row justify-between items-start">
           <div className="space-y-4">
