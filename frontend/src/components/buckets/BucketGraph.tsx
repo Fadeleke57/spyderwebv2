@@ -1,58 +1,52 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
 import {
-  Article,
-  ArticleAsNode,
   BucketConfigFormValues,
 } from "@/types/article";
 import { useState, Dispatch, SetStateAction } from "react";
-import { DataDrawer } from "../terminal/DataDrawer";
 import { LoadingPage } from "@/components/utility/Loading";
-import { useCollectSourcesForBucket } from "@/hooks/generation";
-import { useFetchArticlesForBucket } from "@/hooks/buckets";
 import BucketDataDrawer from "./BucketDataDrawer";
+import { useFetchSourcesForBucket } from "@/hooks/sources";
+import { Source, SourceAsNode } from "@/types/source";
 
 interface GraphProps {
   config: BucketConfigFormValues;
   setConfig: (value: BucketConfigFormValues) => void;
   bucketId: string;
-  hasArticles: boolean;
-  fetchedArticles: Article[];
-  setFetchedArticles: Dispatch<SetStateAction<Article[]>>;
-  selectedArticleId: string | null;
-  setSelectedArticleId: Dispatch<SetStateAction<string | null>>;
+  hasSources: boolean;
+  fetchedSources: Source[];
+  setFetchedSources: Dispatch<SetStateAction<Source[]>>;
+  selectedSourceId: string | null;
+  setSelectedSourceId: Dispatch<SetStateAction<string | null>>;
 }
 
 function BucketGraph({
   config,
-  setConfig,
   bucketId,
-  hasArticles,
-  fetchedArticles,
-  setFetchedArticles,
-  selectedArticleId,
-  setSelectedArticleId,
+  hasSources,
+  fetchedSources,
+  setFetchedSources,
+  selectedSourceId,
+  setSelectedSourceId,
 }: GraphProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [selectedSource, setSelectedSource] = useState<Source | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const { generateSourcesForBucket, loading, error } = useCollectSourcesForBucket(
-    bucketId,
-    config,
-  );
-  const { articles, loading: articlesLoading, error: articlesError } = useFetchArticlesForBucket(
-    bucketId
-  )
+  const {
+    sources,
+    isLoading,
+    error: sourcesError,
+  } = useFetchSourcesForBucket(bucketId);
 
   useEffect(() => {
-    setFetchedArticles(articles);
+    setFetchedSources(sources);
     const width = 3200;
     const height = 2400;
     const centerX = width / 8 + 40;
     const centerY = height / 8 - 70;
     const circleRadius = Math.min(width, height) / 2 - 50;
 
-    const zoomToNode = (event: MouseEvent | null, d: ArticleAsNode) => {
+    const zoomToNode = (event: MouseEvent | null, d: SourceAsNode) => {
       if (event) event.stopPropagation();
 
       const scale = 3;
@@ -68,8 +62,8 @@ function BucketGraph({
         .duration(750)
         .call(zoom.transform as any, transform);
 
-      setSelectedArticle(d);
-      setSelectedArticleId(d.id);
+      setSelectedSource(d);
+      setSelectedSourceId(d.sourceId);
       setDrawerOpen(true);
     };
 
@@ -90,19 +84,23 @@ function BucketGraph({
 
     svg.call(zoom as any);
 
-    const nodes: ArticleAsNode[] = articles.map((d, i) => {
-      const angle = (i / articles.length) * 2 * Math.PI;
+    const nodes: SourceAsNode[] = sources.map((d: Source, i) => {
+      const angle = (i / sources.length) * 2 * Math.PI;
       const x = centerX + circleRadius * Math.cos(angle);
       const y = centerY + circleRadius * Math.sin(angle);
       return { ...d, x, y };
     });
-    console.log("nodes", nodes);
+
+    // Calculate min and max file sizes
+    const fileSizes = nodes.map((d) => d.size || 4); // Default to 4 if size is missing
+    const minSize = Math.min(...fileSizes);
+    const maxSize = Math.max(...fileSizes);
 
     const sizeScale = d3
       .scalePow()
-      .exponent(2) // more or less exponential scaling
-      .domain([0, 100])
-      .range([5, 50]);
+      .exponent(0.3) // Change the exponent for finer control; 0.5 makes scaling subtler
+      .domain([minSize, maxSize])
+      .range([10,30]);
 
     const simulation = d3
       .forceSimulation(nodes)
@@ -116,8 +114,8 @@ function BucketGraph({
           .attr("cx", (d) => d.x)
           .attr("cy", (d) => d.y)
           .attr("r", (d) => {
-            const reliabilityScore = d.reliability_score ?? 0;
-            return sizeScale(reliabilityScore);
+            const fileSize = d.size || 4;
+            return sizeScale(fileSize);
           })
           .attr("fill", (d) => "#5ea4ff")
           .call(drag as any)
@@ -125,10 +123,12 @@ function BucketGraph({
             event.stopPropagation();
             zoomToNode(event, d);
           });
+        
+
       });
 
     const drag = d3
-      .drag<SVGCircleElement, ArticleAsNode>()
+      .drag<SVGCircleElement, SourceAsNode>()
       .on("start", function (event, d: any) {
         if (!event.active) simulation.alphaTarget(0.3).restart();
         d.fx = d.x;
@@ -148,9 +148,9 @@ function BucketGraph({
     return () => {
       simulation.stop();
     };
-  }, [articles]);
+  }, [sources]);
 
-  if (articlesLoading && hasArticles) {
+  if (isLoading && hasSources) {
     return <LoadingPage></LoadingPage>;
   }
 
@@ -159,7 +159,7 @@ function BucketGraph({
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
       {isDrawerOpen && (
         <BucketDataDrawer
-          source={selectedArticle as ArticleAsNode}
+          source={selectedSource as SourceAsNode}
           open={isDrawerOpen}
           setOpen={setDrawerOpen}
           config={config}

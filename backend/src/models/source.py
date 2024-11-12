@@ -1,11 +1,13 @@
 from pydantic import BaseModel
 from typing import Literal, Optional
+from datetime import datetime
 
 class Source(BaseModel):
-    id: str
+    sourceId: str
     bucketId: str
     name: Optional[str]
     url: Optional[str]
-    type: Literal['text', 'image', 'video', 'url']
-    created_at: str
-    updated_at: str
+    type: str
+    size: int
+    created_at: datetime
+    updated_at: datetime

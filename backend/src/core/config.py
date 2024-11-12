@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     next_url: str
     pinecone_api_key: str
     openai_api_key: str
+    s3_bucket_name: str
 
     class Config:
         env_file = f".env.{env}"

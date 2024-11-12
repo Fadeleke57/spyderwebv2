@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import api from "@/lib/api";
-import { toast } from "@/components/ui/use-toast";
 import { Article, BucketConfigFormValues } from "@/types/article";
 
 export function useCollectSourcesForBucket(

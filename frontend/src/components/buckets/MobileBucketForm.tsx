@@ -6,9 +6,8 @@ import {
   DrawerTrigger,
 } from "../ui/drawer";
 import { Button } from "../ui/button";
-import { Bird, Info, Rabbit, Settings, Turtle } from "lucide-react";
+import { Info} from "lucide-react";
 import { PublicUser } from "@/types/user";
-import { useUser } from "@/context/UserContext";
 import BucketForm from "./BucketForm";
 import PublicBucketView from "./PublicBucketView";
 

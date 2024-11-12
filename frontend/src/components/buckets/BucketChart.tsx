@@ -1,6 +1,4 @@
 import React from "react";
-import { ChartContainer } from "../ui/chart";
-import { BarChart, YAxis, XAxis, Bar, LabelList } from "recharts";
 import { Bucket } from "@/types/bucket";
 import { CardContent } from "../ui/card";
 

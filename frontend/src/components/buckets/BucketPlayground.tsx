@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useRouter } from "next/router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,22 +11,17 @@ import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import {
   Paperclip,
-  Mic,
   CornerDownLeft,
-  Search,
   ImageIcon,
-  Plus,
 } from "lucide-react";
 import { Bucket } from "@/types/bucket";
 import { PublicUser } from "@/types/user";
 import BucketSearchModal from "./BucketSearchModal";
 import BucketGraph from "./BucketGraph";
 import {
-  Article,
   BucketConfigFormValues,
-  ConfigFormValues,
 } from "@/types/article";
-import BucketChart from "./BucketChart";
+import { Source } from "@/types/source";
 
 function BucketPlayground({
   bucket,
@@ -43,18 +37,28 @@ function BucketPlayground({
     title: bucket?.name || "",
     description: bucket?.description || "",
   });
-  const [selectedArticleId, setSelectedArticleId] = useState<string | null>(
-    null
-  );
-  const [fetchedArticles, setFetchedArticles] = useState<Article[]>([]);
+  const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
+  const [fetchedSources, setFetchedSources] = useState<Source[]>([]);
 
   return (
     <div className="relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 lg:col-span-2">
       <Badge variant="outline" className="absolute right-3 top-3">
-        {bucket.articleIds.length > 0 &&
-          `${bucket.articleIds.length} sources added`}
+        {bucket?.sourceIds?.length || 0} sources added
       </Badge>
-      {isOwner && bucket?.articleIds.length === 0 && (
+      {isOwner &&
+      (bucket?.sourceIds?.length === undefined ||
+        bucket?.sourceIds?.length === null || bucket?.sourceIds?.length > 0) ? (
+        <div className="absolute right-3 top-6">
+          <BucketSearchModal
+            config={config}
+            setConfig={setConfig}
+            bucket={bucket}
+            refetch={refetch}
+          />
+        </div>
+      ) : null}
+
+      {isOwner && bucket?.sourceIds?.length === 0 && (
         <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/4 flex flex-col items-center gap-1 text-center">
           <h3 className="text-2xl font-bold tracking-tight">
             Add your first source
@@ -75,11 +79,11 @@ function BucketPlayground({
         config={config}
         setConfig={setConfig}
         bucketId={bucket.bucketId}
-        hasArticles={bucket?.articleIds.length > 0}
-        fetchedArticles={fetchedArticles}
-        setFetchedArticles={setFetchedArticles}
-        selectedArticleId={selectedArticleId}
-        setSelectedArticleId={setSelectedArticleId}
+        hasSources={bucket?.sourceIds?.length ? true : false}
+        fetchedSources={fetchedSources}
+        setFetchedSources={setFetchedSources}
+        selectedSourceId={selectedSourceId}
+        setSelectedSourceId={setSelectedSourceId}
       />
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 right-0 w-[90%]">
         <form className="relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring">

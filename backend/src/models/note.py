@@ -3,13 +3,9 @@ from typing import Literal
 
 class CreateNote(BaseModel):
     content: str
-    bucket_id: str
-    source_id: str
 
 class UpdateNote(BaseModel):
     content: str
-    bucket_id: str
-    source_id: str
 
 class Note(BaseModel):
     note_id: str

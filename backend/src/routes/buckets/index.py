@@ -3,22 +3,25 @@ from src.routes.auth.oauth2 import manager
 import uuid
 from src.db.mongodb import get_collection, get_items_by_field
 from src.utils.exceptions import check_user
-from src.models.article import Article
 from src.models.user import User
 router = APIRouter()
 from datetime import datetime
 from src.models.bucket import BucketConfig, UpdateBucket
 from fastapi.exceptions import HTTPException
 from src.utils.graph import get_articles_by_ids
-from fastapi import Request
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
-from fastapi.exception_handlers import request_validation_exception_handler
-from pydantic import ValidationError
 from pymongo import ReturnDocument
 
 @router.get("/all/user") # get all buckets belonging to a user
 def get_user_buckets(user: User = Depends(manager)):
+    """
+    Retrieve all buckets belonging to a user, sorted by creation date in descending order.
+
+    Args:
+        user (User): The user whose buckets are to be retrieved.
+
+    Returns:
+        dict: A JSON response containing a list of buckets sorted by creation date in descending order.
+    """
     check_user(user)
     buckets = get_items_by_field("buckets", "userId", user["id"])
     buckets = [bucket for bucket in buckets]
@@ -27,6 +30,14 @@ def get_user_buckets(user: User = Depends(manager)):
 
 @router.get("/all/public") # get all public buckets
 def get_public_buckets():
+    """
+    Retrieve all public buckets.
+
+    Returns:
+    -------
+    List of Bucket
+        List of all public buckets
+    """
     buckets = get_items_by_field("buckets", "private", False)
     buckets = [bucket for bucket in buckets]
     buckets = sorted(buckets, key=lambda x: x["created"], reverse=True)
@@ -34,6 +45,15 @@ def get_public_buckets():
 
 @router.get("/liked/user") # get all liked buckets belonging to a user
 def get_user_liked_buckets(user: User = Depends(manager)):
+    """
+    Retrieve all buckets liked by a user.
+
+    Args:
+        user (User): The user whose liked buckets are to be retrieved.
+
+    Returns:
+        dict: A JSON response containing a list of liked buckets sorted by creation date in descending order.
+    """
     check_user(user)
     buckets = get_items_by_field("buckets", "likes", user["id"])
     buckets = [bucket for bucket in buckets]
@@ -42,6 +62,16 @@ def get_user_liked_buckets(user: User = Depends(manager)):
 
 @router.post("/create")
 def create_bucket(config : BucketConfig, user=Depends(manager)):
+    """
+    Create a new bucket.
+
+    Args:
+        config (BucketConfig): The configuration for the new bucket.
+        user (User): The user creating the bucket.
+
+    Returns:
+        dict: A JSON response with a result key containing the ID of the new bucket.
+    """
     check_user(user)
     bucket = get_collection("buckets")
     bucketId = str(uuid.uuid4())
@@ -63,6 +93,20 @@ def create_bucket(config : BucketConfig, user=Depends(manager)):
 
 @router.delete("/delete")
 def delete_bucket(bucketId: str, user=Depends(manager)):
+    """
+    Delete a bucket.
+
+    Args:
+        bucketId (str): The ID of the bucket to delete.
+        user (User): The user making the request.
+
+    Returns:
+        dict: A JSON response with a result key.
+
+    Raises:
+        HTTPException: If the bucket is not found or the user is not the owner of the bucket.
+
+    """
     check_user(user)
     buckets= get_collection("buckets")
     buckets.delete_one({"bucketId": bucketId, "userId": user["id"]})
@@ -70,6 +114,17 @@ def delete_bucket(bucketId: str, user=Depends(manager)):
 
 @router.patch("/update/{bucketId}")
 def update_bucket(bucketId: str, config: UpdateBucket, user=Depends(manager)):
+    """
+    Update a bucket.
+
+    Args:
+        bucketId (str): The ID of the bucket to update.
+        config (UpdateBucket): The new configuration for the bucket.
+        user (User): The user making the request.
+
+    Returns:
+        dict: A JSON response with a result key.
+    """
     check_user(user)
     buckets= get_collection("buckets")
     buckets.update_one({"bucketId": bucketId, "userId": user["id"]}, {"$set": config.model_dump()})
@@ -78,6 +133,19 @@ def update_bucket(bucketId: str, config: UpdateBucket, user=Depends(manager)):
 
 @router.get("/id")
 def get_bucket_by_id(bucketId : str, user=Depends(manager.optional)):
+    """
+    Retrieve a bucket by its ID.
+
+    Args:
+        bucketId (str): The ID of the bucket to retrieve.
+        user (Optional[User]): The user making the request. Defaults to None.
+
+    Returns:
+        dict: A JSON response containing the bucket data if found.
+
+    Raises:
+        HTTPException: If the bucket is not found, raises a 404 error.
+    """
     if user:
         check_user(user)
     buckets=get_collection("buckets")
@@ -91,6 +159,19 @@ def get_bucket_by_id(bucketId : str, user=Depends(manager.optional)):
     
 @router.post("/like/{bucket_id}")
 def like_bucket(bucket_id: str, user=Depends(manager)):
+    """
+    Like a bucket for a user.
+
+    Args:
+        bucket_id (str): The ID of the bucket to like.
+        user (User): The user making the request.
+
+    Raises:
+        HTTPException: If the bucket is already liked or not found.
+
+    Returns:
+        dict: A JSON response with the updated number of likes for the bucket.
+    """
     check_user(user)
     buckets = get_collection("buckets")
     result = buckets.find_one_and_update(
@@ -104,6 +185,19 @@ def like_bucket(bucket_id: str, user=Depends(manager)):
 
 @router.post("/unlike/{bucket_id}")
 def unlike_bucket(bucket_id: str, user=Depends(manager)):
+    """
+    Unlike a bucket for a user.
+
+    Args:
+        bucket_id (str): The ID of the bucket to unlike.
+        user (User): The user making the request.
+
+    Raises:
+        HTTPException: If the bucket is not liked yet or not found.
+
+    Returns:
+        dict: A JSON response with the updated number of likes for the bucket.
+    """
     check_user(user)
     buckets = get_collection("buckets")
     result = buckets.find_one_and_update(
@@ -114,22 +208,7 @@ def unlike_bucket(bucket_id: str, user=Depends(manager)):
     if not result:
         raise HTTPException(status_code=400, detail="Not liked yet or bucket not found")
     return {"result": len(result["likes"])}
-"""
-@router.patch("/add/tag/{bucket_id}/{tag}")
-def add_tag(bucket_id: str, tag: str, user=Depends(manager)):
-    print("Tag is ", tag)
-    check_user(user)
-    buckets = get_collection("buckets")
-    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$push": {"tags": tag}})
-    return {"result": True}
 
-@router.patch("/remove/tag/{bucket_id}/{tag}")
-def remove_tag(bucket_id: str, tag: str, user=Depends(manager)):
-    check_user(user)
-    buckets = get_collection("buckets")
-    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$pull": {"tags": tag}})
-    return {"result": True}
-"""
 @router.patch("/add/source/{bucket_id}/{source_id}")
 def add_article(bucket_id: str, source_id: str, user=Depends(manager)):
     """
@@ -168,6 +247,20 @@ def remove_article(bucket_id: str, source_id: str, user=Depends(manager)):
 
 @router.get("/articles/{bucket_id}") # to be depreceated
 def get_articles(bucket_id: str, user=Depends(manager.optional)):
+    """
+    Retrieve articles associated with a given bucket.
+
+    Args:
+        bucket_id (str): The ID of the bucket to retrieve articles from.
+        user (Optional[User]): The user making the request. Defaults to None.
+
+    Returns:
+        dict: A JSON response containing the articles associated with the given bucket ID.
+              Raises 404 error if the bucket is not found.
+
+    Note:
+        This endpoint is to be deprecated.
+    """
     if user:
         check_user(user)
     buckets = get_collection("buckets")
@@ -181,6 +274,17 @@ def get_articles(bucket_id: str, user=Depends(manager.optional)):
 
 @router.get("/sources/{bucket_id}")
 def get_articles(bucket_id: str, user=Depends(manager.optional)):
+    """
+    Retrieve articles for a given bucket.
+
+    Args:
+        bucket_id (str): The ID of the bucket to retrieve articles from.
+        user (User, optional): The user making the request. Defaults to None.
+
+    Returns:
+        dict: A JSON response containing the articles associated with the given bucket ID.
+              Raises 404 error if the bucket is not found.
+    """
     if user:
         check_user(user)
     buckets = get_collection("buckets")

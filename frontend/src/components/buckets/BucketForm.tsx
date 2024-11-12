@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { Bucket } from "@/types/bucket";
 import { PublicUser } from "@/types/user";
 import { useUpdateBucket } from "@/hooks/buckets";
@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Textarea } from "../ui/textarea";
-import BucketChart from "./BucketChart";
 import { debounce } from "lodash";
 
 type FormProps = {
@@ -37,9 +36,9 @@ function BucketForm({ bucket, user }: FormProps) {
   const router = useRouter();
 
   const [bucketConfig, setBucketConfig] = useState<BucketConfig>({
-    name: bucket.name,
-    description: bucket.description,
-    visibility: bucket.private ? "private" : "public",
+    name: bucket?.name,
+    description: bucket?.description,
+    visibility: bucket?.private ? "private" : "public",
   });
 
   const form = useForm<BucketFormValues>({

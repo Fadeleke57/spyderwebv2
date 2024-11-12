@@ -6,9 +6,11 @@ import {
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Link, Notebook, Plus, Search, Upload, X, Youtube } from "lucide-react";
+import { Link, Notebook, Plus,Upload, X, Youtube } from "lucide-react";
 import { BucketConfigFormValues } from "@/types/article";
 import { Bucket } from "@/types/bucket";
+import { useFileUpload } from "@/hooks/sources";
+import { toast } from "../ui/use-toast";
 
 type ConfigGraphModalProps = {
   config: BucketConfigFormValues;
@@ -18,17 +20,44 @@ type ConfigGraphModalProps = {
 };
 
 export default function BucketSearchModal({
-  config,
-  setConfig,
   bucket,
   refetch,
 }: ConfigGraphModalProps) {
   const [isOpen, setIsOpen] = useState(false);
 
+  const { uploadFile, progress, error } = useFileUpload(
+    bucket.userId,
+    bucket.bucketId
+  );
+
+  const handleFileUpload = async (file: File | null) => {
+    if (!file) {
+      return;
+    }
+    console.log("file", file);
+    const fileType = "document"; // to be updated
+    try {
+      const result = await uploadFile(file, fileType);
+      toast({
+        title: "File uploaded",
+        description: "File uploaded successfully",
+        duration: 500,
+      });
+      setIsOpen(false);
+      refetch();
+    } catch (err) {
+      console.error(err);
+      toast({
+        variant: "destructive",
+        title: "Error uploading file",
+      });
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button onClick={() => setIsOpen(true)} className="mt-4">
+        <Button onClick={() => setIsOpen(true)} className="mt-4 rounded-full">
           <Plus size={16} />
         </Button>
       </DialogTrigger>
@@ -73,6 +102,9 @@ export default function BucketSearchModal({
                   multiple
                   className="absolute inset-0 opacity-0 cursor-pointer"
                   hidden
+                  onChange={(e) =>
+                    handleFileUpload(e.target.files ? e.target.files[0] : null)
+                  }
                 />
               </div>
               <div className="text-center">
@@ -86,7 +118,18 @@ export default function BucketSearchModal({
                       choose file
                     </span>{" "}
                   </label>
-                  <input type="file" id="file" multiple hidden />
+                  <input
+                    type="file"
+                    id="file"
+                    multiple
+                    hidden
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    onChange={(e) =>
+                      handleFileUpload(
+                        e.target.files ? e.target.files[0] : null
+                      )
+                    }
+                  />
                   to upload
                 </p>
               </div>

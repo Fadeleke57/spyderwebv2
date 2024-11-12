@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
-import { toast } from "@/components/ui/use-toast";
-import { Bucket, UpdateBucket } from "@/types/bucket";
 import { Article } from "@/types/article";
 
 export const useFetchNotes = (bucketId: string) => {

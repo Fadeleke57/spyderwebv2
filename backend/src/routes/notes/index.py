@@ -1,27 +1,32 @@
 from fastapi import APIRouter, Depends
 from src.routes.auth.oauth2 import manager
 import uuid
-from src.db.mongodb import get_collection, get_items_by_field
+from src.db.mongodb import get_collection
 from src.utils.exceptions import check_user
-from src.models.article import Article
-from src.models.user import User
 from src.models.note import Note, CreateNote, UpdateNote
 
 from datetime import datetime
-from src.models.bucket import BucketConfig, UpdateBucket
 from fastapi.exceptions import HTTPException
-from src.utils.graph import get_articles_by_ids
-from fastapi import Request
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
-from fastapi.exception_handlers import request_validation_exception_handler
 from pydantic import ValidationError
-from pymongo import ReturnDocument
 
 router = APIRouter()
 
-@router.get("/{bucket_id}/{article_id}")
+@router.get("/{bucket_id}/{source_id}")
 def get_note(bucket_id: str, article_id: str, user=Depends(manager)):
+    """
+    Retrieve a note associated with a given bucket and article.
+
+    Args:
+        bucket_id (str): The ID of the bucket.
+        article_id (str): The ID of the article.
+        user (User): The user making the request.
+
+    Returns:
+        dict: A JSON response containing the note data if found.
+
+    Raises:
+        HTTPException: If the note is not found, raises a 404 error.
+    """
     check_user(user)
     notes = get_collection("notes")
     note = notes.find_one({"bucketId": bucket_id, "articleId": article_id, "userId": user["id"]})
@@ -31,6 +36,22 @@ def get_note(bucket_id: str, article_id: str, user=Depends(manager)):
 
 @router.post("/create")
 def create_note(bucket_id: str, article_id: str, note: CreateNote, user=Depends(manager)):
+    """
+    Create a new note for a given bucket and article.
+
+    Args:
+        bucket_id (str): The ID of the bucket the note belongs to.
+        article_id (str): The ID of the article the note belongs to.
+        note (CreateNote): The content for the new note.
+        user (User): The user making the request.
+
+    Raises:
+        HTTPException: If there is an error while creating the note (500)
+                      or if the note is not created (404)
+
+    Returns:
+        dict: A JSON response with a result key.
+    """
     check_user(user)
     notes = get_collection("notes")
     full_note = {
@@ -52,6 +73,18 @@ def create_note(bucket_id: str, article_id: str, note: CreateNote, user=Depends(
 
 @router.patch("/{bucket_id}/{article_id}")
 def update_note(bucket_id: str, article_id: str, note: UpdateNote, user=Depends(manager)):
+    """
+    Update a note.
+
+    Args:
+        bucket_id (str): The ID of the bucket the note belongs to.
+        article_id (str): The ID of the article the note belongs to.
+        note (UpdateNote): The new content for the note.
+        user (User): The user making the request.
+
+    Returns:
+        dict: A JSON response with a result key.
+    """
     check_user(user)
     notes = get_collection("notes")
     try:
