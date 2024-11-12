@@ -28,5 +28,4 @@ async def start_process(payload: GenerateArticlesForBucketPayload, user=Depends(
             )
         else:
             print(f"Warning: No article node found in record: {article_record}")
-    print("\n\n\n\n\n\QUERIES GENERATED: ", queries)
     return {"result": result}
