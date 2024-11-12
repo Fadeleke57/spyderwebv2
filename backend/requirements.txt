@@ -13,3 +13,4 @@ nltk
 pinecone
 openai
 boto3
+bs4

@@ -7,6 +7,10 @@ from src.db.mongodb import get_collection, insert_item
 from uuid import uuid4
 from datetime import datetime
 from src.core.config import settings
+import requests
+from pydantic import BaseModel, HttpUrl
+from bs4 import BeautifulSoup
+from src.agents.structure_html_agent import process_html
 import os
 
 router = APIRouter()
@@ -62,6 +66,61 @@ async def upload_file(user_id: str, web_id: str, file_type: str, file: UploadFil
     finally:
         # remove temp file
         os.remove(temp_path)
+
+class UrlRequest(BaseModel):
+    url: HttpUrl
+
+@router.post("/website/{web_id}")
+def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
+    """
+    Add a website source to a specified web (bucket).
+
+    This function retrieves the content of a webpage from the provided URL, processes the HTML to extract structured data,
+    and stores it as a Source document in the database. The source is then added to the specified web (bucket).
+
+    Args:
+        web_id (str): The ID of the web (bucket) to add the source to.
+        url (str): The URL of the website to add.
+        user (User): The user making the request.
+
+    Raises:
+        HTTPException: If the webpage cannot be retrieved or parsed.
+
+    Returns:
+        dict: A JSON response containing the structured data of the webpage.
+    """
+    check_user(user)
+    
+    try:
+        response = requests.get(url.url)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=400, detail="Could not retrieve the webpage")
+  
+    soup = BeautifulSoup(response.content, "html.parser")
+    main_content = soup.get_text()  
+
+    try: 
+        structured_data = process_html(main_content)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail="Could not parse the webpage")
+
+    sources = get_collection("sources")
+    sourceId = str(uuid4())
+    sources.insert_one({
+        "sourceId": sourceId,
+        "bucketId": web_id,
+        "name": structured_data["title"],
+        "url": str(url.url),
+        "type": "website",
+        "size": None,
+        "created_at": datetime.now(),
+        "updated_at": datetime.now(),
+    })
+    buckets = get_collection("buckets")
+    buckets.update_one({"bucketId": web_id, "userId": user["id"]}, {"$push": {"sourceIds": sourceId}})
+    print("structured data: ", structured_data)
+    return {"result": structured_data}
 
 @router.get("/download")
 def download_file(user=Depends(manager)):
