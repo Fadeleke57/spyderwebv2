@@ -78,7 +78,7 @@ function BucketPlayground({
       <BucketGraph
         config={config}
         setConfig={setConfig}
-        bucketId={bucket.bucketId}
+        bucketId={bucket?.bucketId}
         hasSources={bucket?.sourceIds?.length ? true : false}
         fetchedSources={fetchedSources}
         setFetchedSources={setFetchedSources}

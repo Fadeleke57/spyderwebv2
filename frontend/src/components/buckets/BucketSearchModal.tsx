@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -6,11 +6,13 @@ import {
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Link, Notebook, Plus,Upload, X, Youtube } from "lucide-react";
+import { ArrowBigRight, Link, Notebook, Plus, Upload, X, Youtube } from "lucide-react";
 import { BucketConfigFormValues } from "@/types/article";
 import { Bucket } from "@/types/bucket";
-import { useFileUpload } from "@/hooks/sources";
+import { useFileUpload, useUploadWebsite } from "@/hooks/sources";
 import { toast } from "../ui/use-toast";
+import gsap from "gsap";
+import { Input } from "../ui/input";
 
 type ConfigGraphModalProps = {
   config: BucketConfigFormValues;
@@ -24,18 +26,28 @@ export default function BucketSearchModal({
   refetch,
 }: ConfigGraphModalProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [view, setView] = useState("default");
+  const [websiteUrl, setWebsiteUrl] = useState("");
 
   const { uploadFile, progress, error } = useFileUpload(
     bucket.userId,
     bucket.bucketId
   );
 
+  const {
+    uploadWebsite,
+    progress: websiteProgress,
+    error: websiteError,
+  } = useUploadWebsite(bucket.bucketId);
+
+  const contentRef = useRef(null);
+
   const handleFileUpload = async (file: File | null) => {
     if (!file) {
       return;
     }
     console.log("file", file);
-    const fileType = "document"; // to be updated
+    const fileType = "document";
     try {
       const result = await uploadFile(file, fileType);
       toast({
@@ -43,7 +55,7 @@ export default function BucketSearchModal({
         description: "File uploaded successfully",
         duration: 500,
       });
-      setIsOpen(false);
+      handleClose();
       refetch();
     } catch (err) {
       console.error(err);
@@ -54,6 +66,44 @@ export default function BucketSearchModal({
     }
   };
 
+  const handleWebsiteUpload = async (url: string) => {
+    try {
+      const result = await uploadWebsite(url);
+      toast({
+        title: "Website uploaded",
+        description: "Website uploaded successfully",
+        duration: 500,
+      });
+      handleClose();
+      refetch();
+    } catch (err : any) {
+      console.error(err);
+      toast({
+        variant: "destructive",
+        title: `${err.response?.status === 400 ? "Unable to upload this website" : "Error uploading website"}`,
+      });
+    }
+  };
+
+  const handleWebsiteUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setWebsiteUrl(e.target.value);
+  };
+
+  const handleClose = () => {
+    setView("default");
+    setIsOpen(false);
+  };
+
+  useEffect(() => {
+    if (contentRef.current) {
+      gsap.fromTo(
+        contentRef.current,
+        { x: "100%", opacity: 0 },
+        { x: "0%", opacity: 1, duration: 0.5, ease: "power3.out" }
+      );
+    }
+  }, [view]);
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -63,98 +113,154 @@ export default function BucketSearchModal({
       </DialogTrigger>
       <DialogContent
         aria-describedby="description"
-        className="max-w-[80vw] h-[80vh] flex flex-col gap-6 items-center px-6 lg:p-12 overflow-y-auto"
+        className="max-w-[80vw] min-h-[50vh] flex flex-col gap-6 items-center px-6 lg:p-12 overflow-y-auto no-scrollbar rounded-xl"
       >
-        <DialogHeader className="w-full mx-auto flex flex-row justify-between items-start">
+        <DialogHeader className="w-full mx-auto flex flex-row justify-between items-center lg:items-start">
           <div className="space-y-4">
-            <h1 className="scroll-m-20 text-3xl font-extrabold tracking-tight lg:text-6xl text-left">
-              Upload
+            <h1 className="scroll-m-20 text-2xl lg:text-3xl font-extrabold tracking-tight lg:text-6xl text-left">
+              Upload{" "}
+              {view === "website" && (
+                <span className="text-blue-500">Website</span>
+              )}
+              {view === "youtube" && (
+                <span className="text-red-500">YouTube</span>
+              )}
+              {view === "note" && <span className="text-purple-500">Note</span>}
             </h1>
-            <p className="text-md text-muted-foreground text-left">
+            <p className="text-sm max-w-[200px] md:max-w-lg lg:text-md text-muted-foreground text-left">
               It isn&apos;t about the answers, it&apos;s the steps that will get
               you there.
             </p>
           </div>
           <div
             className="cursor-pointer rounded-sm opacity-50 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-            onClick={() => setIsOpen(false)}
+            onClick={handleClose}
           >
             <X size={24} />
             <span>esc</span>
           </div>
         </DialogHeader>
-        <div className="w-full flex flex-col gap-8">
-          <div className="w-full bg-muted grid grid-cols-1 p-10 rounded-xl border-dashed border-2 border-slate-400">
-            <div className="flex flex-col gap-2 items-center">
-              <div>
-                <label htmlFor="file">
-                  <div className="relative p-4 rounded-full bg-slate-400 cursor-pointer hover:bg-slate-500">
-                    <Upload
-                      size={24}
-                      color="white"
-                      className="cursor-pointer"
+
+        <div
+          className="w-full flex flex-col gap-8 no-scrollbar"
+          ref={contentRef}
+        >
+          {view === "default" && (
+            <div className="flex flex-col gap-6">
+              <div className="w-full bg-muted grid grid-cols-1 p-10 rounded-xl border-dashed border-2 border-slate-400">
+                <div className="flex flex-col gap-2 items-center">
+                  <div>
+                    <label htmlFor="file">
+                      <div className="relative p-4 rounded-full bg-slate-400 cursor-pointer hover:bg-slate-500">
+                        <Upload
+                          size={24}
+                          color="white"
+                          className="cursor-pointer"
+                        />
+                      </div>
+                    </label>
+                    <input
+                      type="file"
+                      id="file"
+                      multiple
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                      hidden
+                      onChange={(e) =>
+                        handleFileUpload(
+                          e.target.files ? e.target.files[0] : null
+                        )
+                      }
                     />
                   </div>
-                </label>
-                <input
-                  type="file"
-                  id="file"
-                  multiple
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  hidden
-                  onChange={(e) =>
-                    handleFileUpload(e.target.files ? e.target.files[0] : null)
-                  }
-                />
+                  <div className="text-center">
+                    <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight text-muted-foreground">
+                      Upload sources
+                    </h3>
+                    <p className="text-md text-muted-foreground text-center">
+                      Drag and drop or{" "}
+                      <label htmlFor="file">
+                        <span className="text-blue-500 cursor-pointer">
+                          choose file
+                        </span>{" "}
+                      </label>
+                      <input
+                        type="file"
+                        id="file"
+                        multiple
+                        hidden
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) =>
+                          handleFileUpload(
+                            e.target.files ? e.target.files[0] : null
+                          )
+                        }
+                      />
+                      to upload
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="text-center">
-                <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight text-muted-foreground">
-                  Upload sources
-                </h3>
-                <p className="text-md text-muted-foreground text-center">
-                  Drag and drop or{" "}
-                  <label htmlFor="file">
-                    <span className="text-blue-500 cursor-pointer">
-                      choose file
-                    </span>{" "}
-                  </label>
-                  <input
-                    type="file"
-                    id="file"
-                    multiple
-                    hidden
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    onChange={(e) =>
-                      handleFileUpload(
-                        e.target.files ? e.target.files[0] : null
-                      )
-                    }
-                  />
-                  to upload
-                </p>
+
+              <div className="w-full grid grid-cols-3 gap-4">
+                <div
+                  onClick={() => setView("website")}
+                  className="bg-muted rounded-xl p-4 flex flex-row gap-4 items-center cursor-pointer hover:scale-105 transition ease-in justify-center lg:justify-start"
+                >
+                  <div className="bg-blue-500 rounded-full w-fit h-fit p-2">
+                    <Link size={20} className="text-white" />
+                  </div>
+                  <p className="hidden md:block text-md text-muted-foreground">
+                    Website
+                  </p>
+                </div>
+                <div
+                  onClick={() => setView("youtube")}
+                  className="bg-muted rounded-xl p-4 flex flex-row gap-4 items-center cursor-pointer hover:scale-105 transition ease-in justify-center lg:justify-start"
+                >
+                  <div className="bg-red-500 rounded-full w-fit h-fit p-2">
+                    <Youtube size={20} className="text-white" />
+                  </div>
+                  <p className="hidden md:block text-md text-muted-foreground">
+                    YouTube
+                  </p>
+                </div>
+                <div
+                  onClick={() => setView("note")}
+                  className="bg-muted rounded-xl p-4 flex flex-row gap-4 justify-center items-center cursor-pointer hover:scale-105 transition ease-in lg:justify-start"
+                >
+                  <div className="bg-purple-500 rounded-full w-fit h-fit p-2">
+                    <Notebook size={20} className="text-white" />
+                  </div>
+                  <p className="hidden md:block text-md text-muted-foreground">
+                    Note
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="w-full grid grid-cols-3 gap-4">
-            <div className="bg-muted rounded-xl p-4 flex flex-row gap-4 items-center cursor-pointer hover:scale-105 duration-00 transition ease-in">
-              <div className="bg-blue-500 rounded-full w-fit h-fit p-2">
-                <Link size={20} className="text-white" />
-              </div>
-              <p className="text-md text-muted-foreground">Website</p>
+          )}
+          {view === "website" && (
+            <div className="flex flex-row gap-4">
+              <Input
+                placeholder="https://example.com"
+                onChange={handleWebsiteUrlChange}
+              />
+              <Button
+                disabled={websiteUrl.length < 5}
+                onClick={() => handleWebsiteUpload(websiteUrl)}
+              >
+                <ArrowBigRight size={20} />
+              </Button>
             </div>
-            <div className="bg-muted rounded-xl p-4 flex flex-row gap-4 items-center cursor-pointer hover:scale-105 duration-00 transition ease-in">
-              <div className="bg-red-500 rounded-full w-fit h-fit p-2">
-                <Youtube size={20} className="text-white" />
-              </div>
-              <p className="text-md text-muted-foreground">Youtube</p>
+          )}
+          {view === "youtube" && (
+            <div className="flex flex-row gap-4">
+              <Input placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
+              <Button>
+                <ArrowBigRight size={20} />
+              </Button>
             </div>
-            <div className="bg-muted rounded-xl p-4 flex flex-row gap-4 items-center cursor-pointer hover:scale-105 duration-00 transition ease-in">
-              <div className="bg-purple-500 rounded-full w-fit h-fit p-2">
-                <Notebook size={20} className="text-white" />
-              </div>
-              <p className="text-md text-muted-foreground">Note</p>
-            </div>
-          </div>
+          )}
+          {view === "note" && <div>Nothing yet</div>}
         </div>
       </DialogContent>
     </Dialog>

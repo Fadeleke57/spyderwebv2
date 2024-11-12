@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -11,11 +10,9 @@ import { Bucket } from "@/types/bucket";
 import { formatText } from "@/lib/utils";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Heart, IterationCcw, BookMarked, ArrowBigUpDash } from "lucide-react";
+import { IterationCcw, ArrowBigUpDash } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import { useLikeBucket, useUnlikeBucket } from "@/hooks/buckets";
-import LoginModal from "../utility/LoginModal";
-import { Skeleton } from "../ui/skeleton";
 
 export function BucketCard({ bucket }: { bucket: Bucket}) {
   const [bucketLikedCount, setBucketLikedCount] = React.useState(
@@ -63,14 +60,14 @@ export function BucketCard({ bucket }: { bucket: Bucket}) {
   }, [bucket, user?.id]);
 
   return (
-    <Link href={`/buckets/bucket/${bucket.bucketId}`}>
-      <Card className="min-w-[330px] lg:w-[350px] h-[250px] relative mx-auto">
+    <Link href={`/buckets/bucket/${bucket.bucketId}`} className="flex flex-col gap-2 hover:cursor-pointer">
+      <Card className="w-full relative mx-auto min-h-[210px] border-none hover:bg-muted">
         <CardHeader className="overflow-hidden">
           <CardTitle className="break-words hover:cursor-pointer hover:text-blue-500">
-            <h3 className="hyphens-auto">{formatText(bucket.name, 50)}</h3>
+            <h3 className="hyphens-auto">{bucket.name}</h3>
           </CardTitle>
-          <CardDescription className="hyphens-auto">
-            {formatText(bucket.description, 140)}
+          <CardDescription className="hyphens-auto mb-8">
+            {bucket.description}
           </CardDescription>
         </CardHeader>
         <CardContent />
@@ -99,6 +96,7 @@ export function BucketCard({ bucket }: { bucket: Bucket}) {
           {formatDistanceToNow(new Date(bucket.created), { addSuffix: true })}
         </p>
       </Card>
+      <div className="h-[1px] w-full bg-slate-200"></div>
     </Link>
   );
 }

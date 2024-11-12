@@ -96,10 +96,14 @@ function Index() {
   return (
     <div className="max-w-[1200px] w-full mx-auto flex flex-col gap-8 p-8">
       <div className="flex justify-between">
-        <div>
-          <h1 className="text-4xl font-extrabold">Explore Buckets</h1>
+        <div className="max-w-[600px]">
+          <h1 className="text-4xl font-extrabold mb-2"><span className="text-blue-500">Published</span> Buckets</h1>
+          <p className="text-muted-foreground hidden md:block">
+            Explore the latest and most popular buckets on Spydr. Buckets are mind
+            maps of just about anything. They help you understand complex topics in a simple way and give you a jumpstart on whatever you&apos;d like to explore.
+          </p>
         </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-end gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8 gap-1">
@@ -150,7 +154,7 @@ function Index() {
         ) : error ? (
           <p>Error loading buckets</p>
         ) : currentBuckets.length > 0 ? (
-          <div className="w-full flex flex-wrap gap-10">
+          <div className="w-full grid grid-cols-1 gap-2">
             {currentBuckets.map((bucket: Bucket) => (
               <div key={bucket.bucketId} className="cursor-pointer">
                 <BucketCard
@@ -173,7 +177,7 @@ function Index() {
       <div className="flex justify-between items-center mt-4">
         <p>
           {currentBuckets.length > 0
-            ? `Showing ${indexOfFirstBucket + 1} - ${Math.min(
+            ? `${indexOfFirstBucket + 1} - ${Math.min(
                 indexOfLastBucket,
                 filteredBuckets.length
               )} of ${filteredBuckets.length} results`
