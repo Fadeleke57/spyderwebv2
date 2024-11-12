@@ -27,6 +27,12 @@ export interface ArticleAsNode {
 export interface ConfigFormValues {
   query: string;
   topic: string;
+  enableSpydrSearch: boolean;
+}
+
+export interface BucketConfigFormValues {
+  title: string;
+  description: string;
 }
 
 export type demoArticleType = {

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
 import { Article, ArticleAsNode } from "@/types/article";
-import { useState } from "react";
+import { useState, Dispatch, SetStateAction } from "react";
 import { DataDrawer } from "./DataDrawer";
 import { LoadingPage } from "@/components/utility/Loading";
 import { useFetchArticles } from "@/hooks/articles";
@@ -12,9 +12,22 @@ interface GraphProps {
   config: ConfigFormValues;
   setConfig: (value: ConfigFormValues) => void;
   color: string;
+  fetchedArticles: Article[];
+  setFetchedArticles: Dispatch<SetStateAction<Article[]>>;
+  selectedArticleId?: string | null;
+  setSelectedArticleId: Dispatch<SetStateAction<string | null>>;
 }
 
-function Graph({ limit, config, setConfig, color }: GraphProps) {
+function Graph({
+  limit,
+  config,
+  setConfig,
+  color,
+  fetchedArticles,
+  setFetchedArticles,
+  selectedArticleId,
+  setSelectedArticleId,
+}: GraphProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -24,12 +37,35 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
     setConfig
   );
 
+
   useEffect(() => {
+    setFetchedArticles(articles);
     const width = 3200;
     const height = 2400;
     const centerX = width / 8 + 40;
-    const centerY = height / 8;
+    const centerY = height / 8 + 40;
     const circleRadius = Math.min(width, height) / 2 - 50;
+
+    const zoomToNode = (event: MouseEvent | null, d: ArticleAsNode) => {
+      if (event) event.stopPropagation();
+
+      const scale = 3;
+      const [x, y] = [d.x + centerX - 100, d.y + centerY - 100];
+
+      const transform = d3.zoomIdentity
+        .translate(width / 2, height / 2)
+        .scale(scale)
+        .translate(-x, -y);
+
+      svg
+        .transition()
+        .duration(750)
+        .call(zoom.transform as any, transform);
+
+      setSelectedArticle(d);
+      setSelectedArticleId(d.id);
+      setDrawerOpen(true);
+    };
 
     const svg = d3
       .select(svgRef.current)
@@ -76,24 +112,12 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
             const reliabilityScore = d.reliability_score ?? 0;
             return sizeScale(reliabilityScore);
           })
-          .attr("fill", (d) => color)
+          .attr("fill", (d) => (selectedArticleId === d.id ? "#4338ca" : color))
           .call(drag as any)
           .on("click", function (event, d) {
             event.stopPropagation();
-            setSelectedArticle(d);
-            setDrawerOpen(true); //add an effect that shows which article was selected
+            zoomToNode(event, d);
           });
-
-        g.selectAll("text")
-          .data(nodes)
-          .join("text")
-          .attr("x", (d) => d.x)
-          .attr("y", (d) => d.y - 20)
-          .attr("text-anchor", "middle")
-          .style("font-size", "12px")
-          .style("font-weight", "bold")
-          .text((d) => (d.header ? d.header.slice(0, 10) + "..." : ""))
-          .attr("fill", color);
       });
 
     const drag = d3
@@ -117,7 +141,7 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
     return () => {
       simulation.stop();
     };
-  }, [articles, color]);
+  }, [articles, color, selectedArticleId]);
 
   if (loading) {
     return <LoadingPage></LoadingPage>;
@@ -126,13 +150,15 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
   return (
     <>
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
-      {isDrawerOpen && <DataDrawer
-        article={selectedArticle as ArticleAsNode}
-        open={isDrawerOpen}
-        setOpen={setDrawerOpen}
-        color={color}
-        config={config}
-      />}
+      {isDrawerOpen && (
+        <DataDrawer
+          article={selectedArticle as ArticleAsNode}
+          open={isDrawerOpen}
+          setOpen={setDrawerOpen}
+          color={color}
+          config={config}
+        />
+      )}
     </>
   );
 }

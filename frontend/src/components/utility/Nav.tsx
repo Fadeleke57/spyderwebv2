@@ -15,7 +15,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { MobileNav } from "./Mobile-Nav";
-
+import { useRouter } from "next/router";
 import Image from "next/image";
 import logo from "@/assets/s_logo.jpg";
 import { gsap } from "gsap";
@@ -26,7 +26,7 @@ import useMediaQuery from "@/hooks/general";
 const components = [
   {
     title: "Walkthrough Video",
-    href: "/",
+    href: "/about/howto",
     description:
       "A quick loom video showing how to get started with the app and its features.",
   },
@@ -49,7 +49,12 @@ const components = [
 
 function NavigationMenuFull() {
   const { user, logout } = useUser();
+  const router = useRouter();
 
+  const handleLogout = async () => {
+    logout();
+    router.push("/auth/login");
+  }
   return (
     <NavigationMenu>
       <NavigationMenuList>
@@ -114,7 +119,7 @@ function NavigationMenuFull() {
           {user ? (
             <NavigationMenuLink
               className={navigationMenuTriggerStyle()}
-              onClick={() => logout()}
+              onClick={handleLogout}
             >
               Logout
             </NavigationMenuLink>
@@ -166,7 +171,6 @@ export function Navbar() {
   const logoRef = useRef<HTMLImageElement>(null);
 
   useGSAP(() => {
-    
     setIsMounted(true);
 
     if (logoRef.current && !matches) {
@@ -203,7 +207,7 @@ export function Navbar() {
     <div
       className={`flex items-center justify-between px-10 transition ease duration-300 ${
         showNav ? "translate-y-0" : "-translate-y-full"
-      } fixed top-0 left-0 bg-white z-50 w-full`}
+      } fixed top-0 left-0 2xl:left-60 bg-white z-50 w-full`}
     >
       <div className="flex items-center gap-2">
         <Link href="/">

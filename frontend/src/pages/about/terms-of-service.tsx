@@ -1,17 +1,20 @@
-const TermsOfService: React.FC = () => {
+import PublicLayout from "@/app/PublicLayout";
+import React, { ReactElement } from "react";
+
+const TermsOfService = () => {
   return (
     <div className="p-6 lg:px-10 py-0 lg:py-24">
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
         Terms of Service
       </h1>
       <p className="text-xl text-muted-foreground mb-8">
-        <strong>Last updated: 8/18/2024</strong>
+        <strong>Last updated: 10/20/2024</strong>
       </p>
 
       <p>
-        Welcome to Spydr! These terms of service apply to your access
-        and use of our application. By using Spydr, you agree to be
-        bound by these Terms. Please read them carefully.
+        Welcome to Spydr! These terms of service apply to your access and use of
+        our application. By using Spydr, you agree to be bound by these Terms.
+        Please read them carefully.
       </p>
 
       <h2>1. Acceptance of Terms</h2>
@@ -22,9 +25,9 @@ const TermsOfService: React.FC = () => {
 
       <h2>2. Use of Spydr</h2>
       <p>
-        You may use Spydr only in compliance with these Terms and all
-        applicable laws, rules, and regulations. Any use of Spydr that is
-        unlawful or prohibited by these Terms is not allowed.
+        You may use Spydr only in compliance with these Terms and all applicable
+        laws, rules, and regulations. Any use of Spydr that is unlawful or
+        prohibited by these Terms is not allowed.
       </p>
 
       <h2>3. User Accounts</h2>
@@ -39,10 +42,9 @@ const TermsOfService: React.FC = () => {
       <h2>4. User Content</h2>
       <p>
         You retain ownership of any content you submit, post, or display on or
-        through Spydr. By submitting User Content, you grant
-        us a worldwide, non-exclusive, royalty-free license to use, copy,
-        reproduce, process, adapt, publish, transmit, display, and distribute
-        such content.
+        through Spydr. By submitting User Content, you grant us a worldwide,
+        non-exclusive, royalty-free license to use, copy, reproduce, process,
+        adapt, publish, transmit, display, and distribute such content.
       </p>
 
       <h2>5. Prohibited Activities</h2>
@@ -64,17 +66,17 @@ const TermsOfService: React.FC = () => {
 
       <h2>6. Termination</h2>
       <p>
-        We reserve the right to suspend or terminate your access to Spydr at
-        any time for any reason, including if you violate these Terms. Upon
+        We reserve the right to suspend or terminate your access to Spydr at any
+        time for any reason, including if you violate these Terms. Upon
         termination, your right to use the Spydr will immediately cease.
       </p>
 
       <h2>7. Disclaimer of Warranties</h2>
       <p>
-        Spydr is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any
-        kind, either express or implied, including, but not limited to, implied
-        warranties of merchantability, fitness for a particular purpose, or
-        non-infringement.
+        Spydr is provided &quot;as is&quot; and &quot;as available&quot; without
+        warranties of any kind, either express or implied, including, but not
+        limited to, implied warranties of merchantability, fitness for a
+        particular purpose, or non-infringement.
       </p>
 
       <h2>8. Limitation of Liability</h2>
@@ -87,15 +89,15 @@ const TermsOfService: React.FC = () => {
       <h2>9. Governing Law</h2>
       <p>
         These Terms shall be governed by and construed in accordance with the
-        laws of [Your Jurisdiction], without regard to its conflict of laws
+        laws of the United States, without regard to its conflict of laws
         principles.
       </p>
 
       <h2>10. Changes to Terms</h2>
       <p>
         We may update these Terms from time to time. We will notify you of any
-        changes by posting the new Terms on this page and updating the &quot;Last
-        updated&quot; date.
+        changes by posting the new Terms on this page and updating the
+        &quot;Last updated&quot; date.
       </p>
 
       <h2>11. Contact</h2>
@@ -108,6 +110,10 @@ const TermsOfService: React.FC = () => {
       </p>
     </div>
   );
+};
+
+TermsOfService.getLayout = (page: ReactElement) => {
+  return <PublicLayout>{page}</PublicLayout>;
 };
 
 export default TermsOfService;

@@ -3,6 +3,8 @@ import { topicsWithSubtopics } from "@/types/topics";
 import Image from "next/image";
 import Link from "next/link";
 import { Topic } from "@/types/topics";
+import { LandingLoader } from "../utility/Loading";
+import { Skeleton } from "../ui/skeleton";
 
 function shuffleArray(array: Topic[]) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -14,21 +16,31 @@ function shuffleArray(array: Topic[]) {
 
 function LandingGrid() {
   const [shuffledTopics, setShuffledTopics] = useState<Topic[]>([]);
+  const [loading, setLoading] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const shuffled = shuffleArray([...topicsWithSubtopics]);
+    const shuffled : Topic[] = shuffleArray([...topicsWithSubtopics]);
     setShuffledTopics(shuffled);
+    setLoading(false);
   }, []);
 
-  if (shuffledTopics.length === 0) {
-    return null
-  }
+  const firstItem : Topic = shuffledTopics[0];
+  const firstBlock : Topic[] = shuffledTopics.slice(1, 5);
+  const lastBlock : Topic[] = shuffledTopics.slice(5, 9);
 
-  const firstItem = shuffledTopics[0];
-  const firstBlock = shuffledTopics.slice(1, 5);
-  const lastBlock = shuffledTopics.slice(5, 9);
-
-  return (
+  return loading || !shuffledTopics.length ? (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <Skeleton className="w-300 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
+      <Skeleton className="w-100 h-60" />
+    </div>
+  ) : (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <div className="hidden lg:block w-full h-full col-span-2 row-span-2 relative rounded-2xl border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
         <Image
@@ -38,7 +50,7 @@ function LandingGrid() {
         />
         <Link
           href={{
-            pathname: "/terminal",
+            pathname: "/explore",
             query: { topic: firstItem.name.toLowerCase() },
           }}
         >
@@ -52,7 +64,7 @@ function LandingGrid() {
       {firstBlock.map((topic, id) => (
         <Link
           href={{
-            pathname: "/terminal",
+            pathname: "/explore",
             query: { topic: topic.name.toLowerCase() },
           }}
           key={id}
@@ -79,7 +91,7 @@ function LandingGrid() {
         />
         <Link
           href={{
-            pathname: "/terminal",
+            pathname: "/explore",
             query: { topic: firstItem.name.toLowerCase() },
           }}
         >
@@ -93,7 +105,7 @@ function LandingGrid() {
       {lastBlock.map((topic, id) => (
         <Link
           href={{
-            pathname: "/terminal",
+            pathname: "/explore",
             query: { topic: topic.name.toLowerCase() },
           }}
           key={id}

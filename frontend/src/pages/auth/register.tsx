@@ -28,6 +28,9 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { googleIcon } from "@/components/utility/Icons";
 import { environment } from "@/environment/load_env";
+import { ReactElement, useEffect } from "react";
+import PublicLayout from "@/app/PublicLayout";
+import AppLayout from "@/app/AppLayout";
 
 const registerSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
@@ -46,12 +49,16 @@ const Register = () => {
     resolver: zodResolver(registerSchema),
   });
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.push("/explore");
+    }
+  }, [router]);
+
   async function onSubmit(values: RegisterFormInputs) {
     try {
-      const response = await api.post(
-        "/auth/register",
-        values
-      );
+      const response = await api.post("/auth/register", values);
       if (response.status === 200) {
         console.log("Registration successful");
         toast({
@@ -176,6 +183,10 @@ const Register = () => {
       </Card>
     </div>
   );
+};
+
+Register.getLayout = (page: ReactElement) => {
+  return <AppLayout>{page}</AppLayout>;
 };
 
 export default Register;

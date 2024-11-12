@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { useToast } from "@/components/ui/use-toast";
 import api from "@/lib/api";
 import Link from "next/link";
-
+import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,7 +26,10 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { googleIcon } from "@/components/utility/Icons";
 import { environment } from "@/environment/load_env";
-
+import { ReactElement } from "react";
+import { useEffect } from "react";
+import PublicLayout from "@/app/PublicLayout";
+import AppLayout from "@/app/AppLayout";
 
 const loginSchema = z.object({
   email: z
@@ -42,11 +45,18 @@ const loginSchema = z.object({
 type LoginFormInputs = z.infer<typeof loginSchema>;
 
 const Login = () => {
+  const { user } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const form = useForm<LoginFormInputs>({
     resolver: zodResolver(loginSchema),
   });
+
+  useEffect(() => {
+    if (user) {
+      router.push("/terminal");
+    }
+  }, [router, user]);
 
   const onSubmit: SubmitHandler<LoginFormInputs> = async (data) => {
     try {
@@ -63,12 +73,8 @@ const Login = () => {
         }
       );
       if (response.status === 200) {
-        toast({
-          title: "Login successful",
-          description: "Redirecting to the terminal.",
-        });
         localStorage.setItem("token", response.data.access_token);
-        router.push("/terminal");
+        window.location.href = "/home";
       }
     } catch (error) {
       console.error("Login failed", error);
@@ -172,6 +178,10 @@ const Login = () => {
       </Card>
     </div>
   );
+};
+
+Login.getLayout = (page: ReactElement) => {
+  return <AppLayout>{page}</AppLayout>;
 };
 
 export default Login;

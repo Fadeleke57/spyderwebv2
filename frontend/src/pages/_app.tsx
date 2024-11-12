@@ -1,25 +1,32 @@
-import Layout from "@/app/layout";
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import type { Metadata } from "next";
+import type { ReactElement, ReactNode } from "react";
+import type { NextPage } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import { UserProvider } from "@/context/UserContext";
-import { SessionProvider } from "next-auth/react";
+import AppLayout from "@/app/AppLayout";
 
-export const metadata: Metadata = {
-  title: "Spydr - The new way to news.",
-  description: "Your all-in-one news platform.",
+export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
+  getLayout?: (page: ReactElement) => ReactNode;
 };
 
-function App({ Component, pageProps }: AppProps) {
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout;
+};
+
+function App({ Component, pageProps }: AppPropsWithLayout) {
+  // fallback to root layout if no layout is provided
+  const getLayout =
+    Component.getLayout || ((page) => <AppLayout>{page}</AppLayout>);
+
   return (
     <UserProvider>
-      <Layout>
-        <SessionProvider session={pageProps.session}>
+      {getLayout(
+        <>
           <Component {...pageProps} />
-        </SessionProvider>
-        <Toaster />
-      </Layout>
+          <Toaster />
+        </>
+      )}
     </UserProvider>
   );
 }

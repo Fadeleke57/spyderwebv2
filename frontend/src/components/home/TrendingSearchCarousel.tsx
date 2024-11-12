@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState, useEffect } from "react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -8,36 +9,54 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { TrendingUp } from "lucide-react";
+import { useFetchPublicBuckets } from "@/hooks/buckets";
+import { formatText } from "@/lib/utils";
+import { BookMarked } from "lucide-react";
+import { useRouter } from "next/router";
+import { Skeleton } from "../ui/skeleton";
+import TrendingSearchItem from "./TrendingSearchItem";
 
 export function TrendingSearchCarousel() {
+  const { buckets, loading, error } = useFetchPublicBuckets();
+  const [bucketsRendered, setBucketsRendered] = useState<boolean>(false);
+  const [displayBuckets, setDisplayBuckets] = useState<any[]>(
+    Array.from({ length: 9 })
+  );
+
+  const router = useRouter();
+
+  // Update displayBuckets when the actual buckets are loaded
+  useEffect(() => {
+    if (buckets && !loading) {
+      setDisplayBuckets(buckets.sort((a, b) => b.likes.length - a.likes.length).slice(0, 9));
+      setBucketsRendered(true);
+    }
+
+  }, [buckets, loading]);
+
   return (
-    <div className="relative group">
+    <div className="relative group pl-6">
       <Carousel
         opts={{
           align: "start",
         }}
         className="w-full"
       >
-        <small className="text-sm font-medium leading-none pl-2 flex inline items-center">
-          <TrendingUp className="mr-2 text-blue-400" />
-          Trending
-        </small>
         <CarouselContent>
-          {Array.from({ length: 9 }).map((_, index) => (
-            <CarouselItem key={index} className="basis-1/3 lg:basis-1/5">
-              <div className="p-1">
-                <Card>
-                  <CardContent className="flex aspect-square items-center justify-center p-6">
-                    <span className="text-3xl font-semibold">{}</span>
-                  </CardContent>
-                </Card>
-              </div>
-            </CarouselItem>
-          ))}
+          {!bucketsRendered
+            ? Array.from({ length: 9 }).map((_, index) => (
+                <CarouselItem key={index} className="basis-1/3 lg:basis-1/5">
+                  <Skeleton className="md:w-[250px] md:h-[250px] lg:w-[200px] lg:h-[200px] rounded-xl" />
+                </CarouselItem>
+              ))
+            : displayBuckets.map((bucket, index) => (
+                <CarouselItem key={index} className="basis-1/3 lg:basis-1/5">
+                  <TrendingSearchItem bucket={bucket} />
+                </CarouselItem>
+              ))}
         </CarouselContent>
-        <CarouselPrevious className="lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300" />
-        <CarouselNext className="lg:opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300" />
+        <CarouselPrevious />
+        <CarouselNext />
       </Carousel>
     </div>
   );

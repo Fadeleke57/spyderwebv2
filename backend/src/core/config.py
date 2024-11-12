@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     oauth2_client_secret: str
     oauth2_redirect_uri: str
     next_url: str
+    pinecone_api_key: str
+    openai_api_key: str
+    s3_bucket_name: str
 
     class Config:
         env_file = f".env.{env}"
