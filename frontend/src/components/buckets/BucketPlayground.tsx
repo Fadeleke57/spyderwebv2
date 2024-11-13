@@ -59,7 +59,7 @@ function BucketPlayground({
       ) : null}
 
       {isOwner && bucket?.sourceIds?.length === 0 && (
-        <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/4 flex flex-col items-center gap-1 text-center">
+        <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/4 flex flex-col items-center gap-1 text-center min-w-[300px]">
           <h3 className="text-2xl font-bold tracking-tight">
             Add your first source
           </h3>

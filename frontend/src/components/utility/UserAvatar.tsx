@@ -3,20 +3,21 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import { PublicUser } from "@/types/user";
 import { Skeleton } from "../ui/skeleton";
+import { cn } from "@/lib/utils";
 
-function UserAvatar({ userId }: { userId?: string }) {
+function UserAvatar({ userId, className, width, height }: { userId?: string, className?: string, width?: number, height?: number }) {
   return (
     <Button
       variant="outline"
       size="icon"
-      className="rounded-full"
+      className={cn("rounded-full", className)}
     >
       {userId ? (
         <Image
           src={`https://robohash.org/${userId}?size=300x300`}
-          width={36}
-          height={36}
           alt="Avatar"
+          width={width || 36}
+          height={height || 36}
           className="rounded-full"
         />
       ) : (

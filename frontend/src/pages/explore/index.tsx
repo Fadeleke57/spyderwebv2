@@ -12,11 +12,10 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { PlusCircle, File, ListFilter } from "lucide-react";
+import { File, ListFilter } from "lucide-react";
 import { useRouter } from "next/router";
 import { formatText } from "@/lib/utils";
 import { NewBucketModal } from "@/components/buckets/NewBucketModal";
-import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonCard } from "@/components/utility/SkeletonCard";
 
 function Index() {
@@ -143,10 +142,7 @@ function Index() {
 
       <div className="w-full lg:min-h-[62vh]">
         {loading ? (
-          <div className="w-full flex flex-wrap gap-10">
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
+          <div className="w-full flex flex-col gap-3">
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />

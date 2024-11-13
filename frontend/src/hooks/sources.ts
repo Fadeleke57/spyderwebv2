@@ -131,3 +131,130 @@ export const useUploadWebsite = (webId: string) => {
     progress,
   };
 };
+
+export const useRenderFile = (filePath: string) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [presignedUrl, setPresignedUrl] = useState<string | null>(null);
+
+  const getPresignedUrl = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.get(
+        `/sources/presigned/url/${encodeURIComponent(filePath)}`
+      );
+      setPresignedUrl(response.data.presigned_url);
+      return response.data.presigned_url;
+    } catch (err: any) {
+      setError(
+        err.message || "An error occurred while getting the presigned URL"
+      );
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filePath]);
+
+  return {
+    getPresignedUrl,
+    presignedUrl,
+    isLoading,
+    error,
+  };
+};
+
+export const useUploadNote = (webId: string) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState(null);
+  const [progress, setProgress] = useState(0);
+
+  const uploadNote = useCallback(
+    async (payload: { title: string; content: string }) => {
+      setIsUploading(true);
+      setError(null);
+      setProgress(0);
+
+      try {
+        const response = await api.post(
+          `/sources/upload/note/${webId}`,
+          payload,
+          {
+            onUploadProgress: (progressEvent) => {
+              setProgress(
+                Math.round(
+                  (progressEvent.loaded * 100) / (progressEvent?.total || 0)
+                )
+              );
+            },
+          }
+        );
+
+        const data = await response.data.result;
+        return data;
+      } catch (err: any) {
+        setError(err.message);
+        throw err;
+      } finally {
+        setIsUploading(false);
+        setProgress(100);
+      }
+    },
+    [webId]
+  );
+
+  return {
+    uploadNote,
+    isUploading,
+    error,
+    progress,
+  };
+};
+
+export const useUpdateNote = (sourceId : string) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState(null);
+  const [progress, setProgress] = useState(0);
+
+  const updateNote = useCallback(
+    async (payload: { title?: string; content?: string }) => {
+      setIsUploading(true);
+      setError(null);
+      setProgress(0);
+
+      try {
+        const response = await api.patch(
+          `/sources/update/note/${sourceId}`,
+          payload,
+          {
+            onUploadProgress: (progressEvent) => {
+              setProgress(
+                Math.round(
+                  (progressEvent.loaded * 100) / (progressEvent?.total || 0)
+                )
+              );
+            },
+          }
+        );
+
+        const data = await response.data.result;
+        return data;
+      } catch (err: any) {
+        setError(err.message);
+        throw err;
+      } finally {
+        setIsUploading(false);
+        setProgress(100);
+      }
+    },
+    [sourceId]
+  );
+
+  return {
+    updateNote,
+    isUploading,
+    error,
+    progress,
+  };
+};

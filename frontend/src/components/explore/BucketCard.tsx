@@ -7,16 +7,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Bucket } from "@/types/bucket";
-import { formatText } from "@/lib/utils";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { IterationCcw, ArrowBigUpDash } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import { useLikeBucket, useUnlikeBucket } from "@/hooks/buckets";
+import UserAvatar from "../utility/UserAvatar";
+import { useFetchUserById } from "@/hooks/user";
 
-export function BucketCard({ bucket }: { bucket: Bucket}) {
+export function BucketCard({ bucket }: { bucket: Bucket }) {
   const [bucketLikedCount, setBucketLikedCount] = React.useState(
     bucket.likes.length
+  );
+  const { user: bucketOwner, loading: bucketOwnerLoading } = useFetchUserById(
+    bucket?.userId as string
   );
   const [bucketIterationsCount, setBucketIterationsCount] = React.useState(
     bucket.iterations.length
@@ -31,7 +35,6 @@ export function BucketCard({ bucket }: { bucket: Bucket}) {
   const handleLikeBucket = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
     if (!user) {
       return;
     }
@@ -60,13 +63,33 @@ export function BucketCard({ bucket }: { bucket: Bucket}) {
   }, [bucket, user?.id]);
 
   return (
-    <Link href={`/buckets/bucket/${bucket.bucketId}`} className="flex flex-col gap-2 hover:cursor-pointer">
-      <Card className="w-full relative mx-auto min-h-[210px] border-none hover:bg-muted">
+    <Link
+      href={`/buckets/bucket/${bucket.bucketId}`}
+      className="flex flex-col gap-2 hover:cursor-pointer"
+    >
+      <Card className="w-full relative mx-auto min-h-[210px] border-none hover:bg-muted py-6">
+        <div className="absolute top-2 left-6 flex flex-row items-center">
+          <UserAvatar
+            userId={bucket?.userId}
+            width={20}
+            height={20}
+            className="w-[25px] h-[25px]"
+          />
+          <p className="ml-2 text-xs text-slate-500">
+            {bucketOwner?.full_name}
+          </p>
+          <p className="ml-2 text-xs text-slate-500 font-semibold">*</p>
+          <p className="ml-2 text-xs text-slate-500 font-semibold">
+            {formatDistanceToNow(new Date(bucket?.updated), {
+              addSuffix: true,
+            })}
+          </p>
+        </div>
         <CardHeader className="overflow-hidden">
-          <CardTitle className="break-words hover:cursor-pointer hover:text-blue-500">
+          <CardTitle className="break-words hover:cursor-pointer">
             <h3 className="hyphens-auto">{bucket.name}</h3>
           </CardTitle>
-          <CardDescription className="hyphens-auto mb-8">
+          <CardDescription className="hyphens-auto mb-8 max-w-6xl">
             {bucket.description}
           </CardDescription>
         </CardHeader>
