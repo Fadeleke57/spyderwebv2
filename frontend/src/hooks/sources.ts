@@ -146,10 +146,9 @@ export const useRenderFile = (filePath: string) => {
         `/sources/presigned/url/${encodeURIComponent(filePath)}`
       );
       setPresignedUrl(response.data.presigned_url);
-      console.log("filePath", filePath);
       console.log("Presigned URL:", response.data.presigned_url);
       let decodeUrl = decodeURIComponent(response.data.presigned_url);
-      decodeUrl.replace("%2F", "/");
+      decodeUrl.replace(/%2F/g, "/");
       console.log("decodeUrl", decodeUrl);
       return decodeUrl;
     } catch (err: any) {
@@ -217,7 +216,7 @@ export const useUploadNote = (webId: string) => {
   };
 };
 
-export const useUpdateNote = (sourceId : string) => {
+export const useUpdateNote = (sourceId: string) => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState(null);
   const [progress, setProgress] = useState(0);
