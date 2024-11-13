@@ -31,7 +31,6 @@ export default function BucketDataDrawer({
   useEffect(() => {
     if (open && source.type !== "website" && source.type !== "note") {
       handleGetPresignedUrl();
-      console.log("fileUrl", fileUrl);
     }
   }, [open, source]);
 
