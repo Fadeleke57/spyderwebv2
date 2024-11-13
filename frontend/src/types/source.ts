@@ -7,6 +7,7 @@ export type Source = {
   created_at: Date;
   updated_at: Date;
   size?: number;
+  content?: string;
 };
 
 export type SourceAsNode = {
@@ -16,6 +17,7 @@ export type SourceAsNode = {
   url: string;
   type: string;
   size?: number;
+  content?: string;
   created_at: Date;
   updated_at: Date;
   x: number;

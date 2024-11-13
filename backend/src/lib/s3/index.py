@@ -87,3 +87,20 @@ class S3Bucket:
             print(f"Object {object_name} deleted successfully from {self.bucket_name}")
         except ClientError as e:
             print(f"Error deleting object: {e}")
+
+    def download_file_object(self, key : str, file_object : str):
+        """
+        Downloads a file from S3.
+
+        Args:
+            object_name (str): Name of the object in S3.
+            file_path (str): Path to save the file to.
+
+        Raises:
+            ClientError: If there's an error downloading the file.
+        """
+        try:
+            self.bucket.download_fileobj(self.bucket_name, key, file_object)
+            print(f"File {key} downloaded successfully to {file_object}")
+        except ClientError as e:
+            print(f"Error downloading file: {e}")

@@ -162,7 +162,6 @@ function BucketGraph({
           source={selectedSource as SourceAsNode}
           open={isDrawerOpen}
           setOpen={setDrawerOpen}
-          config={config}
         />
       )}
     </>

@@ -3,16 +3,35 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ArrowBigRight, Link, Notebook, Plus, Upload, X, Youtube } from "lucide-react";
+import {
+  ArrowBigRight,
+  Forward,
+  Link,
+  Notebook,
+  Plus,
+  Upload,
+  X,
+  Youtube,
+} from "lucide-react";
 import { BucketConfigFormValues } from "@/types/article";
 import { Bucket } from "@/types/bucket";
-import { useFileUpload, useUploadWebsite } from "@/hooks/sources";
+import {
+  useFileUpload,
+  useUploadNote,
+  useUploadWebsite,
+} from "@/hooks/sources";
 import { toast } from "../ui/use-toast";
 import gsap from "gsap";
 import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ScrollArea } from "../ui/scroll-area";
 
 type ConfigGraphModalProps = {
   config: BucketConfigFormValues;
@@ -25,9 +44,19 @@ export default function BucketSearchModal({
   bucket,
   refetch,
 }: ConfigGraphModalProps) {
+  const noteSchema = z.object({
+    title: z.string().min(1, { message: "Title is required" }),
+    content: z.string().optional(),
+  });
+
+  type noteType = z.infer<typeof noteSchema>;
   const [isOpen, setIsOpen] = useState(false);
   const [view, setView] = useState("default");
   const [websiteUrl, setWebsiteUrl] = useState("");
+  const [note, setNote] = useState({
+    title: "",
+    content: "",
+  });
 
   const { uploadFile, progress, error } = useFileUpload(
     bucket.userId,
@@ -40,7 +69,58 @@ export default function BucketSearchModal({
     error: websiteError,
   } = useUploadWebsite(bucket.bucketId);
 
+  const {
+    uploadNote,
+    progress: noteLoading,
+    error: noteError,
+  } = useUploadNote(bucket.bucketId);
+
   const contentRef = useRef(null);
+
+  const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.value === "") {
+      setNote({
+        ...note,
+        title: "Untitled",
+      });
+      return;
+    }
+    setNote({
+      ...note,
+      title: event.target.value,
+    });
+  };
+
+  const onDescriptionChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setNote({
+      ...note,
+      content: event.target.value,
+    });
+  };
+
+  const onSubmit: SubmitHandler<noteType> = async (data) => {
+    try {
+      const noteId = await uploadNote({
+        title: note.title,
+        content: note.content,
+      });
+      form.reset();
+      handleClose();
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: "Error creating bucket",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const form = useForm<noteType>({
+    resolver: zodResolver(noteSchema),
+  });
 
   const handleFileUpload = async (file: File | null) => {
     if (!file) {
@@ -76,11 +156,15 @@ export default function BucketSearchModal({
       });
       handleClose();
       refetch();
-    } catch (err : any) {
+    } catch (err: any) {
       console.error(err);
       toast({
         variant: "destructive",
-        title: `${err.response?.status === 400 ? "Unable to upload this website" : "Error uploading website"}`,
+        title: `${
+          err.response?.status === 400
+            ? "Unable to upload this website"
+            : "Error uploading website"
+        }`,
       });
     }
   };
@@ -113,7 +197,7 @@ export default function BucketSearchModal({
       </DialogTrigger>
       <DialogContent
         aria-describedby="description"
-        className="max-w-[80vw] min-h-[50vh] flex flex-col gap-6 items-center px-6 lg:p-12 overflow-y-auto no-scrollbar rounded-xl"
+        className="max-w-[80vw] min-h-[80vh] flex flex-col gap-6 items-center px-6 lg:p-12 overflow-y-auto no-scrollbar rounded-xl"
       >
         <DialogHeader className="w-full mx-auto flex flex-row justify-between items-center lg:items-start">
           <div className="space-y-4">
@@ -163,6 +247,7 @@ export default function BucketSearchModal({
                       type="file"
                       id="file"
                       multiple
+                      accept=".pdf"
                       className="absolute inset-0 opacity-0 cursor-pointer"
                       hidden
                       onChange={(e) =>
@@ -187,6 +272,7 @@ export default function BucketSearchModal({
                         type="file"
                         id="file"
                         multiple
+                        accept=".pdf"
                         hidden
                         className="absolute inset-0 opacity-0 cursor-pointer"
                         onChange={(e) =>
@@ -260,7 +346,50 @@ export default function BucketSearchModal({
               </Button>
             </div>
           )}
-          {view === "note" && <div>Nothing yet</div>}
+          {view === "note" && (
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="grid w-full items-start gap-6 border rounded-lg p-6"
+            >
+              <ScrollArea className="h-[calc(50vh-80px)]">
+                <fieldset className="grid gap-6 rounded-lg">
+                  <div>
+                    <div className="flex flex-col space-y-2">
+                      <Textarea
+                        id="title"
+                        rows={1}
+                        placeholder="Give it a title..."
+                        {...form.register("title")}
+                        className="w-full min-h-[2rem] bg-transparent p-0 text-3xl font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-2xl font-semibold"
+                        onInput={(e: any) => {
+                          e.target.style.height = "auto";
+                          e.target.style.height = `${e.target.scrollHeight}px`;
+                          form.trigger("title");
+                        }}
+                        onChange={(e: any) => onTitleChange(e)}
+                        maxLength={200}
+                      />
+                      <Textarea
+                        id="content"
+                        rows={1}
+                        placeholder="Some ideas, thoughts, or notes..."
+                        {...form.register("content")}
+                        className="w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-muted-foreground"
+                        onInput={(e: any) => {
+                          e.target.style.height = "auto";
+                          e.target.style.height = `${e.target.scrollHeight}px`;
+                        }}
+                        onChange={(e: any) => onDescriptionChange(e)}
+                      />
+                    </div>
+                  </div>
+                  <Button className="absolute bottom-4 right-4 rounded-full" type="submit">
+                    <Forward size={20} />
+                  </Button>
+                </fieldset>
+              </ScrollArea>
+            </form>
+          )}
         </div>
       </DialogContent>
     </Dialog>
