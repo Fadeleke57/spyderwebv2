@@ -148,7 +148,9 @@ export const useRenderFile = (filePath: string) => {
       setPresignedUrl(response.data.presigned_url);
       console.log("filePath", filePath);
       console.log("Presigned URL:", response.data.presigned_url);
-      return response.data.presigned_url;
+      const decodeUrl = decodeURIComponent(response.data.presigned_url);
+      console.log("decodeUrl", decodeUrl);
+      return decodeUrl;
     } catch (err: any) {
       setError(
         err.message || "An error occurred while getting the presigned URL"
