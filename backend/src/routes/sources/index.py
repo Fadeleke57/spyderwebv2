@@ -10,11 +10,15 @@ from src.core.config import settings
 import requests
 from pydantic import BaseModel, HttpUrl
 from bs4 import BeautifulSoup
+from src.models.note import CreateNote, UpdateNote
+import boto3
+from botocore.exceptions import ClientError
 from src.agents.structure_html_agent import process_html
 import os
 
 router = APIRouter()
 s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
+s3 = boto3.client('s3')
 
 @router.post("/upload/{user_id}/{web_id}/{file_type}")
 async def upload_file(user_id: str, web_id: str, file_type: str, file: UploadFile = File(...), user=Depends(manager)):
@@ -119,9 +123,10 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
     })
     buckets = get_collection("buckets")
     buckets.update_one({"bucketId": web_id, "userId": user["id"]}, {"$push": {"sourceIds": sourceId}})
-    print("structured data: ", structured_data)
     return {"result": structured_data}
 
+
+"""
 @router.get("/download")
 def download_file(user=Depends(manager)):
     check_user(user)
@@ -136,6 +141,7 @@ def delete_file(user=Depends(manager)):
 def list_files(user=Depends(manager)):
     check_user(user)
     return {"result": "Files listed"}
+"""
 
 @router.get("/all/{web_id}")
 def get_all_sources(web_id: str):
@@ -151,3 +157,72 @@ def get_all_sources(web_id: str):
     sources = get_collection("sources")
     sourcesForWeb = sources.find({"bucketId": web_id}, {"_id": 0})
     return {"result": list(sourcesForWeb)}
+
+@router.get("/presigned/url/{file_path:path}")
+async def get_presigned_url(file_path: str):
+    
+    try:
+        url = s3.generate_presigned_url(
+            'get_object',
+            Params={
+                'Bucket': s3_bucket.bucket_name,
+                'Key': file_path,
+                'ResponseContentDisposition': 'inline',
+                'ResponseContentType': 'application/pdf'
+            },
+            ExpiresIn=3600
+        )
+        return {"presigned_url": url}
+    except ClientError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/upload/note/{bucket_id}/")
+def upload_note(bucket_id: str, note: CreateNote, user=Depends(manager)):
+    """
+    Upload a note to a given bucket.
+
+    Args:
+        bucket_id (str): The ID of the bucket to upload the note to.
+        note (CreateNote): The content of the note.
+        user (User): The user making the request.
+
+    Returns:
+        dict: A JSON response containing the ID of the uploaded note.
+    """
+    check_user(user)
+    sources = get_collection("sources")
+    sourceId = str(uuid4())
+    sources.insert_one({
+        "sourceId": sourceId,
+        "bucketId": bucket_id,
+        "name": note.title,
+        "content": note.content,
+        "url": None,
+        "type": "note",
+        "size": None,
+        "created_at": datetime.now(),
+        "updated_at": datetime.now(),
+    })
+    buckets = get_collection("buckets")
+    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$push": {"sourceIds": sourceId}})
+    return {"result": sourceId}
+
+
+@router.patch("/update/note/{bucket_id}/{source_id}")
+def update_note(bucket_id: str, source_id: str, note: UpdateNote, user=Depends(manager)):
+    """
+    Update a note.
+
+    Args:
+        bucket_id (str): The ID of the bucket the note belongs to.
+        source_id (str): The ID of the note to update.
+        note (UpdateNote): The new content for the note.
+        user (User): The user making the request.
+
+    Returns:
+        dict: A JSON response with a result key.
+    """
+    check_user(user)
+    sources = get_collection("sources")
+    sources.update_one({"sourceId": source_id, "bucketId": bucket_id, "userId": user["id"]}, {"$set": {"content": note.content, "updated_at": datetime.now()}})
+    return {"result": "Note updated"}

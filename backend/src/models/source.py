@@ -7,6 +7,7 @@ class Source(BaseModel):
     bucketId: str
     name: Optional[str]
     url: Optional[str]
+    content: Optional[str]
     type: str
     size: int
     created_at: datetime

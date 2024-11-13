@@ -15,4 +15,3 @@ openai
 boto3
 bs4
 requests
-
