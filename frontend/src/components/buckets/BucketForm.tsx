@@ -54,7 +54,7 @@ function BucketForm({ bucket, user }: FormProps) {
           description: config.description,
           private: config.visibility === "private",
         });
-        toast({ title: "Changes saved automatically." });
+        toast({ title: "Changes saved." });
       } catch (error: any) {
         toast({
           title: "Error updating bucket",

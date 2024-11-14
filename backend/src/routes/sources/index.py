@@ -54,6 +54,7 @@ async def upload_file(user_id: str, web_id: str, file_type: str, file: UploadFil
         sources.insert_one({
             "sourceId": sourceId,
             "bucketId": web_id,
+            "userId": user_id,
             "name": file.filename,
             "url": object_name,
             "type": file_type,
@@ -102,10 +103,12 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
         raise HTTPException(status_code=400, detail="Could not retrieve the webpage")
   
     soup = BeautifulSoup(response.content, "html.parser")
-    main_content = soup.get_text()  
+    main_content = soup.get_text(separator=" ")
+
+    cleaned_content = ' '.join(main_content.split()) 
 
     try: 
-        structured_data = process_html(main_content)
+        structured_data = process_html(cleaned_content)
     except Exception as e:
         raise HTTPException(status_code=400, detail="Could not parse the webpage")
 
@@ -114,10 +117,12 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
     sources.insert_one({
         "sourceId": sourceId,
         "bucketId": web_id,
+        "userId": user["id"],
         "name": structured_data["title"],
         "url": str(url.url),
         "type": "website",
         "size": None,
+        "content": structured_data["summary"],
         "created_at": datetime.now(),
         "updated_at": datetime.now(),
     })
@@ -160,7 +165,6 @@ def get_all_sources(web_id: str):
 
 @router.get("/presigned/url/{file_path:path}")
 async def get_presigned_url(file_path: str):
-    
     try:
         url = s3.generate_presigned_url(
             'get_object',
@@ -195,6 +199,7 @@ def upload_note(bucket_id: str, note: CreateNote, user=Depends(manager)):
     sources.insert_one({
         "sourceId": sourceId,
         "bucketId": bucket_id,
+        "userId": user["id"],
         "name": note.title,
         "content": note.content,
         "url": None,
@@ -224,5 +229,21 @@ def update_note(bucket_id: str, source_id: str, note: UpdateNote, user=Depends(m
     """
     check_user(user)
     sources = get_collection("sources")
-    sources.update_one({"sourceId": source_id, "bucketId": bucket_id, "userId": user["id"]}, {"$set": {"content": note.content, "updated_at": datetime.now()}})
-    return {"result": "Note updated"}
+    
+    update_data = {key: value for key, value in note.dict().items() if value is not None}
+    update_data["updated_at"] = datetime.now()
+    if update_data.get("title"):
+        update_data["name"] = update_data["title"]
+        update_data.pop("title")
+
+    print(update_data)
+    result = sources.find_one_and_update(
+        {"sourceId": source_id, "bucketId": bucket_id},
+        {"$set": update_data},
+        return_document=True
+    )
+    
+    if result:
+        return {"result": "Note updated"}
+    else:
+        return {"error": "Note not found or user not authorized"}, 404

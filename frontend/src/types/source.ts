@@ -1,6 +1,7 @@
 export type Source = {
   sourceId: string;
   bucketId: string;
+  userId?: string;
   name: string;
   url: string;
   type: string;
@@ -13,6 +14,7 @@ export type Source = {
 export type SourceAsNode = {
   sourceId: string;
   bucketId: string;
+  userId?: string;
   name: string;
   url: string;
   type: string;
