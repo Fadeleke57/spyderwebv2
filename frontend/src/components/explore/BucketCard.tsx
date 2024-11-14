@@ -9,11 +9,12 @@ import {
 import { Bucket } from "@/types/bucket";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { IterationCcw, ArrowBigUpDash } from "lucide-react";
+import { IterationCcw, ArrowBigUpDash, EllipsisIcon } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import { useLikeBucket, useUnlikeBucket } from "@/hooks/buckets";
 import UserAvatar from "../utility/UserAvatar";
 import { useFetchUserById } from "@/hooks/user";
+import { Button } from "../ui/button";
 
 export function BucketCard({ bucket }: { bucket: Bucket }) {
   const [bucketLikedCount, setBucketLikedCount] = React.useState(
@@ -68,6 +69,9 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
       className="flex flex-col gap-2 hover:cursor-pointer"
     >
       <Card className="w-full relative mx-auto min-h-[210px] border-none hover:bg-muted py-6">
+        <Button className="absolute top-2 right-6 p-2 rounded-full bg-transparent hover:bg-slate-200" onClick={(e) => e.stopPropagation()}>
+          <EllipsisIcon color="black"/>
+        </Button>
         <div className="absolute top-2 left-6 flex flex-row items-center">
           <UserAvatar
             userId={bucket?.userId}

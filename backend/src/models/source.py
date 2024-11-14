@@ -5,6 +5,7 @@ from datetime import datetime
 class Source(BaseModel):
     sourceId: str
     bucketId: str
+    userId: Optional[str]
     name: Optional[str]
     url: Optional[str]
     content: Optional[str]

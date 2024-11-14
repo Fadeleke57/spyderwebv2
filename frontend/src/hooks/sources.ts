@@ -145,13 +145,10 @@ export const useRenderFile = (filePath: string) => {
       const response = await api.get(
         `/sources/presigned/url/${encodeURIComponent(filePath)}`
       );
-      console.log("Presigned URL:", response.data.presigned_url);
-      const decodeUrl = decodeURIComponent(response.data.presigned_url).replace(
-        /%2F/g,
-        "/"
-      );
-      setPresignedUrl(decodeUrl);
-      return decodeUrl;
+      const decodedURl = response.data.presigned_url.replace(/%2F/g, "/");
+      setPresignedUrl(decodedURl);
+      console.log(decodedURl);
+      return decodedURl;
     } catch (err: any) {
       setError(
         err.message || "An error occurred while getting the presigned URL"
@@ -217,7 +214,7 @@ export const useUploadNote = (webId: string) => {
   };
 };
 
-export const useUpdateNote = (sourceId: string) => {
+export const useUpdateNote = (bucketId: string, sourceId: string) => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState(null);
   const [progress, setProgress] = useState(0);
@@ -230,7 +227,7 @@ export const useUpdateNote = (sourceId: string) => {
 
       try {
         const response = await api.patch(
-          `/sources/update/note/${sourceId}`,
+          `/sources/update/note/${bucketId}/${sourceId}`,
           payload,
           {
             onUploadProgress: (progressEvent) => {

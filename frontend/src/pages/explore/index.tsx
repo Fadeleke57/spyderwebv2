@@ -94,16 +94,23 @@ function Index() {
 
   return (
     <div className="max-w-[1200px] w-full mx-auto flex flex-col gap-8 p-8">
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <div className="max-w-[600px]">
-          <h1 className="text-4xl font-extrabold mb-2"><span className="text-blue-500">Published</span> Buckets</h1>
-          <p className="text-muted-foreground hidden md:block">
-            Explore the latest and most popular buckets on Spydr. Buckets are mind
-            maps of just about anything. They help you understand complex topics in a simple way and give you a jumpstart on whatever you&apos;d like to explore.
+          <h1 className="text-4xl font-extrabold mb-2">
+            <span className="text-blue-500">Published</span> Webs
+          </h1>
+          {/*
+           <p className="text-muted-foreground hidden md:block">
+            Explore the latest and most popular buckets on Spydr. Buckets are
+            mind maps of just about anything. They help you understand complex
+            topics in a simple way and give you a jumpstart on whatever
+            you&apos;d like to explore.
           </p>
+           */}
         </div>
         <div className="ml-auto flex items-end gap-2">
-          <DropdownMenu>
+          {/*
+         <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8 gap-1">
                 <ListFilter className="h-3.5 w-3.5" />
@@ -122,12 +129,13 @@ function Index() {
               <DropdownMenuCheckboxItem>Archived</DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
+           
           <Button size="sm" variant="outline" className="h-8 gap-1">
             <File className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
               Export
             </span>
-          </Button>
+          </Button>*/}
           <NewBucketModal />
         </div>
       </div>
@@ -150,7 +158,7 @@ function Index() {
         ) : error ? (
           <p>Error loading buckets</p>
         ) : currentBuckets.length > 0 ? (
-          <div className="w-full grid grid-cols-1 gap-2">
+          <div className="w-full grid grid-cols-1">
             {currentBuckets.map((bucket: Bucket) => (
               <div key={bucket.bucketId} className="cursor-pointer">
                 <BucketCard
