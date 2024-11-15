@@ -69,25 +69,32 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
       className="flex flex-col gap-2 hover:cursor-pointer"
     >
       <Card className="w-full relative mx-auto min-h-[210px] border-none hover:bg-muted py-6">
-        <Button className="absolute top-2 right-6 p-2 rounded-full bg-transparent hover:bg-slate-200" onClick={(e) => e.stopPropagation()}>
-          <EllipsisIcon color="black"/>
-        </Button>
-        <div className="absolute top-2 left-6 flex flex-row items-center">
-          <UserAvatar
-            userId={bucket?.userId}
-            width={20}
-            height={20}
-            className="w-[25px] h-[25px]"
-          />
-          <p className="ml-2 text-xs text-slate-500">
-            {bucketOwner?.full_name}
-          </p>
-          <p className="ml-2 text-xs text-slate-500 font-semibold">*</p>
-          <p className="ml-2 text-xs text-slate-500 font-semibold">
-            {formatDistanceToNow(new Date(bucket?.updated), {
-              addSuffix: true,
-            })}
-          </p>
+        <div className="absolute top-0 left-0 w-full flex justify-between items-center px-4">
+          <div className="flex flex-row items-center">
+            <UserAvatar
+              userId={bucket?.userId}
+              width={20}
+              height={20}
+              className="w-[25px] h-[25px]"
+            />
+            <p className="ml-2 text-xs text-slate-500">
+              {bucketOwner?.full_name}
+            </p>
+            <p className="ml-2 text-xs text-slate-500 font-semibold">*</p>
+            <p className="ml-2 text-xs text-slate-500 font-semibold">
+              {formatDistanceToNow(new Date(bucket?.updated), {
+                addSuffix: true,
+              })}
+            </p>
+          </div>
+          <div>
+            <Button
+              className="rounded-full bg-transparent hover:bg-slate-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <EllipsisIcon color="black" />
+            </Button>
+          </div>
         </div>
         <CardHeader className="overflow-hidden">
           <CardTitle className="break-words hover:cursor-pointer">

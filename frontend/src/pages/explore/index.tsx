@@ -4,15 +4,6 @@ import { BucketCard } from "@/components/explore/BucketCard";
 import { Bucket } from "@/types/bucket";
 import { SearchInput } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuCheckboxItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { File, ListFilter } from "lucide-react";
 import { useRouter } from "next/router";
 import { formatText } from "@/lib/utils";
 import { NewBucketModal } from "@/components/buckets/NewBucketModal";
@@ -24,7 +15,7 @@ function Index() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [active, setActive] = useState<boolean>(false);
   const searchInputWrapperRef = useRef<any>(null);
-  const bucketsPerPage = 12;
+  const bucketsPerPage = 20;
   const router = useRouter();
 
   useEffect(() => {
@@ -93,61 +84,32 @@ function Index() {
   };
 
   return (
-    <div className="max-w-[1200px] w-full mx-auto flex flex-col gap-8 p-8">
-      <div className="flex justify-between items-center">
+    <div className="max-w-[1200px] w-full mx-auto flex flex-col gap-8 py-8">
+      <div className="flex justify-around items-center lg:items-end px-4">
         <div className="max-w-[600px]">
           <h1 className="text-4xl font-extrabold mb-2">
-            <span className="text-blue-500">Published</span> Webs
+            <span>Spydr</span>
           </h1>
-          {/*
-           <p className="text-muted-foreground hidden md:block">
+          <p className="text-muted-foreground hidden md:block">
             Explore the latest and most popular buckets on Spydr. Buckets are
             mind maps of just about anything. They help you understand complex
             topics in a simple way and give you a jumpstart on whatever
             you&apos;d like to explore.
           </p>
-           */}
-        </div>
-        <div className="ml-auto flex items-end gap-2">
-          {/*
-         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 gap-1">
-                <ListFilter className="h-3.5 w-3.5" />
-                <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                  Filter
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuCheckboxItem checked>
-                Active
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem>Draft</DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem>Archived</DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-           
-          <Button size="sm" variant="outline" className="h-8 gap-1">
-            <File className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Export
-            </span>
-          </Button>*/}
+        </div>{" "}
+        <div className="ml-auto flex items-end">
           <NewBucketModal />
         </div>
       </div>
-
-      <SearchInput
-        defaultValue={"whatever"}
-        placeholder="Search for a bucket"
-        onClick={() => setActive(true)}
-        onChange={handleSearch}
-        value={query}
-      ></SearchInput>
-
+      <div className="px-4">
+        <SearchInput
+          defaultValue={"whatever"}
+          placeholder="Search for a bucket"
+          onClick={() => setActive(true)}
+          onChange={handleSearch}
+          value={query}
+        ></SearchInput>
+      </div>
       <div className="w-full lg:min-h-[62vh]">
         {loading ? (
           <div className="w-full flex flex-col gap-3">
@@ -173,12 +135,14 @@ function Index() {
               </div>
             ))}
           </div>
-        ) : (
-          <p>No buckets found</p>
+            ) : (
+                <div className="px-4">
+
+          <p>No buckets found</p></div>
         )}
       </div>
 
-      <div className="flex justify-between items-center mt-4">
+      <div className="flex justify-between items-center mt-4 px-4">
         <p>
           {currentBuckets.length > 0
             ? `${indexOfFirstBucket + 1} - ${Math.min(
