@@ -14,8 +14,8 @@ function Header() {
       </h1>
       
       <p className="leading-7 mt-4 text-base sm:text-lg font-medium max-w-full sm:max-w-sm lg:max-w-xl sm:mx-0">
-        Dive into the ultimate AI-powered research platform that transforms how you
-        explore and analyze real-time news and research.
+        Dive into the first community-driven search engine that transforms how you
+        explore and interact with the internet.
       </p>
       <div className="mt-6 flex flex-row gap-2 sm:gap-4 justify-start">
         <Button onClick={() => router.push("/auth/register")}>
