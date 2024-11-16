@@ -8,6 +8,7 @@ import { useRouter } from "next/router";
 import { formatText } from "@/lib/utils";
 import { NewBucketModal } from "@/components/buckets/NewBucketModal";
 import { SkeletonCard } from "@/components/utility/SkeletonCard";
+import Link from "next/link";
 
 function Index() {
   const { buckets, loading, error } = useFetchPublicBuckets();
@@ -87,9 +88,11 @@ function Index() {
     <div className="max-w-[1200px] w-full mx-auto flex flex-col gap-8 py-8">
       <div className="flex justify-around items-center lg:items-end px-4">
         <div className="max-w-[600px]">
-          <h1 className="text-4xl font-extrabold mb-2">
-            <span>Spydr</span>
-          </h1>
+          <Link href={"/"} className="cursor-pointer">
+            <h1 className="text-4xl font-extrabold mb-2">
+              <span>Spydr</span>
+            </h1>
+          </Link>
           <p className="text-muted-foreground hidden md:block">
             Explore the latest and most popular buckets on Spydr. Buckets are
             mind maps of just about anything. They help you understand complex
@@ -135,10 +138,10 @@ function Index() {
               </div>
             ))}
           </div>
-            ) : (
-                <div className="px-4">
-
-          <p>No buckets found</p></div>
+        ) : (
+          <div className="px-4">
+            <p>No buckets found</p>
+          </div>
         )}
       </div>
 

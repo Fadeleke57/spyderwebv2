@@ -12,7 +12,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
-import { useCreateBucket } from "@/hooks/buckets"; // Import the hook
+import { useCreateBucket } from "@/hooks/buckets";
+import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Textarea } from "../ui/textarea";
@@ -32,6 +33,7 @@ type BucketConfig = {
 };
 
 export function NewBucketModal() {
+  const { user } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const { createBucket, loading } = useCreateBucket();
@@ -90,10 +92,10 @@ export function NewBucketModal() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="sm" className="h-8 gap-1">
+        <Button size="sm" className="h-8 gap-1" onClick={user ? undefined : () => router.push("/auth/register")}>
           <PlusCircle className="h-3.5 w-3.5" />
           <span className="whitespace-nowrap">
-            Create bucket
+            {user ? "Create Bucket" : "Login to Create"}
           </span>
         </Button>
       </DialogTrigger>
