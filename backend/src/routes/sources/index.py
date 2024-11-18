@@ -12,6 +12,7 @@ from pydantic import BaseModel, HttpUrl
 from bs4 import BeautifulSoup
 from src.models.note import CreateNote, UpdateNote
 import boto3
+from urllib.parse import unquote
 from botocore.exceptions import ClientError
 from src.agents.structure_html_agent import process_html
 import os
@@ -166,11 +167,12 @@ def get_all_sources(web_id: str):
 @router.get("/presigned/url/{file_path:path}")
 async def get_presigned_url(file_path: str):
     try:
+        decoded_file_path = unquote(file_path)
         url = s3.generate_presigned_url(
             'get_object',
             Params={
                 'Bucket': s3_bucket.bucket_name,
-                'Key': file_path,
+                'Key': decoded_file_path,
                 'ResponseContentDisposition': 'inline',
                 'ResponseContentType': 'application/pdf'
             },
