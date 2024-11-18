@@ -145,9 +145,10 @@ export const useRenderFile = (filePath: string) => {
       const response = await api.get(
         `/sources/presigned/url/${encodeURIComponent(filePath)}`
       );
-      const decodedURl = response.data.presigned_url.replace(/%2F/g, "/");
+      console.log("Presigned URL at first:", response.data.presigned_url);
+      const decodedURl = decodeURI(response.data.presigned_url);
       setPresignedUrl(decodedURl);
-      console.log(decodedURl);
+      console.log("Presigned URL at last:", decodedURl);
       return decodedURl;
     } catch (err: any) {
       setError(
