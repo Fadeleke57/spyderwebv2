@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
 import { formatText } from "@/lib/utils";
 import { NewBucketModal } from "@/components/buckets/NewBucketModal";
+import { useUser } from "@/context/UserContext";
 import { SkeletonCard } from "@/components/utility/SkeletonCard";
 import Link from "next/link";
 
@@ -17,6 +18,7 @@ function Index() {
   const [active, setActive] = useState<boolean>(false);
   const searchInputWrapperRef = useRef<any>(null);
   const bucketsPerPage = 20;
+  const { user } = useUser();
   const router = useRouter();
 
   useEffect(() => {
@@ -101,7 +103,13 @@ function Index() {
           </p>
         </div>{" "}
         <div className="ml-auto flex items-end">
-          <NewBucketModal />
+          {user ? (
+            <NewBucketModal />
+          ) : (
+            <Link href="/auth/login">
+              <Button>Login/Register</Button>
+            </Link>
+          )}
         </div>
       </div>
       <div className="px-4">
@@ -144,8 +152,9 @@ function Index() {
           </div>
         )}
       </div>
-
-      <div className="flex justify-between items-center mt-4 px-4">
+      {/**
+         *  Replacing with infinite scroll pagination
+         *       <div className="flex justify-between items-center mt-4 px-4">
         <p>
           {currentBuckets.length > 0
             ? `${indexOfFirstBucket + 1} - ${Math.min(
@@ -166,6 +175,7 @@ function Index() {
           </Button>
         </div>
       </div>
+         */}
     </div>
   );
 }

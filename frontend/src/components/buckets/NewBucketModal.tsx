@@ -33,7 +33,6 @@ type BucketConfig = {
 };
 
 export function NewBucketModal() {
-  const { user } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const { createBucket, loading } = useCreateBucket();
@@ -92,10 +91,10 @@ export function NewBucketModal() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="sm" className="h-8 gap-1" onClick={user ? undefined : () => router.push("/auth/register")}>
+        <Button size="sm" className="h-8 gap-1">
           <PlusCircle className="h-3.5 w-3.5" />
           <span className="whitespace-nowrap">
-            {user ? "Create Bucket" : "Login to Create"}
+            Create Bucket
           </span>
         </Button>
       </DialogTrigger>
