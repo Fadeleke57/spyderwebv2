@@ -178,7 +178,6 @@ async def get_presigned_url(file_path: str):
             },
             ExpiresIn=3600
         )
-        print("Presigned URL from backend: ", url)
         return {"presigned_url": url}
     except ClientError as e:
         raise HTTPException(status_code=500, detail=str(e))
