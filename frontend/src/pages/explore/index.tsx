@@ -10,6 +10,8 @@ import { NewBucketModal } from "@/components/buckets/NewBucketModal";
 import { useUser } from "@/context/UserContext";
 import { SkeletonCard } from "@/components/utility/SkeletonCard";
 import Link from "next/link";
+import Head from "next/head";
+import { PlusCircle } from "lucide-react";
 
 function Index() {
   const { buckets, loading, error } = useFetchPublicBuckets();
@@ -86,25 +88,50 @@ function Index() {
     }
   };
 
+  const title = query
+    ? `Search Results for "${query}" - Spydr`
+    : "Explore - Spydr";
+  const description = query
+    ? `Discover buckets matching your query "${query}".`
+    : "Explore public buckets on Spydr. Find shared research and projects.";
+
   return (
-    <div className="max-w-[1200px] w-full mx-auto flex flex-col gap-8 py-8">
-      <div className="flex justify-around items-center lg:items-end px-4">
+    <div className="flex flex-1 flex-col gap-8 py-8 max-w-[1100px] mx-auto w-full">
+      <Head>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta
+          property="og:url"
+          content={`${
+            typeof window !== "undefined" ? window.location.href : ""
+          }`}
+        />
+      </Head>
+      <div className="flex justify-around items-end lg:items-end px-4">
         <div className="max-w-[600px]">
           <Link href={"/"} className="cursor-pointer">
-            <h1 className="text-4xl font-extrabold mb-2">
-              <span>Spydr</span>
+            <h1 className="text-4xl font-bold mb-2">
+              <span className="hidden lg:block">
+                For the questions without answers.
+              </span>
+            </h1>
+            <h1 className="text-4xl font-bold mb-2 max-w-[200px]">
+              <span className="block lg:hidden">
+                Learn from the best.
+              </span>
             </h1>
           </Link>
-          <p className="text-muted-foreground hidden md:block">
-            Explore the latest and most popular buckets on Spydr. Buckets are
-            mind maps of just about anything. They help you understand complex
-            topics in a simple way and give you a jumpstart on whatever
-            you&apos;d like to explore.
-          </p>
         </div>{" "}
         <div className="ml-auto flex items-end">
           {user ? (
-            <NewBucketModal />
+            <NewBucketModal>
+              <Button size="sm" className="h-8 gap-1">
+                <PlusCircle className="h-3.5 w-3.5" />
+                <span className="whitespace-nowrap">Create Bucket</span>
+              </Button>
+            </NewBucketModal>
           ) : (
             <Link href="/auth/login">
               <Button>Login/Register</Button>
@@ -152,30 +179,6 @@ function Index() {
           </div>
         )}
       </div>
-      {/**
-         *  Replacing with infinite scroll pagination
-         *       <div className="flex justify-between items-center mt-4 px-4">
-        <p>
-          {currentBuckets.length > 0
-            ? `${indexOfFirstBucket + 1} - ${Math.min(
-                indexOfLastBucket,
-                filteredBuckets.length
-              )} of ${filteredBuckets.length} results`
-            : "0 results"}
-        </p>
-        <div className="flex gap-2">
-          <Button onClick={handlePreviousPage} disabled={currentPage === 1}>
-            Previous
-          </Button>
-          <Button
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-         */}
     </div>
   );
 }

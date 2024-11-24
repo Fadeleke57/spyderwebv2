@@ -35,7 +35,7 @@ export function TrendingSearchCarousel() {
   }, [buckets, loading]);
 
   return (
-    <div className="relative group pl-6">
+    <div className="relative group pl-6 mt-4">
       <Carousel
         opts={{
           align: "start",
