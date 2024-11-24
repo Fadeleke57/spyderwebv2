@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import Link from "next/link";
 import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
+import googleLogo from "@/assets/icons8-google.svg";
 import {
   Card,
   CardContent,

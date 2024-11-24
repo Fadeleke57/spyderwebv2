@@ -46,6 +46,7 @@ import withAuth from "@/hoc/withAuth";
 import UserAvatar from "@/components/utility/UserAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NewBucketModal } from "@/components/buckets/NewBucketModal";
+import Head from "next/head";
 
 function Index() {
   const { user, Logout } = useFetchUser();
@@ -84,6 +85,18 @@ function Index() {
 
   return (
     <div className="flex min-h-screen w-full justify-center flex-col bg-muted/40">
+      <Head>
+        <title>{"All Buckets"}</title>
+        <meta name="description" content={"Welcome to spydr"} />
+        <meta property="og:title" content={user?.full_name} />
+        <meta property="og:description" content={"Welcome to spydr"} />
+        <meta
+          property="og:url"
+          content={`${
+            typeof window !== "undefined" ? window.location.href : ""
+          }`}
+        />
+      </Head>
       <div className="flex flex-col sm:gap-4 sm:py-4">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <div className="relative ml-auto flex-1 md:grow-0">
@@ -175,7 +188,12 @@ function Index() {
                     Export
                   </span>
                 </Button>
-                <NewBucketModal />
+                <NewBucketModal>
+                  <Button size="sm" className="h-8 gap-1">
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span className="whitespace-nowrap">Create Bucket</span>
+                  </Button>
+                </NewBucketModal>
               </div>
             </div>
             <TabsContent value="all">
@@ -246,7 +264,13 @@ function Index() {
                               <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuItem>Edit</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDeleteBucket(bucket.bucketId)}>Delete</DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    handleDeleteBucket(bucket.bucketId)
+                                  }
+                                >
+                                  Delete
+                                </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>

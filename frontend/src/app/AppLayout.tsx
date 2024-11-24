@@ -1,9 +1,16 @@
-import { Inter as FontSans } from "next/font/google";
+import { Roboto as FontSans } from "next/font/google";
 import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 import Sidebar from "@/components/utility/Sidebar";
+import { AppSidebar } from "@/components/utility/AppSideBar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 const fontSans = FontSans({
+  weight: "400",
   subsets: ["latin"],
   variable: "--font-sans",
 });
@@ -17,18 +24,14 @@ export default function AppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <div
+    <SidebarProvider
       className={cn(
         "min-h-screen bg-background font-sans antialiased",
         fontSans.variable
       )}
     >
-      <main
-        className={`flex min-h-screen flex-col items-center justify-center sm:pl-14`}
-      >
-        <Sidebar />
-        {children}
-      </main>
-    </div>
+      <AppSidebar />
+      <SidebarInset className="overflow-x-hidden"> {children}</SidebarInset>
+    </SidebarProvider>
   );
 }

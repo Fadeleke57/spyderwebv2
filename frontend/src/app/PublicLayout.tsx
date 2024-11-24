@@ -1,17 +1,19 @@
-import { Inter as FontSans } from "next/font/google";
+import { Roboto as FontSans } from "next/font/google";
 import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 import { Navbar } from "@/components/utility/Nav";
 import Footer from "@/components/utility/Footer";
 
 const fontSans = FontSans({
-  subsets: ["latin"],
+  weight: "400",
+  subsets: ["greek"],
   variable: "--font-sans",
 });
 
 export const metadata = {
-  title: "spydr - Collaborative Research Platform",
-  description: "Spydr is working to democratize research.",
+  title: "spydr - For the questions without answers.",
+  description:
+    "Dive into the first community-driven search engine that transforms how you explore and interact with the internet.",
 };
 
 export default function PublicLayout({

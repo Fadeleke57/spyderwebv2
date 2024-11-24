@@ -16,6 +16,7 @@ import {
   SkeletonTextCard,
   SkeletonUserCard,
 } from "@/components/utility/SkeletonCard";
+import Head from "next/head";
 
 function Index() {
   const router = useRouter();
@@ -29,8 +30,25 @@ function Index() {
   const { user } = useUser();
   const isOwner = user?.id === bucket?.userId;
 
+  const title = loading ? "Loading..." : bucket?.name || "Bucket Details";
+  const description = loading
+    ? "Fetching bucket details..."
+    : bucket?.description || "View and explore bucket details.";
+
   return (
     <div className="grid h-screen w-full">
+      <Head>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta
+          property="og:url"
+          content={`${
+            typeof window !== "undefined" ? window.location.href : ""
+          }`}
+        />
+      </Head>
       <div className="flex flex-col">
         <header className="sticky top-0 z-10 flex h-[57px] items-center justify-between gap-1 border-b bg-background px-4">
           <div className="flex items-center gap-2">
@@ -44,9 +62,10 @@ function Index() {
                     {bucketOwner?.full_name || "Bucket"}{" "}
                   </h1>
                   <span className="text-xs text-muted-foreground font-normal m-0">
-                    {bucket?.updated && formatDistanceToNow(new Date(bucket?.updated), {
-                      addSuffix: true,
-                    })}
+                    {bucket?.updated &&
+                      formatDistanceToNow(new Date(bucket?.updated), {
+                        addSuffix: true,
+                      })}
                   </span>
                 </div>
               </>
@@ -74,7 +93,9 @@ function Index() {
               )}
             </ScrollArea>
           )}
-          {loading ?  <div className="relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 lg:col-span-2"></div> : (
+          {loading ? (
+            <div className="relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 lg:col-span-2"></div>
+          ) : (
             <BucketPlayground bucket={bucket} user={user} refetch={refetch} />
           )}
         </main>

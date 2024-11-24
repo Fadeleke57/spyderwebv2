@@ -13,13 +13,14 @@ import { useFetchBuckets } from "@/hooks/buckets";
 import { formatText } from "@/lib/utils";
 import { useRouter } from "next/router";
 import { Skeleton } from "@/components/ui/skeleton"; // Import skeleton
+import { NewBucketModal } from "../buckets/NewBucketModal";
 
 export function ProjectsCarousel() {
   const { buckets, loading, error } = useFetchBuckets(); // Fetch data
   const router = useRouter();
 
   return (
-    <div className="group pl-6">
+    <div className="group pl-6 mt-4">
       <Carousel
         opts={{
           align: "start",
@@ -27,9 +28,9 @@ export function ProjectsCarousel() {
         className="w-full"
       >
         <CarouselContent>
-          <CarouselItem className="basis-1/2 lg:basis-1/3">
-            <div className="p-1 cursor-pointer">
-              <Link href="/buckets/create">
+          <NewBucketModal>
+            <CarouselItem className="basis-1/2 lg:basis-1/3">
+              <div className="p-1 cursor-pointer">
                 <Card className="bg-muted opacity-35 hover:opacity-75 duration-200 transition ease-in border-none">
                   <CardContent className="flex aspect-square items-center justify-center p-6">
                     <span className="text-3xl font-semibold flex flex-row items-center text-slate-700">
@@ -38,13 +39,12 @@ export function ProjectsCarousel() {
                     </span>
                   </CardContent>
                 </Card>
-              </Link>
-            </div>
-          </CarouselItem>
+              </div>
+            </CarouselItem>
+          </NewBucketModal>
 
           {loading
-            ?
-              Array.from({ length: 9 }).map((_, index) => (
+            ? Array.from({ length: 9 }).map((_, index) => (
                 <CarouselItem
                   key={index}
                   className="basis-1/2 lg:basis-1/3 p-0"
@@ -54,8 +54,7 @@ export function ProjectsCarousel() {
                   </Card>
                 </CarouselItem>
               ))
-            :
-              buckets?.map((bucket, index) => (
+            : buckets?.map((bucket, index) => (
                 <CarouselItem
                   key={index}
                   className="basis-1/2 lg:basis-1/3"

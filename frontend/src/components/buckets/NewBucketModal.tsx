@@ -32,7 +32,8 @@ type BucketConfig = {
   visibility: "private" | "public" | "invite";
 };
 
-export function NewBucketModal() {
+export function NewBucketModal({children}: {children: React.ReactNode}) {
+  //make the button more flexible
   const router = useRouter();
   const { toast } = useToast();
   const { createBucket, loading } = useCreateBucket();
@@ -90,18 +91,15 @@ export function NewBucketModal() {
   };
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <Button size="sm" className="h-8 gap-1">
-          <PlusCircle className="h-3.5 w-3.5" />
-          <span className="whitespace-nowrap">
-            Create Bucket
-          </span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-[350px] px-8 rounded-md lg:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-left">What would you like to start thinking about?</DialogTitle>
-          <DialogDescription className="text-left">Create a second brain.</DialogDescription>
+          <DialogTitle className="text-left">
+            What would you like to start thinking about?
+          </DialogTitle>
+          <DialogDescription className="text-left">
+            Create a second brain.
+          </DialogDescription>
         </DialogHeader>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
