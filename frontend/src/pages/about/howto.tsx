@@ -9,10 +9,11 @@ function Howto() {
       </h1>
       <div className="relative pb-[64.67065868263472%] w-full h-1/2">
         <iframe
-          src="https://www.loom.com/embed/f62c60770e3d40248aa0552390e096f1?sid=dc29a88d-5f09-4418-aa0c-74fe555c635c"
+          src="https://www.loom.com/embed/c273486dc97946bf98dc5dc464dea95d?sid=af7a4d8c-8428-4717-a42c-b16abcd42436"
           allowFullScreen
           className="absolute top-0 left-0 w-full h-full rounded-2xl"
         ></iframe>
+        {/* <div style="position: relative; padding-bottom: 64.63195691202873%; height: 0;"><iframe src="https://www.loom.com/embed/c273486dc97946bf98dc5dc464dea95d?sid=af7a4d8c-8428-4717-a42c-b16abcd42436" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>*/}
       </div>
     </div>
   );
