@@ -31,6 +31,7 @@ import { environment } from "@/environment/load_env";
 import { ReactElement, useEffect } from "react";
 import PublicLayout from "@/app/PublicLayout";
 import AppLayout from "@/app/AppLayout";
+import Head from "next/head";
 
 const registerSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
@@ -59,13 +60,13 @@ const Register = () => {
   async function onSubmit(values: RegisterFormInputs) {
     try {
       const response = await api.post("/auth/register", values);
-      if (response.status === 200) {
-        console.log("Registration successful");
+      if (response.status === 201) {
         toast({
           title: "Registration successful",
-          description: "Redirecting to the login page",
+          description: "Redirecting..",
         });
-        router.push("/auth/login");
+        localStorage.setItem("token", response.data.access_token);
+        window.location.href = "/home";
       }
     } catch (error) {
       console.error("Registration failed", error);
@@ -82,10 +83,21 @@ const Register = () => {
   };
 
   return (
-    <div className="w-full flex items-center justify-center h-7/8 lg:h-screen p-6 lg:p-0">
+    <div className="w-full flex items-center justify-center p-6 lg:pt-20">
+      <Head>
+        <title>{"register - spydr"}</title>
+        <meta
+          property="og:url"
+          content={`${
+            typeof window !== "undefined" ? window.location.href : ""
+          }`}
+        />
+      </Head>
       <Card className="w-[500px]">
         <CardHeader>
-          <CardTitle className="font-bold mb-2">Create An Account</CardTitle>
+          <CardTitle className="font-bold mb-2">
+            create a spydr account
+          </CardTitle>
           <CardDescription>
             Enter your email and password below to continue
           </CardDescription>
@@ -117,12 +129,14 @@ const Register = () => {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Name</FormLabel>
+                      <FormLabel>Username</FormLabel>
+                      <br />
+                      <small>*Something short and memorable*</small>
                       <FormControl>
                         <Input
                           id="username"
                           type="text"
-                          placeholder="John Doe"
+                          placeholder="hungryoctopus891"
                           {...field}
                         />
                       </FormControl>
@@ -186,7 +200,7 @@ const Register = () => {
 };
 
 Register.getLayout = (page: ReactElement) => {
-  return <AppLayout>{page}</AppLayout>;
+  return <PublicLayout>{page}</PublicLayout>;
 };
 
 export default Register;

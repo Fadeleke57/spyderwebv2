@@ -112,7 +112,7 @@ async def auth_callback(code: str):
     manager.set_cookie(response, access_token)
     return response
 
-@router.post('/token')
+@router.post('/token') # normal auth
 def login(data: OAuth2PasswordRequestForm = Depends()):
     """
     Generate an access token for a user.
@@ -178,7 +178,21 @@ def register(user: CreateUser):
         "iterations": []
     })
 
-    return {"msg": "User registered successfully"}
+    access_token = manager.create_access_token(
+        data={"sub": user.email},
+        expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+
+    response = JSONResponse(
+        content={
+            "msg": "User registered successfully",
+            "access_token": access_token,
+            "token_type": "bearer"
+        },
+        status_code=201
+    )
+    manager.set_cookie(response, access_token) 
+    return response
 
 @router.get("/me")
 def get_current_user(user=Depends(manager)):
