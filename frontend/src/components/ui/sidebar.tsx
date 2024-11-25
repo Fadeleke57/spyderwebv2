@@ -41,6 +41,10 @@ interface SidebarTriggerProps extends React.ComponentProps<typeof Button> {
   hideWhen?: "collapsed" | "expanded";
 }
 
+interface SidebarButtonProps extends React.ComponentProps<typeof Button> {
+  deactive?: boolean;
+}
+
 const SidebarContext = React.createContext<SidebarContext | null>(null);
 
 function useSidebar() {
@@ -289,7 +293,7 @@ const SidebarTrigger = React.forwardRef<
       }}
       {...props}
     >
-      {orientation === "left" ? <ArrowLeftFromLine size={20}/> : <ArrowRightFromLine />}
+      {orientation === "left" ? <ArrowLeftFromLine size={20}/> : <ArrowRightFromLine size={20} />}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );
@@ -548,6 +552,7 @@ const sidebarMenuButtonVariants = cva(
 
 const SidebarMenuButton = React.forwardRef<
   HTMLButtonElement,
+  SidebarButtonProps &
   React.ComponentProps<"button"> & {
     asChild?: boolean;
     isActive?: boolean;
@@ -556,6 +561,7 @@ const SidebarMenuButton = React.forwardRef<
 >(
   (
     {
+      deactive = false,
       asChild = false,
       isActive = false,
       variant = "default",
@@ -575,7 +581,7 @@ const SidebarMenuButton = React.forwardRef<
         data-sidebar="menu-button"
         data-size={size}
         data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+        className={cn(sidebarMenuButtonVariants({ variant, size }), className, `${deactive ? "hover:bg-transparent" : ""}`)}
         {...props}
       />
     );

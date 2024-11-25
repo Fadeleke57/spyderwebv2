@@ -17,7 +17,7 @@ import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { Textarea } from "../ui/textarea";
-import { PlusCircle } from "lucide-react";
+import { set } from "lodash";
 const bucketSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   description: z.string().min(0, { message: "Description is required" }),
@@ -45,6 +45,7 @@ export function NewBucketModal({children}: {children: React.ReactNode}) {
   const form = useForm<BucketFormValues>({
     resolver: zodResolver(bucketSchema),
   });
+  const [open, setOpen] = useState(false);
 
   const onSubmit: SubmitHandler<BucketFormValues> = async (data) => {
     try {
@@ -57,6 +58,7 @@ export function NewBucketModal({children}: {children: React.ReactNode}) {
         imageKeys: [], // empty list for now
       });
       form.reset(); // reset the form after successful submission
+      setOpen(false);
       router.push("/buckets/bucket/" + bucketId);
     } catch (error: any) {
       toast({
@@ -90,7 +92,7 @@ export function NewBucketModal({children}: {children: React.ReactNode}) {
     });
   };
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-[350px] px-8 rounded-md lg:max-w-[600px]">
         <DialogHeader>

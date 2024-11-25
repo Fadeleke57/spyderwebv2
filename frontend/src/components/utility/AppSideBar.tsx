@@ -4,7 +4,6 @@ import * as React from "react";
 import { useUser } from "@/context/UserContext";
 import slogo from "@/assets/s_logo.jpg";
 import { NavUser } from "@/components/utility/NavUser";
-import { TeamSwitcher } from "@/components/utility/TeamSwitcher";
 import {
   Sidebar,
   SidebarContent,
@@ -17,92 +16,108 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
-import {
-  CirclePlus,
-  Home,
-  LayoutGrid,
-  Link2,
-  PaintBucket,
-  Settings,
-} from "lucide-react";
+import { ChartNoAxesGantt, CirclePlus, Home, LayoutGrid } from "lucide-react";
+import { NewBucketModal } from "../buckets/NewBucketModal";
+import { Button } from "../ui/button";
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter();
+  const { user } = useUser();
 
   const handleOpenSettingsModal = () => {};
 
   return (
     <Sidebar collapsible="icon" {...props} className="flex justify-center">
       <SidebarHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between rounded-full">
           <SidebarMenuButton
             size="lg"
-            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
+            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer rounded-full flex flex-row gap-2 items-center"
             onClick={() => router.push("/")}
+            deactive
           >
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
+            <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground rounded-full">
               <Image
                 src={slogo}
                 alt="logo"
                 width={36}
                 height={36}
-                className="rounded-lg"
+                className="rounded-full"
               />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-bold text-3xl">spydr</span>
+              <span className="truncate font-bold text-3xl text-black">spydr</span>
             </div>
           </SidebarMenuButton>
           <SidebarTrigger hideWhen="collapsed" />
         </div>
       </SidebarHeader>
-      <SidebarContent className="flex flex-col gap-6 mt-8 px-2">
+      <SidebarContent className="flex flex-col mt-8 px-2">
         <SidebarMenuButton
-          size="lg"
+          size="sm"
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           onClick={() => router.push("/home")}
         >
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-500 text-sidebar-primary-foreground">
-            <Home className="size-4" />
+          <div className="flex flex-row gap-2 items-center rounded-lg bg-none text-slate-500 text-sidebar-primary-foreground">
+            <Home className="size-5" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold text-lg">Home</span>
+            <span className="truncate font-semibold text-lg text-slate-500">
+              Home
+            </span>
           </div>
         </SidebarMenuButton>
         <SidebarMenuButton
-          size="lg"
+          size="sm"
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           onClick={() => router.push("/explore")}
         >
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-500 text-sidebar-primary-foreground">
-            <LayoutGrid className="size-4" />
+          <div className="flex flex-row gap-2 items-center rounded-lg bg-none text-slate-500 text-sidebar-primary-foreground">
+            <LayoutGrid className="size-5" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold text-lg">Explore</span>
+            <span className="truncate font-semibold text-lg text-slate-500">
+              Explore
+            </span>
           </div>
         </SidebarMenuButton>
         <SidebarMenuButton
-          size="lg"
+          size="sm"
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           onClick={() => router.push("/buckets")}
         >
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-500 text-sidebar-primary-foreground">
-            <CirclePlus className="size-4" />
+          <div className="flex flex-row gap-2 items-center rounded-lg bg-none text-slate-500 text-sidebar-primary-foreground">
+            <ChartNoAxesGantt className="size-5" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold text-lg">Create</span>
+            <span className="truncate font-semibold text-lg text-slate-500">
+              Buckets
+            </span>
+          </div>
+        </SidebarMenuButton>
+        <SidebarMenuButton
+          size="sm"
+          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+        >
+          <div>
+            <NewBucketModal>
+              <Button className="w-full bg-transparent hover:bg-transparent p-0 flex flex-row gap-2">
+                <div className="flex items-center rounded-lg bg-none text-slate-500 text-sidebar-primary-foreground">
+                  <CirclePlus className="size-5" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold text-lg text-slate-500">
+                    Create
+                  </span>
+                </div>
+              </Button>
+            </NewBucketModal>
           </div>
         </SidebarMenuButton>
         <div className="mt-auto">
           <SidebarTrigger orientation="right" hideWhen="expanded" />
         </div>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="mb-8">
         <NavUser />
       </SidebarFooter>
       <SidebarRail />

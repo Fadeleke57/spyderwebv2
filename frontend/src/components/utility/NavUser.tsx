@@ -27,12 +27,25 @@ import {
 } from "@/components/ui/sidebar";
 import { useUser } from "@/context/UserContext";
 import Router from "next/router";
+import Link from "next/link";
+import { Button } from "../ui/button";
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { user, logout } = useUser();
 
   if (!user) {
-    return null;
+    return (
+      <div className="flex flex-col gap-2 w-full">
+        <Link href="/auth/login" className="w-full">
+          <Button className="w-full">Login</Button>
+        </Link>
+        <Link href="/auth/register" className="w-full">
+          <Button className="w-full bg-blue-500 hover:bg-blue-600">
+            Sign Up
+          </Button>
+        </Link>
+      </div>
+    );
   }
 
   const handleLogout = () => {
