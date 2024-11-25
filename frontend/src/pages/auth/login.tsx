@@ -31,6 +31,7 @@ import { ReactElement } from "react";
 import { useEffect } from "react";
 import PublicLayout from "@/app/PublicLayout";
 import AppLayout from "@/app/AppLayout";
+import Head from "next/head";
 
 const loginSchema = z.object({
   email: z
@@ -96,10 +97,19 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full flex items-center justify-center h-7/8 lg:h-screen p-6 lg:p-0">
+    <div className="w-full flex items-center justify-center p-6 lg:pt-20">
+      <Head>
+        <title>{"login - spydr"}</title>
+        <meta
+          property="og:url"
+          content={`${
+            typeof window !== "undefined" ? window.location.href : ""
+          }`}
+        />
+      </Head>
       <Card className="w-[500px]">
         <CardHeader>
-          <CardTitle className="font-bold mb-2">Login to Spydr</CardTitle>
+          <CardTitle className="font-bold mb-2">login to spydr</CardTitle>
           <CardDescription>
             Enter your email and password below to continue
           </CardDescription>
@@ -182,7 +192,7 @@ const Login = () => {
 };
 
 Login.getLayout = (page: ReactElement) => {
-  return <AppLayout>{page}</AppLayout>;
+  return <PublicLayout>{page}</PublicLayout>;
 };
 
 export default Login;

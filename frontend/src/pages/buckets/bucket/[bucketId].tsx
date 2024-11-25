@@ -36,7 +36,7 @@ function Index() {
     : bucket?.description || "View and explore bucket details.";
 
   return (
-    <div className="grid h-screen w-full">
+    <div className="grid h-screen w-full max-w-[1200px] mx-auto overflow-hidden scrollbar-none">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -78,7 +78,7 @@ function Index() {
             />
           </div>
         </header>
-        <main className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3 overflow-hidden scrollbar-none">
           {loading ? (
             <SkeletonTextCard />
           ) : (
@@ -98,7 +98,7 @@ function Index() {
           ) : (
             <BucketPlayground bucket={bucket} user={user} refetch={refetch} />
           )}
-        </main>
+        </div>
       </div>
     </div>
   );

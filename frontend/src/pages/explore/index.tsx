@@ -109,33 +109,36 @@ function Index() {
           }`}
         />
       </Head>
-      <div className="flex justify-around items-end lg:items-end px-4">
-        <div className="max-w-[600px]">
-          <Link href={"/"} className="cursor-pointer">
-            <h1 className="text-4xl font-bold mb-2">
-              <span className="hidden lg:block">
-                For the questions without answers.
-              </span>
-            </h1>
-            <h1 className="text-4xl font-bold mb-2 max-w-[200px]">
-              <span className="block lg:hidden">
-                Learn from the best.
-              </span>
-            </h1>
-          </Link>
+      <div className="flex flex-col justify-center lg:flex-row lg:justify-between items-center lg:items-end px-4 w-full">
+        <div>
+          <h1 className="text-4xl font-bold">
+            <span className="hidden lg:block">
+              spydr.
+            </span>
+          </h1>
+          <h1 className="text-4xl font-bold mb-6 lg:hidden">
+            <span className="lg:hidden">spydr.</span>
+          </h1>
         </div>{" "}
-        <div className="ml-auto flex items-end">
+        <div className="flex items-end w-full lg:w-auto">
           {user ? (
             <NewBucketModal>
-              <Button size="sm" className="h-8 gap-1">
+              <Button className="gap-1 w-full lg:w-auto lg:ml-auto">
                 <PlusCircle className="h-3.5 w-3.5" />
                 <span className="whitespace-nowrap">Create Bucket</span>
               </Button>
             </NewBucketModal>
           ) : (
-            <Link href="/auth/login">
-              <Button>Login/Register</Button>
-            </Link>
+            <div className="flex flex-col lg:flex-row gap-2 w-full">
+              <Link href="/auth/login" className="w-full">
+                <Button className="w-full lg:w-auto">Login</Button>
+              </Link>
+              <Link href="/auth/register" className="w-full">
+                <Button className="w-full lg:w-auto bg-blue-500 hover:bg-blue-600">
+                  Sign Up
+                </Button>
+              </Link>
+            </div>
           )}
         </div>
       </div>

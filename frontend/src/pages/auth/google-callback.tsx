@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { ReactElement, useEffect } from "react";
 import { useRouter } from "next/router";
+import PublicLayout from "@/app/PublicLayout";
 
-const GoogleCallback: React.FC = () => {
+const GoogleCallback = () => {
   const router = useRouter();
 
   useEffect(() => {
@@ -16,10 +17,12 @@ const GoogleCallback: React.FC = () => {
   }, [router.query, router]);
 
   return (
-    <div className="w-full h-7/8 lg:h-screen flex justify-center items-center">
+    <div className="w-full h-screen flex justify-center items-center">
       <p>Loading...</p>
     </div>
   );
 };
-
+GoogleCallback.getLayout = (page: ReactElement) => {
+  return <PublicLayout>{page}</PublicLayout>;
+};
 export default GoogleCallback;
