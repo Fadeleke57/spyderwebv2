@@ -17,7 +17,7 @@ export interface Topic {
 
 export const topicsWithSubtopics = [
   {
-    name: "Politics",
+    name: "politics",
     image: politics,
     subtopics: [
       { value: "Politics", label: "Politics - All" },
@@ -29,7 +29,7 @@ export const topicsWithSubtopics = [
     ],
   },
   {
-    name: "World",
+    name: "world",
     image: world,
     subtopics: [
       { value: "World", label: "World - All" },
@@ -41,7 +41,7 @@ export const topicsWithSubtopics = [
     ],
   },
   {
-    name: "Business",
+    name: "business",
     image: business,
     subtopics: [
       { value: "Business", label: "Business - All" },
@@ -53,7 +53,7 @@ export const topicsWithSubtopics = [
     ],
   },
   {
-    name: "Health",
+    name: "health",
     image: health,
     subtopics: [
       { value: "Health", label: "Health - All" },
@@ -62,7 +62,7 @@ export const topicsWithSubtopics = [
     ],
   },
   {
-    name: "Science",
+    name: "science",
     image: science,
     subtopics: [
       { value: "Science", label: "Science - All" },
@@ -71,17 +71,17 @@ export const topicsWithSubtopics = [
     ],
   },
   {
-    name: "Climate",
+    name: "climate",
     image: climate,
     subtopics: [{ value: "Climate", label: "Climate - All" }],
   },
   {
-    name: "Entertainment",
+    name: "entertainment",
     image: entertainment,
     subtopics: [{ value: "Entertainment", label: "Entertainment - All" }],
   },
   {
-    name: "Technology",
+    name: "technology",
     image: tech,
     subtopics: [
       { value: "Technology", label: "Technology - All" },
@@ -90,7 +90,7 @@ export const topicsWithSubtopics = [
     ],
   },
   {
-    name: "Sports",
+    name: "sports",
     image: sports,
     subtopics: [
       { value: "Sports", label: "Sports - All" },

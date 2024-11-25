@@ -89,14 +89,14 @@ function Index() {
   };
 
   const title = query
-    ? `Search Results for "${query}" - Spydr`
+    ? `Search Results for "${query}" - spydr`
     : "explore - spydr";
   const description = query
     ? `Discover buckets matching your query "${query}".`
     : "Explore public buckets on Spydr. Find shared research and projects.";
 
   return (
-    <div className="flex flex-1 flex-col gap-8 py-8 max-w-[1100px] mx-auto w-full">
+    <div className="flex flex-1 flex-col gap-8 py-8  mx-auto w-full max-w-[1100px]">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -109,7 +109,8 @@ function Index() {
           }`}
         />
       </Head>
-      <div className="flex flex-col justify-center lg:flex-row lg:justify-between items-center lg:items-end px-4 w-full">
+      {/**
+       * <div className="flex flex-col justify-center lg:flex-row lg:justify-between items-center lg:items-end px-4 w-full">
         <div>
           <h1 className="text-4xl font-bold">
             <span className="hidden lg:block">
@@ -142,10 +143,11 @@ function Index() {
           )}
         </div>
       </div>
+       */}
       <div className="px-4">
         <SearchInput
           defaultValue={"whatever"}
-          placeholder="Search for a bucket"
+          placeholder="What would you like to jump into?"
           onClick={() => setActive(true)}
           onChange={handleSearch}
           value={query}
