@@ -12,7 +12,7 @@ function Index() {
   return (
     <div className="flex flex-col gap-12 lg:gap-20 p-6 py-16 min-h-screen overflow-x-hidden max-w-[1100px] mx-auto">
       <Head>
-        <title>{user?.full_name || "Homepage - Spydr"}</title>
+        <title>{"home - spydr"}</title>
         <meta name="description" content={"Welcome to spydr"} />
         <meta property="og:title" content={user?.full_name} />
         <meta property="og:description" content={"Welcome to spydr"} />

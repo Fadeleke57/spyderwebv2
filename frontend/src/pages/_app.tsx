@@ -7,7 +7,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { UserProvider } from "@/context/UserContext";
 import AppLayout from "@/app/AppLayout";
 import { Roboto as FontSans } from "next/font/google";
-
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
@@ -30,10 +29,10 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <>
       <Head>
-        <title>Spydr</title>
+        <title>spydr</title>
         <meta
           name="description"
-          content="Spydr is working to democratize research."
+          content="spydr is working to democratize research."
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
