@@ -90,7 +90,7 @@ function Index() {
 
   const title = query
     ? `Search Results for "${query}" - Spydr`
-    : "Explore - Spydr";
+    : "explore - spydr";
   const description = query
     ? `Discover buckets matching your query "${query}".`
     : "Explore public buckets on Spydr. Find shared research and projects.";

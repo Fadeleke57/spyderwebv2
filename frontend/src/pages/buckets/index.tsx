@@ -86,7 +86,7 @@ function Index() {
   return (
     <div className="flex min-h-screen w-full justify-center flex-col bg-muted/40">
       <Head>
-        <title>{"All Buckets"}</title>
+        <title>{"all buckets"}</title>
         <meta name="description" content={"Welcome to spydr"} />
         <meta property="og:title" content={user?.full_name} />
         <meta property="og:description" content={"Welcome to spydr"} />
