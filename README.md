@@ -44,12 +44,14 @@ Since buckets are essentially a user's mind map/research represented as a knowle
 https://www.youtube.com/watch?v=oageL-1I0GE
  <br><br>
 
+## Loom Demo
+
 <div>
-    <a href="https://www.loom.com/share/f62c60770e3d40248aa0552390e096f1](https://www.loom.com/share/c273486dc97946bf98dc5dc464dea95d?sid=1ae2a232-e9b0-4ad7-9c7a-6bde66175042">
-      <p>Introducing Spydr 🕷️ - Watch Video</p>
+    <a href="https://www.loom.com/share/c273486dc97946bf98dc5dc464dea95d">
+      <p>Unveiling Spider: A Community-Driven Search Engine - Watch Video</p>
     </a>
-    <a href="https://www.loom.com/share/f62c60770e3d40248aa0552390e096f1](https://www.loom.com/share/c273486dc97946bf98dc5dc464dea95d?sid=1ae2a232-e9b0-4ad7-9c7a-6bde66175042">
-      <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/f62c60770e3d40248aa0552390e096f1-55a9cfda3da91f31-full-play.gif">
+    <a href="https://www.loom.com/share/c273486dc97946bf98dc5dc464dea95d">
+      <img style="max-width:300px;" src="https://cdn.loom.com/sessions/thumbnails/c273486dc97946bf98dc5dc464dea95d-e43e03db9081d26f-full-play.gif">
     </a>
 </div>
 
