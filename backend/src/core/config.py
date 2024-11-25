@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 import os
 from dotenv import load_dotenv
 
-env = os.getenv("ENV", "prod")
+env = os.getenv("ENV", "local")
 load_dotenv(f".env.{env}")
 print(f"Loading .env.{env}...")
 

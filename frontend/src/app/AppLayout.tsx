@@ -1,11 +1,10 @@
-import { Roboto as FontSans } from "next/font/google";
+import { Inter as FontSans } from "next/font/google";
 import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 import { AppSidebar } from "@/components/utility/AppSideBar";
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { SIDEBAR_COOKIE_NAME } from "@/components/ui/sidebar";
 
@@ -22,8 +21,7 @@ export default function AppLayout({
   return (
     <SidebarProvider
       className={cn(
-        "min-h-screen bg-background font-sans antialiased",
-        fontSans.variable
+        "min-h-screen bg-background font-sans antialiased"
       )}
       defaultOpen={isSidebarOpen}
     >

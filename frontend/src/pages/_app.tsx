@@ -6,7 +6,7 @@ import Head from "next/head";
 import { Toaster } from "@/components/ui/toaster";
 import { UserProvider } from "@/context/UserContext";
 import AppLayout from "@/app/AppLayout";
-import { Roboto as FontSans } from "next/font/google";
+import { Inter as FontSans } from "next/font/google";
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
@@ -16,7 +16,7 @@ type AppPropsWithLayout = AppProps & {
 };
 
 const fontSans = FontSans({
-  weight: "400",
+  weight: ["400", "500", "600", "700", "800", "900"],
   subsets: ["latin"],
   variable: "--font-sans",
 });
@@ -38,10 +38,10 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
       </Head>
       <UserProvider>
         {getLayout(
-          <>
+          <div className={`${fontSans.className}`}>
             <Component {...pageProps} />
             <Toaster />
-          </>
+          </div>
         )}
       </UserProvider>
     </>

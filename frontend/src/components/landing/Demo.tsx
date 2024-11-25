@@ -7,7 +7,7 @@ export default function Demo() {
   const router = useRouter();
   return (
     <div className="relative mt-32 lg:mt-20 flex flex-col gap-10 lg:gap-0 lg:flex-row rounded-xl lg:bg-muted lg:p-10 ">
-      <div className="lg:px-4 h-fit lg:border-b-2 lg:border-slate-300 lg:pb-4">
+      <div className="lg:px-16 h-fit lg:border-b-2 lg:border-slate-300 lg:pb-4">
         <h1 className="text-3xl sm:text-4xl lg:text-4xl font-bold tracking-tight mb-2 sm:mb-4 max-w-5xl mx-auto">
           An <span className="text-blue-500">all-in-one</span> platform for
           understanding the full context of your search.

@@ -46,10 +46,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             onClick={() => router.push("/")}
           >
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
-              <Image src={slogo} alt="logo" width={36} height={36} className="rounded-lg" />
+              <Image
+                src={slogo}
+                alt="logo"
+                width={36}
+                height={36}
+                className="rounded-lg"
+              />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">spydr</span>
+              <span className="truncate font-bold text-3xl">spydr</span>
             </div>
           </SidebarMenuButton>
           <SidebarTrigger hideWhen="collapsed" />
@@ -65,8 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <Home className="size-4" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">Home</span>
-            <span className="truncate text-xs">View Buckets</span>
+            <span className="truncate font-semibold text-lg">Home</span>
           </div>
         </SidebarMenuButton>
         <SidebarMenuButton
@@ -78,8 +83,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <LayoutGrid className="size-4" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">Explore</span>
-            <span className="truncate text-xs">View Other Buckets</span>
+            <span className="truncate font-semibold text-lg">Explore</span>
           </div>
         </SidebarMenuButton>
         <SidebarMenuButton
@@ -91,8 +95,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <CirclePlus className="size-4" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">Create</span>
-            <span className="truncate text-xs">Create a New Bucket</span>
+            <span className="truncate font-semibold text-lg">Create</span>
           </div>
         </SidebarMenuButton>
         <div className="mt-auto">

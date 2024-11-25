@@ -9,7 +9,7 @@ function Header() {
       <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
         The new way to news.
       </p>
-      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-2 sm:mb-4">
+      <h1 className="text-3xl sm:text-4xl lg:text-5xl tracking-tight mb-2 sm:mb-4 font-extrabold">
         Uncover the Web of Knowledge with <TypingAnimation className="text-blue-500 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight" text="Spydr." />
       </h1>
       
