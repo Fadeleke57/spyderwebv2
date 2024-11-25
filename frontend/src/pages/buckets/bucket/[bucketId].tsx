@@ -36,7 +36,7 @@ function Index() {
     : bucket?.description || "View and explore bucket details.";
 
   return (
-    <div className="grid h-screen w-full max-w-[1200px] mx-auto overflow-hidden scrollbar-none">
+    <div className="grid h-screen w-full overflow-hidden scrollbar-none">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
