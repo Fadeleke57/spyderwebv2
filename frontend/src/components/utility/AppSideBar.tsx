@@ -13,7 +13,6 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { ChartNoAxesGantt, CirclePlus, Home, LayoutGrid } from "lucide-react";
@@ -32,7 +31,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuButton
             size="lg"
             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer rounded-full flex flex-row gap-2 items-center"
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/explore")}
             deactive
           >
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground rounded-full">
@@ -45,7 +44,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-bold text-3xl text-black">spydr</span>
+              <span className="truncate font-semibold text-3xl text-black">spydr</span>
             </div>
           </SidebarMenuButton>
           <SidebarTrigger hideWhen="collapsed" />
@@ -117,10 +116,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarTrigger orientation="right" hideWhen="expanded" />
         </div>
       </SidebarContent>
-      <SidebarFooter className="mb-8">
+      <SidebarFooter hideWhen={ user ? null : "collapsed"} className="mb-8">
         <NavUser />
       </SidebarFooter>
-      <SidebarRail />
     </Sidebar>
   );
 }

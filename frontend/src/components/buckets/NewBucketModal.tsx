@@ -37,6 +37,7 @@ export function NewBucketModal({children}: {children: React.ReactNode}) {
   const router = useRouter();
   const { toast } = useToast();
   const { createBucket, loading } = useCreateBucket();
+  const { user } = useUser();
   const [bucketConfig, setBucketConfig] = useState<BucketConfig>({
     name: "Untitled",
     description: "",
@@ -49,6 +50,10 @@ export function NewBucketModal({children}: {children: React.ReactNode}) {
 
   const onSubmit: SubmitHandler<BucketFormValues> = async (data) => {
     try {
+      if (!user) {
+        router.push("/auth/login");
+        return;
+      }
       const bucketId = await createBucket({
         name: bucketConfig.name,
         description: bucketConfig.description,

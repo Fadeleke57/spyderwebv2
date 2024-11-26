@@ -93,14 +93,12 @@ const Register = () => {
           }`}
         />
       </Head>
-      <Card className="w-[500px]">
+      <Card className="w-[500px] border-none shadow-none">
         <CardHeader>
           <CardTitle className="font-bold mb-2">
-            create a spydr account
+            <span className="text-slate-400">like it? save it.</span>
+            <br></br>create a spydr account
           </CardTitle>
-          <CardDescription>
-            Enter your email and password below to continue
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
