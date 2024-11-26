@@ -32,17 +32,23 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ScrollArea } from "../ui/scroll-area";
+import { waveform } from "ldrs";
+import { Uploading } from "../utility/Loading";
 
 type ConfigGraphModalProps = {
   config: BucketConfigFormValues;
   setConfig: (value: BucketConfigFormValues) => void;
   bucket: Bucket;
   refetch: () => void;
+  view?: string;
+  children: React.ReactNode;
 };
 
 export default function BucketSearchModal({
   bucket,
   refetch,
+  view = "default",
+  children,
 }: ConfigGraphModalProps) {
   const noteSchema = z.object({
     title: z.string().min(1, { message: "Title is required" }),
@@ -51,28 +57,31 @@ export default function BucketSearchModal({
 
   type noteType = z.infer<typeof noteSchema>;
   const [isOpen, setIsOpen] = useState(false);
-  const [view, setView] = useState("default");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [note, setNote] = useState({
     title: "",
     content: "",
   });
 
-  const { uploadFile, progress, error } = useFileUpload(
-    bucket.userId,
-    bucket.bucketId
-  );
+  const {
+    uploadFile,
+    progress,
+    error,
+    isUploading: isFileUploading,
+  } = useFileUpload(bucket.userId, bucket.bucketId);
 
   const {
     uploadWebsite,
     progress: websiteProgress,
     error: websiteError,
+    isUploading: isWebsiteUploading,
   } = useUploadWebsite(bucket.bucketId);
 
   const {
     uploadNote,
     progress: noteLoading,
     error: noteError,
+    isUploading: isNoteUploading,
   } = useUploadNote(bucket.bucketId);
 
   const contentRef = useRef(null);
@@ -174,7 +183,6 @@ export default function BucketSearchModal({
   };
 
   const handleClose = () => {
-    setView("default");
     setIsOpen(false);
   };
 
@@ -190,26 +198,22 @@ export default function BucketSearchModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button onClick={() => setIsOpen(true)} className="mt-4 rounded-full">
-          <Plus size={16} />
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent
         aria-describedby="description"
-        className="max-w-[80vw] min-h-[80vh] flex flex-col gap-6 items-center px-6 lg:p-12 overflow-y-auto no-scrollbar rounded-xl"
+        className="max-w-[80vw] min-h-[70vh] flex flex-col gap-6 items-center px-6 lg:p-12 overflow-y-auto no-scrollbar rounded-xl"
       >
         <DialogHeader className="w-full mx-auto flex flex-row justify-between items-center lg:items-start">
           <div className="space-y-4">
             <h1 className="scroll-m-20 text-2xl lg:text-3xl font-extrabold tracking-tight lg:text-6xl text-left">
-              Upload{" "}
+              Upload {view === "default" && <span>File</span>}
               {view === "website" && (
                 <span className="text-blue-500">Website</span>
               )}
               {view === "youtube" && (
                 <span className="text-red-500">YouTube</span>
               )}
-              {view === "note" && <span className="text-purple-500">Note</span>}
+              {view === "note" && <span className="text-green-500">Note</span>}
             </h1>
             <p className="text-sm max-w-[200px] md:max-w-lg lg:text-md text-muted-foreground text-left">
               It isn&apos;t about the answers, it&apos;s the steps that will get
@@ -224,173 +228,147 @@ export default function BucketSearchModal({
             <span>esc</span>
           </div>
         </DialogHeader>
-
-        <div
-          className="w-full flex flex-col gap-8 no-scrollbar"
-          ref={contentRef}
-        >
-          {view === "default" && (
-            <div className="flex flex-col gap-6">
-              <div className="w-full bg-muted grid grid-cols-1 p-10 rounded-xl border-dashed border-2 border-slate-400">
-                <div className="flex flex-col gap-2 items-center">
-                  <div>
-                    <label htmlFor="file">
-                      <div className="relative p-4 rounded-full bg-slate-400 cursor-pointer hover:bg-slate-500">
-                        <Upload
-                          size={24}
-                          color="white"
-                          className="cursor-pointer"
-                        />
-                      </div>
-                    </label>
-                    <input
-                      type="file"
-                      id="file"
-                      multiple
-                      accept=".pdf"
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                      hidden
-                      onChange={(e) =>
-                        handleFileUpload(
-                          e.target.files ? e.target.files[0] : null
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="text-center">
-                    <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight text-muted-foreground">
-                      Upload sources
-                    </h3>
-                    <p className="text-md text-muted-foreground text-center">
-                      Drag and drop or{" "}
+        {isFileUploading || isWebsiteUploading || isNoteUploading ? (
+          <div className="w-full h-[200px] flex flex-col gap-4 items-center justify-center">
+            <Uploading />
+            <p className="text-sm text-center">Uploading...</p>
+          </div>
+        ) : (
+          <div
+            className="w-full flex flex-col gap-8 no-scrollbar"
+            ref={contentRef}
+          >
+            {view === "default" && (
+              <div className="flex flex-col gap-6">
+                <div className="w-full h-full bg-muted p-10 rounded-xl border-dashed border-2 border-slate-400">
+                  <div className="flex flex-col gap-2 items-center">
+                    <div>
                       <label htmlFor="file">
-                        <span className="text-blue-500 cursor-pointer">
-                          choose file
-                        </span>{" "}
+                        <div className="relative p-4 rounded-full bg-slate-400 cursor-pointer hover:bg-slate-500">
+                          <Upload
+                            size={24}
+                            color="white"
+                            className="cursor-pointer"
+                          />
+                        </div>
                       </label>
                       <input
                         type="file"
                         id="file"
                         multiple
                         accept=".pdf"
-                        hidden
                         className="absolute inset-0 opacity-0 cursor-pointer"
+                        hidden
                         onChange={(e) =>
                           handleFileUpload(
                             e.target.files ? e.target.files[0] : null
                           )
                         }
                       />
-                      to upload
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="w-full grid grid-cols-3 gap-4">
-                <div
-                  onClick={() => setView("website")}
-                  className="bg-muted rounded-xl p-4 flex flex-row gap-4 items-center cursor-pointer hover:scale-105 transition ease-in justify-center lg:justify-start"
-                >
-                  <div className="bg-blue-500 rounded-full w-fit h-fit p-2">
-                    <Link size={20} className="text-white" />
-                  </div>
-                  <p className="hidden md:block text-md text-muted-foreground">
-                    Website
-                  </p>
-                </div>
-                <div
-                  onClick={() => setView("youtube")}
-                  className="bg-muted rounded-xl p-4 flex flex-row gap-4 items-center cursor-pointer hover:scale-105 transition ease-in justify-center lg:justify-start"
-                >
-                  <div className="bg-red-500 rounded-full w-fit h-fit p-2">
-                    <Youtube size={20} className="text-white" />
-                  </div>
-                  <p className="hidden md:block text-md text-muted-foreground">
-                    YouTube
-                  </p>
-                </div>
-                <div
-                  onClick={() => setView("note")}
-                  className="bg-muted rounded-xl p-4 flex flex-row gap-4 justify-center items-center cursor-pointer hover:scale-105 transition ease-in lg:justify-start"
-                >
-                  <div className="bg-purple-500 rounded-full w-fit h-fit p-2">
-                    <Notebook size={20} className="text-white" />
-                  </div>
-                  <p className="hidden md:block text-md text-muted-foreground">
-                    Note
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-          {view === "website" && (
-            <div className="flex flex-row gap-4">
-              <Input
-                placeholder="https://example.com"
-                onChange={handleWebsiteUrlChange}
-              />
-              <Button
-                disabled={websiteUrl.length < 5}
-                onClick={() => handleWebsiteUpload(websiteUrl)}
-              >
-                <ArrowBigRight size={20} />
-              </Button>
-            </div>
-          )}
-          {view === "youtube" && (
-            <div className="flex flex-row gap-4">
-              <Input placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
-              <Button>
-                <ArrowBigRight size={20} />
-              </Button>
-            </div>
-          )}
-          {view === "note" && (
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="grid w-full items-start gap-6 border rounded-lg p-6"
-            >
-              <ScrollArea className="h-[calc(50vh-80px)]">
-                <fieldset className="grid gap-6 rounded-lg">
-                  <div>
-                    <div className="flex flex-col space-y-2">
-                      <Textarea
-                        id="title"
-                        rows={1}
-                        placeholder="Give it a title..."
-                        {...form.register("title")}
-                        className="w-full min-h-[2rem] bg-transparent p-0 text-3xl font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-2xl font-semibold"
-                        onInput={(e: any) => {
-                          e.target.style.height = "auto";
-                          e.target.style.height = `${e.target.scrollHeight}px`;
-                          form.trigger("title");
-                        }}
-                        onChange={(e: any) => onTitleChange(e)}
-                        maxLength={200}
-                      />
-                      <Textarea
-                        id="content"
-                        rows={1}
-                        placeholder="Some ideas, thoughts, or notes..."
-                        {...form.register("content")}
-                        className="w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-muted-foreground"
-                        onInput={(e: any) => {
-                          e.target.style.height = "auto";
-                          e.target.style.height = `${e.target.scrollHeight}px`;
-                        }}
-                        onChange={(e: any) => onDescriptionChange(e)}
-                      />
+                    </div>
+                    <div className="text-center">
+                      <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight text-muted-foreground">
+                        Upload sources
+                      </h3>
+                      <p className="text-md text-muted-foreground text-center">
+                        Drag and drop or{" "}
+                        <label htmlFor="file">
+                          <span className="text-blue-500 cursor-pointer">
+                            choose file
+                          </span>{" "}
+                        </label>
+                        <input
+                          type="file"
+                          id="file"
+                          multiple
+                          accept=".pdf"
+                          hidden
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) =>
+                            handleFileUpload(
+                              e.target.files ? e.target.files[0] : null
+                            )
+                          }
+                        />
+                        to upload
+                      </p>
                     </div>
                   </div>
-                  <Button className="absolute bottom-4 right-4 rounded-full" type="submit">
-                    <Forward size={20} />
-                  </Button>
-                </fieldset>
-              </ScrollArea>
-            </form>
-          )}
-        </div>
+                </div>
+              </div>
+            )}
+            {view === "website" && (
+              <div className="flex flex-row gap-4">
+                <Input
+                  placeholder="https://example.com"
+                  onChange={handleWebsiteUrlChange}
+                />
+                <Button
+                  disabled={websiteUrl.length < 5 || isWebsiteUploading}
+                  onClick={() => handleWebsiteUpload(websiteUrl)}
+                >
+                  <ArrowBigRight size={20} />
+                </Button>
+              </div>
+            )}
+            {view === "youtube" && (
+              <div className="flex flex-row gap-4">
+                <Input placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
+                <Button>
+                  <ArrowBigRight size={20} />
+                </Button>
+              </div>
+            )}
+            {view === "note" && (
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="grid w-full items-start gap-6 border rounded-lg p-6"
+              >
+                <ScrollArea className="h-[calc(50vh-80px)]">
+                  <fieldset className="grid gap-6 rounded-lg">
+                    <div>
+                      <div className="flex flex-col space-y-2">
+                        <Textarea
+                          id="title"
+                          rows={1}
+                          placeholder="Give it a title..."
+                          {...form.register("title")}
+                          className="w-full min-h-[2rem] bg-transparent p-0 text-3xl font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-2xl font-semibold"
+                          onInput={(e: any) => {
+                            e.target.style.height = "auto";
+                            e.target.style.height = `${e.target.scrollHeight}px`;
+                            form.trigger("title");
+                          }}
+                          onChange={(e: any) => onTitleChange(e)}
+                          maxLength={200}
+                        />
+                        <Textarea
+                          id="content"
+                          rows={1}
+                          placeholder="Some ideas, thoughts, or notes..."
+                          {...form.register("content")}
+                          className="w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-muted-foreground"
+                          onInput={(e: any) => {
+                            e.target.style.height = "auto";
+                            e.target.style.height = `${e.target.scrollHeight}px`;
+                          }}
+                          onChange={(e: any) => onDescriptionChange(e)}
+                        />
+                      </div>
+                    </div>
+                    <Button
+                      className="absolute bottom-4 right-4 rounded-full"
+                      type="submit"
+                      disabled={isNoteUploading}
+                    >
+                      <Forward size={20} />
+                    </Button>
+                  </fieldset>
+                </ScrollArea>
+              </form>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

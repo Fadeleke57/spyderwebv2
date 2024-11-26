@@ -107,12 +107,9 @@ const Login = () => {
           }`}
         />
       </Head>
-      <Card className="w-[500px]">
+      <Card className="w-[500px] border-none shadow-none">
         <CardHeader>
-          <CardTitle className="font-bold mb-2">login to spydr</CardTitle>
-          <CardDescription>
-            Enter your email and password below to continue
-          </CardDescription>
+          <CardTitle className="font-bold mb-2"><span className="text-slate-400">like it? save it.</span><br></br>login to your spydr account</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>

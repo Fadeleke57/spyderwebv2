@@ -84,7 +84,7 @@ function Index() {
   };
 
   return (
-    <div className="flex min-h-screen w-full justify-center flex-col bg-muted/40">
+    <div className="flex lg:min-h-screen justify-center flex-col bg-muted/40">
       <Head>
         <title>{"all buckets"}</title>
         <meta name="description" content={"Welcome to spydr"} />
@@ -149,7 +149,7 @@ function Index() {
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+        <div className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           <Tabs defaultValue="all">
             <div className="flex items-center">
               <TabsList>
@@ -639,7 +639,7 @@ function Index() {
               </Card>
             </TabsContent>
           </Tabs>
-        </main>
+        </div>
       </div>
     </div>
   );

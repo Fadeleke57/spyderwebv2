@@ -42,7 +42,12 @@ interface SidebarTriggerProps extends React.ComponentProps<typeof Button> {
 }
 
 interface SidebarButtonProps extends React.ComponentProps<typeof Button> {
+  hideWhen?: "collapsed" | "expanded";
   deactive?: boolean;
+}
+
+interface SidebarFooterProps extends React.ComponentProps<typeof Button> {
+  hideWhen?: "collapsed" | "expanded" | null;
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null);
@@ -278,7 +283,7 @@ const SidebarTrigger = React.forwardRef<
   const isHidden =
     (hideWhen === "collapsed" && state === "collapsed") ||
     (hideWhen === "expanded" && state === "expanded");
-  
+
   if (isHidden) return null;
   return (
     <Button
@@ -293,7 +298,11 @@ const SidebarTrigger = React.forwardRef<
       }}
       {...props}
     >
-      {orientation === "left" ? <ArrowLeftFromLine size={20}/> : <ArrowRightFromLine size={20} />}
+      {orientation === "left" ? (
+        <ArrowLeftFromLine size={20} />
+      ) : (
+        <ArrowRightFromLine size={20} />
+      )}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );
@@ -383,8 +392,12 @@ SidebarHeader.displayName = "SidebarHeader";
 
 const SidebarFooter = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div">
->(({ className, ...props }, ref) => {
+  SidebarFooterProps & React.ComponentProps<"div">
+>(({ hideWhen, className, ...props }, ref) => {
+  const { state } = useSidebar();
+  if (hideWhen === "collapsed" && state === "collapsed") {
+    return null;
+  }
   return (
     <div
       ref={ref}
@@ -553,14 +566,15 @@ const sidebarMenuButtonVariants = cva(
 const SidebarMenuButton = React.forwardRef<
   HTMLButtonElement,
   SidebarButtonProps &
-  React.ComponentProps<"button"> & {
-    asChild?: boolean;
-    isActive?: boolean;
-    tooltip?: string | React.ComponentProps<typeof TooltipContent>;
-  } & VariantProps<typeof sidebarMenuButtonVariants>
+    React.ComponentProps<"button"> & {
+      asChild?: boolean;
+      isActive?: boolean;
+      tooltip?: string | React.ComponentProps<typeof TooltipContent>;
+    } & VariantProps<typeof sidebarMenuButtonVariants>
 >(
   (
     {
+      hideWhen,
       deactive = false,
       asChild = false,
       isActive = false,
@@ -575,13 +589,21 @@ const SidebarMenuButton = React.forwardRef<
     const Comp = asChild ? Slot : "button";
     const { isMobile, state } = useSidebar();
 
+    if (hideWhen === "collapsed" && state === "collapsed") {
+      return null;
+    }
+
     const button = (
       <Comp
         ref={ref}
         data-sidebar="menu-button"
         data-size={size}
         data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size }), className, `${deactive ? "hover:bg-transparent" : ""}`)}
+        className={cn(
+          sidebarMenuButtonVariants({ variant, size }),
+          className,
+          `${deactive ? "hover:bg-transparent" : ""}`
+        )}
         {...props}
       />
     );

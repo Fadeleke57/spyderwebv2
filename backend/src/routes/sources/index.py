@@ -21,6 +21,13 @@ router = APIRouter()
 s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
 s3 = boto3.client('s3')
 
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+}
+
 @router.post("/upload/{user_id}/{web_id}/{file_type}")
 async def upload_file(user_id: str, web_id: str, file_type: str, file: UploadFile = File(...), user=Depends(manager)):
     """
@@ -98,7 +105,7 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
     check_user(user)
     
     try:
-        response = requests.get(url.url)
+        response = requests.get(url.url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=400, detail="Could not retrieve the webpage")
