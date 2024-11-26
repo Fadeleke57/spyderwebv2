@@ -19,6 +19,20 @@ function LoadingPage() {
   );
 }
 
+
+function Uploading() {
+  useEffect(() => {
+    const loadWave = async () => {
+      const { waveform} = await import("ldrs");
+      waveform.register();
+    };
+
+    loadWave();
+  }, []);
+
+  return <l-waveform size="35" stroke="7" speed="1" color="black"></l-waveform>;
+}
+
 export const LandingLoader = () => {
   useEffect(() => {
     const loadGrid = async () => {
@@ -55,4 +69,4 @@ export const VideoLoader = () => {
   );
 };
 
-export { LoadingPage };
+export { LoadingPage, Uploading };

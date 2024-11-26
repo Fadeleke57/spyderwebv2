@@ -33,8 +33,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ScrollArea } from "../ui/scroll-area";
 import { waveform } from "ldrs";
-
-waveform.register();
+import { Uploading } from "../utility/Loading";
 
 type ConfigGraphModalProps = {
   config: BucketConfigFormValues;
@@ -231,13 +230,8 @@ export default function BucketSearchModal({
         </DialogHeader>
         {isFileUploading || isWebsiteUploading || isNoteUploading ? (
           <div className="w-full h-[200px] flex flex-col gap-4 items-center justify-center">
-            <l-waveform
-              size="35"
-              stroke="7"
-              speed="1"
-              color="black"
-            ></l-waveform>
-            <p className="text-sm text-center font-semibold">Uploading...</p>
+            <Uploading />
+            <p className="text-sm text-center">Uploading...</p>
           </div>
         ) : (
           <div
