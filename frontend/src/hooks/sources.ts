@@ -132,6 +132,49 @@ export const useUploadWebsite = (webId: string) => {
   };
 };
 
+export const useUploadYoutube = (webId: string) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState(null);
+  const [progress, setProgress] = useState(0);
+
+  const uploadYoutube = useCallback(
+    async (videoId: string) => {
+      setIsUploading(true);
+      setError(null);
+      setProgress(0);
+
+      try {
+        const response = await api.post(`/sources/youtube/${webId}/${videoId}`, {
+          onUploadProgress: (progressEvent: ProgressEvent) => {
+            setProgress(
+              Math.round(
+                (progressEvent.loaded * 100) / (progressEvent?.total || 0)
+              )
+            );
+          },
+        });
+
+        const data = await response.data.result;
+        return data;
+      } catch (err: any) {
+        setError(err.message);
+        throw err;
+      } finally {
+        setIsUploading(false);
+        setProgress(100);
+      }
+    },
+    [webId]
+  );
+
+  return {
+    uploadYoutube,
+    isUploading,
+    error,
+    progress,
+  };
+};
+
 export const useRenderFile = (filePath: string) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

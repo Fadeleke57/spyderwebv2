@@ -18,6 +18,7 @@ import { Textarea } from "../ui/textarea";
 import { debounce } from "lodash";
 import { useUser } from "@/context/UserContext";
 import { toast } from "../ui/use-toast";
+import { extractVideoId } from "@/lib/utils";
 
 interface BucketDataDrawerProps {
   open: boolean;
@@ -41,10 +42,10 @@ export default function BucketDataDrawer({
     error: updateError,
   } = useUpdateNote(source.bucketId, source.sourceId);
 
-  const isOwner =source?.userId && user?.id === source?.userId;
+  const isOwner = source?.userId && user?.id === source?.userId;
 
   useEffect(() => {
-    if (open && source.type !== "website" && source.type !== "note") {
+    if (open && source.type === "document") {
       handleGetPresignedUrl();
     }
   }, [open, source]);
@@ -106,6 +107,20 @@ export default function BucketDataDrawer({
           >
             <p>Your browser does not support PDFs.</p>
           </object>
+        );
+      case "youtube":
+        return (
+          <iframe
+            width="100%"
+            height="450px"
+            src={`https://www.youtube.com/embed/${extractVideoId(source.url)}`}
+            title="YouTube video player"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+            className="rounded-lg"
+          ></iframe>
         );
       case "note":
         return (

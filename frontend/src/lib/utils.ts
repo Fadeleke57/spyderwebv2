@@ -10,3 +10,9 @@ export function formatText(text: string, maxChars: number) {
   }
   return text
 }
+
+export function extractVideoId(url: string) {
+  const regex = /^.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+  const match = url.match(regex)
+  return match ? match[1] : null
+}
