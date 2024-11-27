@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     pinecone_api_key: str
     openai_api_key: str
     s3_bucket_name: str
+    youtube_api_key: str
 
     class Config:
         env_file = f".env.{env}"

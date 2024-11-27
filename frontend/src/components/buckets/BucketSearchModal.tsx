@@ -23,6 +23,7 @@ import {
   useFileUpload,
   useUploadNote,
   useUploadWebsite,
+  useUploadYoutube,
 } from "@/hooks/sources";
 import { toast } from "../ui/use-toast";
 import gsap from "gsap";
@@ -34,6 +35,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ScrollArea } from "../ui/scroll-area";
 import { waveform } from "ldrs";
 import { Uploading } from "../utility/Loading";
+import { extractVideoId } from "@/lib/utils";
 
 type ConfigGraphModalProps = {
   config: BucketConfigFormValues;
@@ -58,6 +60,7 @@ export default function BucketSearchModal({
   type noteType = z.infer<typeof noteSchema>;
   const [isOpen, setIsOpen] = useState(false);
   const [websiteUrl, setWebsiteUrl] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
   const [note, setNote] = useState({
     title: "",
     content: "",
@@ -83,6 +86,13 @@ export default function BucketSearchModal({
     error: noteError,
     isUploading: isNoteUploading,
   } = useUploadNote(bucket.bucketId);
+
+  const {
+    uploadYoutube,
+    progress: youtubeProgress,
+    error: youtubeError,
+    isUploading: isYoutubeUploading,
+  } = useUploadYoutube(bucket.bucketId);
 
   const contentRef = useRef(null);
 
@@ -178,8 +188,36 @@ export default function BucketSearchModal({
     }
   };
 
+  const handleYoutubeUpload = async (url: string) => {
+    try {
+      const videoId = extractVideoId(url);
+      const result = await uploadYoutube(videoId as string);
+      toast({
+        title: "Uploaded",
+        description: "Youtube video uploaded successfully",
+        duration: 500,
+      });
+      handleClose();
+      refetch();
+    } catch (err: any) {
+      console.error(err);
+      toast({
+        variant: "destructive",
+        title: `${
+          err.response?.status === 400
+            ? "Unable to upload this video"
+            : "Error uploading video"
+        }`,
+      });
+    }
+  };
+
   const handleWebsiteUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setWebsiteUrl(e.target.value);
+  };
+
+  const handleYoutubeUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setYoutubeUrl(e.target.value);
   };
 
   const handleClose = () => {
@@ -313,8 +351,14 @@ export default function BucketSearchModal({
             )}
             {view === "youtube" && (
               <div className="flex flex-row gap-4">
-                <Input placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
-                <Button>
+                <Input
+                  placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                  onChange={handleYoutubeUrlChange}
+                />
+                <Button
+                  disabled={isYoutubeUploading || youtubeUrl.length < 5}
+                  onClick={() => handleYoutubeUpload(youtubeUrl)}
+                >
                   <ArrowBigRight size={20} />
                 </Button>
               </div>

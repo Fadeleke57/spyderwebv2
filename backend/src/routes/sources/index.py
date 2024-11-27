@@ -7,6 +7,7 @@ from src.db.mongodb import get_collection, insert_item
 from uuid import uuid4
 from datetime import datetime
 from src.core.config import settings
+from src.utils.youtube import get_video_transcript, get_video_info
 import requests
 from pydantic import BaseModel, HttpUrl
 from bs4 import BeautifulSoup
@@ -105,7 +106,7 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
     check_user(user)
     
     try:
-        response = requests.get(url.url, headers=headers)
+        response = requests.get(url.url)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=400, detail="Could not retrieve the webpage")
@@ -116,7 +117,7 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
     cleaned_content = ' '.join(main_content.split()) 
 
     try: 
-        structured_data = process_html(cleaned_content)
+        title = process_html(cleaned_content)
     except Exception as e:
         raise HTTPException(status_code=400, detail="Could not parse the webpage")
 
@@ -126,17 +127,17 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
         "sourceId": sourceId,
         "bucketId": web_id,
         "userId": user["id"],
-        "name": structured_data["title"],
+        "name": title,
         "url": str(url.url),
         "type": "website",
-        "size": None,
-        "content": structured_data["summary"],
+        "size": len(cleaned_content) * 200,
+        "content": f"{title}\n{cleaned_content}",
         "created_at": datetime.now(),
         "updated_at": datetime.now(),
     })
     buckets = get_collection("buckets")
     buckets.update_one({"bucketId": web_id, "userId": user["id"]}, {"$push": {"sourceIds": sourceId}})
-    return {"result": structured_data}
+    return {"result": sourceId}
 
 
 """
@@ -221,6 +222,32 @@ def upload_note(bucket_id: str, note: CreateNote, user=Depends(manager)):
     buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$push": {"sourceIds": sourceId}})
     return {"result": sourceId}
 
+@router.post('/youtube/{web_id}/{video_id}')
+def add_youtube(web_id: str, video_id: str, user=Depends(manager)):
+    check_user(user)
+
+    info = get_video_info(video_id)
+    title, description = info["title"], info["description"]
+    #transcripts = get_video_transcript(video_id)
+    #proccessed_transcripts = proccess_transcripts(transcripts) #TODO: make an open ai call to process transcripts but this will eventually just be an embedding
+
+    sources = get_collection("sources")
+    sourceId = str(uuid4())
+    sources.insert_one({
+        "sourceId": sourceId,
+        "bucketId": web_id,
+        "userId": user["id"],
+        "name": title,
+        "content": description,
+        "url": f"https://www.youtube.com/watch?v={video_id}",
+        "type": "youtube",
+        "size": 300000,
+        "created_at": datetime.now(),
+        "updated_at": datetime.now(),
+    })
+    buckets = get_collection("buckets")
+    buckets.update_one({"bucketId": web_id, "userId": user["id"]}, {"$push": {"sourceIds": sourceId}})
+    return {"result": sourceId}
 
 @router.patch("/update/note/{bucket_id}/{source_id}")
 def update_note(bucket_id: str, source_id: str, note: UpdateNote, user=Depends(manager)):
