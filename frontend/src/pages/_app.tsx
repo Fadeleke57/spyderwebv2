@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { UserProvider } from "@/context/UserContext";
 import AppLayout from "@/app/AppLayout";
 import { Inter as FontSans } from "next/font/google";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
@@ -21,13 +22,14 @@ const fontSans = FontSans({
   variable: "--font-sans",
 });
 
+const queryClient = new QueryClient();
+
 function App({ Component, pageProps }: AppPropsWithLayout) {
   // fallback to root layout if no layout is provided
   const getLayout =
     Component.getLayout || ((page) => <AppLayout>{page}</AppLayout>);
-
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <Head>
         <title>spydr</title>
         <meta
@@ -44,7 +46,7 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
           </div>
         )}
       </UserProvider>
-    </>
+    </QueryClientProvider>
   );
 }
 

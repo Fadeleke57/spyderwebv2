@@ -44,7 +44,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold text-3xl text-black">spydr</span>
+              <span className="truncate font-semibold text-3xl text-black tracking-tighter">
+                spydr
+              </span>
             </div>
           </SidebarMenuButton>
           <SidebarTrigger hideWhen="collapsed" />
@@ -60,9 +62,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <Home className="size-5" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold text-lg text-slate-500">
-              Home
-            </span>
+            <span className="truncate  text-lg text-slate-500">Home</span>
           </div>
         </SidebarMenuButton>
         <SidebarMenuButton
@@ -74,9 +74,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <LayoutGrid className="size-5" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold text-lg text-slate-500">
-              Explore
-            </span>
+            <span className="truncate  text-lg text-slate-500">Explore</span>
           </div>
         </SidebarMenuButton>
         <SidebarMenuButton
@@ -88,9 +86,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <ChartNoAxesGantt className="size-5" />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold text-lg text-slate-500">
-              Buckets
-            </span>
+            <span className="truncate  text-lg text-slate-500">Buckets</span>
           </div>
         </SidebarMenuButton>
         <SidebarMenuButton
@@ -104,9 +100,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <CirclePlus className="size-5" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold text-lg text-slate-500">
-                    Create
-                  </span>
+                  <span className="truncate  text-lg text-slate-500">Create</span>
                 </div>
               </Button>
             </NewBucketModal>
@@ -116,7 +110,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarTrigger orientation="right" hideWhen="expanded" />
         </div>
       </SidebarContent>
-      <SidebarFooter hideWhen={ user ? null : "collapsed"} className="mb-8">
+      <SidebarFooter hideWhen={user ? null : "collapsed"} className="mb-8">
         <NavUser />
       </SidebarFooter>
     </Sidebar>

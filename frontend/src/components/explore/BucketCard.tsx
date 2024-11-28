@@ -20,15 +20,15 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
   const [bucketLikedCount, setBucketLikedCount] = React.useState(
     bucket.likes.length
   );
-  const { user: bucketOwner, loading: bucketOwnerLoading } = useFetchUserById(
+  const { data: bucketOwner, isLoading: bucketOwnerLoading } = useFetchUserById(
     bucket?.userId as string
   );
   const [bucketIterationsCount, setBucketIterationsCount] = React.useState(
     bucket.iterations.length
   );
   const { user } = useUser();
-  const { likeBucket } = useLikeBucket(bucket.bucketId);
-  const { unlikeBucket } = useUnlikeBucket(bucket.bucketId);
+  const { mutateAsync: likeBucket } = useLikeBucket(bucket.bucketId);
+  const { mutateAsync: unlikeBucket } = useUnlikeBucket(bucket.bucketId);
   const [bucketLiked, setBucketLiked] = React.useState(
     bucket.likes.includes(user?.id as string)
   );
@@ -55,6 +55,10 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
       });
       setBucketLiked(true);
     }
+  };
+  const handleBucketSettingsModal = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   React.useEffect(() => {
@@ -90,17 +94,17 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
           <div>
             <Button
               className="rounded-full bg-transparent hover:bg-slate-200"
-              onClick={(e) => e.stopPropagation()}
+              onClick={handleBucketSettingsModal}
             >
               <EllipsisIcon color="black" />
             </Button>
           </div>
         </div>
         <CardHeader className="overflow-hidden">
-          <CardTitle className="break-words hover:cursor-pointer">
+          <CardTitle className="break-words hover:cursor-pointer text-xl leading-tight">
             <h3 className="hyphens-auto">{bucket.name}</h3>
           </CardTitle>
-          <CardDescription className="hyphens-auto mb-8 max-w-6xl">
+          <CardDescription className="hyphens-auto mb-8 max-w-6xl text-slate-600">
             {bucket.description}
           </CardDescription>
         </CardHeader>

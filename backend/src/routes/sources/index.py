@@ -139,24 +139,6 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
     buckets.update_one({"bucketId": web_id, "userId": user["id"]}, {"$push": {"sourceIds": sourceId}})
     return {"result": sourceId}
 
-
-"""
-@router.get("/download")
-def download_file(user=Depends(manager)):
-    check_user(user)
-    return {"result": "File downloaded"}
-
-@router.delete("/delete")
-def delete_file(user=Depends(manager)):
-    check_user(user)
-    return {"result": "File deleted"}
-
-@router.get("/list")
-def list_files(user=Depends(manager)):
-    check_user(user)
-    return {"result": "Files listed"}
-"""
-
 @router.get("/all/{web_id}")
 def get_all_sources(web_id: str):
     """
@@ -229,7 +211,7 @@ def add_youtube(web_id: str, video_id: str, user=Depends(manager)):
     info = get_video_info(video_id)
     title, description = info["title"], info["description"]
     #transcripts = get_video_transcript(video_id)
-    #proccessed_transcripts = proccess_transcripts(transcripts) #TODO: make an open ai call to process transcripts but this will eventually just be an embedding
+    #proccessed_transcripts = proccess_transcripts(transcripts) #TODO: these will be stored as embeddings in reference to the video
 
     sources = get_collection("sources")
     sourceId = str(uuid4())
@@ -272,7 +254,6 @@ def update_note(bucket_id: str, source_id: str, note: UpdateNote, user=Depends(m
         update_data["name"] = update_data["title"]
         update_data.pop("title")
 
-    print(update_data)
     result = sources.find_one_and_update(
         {"sourceId": source_id, "bucketId": bucket_id},
         {"$set": update_data},
@@ -283,3 +264,79 @@ def update_note(bucket_id: str, source_id: str, note: UpdateNote, user=Depends(m
         return {"result": "Note updated"}
     else:
         return {"error": "Note not found or user not authorized"}, 404
+    
+@router.delete("/delete/source/{source_id}")
+def delete_source(source_id: str, user=Depends(manager)):
+    """
+    Delete a source.
+
+    Args:
+        source_id (str): The ID of the source to delete.
+        user (User): The user making the request.
+
+    Returns:
+        dict: A JSON response with a result key.
+
+    Raises:
+        HTTPException: If the source is not found or user is not authorized.
+    """
+    check_user(user)
+    sources = get_collection("sources")
+    source = sources.find_one_and_delete({"sourceId": source_id})
+    if not source:
+        raise HTTPException(status_code=404, detail='Item not found')
+    
+    #remove from s3 if it's a document type
+    if source["type"] == "document":
+        s3.delete_object(Bucket=s3_bucket.bucket_name, Key=source["url"])
+
+    #clean up bucket
+    buckets = get_collection("buckets")
+    bucket = buckets.find_one_and_update(
+        {"sourceIds": source_id},
+        {"$pull": {"sourceIds": source_id}},
+        return_document=True
+    )   
+    
+    if not bucket:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    return {"result": "Source deleted"}
+
+@router.get("/{source_id}")
+def get_source(source_id: str):
+    """
+    Retrieve a source by its ID.
+
+    Args:
+        source_id (str): The ID of the source to retrieve.
+        user (User): The user making the request.
+
+    Returns:
+        dict: A JSON response containing the source data if found.
+
+    Raises:
+        HTTPException: If the source is not found, raises a 404 error.
+    """
+    sources = get_collection("sources")
+    source = sources.find_one({"sourceId": source_id}, {"_id": 0})
+    if not source:
+        raise HTTPException(status_code=404, detail="Item not found")
+    
+    # if the source is a document, get the url from s3
+    file_url = ""
+    if source["type"] == "document":
+        decoded_file_path = source["url"]
+        url = s3.generate_presigned_url(
+            'get_object',
+            Params={
+                'Bucket': s3_bucket.bucket_name,
+                'Key': decoded_file_path,
+                'ResponseContentDisposition': 'inline',
+                'ResponseContentType': 'application/pdf'
+            },
+            ExpiresIn=3600
+        )
+        file_url = url
+        
+    return {"result": source, "file_url": file_url}

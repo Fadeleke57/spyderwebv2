@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/router";
 import { useFetchBucketById } from "@/hooks/buckets";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,14 +17,24 @@ import {
   SkeletonUserCard,
 } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
+import { Bucket } from "@/types/bucket";
 
 function Index() {
   const router = useRouter();
   const { bucketId } = router.query;
-  const { bucket, loading, error, refetch } = useFetchBucketById(
-    bucketId as string
-  );
-  const { user: bucketOwner, loading: bucketOwnerLoading } = useFetchUserById(
+  const {
+    data: bucketData,
+    isLoading: loading,
+    error,
+    refetch,
+  } = useFetchBucketById(bucketId as string);
+  const [bucket, setBucket] = React.useState<Bucket | null>(bucketData || null);
+  useEffect(() => {
+    if (bucketData) {
+      setBucket(bucketData);
+    }
+  });
+  const { data: bucketOwner, isLoading: bucketOwnerLoading } = useFetchUserById(
     bucket?.userId as string
   );
   const { user } = useUser();
@@ -34,6 +44,31 @@ function Index() {
   const description = loading
     ? "Fetching bucket details..."
     : bucket?.description || "View and explore bucket details.";
+
+  if (error) {
+    return (
+      <div className="grid h-screen w-full overflow-hidden scrollbar-none">
+        <Head>
+          <title>{title}</title>
+          <meta name="description" content={description} />
+          <meta property="og:title" content={title} />
+          <meta property="og:description" content={description} />
+          <meta
+            property="og:url"
+            content={`${
+              typeof window !== "undefined" ? window.location.href : ""
+            }`}
+          />
+        </Head>
+        <div className="flex h-full w-full flex-col items-center justify-center">
+          <h1 className="text-2xl font-semibold">Bucket not found</h1>
+          <p className="text-muted-foreground">
+            The bucket you are looking for does not exist.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="grid h-screen w-full overflow-hidden scrollbar-none">
@@ -72,7 +107,7 @@ function Index() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <MobileBucketForm bucket={bucket} user={user} />
+            {bucket && <MobileBucketForm bucket={bucket} user={user} />}
             <ShareButton
               link={`${window.location.origin}/buckets/bucket/${bucketId}`}
             />
@@ -86,18 +121,18 @@ function Index() {
               className="relative h-[calc(90vh-18px)] hidden flex-col items-start gap-8 md:flex"
               x-chunk="dashboard-03-chunk-0"
             >
-              {isOwner ? (
+              {bucket && isOwner ? (
                 <BucketForm bucket={bucket} user={user} />
-              ) : (
+              ) : bucket ? (
                 <PublicBucketView bucket={bucket} user={user} />
-              )}
+              ) : null}
             </ScrollArea>
           )}
           {loading ? (
             <div className="relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 lg:col-span-2"></div>
-          ) : (
+          ) : bucket ? (
             <BucketPlayground bucket={bucket} user={user} refetch={refetch} />
-          )}
+          ) : null}
         </div>
       </div>
     </div>

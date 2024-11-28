@@ -11,7 +11,8 @@ def process_html(raw_html_content):
             "For the case of discussions like on reddit, try to extract the title of the discussion.\n\n"
             "Return only a concise string of the title or main idea. of the content.\n\n"
             "Try to include the source of the content if possible.\n\n"
-            "Return the result in this format:\n\n"
+            "If the title, main content, or source is not clear or not enough data is provided, return 'Unititled Source'.\n\n"
+            "Otherwise return the result in this format:\n\n"
             "{title} - {source}\n\n"
             f"HTML Content:\n{raw_html_content}"
         )

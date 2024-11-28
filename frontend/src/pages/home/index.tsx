@@ -32,7 +32,7 @@ function Index() {
       </div>
       <div>
         <div className="flex flex-col">
-          <span className="text-lg font-semibold ml-2">Your Buckets</span>{" "}
+          <span className="text-lg font-semibold ml-2">Recent Buckets</span>{" "}
           <Link
             href={"/buckets"}
             className="ml-2 text-blue-500 hover:underline"

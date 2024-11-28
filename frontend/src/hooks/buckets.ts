@@ -1,33 +1,31 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { Bucket, UpdateBucket } from "@/types/bucket";
-import { Article } from "@/types/article";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 
 export function useFetchBuckets() {
-  const [buckets, setBuckets] = useState<Bucket[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await api.get("/buckets/all/user");
-      setBuckets(response.data.result);
-    } catch (err) {
-      setError("Failed to fetch bucket data");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const refetch = () => {
-    setLoading(true);
-    fetchData();
-  };
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  return { buckets, loading, error, refetch };
+  return useInfiniteQuery({
+    queryKey: ["buckets"],
+    queryFn: async ({ pageParam = { page: 1, direction: "forward" } }) => {
+      const response = await api.get(`/buckets/all/user`, {
+        params: {
+          page: pageParam.page,
+          page_size: 5,
+        },
+      });
+      return {
+        ...response.data,
+      };
+    },
+    initialPageParam: { page: 1, direction: "forward" },
+    getPreviousPageParam: (lastPage, allPages) => {
+      return lastPage.prevCursor;
+    },
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.nextCursor) return undefined;
+      return { page: lastPage.nextCursor, direction: "forward" };
+    },
+  });
 }
 
 export function useFetchLikedBuckets() {
@@ -55,67 +53,41 @@ export function useFetchLikedBuckets() {
   return { buckets, loading, error };
 }
 
-export function useCreateBucket() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const createBucket = async (config: any) => {
-    setLoading(true);
-    try {
+export const useCreateBucket = () => {
+  return useMutation({
+    mutationFn: async (config: any) => {
       const response = await api.post("/buckets/create", config);
       return response.data.result;
-    } catch (err) {
-      setError("Failed to create bucket");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { createBucket, loading, error };
+    },
+    onSuccess: () => {},
+    onError: () => {},
+  })
 }
 
 export function useDeleteBucket() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const deleteBucket = async (bucketId: string) => {
-    setLoading(true);
-    try {
+  return useMutation({
+    mutationFn: async (bucketId: string) => {
       const response = await api.delete("/buckets/delete", {
         params: { bucketId },
       });
-    } catch (err) {
-      setError("Failed to delete bucket");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { deleteBucket, loading, error };
+      return response.data.result;
+    },
+    onSuccess: () => {},
+    onError: () => {},
+  })
 }
 
-export function useUpdateBucket(bucketId: string) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const updateBucket = async (config: UpdateBucket) => {
-    setLoading(true);
-    try {
+export const useUpdateBucket = (bucketId: string) => {
+  return useMutation({
+    mutationFn: async (config: UpdateBucket) => {
       const response = await api.patch(`/buckets/update/${bucketId}`, config, {
         headers: { "Content-Type": "application/json" },
       });
-    } catch (err) {
-      setError("Failed to update bucket");
-      console.error(err);
-      return;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { updateBucket, loading, error };
+      return response.data.result;
+    },
+    onSuccess: () => {},
+    onError: () => {},
+  })
 }
 
 export function useFetchPublicBuckets() {
@@ -143,155 +115,58 @@ export function useFetchPublicBuckets() {
   return { buckets, loading, error };
 }
 
-export function useFetchBucketById(bucketId: string) {
-  const [bucket, setBucket] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const refetch = () => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get(`/buckets/id`, {
-          params: { bucketId },
-        });
-        setBucket(response.data.result);
-      } catch (err) {
-        setError("Failed to fetch bucket data");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get(`/buckets/id`, {
-          params: { bucketId },
-        });
-        setBucket(response.data.result);
-      } catch (err) {
-        setError("Failed to fetch bucket data");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [bucketId]);
-
-  return { bucket, loading, error, refetch };
+export const useFetchBucketById = (bucketId: string) => {
+  return useQuery({
+    queryKey: ["bucket", bucketId],
+    queryFn: async () => {
+      const response = await api.get(`/buckets/id`, {
+        params: { bucketId },
+      });
+      return response.data.result;
+    },
+  });
 }
 
 export function useLikeBucket(bucketId: string) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const likeBucket = async (): Promise<number | null | undefined> => {
-    setLoading(true);
-    try {
+  return useMutation({
+    mutationFn: async () => {
       const response = await api.post(`/buckets/like/${bucketId}`);
       return response.data.result;
-    } catch (err) {
-      setError("Failed to like bucket");
-      console.error(err);
-      return;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { likeBucket, loading, error };
+    },
+    onSuccess: () => {},
+    onError: () => {},
+  })
 }
 
 export function useUnlikeBucket(bucketId: string) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const unlikeBucket = async (): Promise<number | null | undefined> => {
-    setLoading(true);
-    try {
+  return useMutation({
+    mutationFn: async () => {
       const response = await api.post(`/buckets/unlike/${bucketId}`);
       return response.data.result;
-    } catch (err) {
-      setError("Failed to unlike bucket");
-      console.error(err);
-      return;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { unlikeBucket, loading, error };
+    },
+    onSuccess: () => {},
+    onError: () => {},
+  })
 }
 
 export function useAddTagToBucket(bucketId: string) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const addTagToBucket = async (tag: string) => {
-    setLoading(true);
-    try {
+  return useMutation({
+    mutationFn: async (tag: string) => {
       const response = await api.patch(`/buckets/add/tag/${bucketId}/${tag}`);
-    } catch (err) {
-      setError("Failed to add tag to bucket");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return { addTagToBucket, loading, error };
+      return response.data.result;
+    },
+    onSuccess: () => {},
+    onError: () => {},
+  })
 }
 
 export function useRemoveTagFromBucket(bucketId: string) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const removeTagFromBucket = async (tag: string) => {
-    setLoading(true);
-    try {
-      const response = await api.patch(
-        `/buckets/remove/tag/${bucketId}/${tag}`
-      );
-    } catch (err) {
-      setError("Failed to remove tag from bucket");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-  return { removeTagFromBucket, loading, error };
-}
-
-export function useFetchArticlesForBucket(bucketId: string) {
-  const [articles, setArticles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get(`/buckets/articles/${bucketId}`);
-        const fetchedArticles: Article[] = response.data.result.flatMap(
-          (article: any) => article
-        );
-        setArticles(fetchedArticles);
-      } catch (err) {
-        setError("Failed to fetch bucket data");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [bucketId]);
-  return { articles, loading, error };
+  return useMutation({
+    mutationFn: async (tag: string) => {
+      const response = await api.patch(`/buckets/remove/tag/${bucketId}/${tag}`);
+      return response.data.result;
+    },
+    onSuccess: () => {},
+    onError: () => {},
+  })
 }

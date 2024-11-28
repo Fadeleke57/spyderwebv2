@@ -6,12 +6,12 @@ import { SearchInput } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
 import { formatText } from "@/lib/utils";
-import { NewBucketModal } from "@/components/buckets/NewBucketModal";
 import { useUser } from "@/context/UserContext";
-import { SkeletonCard } from "@/components/utility/SkeletonCard";
-import Link from "next/link";
+import { SkeletonCard, SkeletonUserCard } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
 import { PlusCircle } from "lucide-react";
+import UserAvatar from "@/components/utility/UserAvatar";
+import useMediaQuery from "@/hooks/general";
 
 function Index() {
   const { buckets, loading, error } = useFetchPublicBuckets();
@@ -76,17 +76,7 @@ function Index() {
 
   const totalPages = Math.ceil(filteredBuckets.length / bucketsPerPage);
 
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const title = query
     ? `Search Results for "${query}" - spydr`
@@ -96,7 +86,7 @@ function Index() {
     : "Explore public buckets on Spydr. Find shared research and projects.";
 
   return (
-    <div className="flex flex-1 flex-col gap-8 py-8  mx-auto w-full max-w-[1100px]">
+    <div className="flex flex-1 flex-col gap-8 py-2 lg:py-10 mx-auto w-full relative">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -108,43 +98,24 @@ function Index() {
             typeof window !== "undefined" ? window.location.href : ""
           }`}
         />
-      </Head>
-      {/**
-       * <div className="flex flex-col justify-center lg:flex-row lg:justify-between items-center lg:items-end px-4 w-full">
-        <div>
-          <h1 className="text-4xl font-bold">
-            <span className="hidden lg:block">
-              spydr.
-            </span>
-          </h1>
-          <h1 className="text-4xl font-bold mb-6 lg:hidden">
-            <span className="lg:hidden">spydr.</span>
-          </h1>
-        </div>{" "}
-        <div className="flex items-end w-full lg:w-auto">
-          {user ? (
-            <NewBucketModal>
-              <Button className="gap-1 w-full lg:w-auto lg:ml-auto">
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span className="whitespace-nowrap">Create Bucket</span>
-              </Button>
-            </NewBucketModal>
-          ) : (
-            <div className="flex flex-col lg:flex-row gap-2 w-full">
-              <Link href="/auth/login" className="w-full">
-                <Button className="w-full lg:w-auto">Login</Button>
-              </Link>
-              <Link href="/auth/register" className="w-full">
-                <Button className="w-full lg:w-auto bg-blue-500 hover:bg-blue-600">
-                  Sign Up
-                </Button>
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
-       */}
-      <div className="px-4">
+      </Head>{" "}
+      <div className="px-4 lg:px-20">
+        {!user && (
+          <Button
+            className="w-full mb-2 bg-blue-500"
+            onClick={() => router.push("/auth/register")}
+          >
+            Sign Up
+          </Button>
+        )}
+        {!user && (
+          <Button
+            className="w-full mb-4"
+            onClick={() => router.push("/auth/login")}
+          >
+            Login
+          </Button>
+        )}
         <SearchInput
           defaultValue={"whatever"}
           placeholder="What would you like to jump into?"
@@ -153,7 +124,7 @@ function Index() {
           value={query}
         ></SearchInput>
       </div>
-      <div className="w-full lg:min-h-[62vh]">
+      <div className="w-full lg:min-h-[62vh] lg:px-16">
         {loading ? (
           <div className="w-full flex flex-col gap-3">
             <SkeletonCard />

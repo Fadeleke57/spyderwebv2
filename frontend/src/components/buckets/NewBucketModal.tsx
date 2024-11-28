@@ -36,7 +36,7 @@ export function NewBucketModal({children}: {children: React.ReactNode}) {
   //make the button more flexible
   const router = useRouter();
   const { toast } = useToast();
-  const { createBucket, loading } = useCreateBucket();
+  const { mutateAsync: createBucket, isPending : loading } = useCreateBucket();
   const { user } = useUser();
   const [bucketConfig, setBucketConfig] = useState<BucketConfig>({
     name: "Untitled",

@@ -12,8 +12,8 @@ import { useAddTagToBucket } from "@/hooks/buckets";
 import { useRemoveTagFromBucket } from "@/hooks/buckets";
 
 export function TagsPopover({ bucket }: { bucket: Bucket }) {
-  const { addTagToBucket, loading: tagLoading, error } = useAddTagToBucket(bucket?.bucketId);
-  const { removeTagFromBucket, loading: removeTagLoading, error: removeTagError } = useRemoveTagFromBucket(bucket?.bucketId);
+  const { mutateAsync: addTagToBucket, isPending: tagLoading, error } = useAddTagToBucket(bucket?.bucketId);
+  const { mutateAsync: removeTagFromBucket, isPending: removeTagLoading, error: removeTagError } = useRemoveTagFromBucket(bucket?.bucketId);
   const tagsList = [
     "Research",
     "Climate",

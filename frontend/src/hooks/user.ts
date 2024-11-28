@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
 import { PublicUser, Search } from "@/types/user";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
 export function useFetchUser() {
   const [user, setUser] = useState<PublicUser | null>(null);
@@ -97,30 +98,14 @@ export function useClearSearchHistory() {
 }
 
 export function useFetchUserById(userId: string) {
-  const [user, setUser] = useState<PublicUser | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        setLoading(true);
-        if (!userId) {
-          return;
-        }
-        const response = await api.get(`/users/`, {
-          params: { userId },
-        });
-        setUser(response.data.result);
-      } catch (error) {
-        console.error("Failed to fetch user", error);
-        setError("Failed to fetch user:" + error);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [userId]);
-  return { user, loading, error };
+  return useQuery({
+    queryKey: ["user", userId],
+    queryFn: async () => {
+      const response = await api.get(`/users/`, {
+        params: { userId },
+      });
+      const data = await response.data.result;
+      return data;
+    },
+  })
 }
