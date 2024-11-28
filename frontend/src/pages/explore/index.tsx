@@ -100,7 +100,7 @@ function Index() {
         />
       </Head>{" "}
       <div className="px-4 lg:px-20">
-        {!user && (
+        {!user && isMobile && (
           <Button
             className="w-full mb-2 bg-blue-500"
             onClick={() => router.push("/auth/register")}
@@ -108,7 +108,7 @@ function Index() {
             Sign Up
           </Button>
         )}
-        {!user && (
+        {!user && isMobile && (
           <Button
             className="w-full mb-4"
             onClick={() => router.push("/auth/login")}
