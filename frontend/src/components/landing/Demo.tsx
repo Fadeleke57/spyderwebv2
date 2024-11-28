@@ -10,7 +10,7 @@ export default function Demo() {
       <div className="lg:pr-16 h-fit lg:border-b-2 lg:border-slate-300 lg:pb-4">
         <h1 className="text-3xl sm:text-4xl lg:text-4xl font-bold tracking-tight mb-2 sm:mb-4 max-w-3xl mx-auto">
           <span className="text-blue-500">organize</span> and <span className="text-blue-500">understand</span> the full context of
-          your internet content.
+          your deep dives.
         </h1>
         <p className="leading-7 mt-4 text-semibold sm:text-lg font-medium max-w-full sm:max-w-sm lg:max-w-md mx-auto sm:mx-0 text-muted-foreground">
           Visualize connections and gain insights between websites, documents, youtube videos, and

@@ -84,7 +84,9 @@ export default function AppLayout({
       defaultOpen={isSidebarOpen}
     >
       <AppSidebar />
-      <SidebarInset className="overflow-x-hidden"> {children}</SidebarInset>
+      <SidebarInset className="overflow-x-hidden">
+        {children}
+      </SidebarInset>
     </SidebarProvider>
   );
 }

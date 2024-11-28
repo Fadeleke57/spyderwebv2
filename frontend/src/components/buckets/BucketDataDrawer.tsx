@@ -6,58 +6,60 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useRenderFile } from "@/hooks/sources";
+import { useFetchSource } from "@/hooks/sources";
 import { useUpdateNote } from "@/hooks/sources"; // Assuming your hook is located here
-import { useState, useEffect, useCallback } from "react";
-import { SourceAsNode } from "@/types/source";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { SquareArrowOutUpRight } from "lucide-react";
 import { formatDate } from "date-fns";
 import { ScrollArea } from "../ui/scroll-area";
 import { Textarea } from "../ui/textarea";
-import { debounce } from "lodash";
+import { debounce, set } from "lodash";
 import { useUser } from "@/context/UserContext";
 import { toast } from "../ui/use-toast";
 import { extractVideoId } from "@/lib/utils";
+import { SourceAsNode } from "@/types/source";
 
 interface BucketDataDrawerProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  source: SourceAsNode;
+  sourceId: string;
+  bucketId: string;
 }
 
 export default function BucketDataDrawer({
   open,
   setOpen,
-  source,
+  sourceId,
+  bucketId,
 }: BucketDataDrawerProps) {
   const { user } = useUser();
-  const [fileUrl, setFileUrl] = useState<string>("");
-  const [title, setTitle] = useState(source.name);
-  const [content, setContent] = useState(source.content);
-  const { getPresignedUrl, isLoading, error } = useRenderFile(source.url);
   const {
-    updateNote,
-    isUploading,
-    error: updateError,
-  } = useUpdateNote(source.bucketId, source.sourceId);
-
-  const isOwner = source?.userId && user?.id === source?.userId;
+    data: sourceData,
+    isLoading: isSourceLoading,
+    error: sourceError,
+    refetch: refetchSource,
+  } = useFetchSource(sourceId);
+  const [source, setSource] = useState<SourceAsNode | null>(null);
+  const [presignedUrl, setPresignedUrl] = useState("");
+  const [title, setTitle] = useState(source?.name);
+  const [content, setContent] = useState(source?.content);
 
   useEffect(() => {
-    if (open && source.type === "document") {
-      handleGetPresignedUrl();
-    }
-  }, [open, source]);
+    if (!sourceData) return;
+    setSource(sourceData.result);
+    setTitle(sourceData.result.name);
+    setContent(sourceData.result.content);
+    setPresignedUrl(sourceData.file_url);
+  }, [sourceData]);
 
-  const handleGetPresignedUrl = async () => {
-    try {
-      const url = await getPresignedUrl();
-      setFileUrl(url);
-    } catch (err) {
-      console.error("Failed to get presigned URL:", err);
-    }
-  };
+  const {
+    mutateAsync: updateNote,
+    isPending: isUploading,
+    error: updateError,
+  } = useUpdateNote(bucketId, sourceId);
+
+  const isOwner = source?.userId && user?.id === source?.userId;
 
   const debouncedSave = useCallback(
     debounce(async (newTitle: string, newContent: string) => {
@@ -83,24 +85,25 @@ export default function BucketDataDrawer({
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newContent = e.target.value;
     setContent(newContent);
-    debouncedSave(title, newContent);
+    debouncedSave(title || "", newContent);
   };
 
-  const mapSourceTypeToComponent = (type: string) => {
+  const mapSourceTypeToComponent = (type: string | undefined) => {
     switch (type) {
       case "website":
         return (
           <iframe
-            src={source.url}
+            src={source?.url || ""}
             width="100%"
             height="450px"
             className="rounded-lg"
           />
         );
       case "document":
+        console.log("presignedUrl", presignedUrl);
         return (
           <object
-            data={fileUrl}
+            data={presignedUrl}
             type="application/pdf"
             width="100%"
             className="rounded-lg border h-[calc(100vh-210px)]"
@@ -113,7 +116,7 @@ export default function BucketDataDrawer({
           <iframe
             width="100%"
             height="450px"
-            src={`https://www.youtube.com/embed/${extractVideoId(source.url)}`}
+            src={`https://www.youtube.com/embed/${extractVideoId(source?.url) || ""}`}
             title="YouTube video player"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -126,7 +129,10 @@ export default function BucketDataDrawer({
         return (
           <ScrollArea className="px-4 h-[calc(100vh-210px)]">
             <small className="text-muted-foreground">
-              {formatDate(new Date(source.updated_at), "MMMM dd, yyyy hh:mm a")}
+              {formatDate(
+                new Date(source ? source.updated_at : ""),
+                "MMMM dd, yyyy hh:mm a"
+              )}
             </small>
             {isOwner ? (
               <Textarea
@@ -141,7 +147,7 @@ export default function BucketDataDrawer({
                 onChange={handleTitleChange}
               />
             ) : (
-              <h3 className="text-2xl font-semibold my-2">{source.name}</h3>
+              <h3 className="text-2xl font-semibold my-2">{title}</h3>
             )}
             {isOwner ? (
               <Textarea
@@ -156,7 +162,7 @@ export default function BucketDataDrawer({
                 onChange={handleContentChange}
               />
             ) : (
-              <p className="text-slate-500">{source.content}</p>
+              <p className="text-slate-500">{content}</p>
             )}
 
             {updateError && <p className="text-red-500">{updateError}</p>}
@@ -173,13 +179,13 @@ export default function BucketDataDrawer({
         <SheetContent side={"left"} className="w-full lg:max-w-xl">
           <SheetHeader className="border-b pb-4">
             <SheetTitle className="text-left w-[300px] font-bold lg:w-content">
-              {fileUrl || source?.url ? (
+              {presignedUrl || source?.url ? (
                 <Link
-                  href={fileUrl || source?.url || ""}
+                  href={presignedUrl || source?.url || ""}
                   target="_blank"
                   className="hover:underline hover:text-blue-500 inline"
                 >
-                  {fileUrl || source?.url ? <SquareArrowOutUpRight /> : ""}
+                  {presignedUrl || source?.url ? <SquareArrowOutUpRight /> : ""}
                   <h1>{source?.name || ""}</h1>
                 </Link>
               ) : (
@@ -187,7 +193,7 @@ export default function BucketDataDrawer({
               )}
             </SheetTitle>
             <SheetDescription className="text-left pr-4 font-semibold text-blue-500">
-              {source.type}
+              {source?.type}
             </SheetDescription>
           </SheetHeader>
           <div className="py-6">{mapSourceTypeToComponent(source?.type)}</div>

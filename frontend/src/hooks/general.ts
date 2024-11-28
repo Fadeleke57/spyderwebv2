@@ -7,16 +7,11 @@ function useMediaQuery(query: string): boolean {
     }
     return false;
   });
-
   useEffect(() => {
     const mediaQuery = window.matchMedia(query);
-
     const handleChange = () => setMatches(mediaQuery.matches);
-
     setMatches(mediaQuery.matches);
-
     mediaQuery.addEventListener("change", handleChange);
-
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [query]);
 

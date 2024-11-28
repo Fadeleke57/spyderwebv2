@@ -41,16 +41,18 @@ type ConfigGraphModalProps = {
   config: BucketConfigFormValues;
   setConfig: (value: BucketConfigFormValues) => void;
   bucket: Bucket;
-  refetch: () => void;
+  refreshSources: () => void;
+  refreshBucket: () => void;
   view?: string;
   children: React.ReactNode;
 };
 
 export default function BucketSearchModal({
   bucket,
-  refetch,
   view = "default",
   children,
+  refreshSources,
+  refreshBucket,
 }: ConfigGraphModalProps) {
   const noteSchema = z.object({
     title: z.string().min(1, { message: "Title is required" }),
@@ -67,31 +69,27 @@ export default function BucketSearchModal({
   });
 
   const {
-    uploadFile,
-    progress,
+    mutateAsync: uploadFile,
     error,
-    isUploading: isFileUploading,
-  } = useFileUpload(bucket.userId, bucket.bucketId);
+    isPending: isFileUploading,
+  } = useFileUpload(bucket.userId, bucket.bucketId, "document");
 
   const {
-    uploadWebsite,
-    progress: websiteProgress,
-    error: websiteError,
-    isUploading: isWebsiteUploading,
+    mutateAsync: uploadWebsite,
+    error: websiteUploadError,
+    isPending: isWebsiteUploading,
   } = useUploadWebsite(bucket.bucketId);
 
   const {
-    uploadNote,
-    progress: noteLoading,
+    mutateAsync: uploadNote,
     error: noteError,
-    isUploading: isNoteUploading,
+    isPending: isNoteUploading,
   } = useUploadNote(bucket.bucketId);
 
   const {
-    uploadYoutube,
-    progress: youtubeProgress,
+    mutateAsync: uploadYoutube,
     error: youtubeError,
-    isUploading: isYoutubeUploading,
+    isPending: isYoutubeUploading,
   } = useUploadYoutube(bucket.bucketId);
 
   const contentRef = useRef(null);
@@ -127,7 +125,8 @@ export default function BucketSearchModal({
       });
       form.reset();
       handleClose();
-      refetch();
+      refreshSources();
+      refreshBucket();
     } catch (error: any) {
       toast({
         title: "Error creating bucket",
@@ -145,17 +144,16 @@ export default function BucketSearchModal({
     if (!file) {
       return;
     }
-    console.log("file", file);
-    const fileType = "document";
     try {
-      const result = await uploadFile(file, fileType);
+      const result = await uploadFile(file);
       toast({
         title: "File uploaded",
         description: "File uploaded successfully",
         duration: 500,
       });
       handleClose();
-      refetch();
+      refreshSources();
+      refreshBucket();
     } catch (err) {
       console.error(err);
       toast({
@@ -174,7 +172,8 @@ export default function BucketSearchModal({
         duration: 500,
       });
       handleClose();
-      refetch();
+      refreshSources();
+      refreshBucket();
     } catch (err: any) {
       console.error(err);
       toast({
@@ -198,7 +197,8 @@ export default function BucketSearchModal({
         duration: 500,
       });
       handleClose();
-      refetch();
+      refreshSources();
+      refreshBucket();
     } catch (err: any) {
       console.error(err);
       toast({

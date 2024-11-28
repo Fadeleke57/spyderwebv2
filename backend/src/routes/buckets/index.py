@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends
 from src.routes.auth.oauth2 import manager
+from fastapi import APIRouter, Depends, Query
+from typing import Optional
 import uuid
 from src.db.mongodb import get_collection, get_items_by_field
 from src.utils.exceptions import check_user
@@ -11,22 +13,49 @@ from fastapi.exceptions import HTTPException
 from src.utils.graph import get_articles_by_ids
 from pymongo import ReturnDocument
 
-@router.get("/all/user") # get all buckets belonging to a user
-def get_user_buckets(user: User = Depends(manager)):
+@router.get("/all/user")
+def get_user_buckets(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(10, ge=1, le=100),
+    user: User = Depends(manager)
+):
     """
-    Retrieve all buckets belonging to a user, sorted by creation date in descending order.
+    Retrieve paginated buckets belonging to a user, sorted by creation date in descending order,
+    with an optional limit on the total number of buckets.
 
     Args:
+        page (int): The current page number.
+        page_size (int): The number of items per page.
+        limit (int, optional): Maximum number of buckets to fetch.
         user (User): The user whose buckets are to be retrieved.
 
     Returns:
-        dict: A JSON response containing a list of buckets sorted by creation date in descending order.
+        dict: A JSON response containing the paginated list of buckets and pagination metadata.
     """
     check_user(user)
+
+    # Fetch all buckets for the user
     buckets = get_items_by_field("buckets", "userId", user["id"])
-    buckets = [bucket for bucket in buckets]
     buckets = sorted(buckets, key=lambda x: x["created"], reverse=True)
-    return {"result": buckets}
+
+    # Pagination logic
+    total_buckets = len(buckets)
+    start_index = (page - 1) * page_size
+    end_index = start_index + page_size
+    paginated_buckets = buckets[start_index:end_index]
+
+    next_cursor = page + 1 if end_index < total_buckets else None
+    prev_cursor = page - 1 if page > 1 else None
+    print("next_cursor", next_cursor)
+    print("prev_cursor", prev_cursor)
+    return {
+        "items": paginated_buckets,
+        "total": total_buckets,
+        "page": page,
+        "page_size": page_size,
+        "nextCursor": next_cursor,
+        "prevCursor": prev_cursor,
+    }
 
 @router.get("/all/public") # get all public buckets
 def get_public_buckets():

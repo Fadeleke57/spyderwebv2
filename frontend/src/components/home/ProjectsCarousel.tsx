@@ -12,12 +12,27 @@ import Link from "next/link";
 import { useFetchBuckets } from "@/hooks/buckets";
 import { formatText } from "@/lib/utils";
 import { useRouter } from "next/router";
-import { Skeleton } from "@/components/ui/skeleton"; // Import skeleton
+import { Skeleton } from "@/components/ui/skeleton";
 import { NewBucketModal } from "../buckets/NewBucketModal";
 
 export function ProjectsCarousel() {
-  const { buckets, loading, error } = useFetchBuckets(); // Fetch data
+  const {
+    data : bucketData,
+    fetchNextPage,
+    fetchPreviousPage,
+    isFetching,
+    isFetchingNextPage,
+    isFetchingPreviousPage,
+  } = useFetchBuckets();
+  const [buckets, setBuckets] = React.useState<any[]>([]);
   const router = useRouter();
+
+  React.useEffect(() => {
+    if (bucketData) {
+      const pageData = bucketData.pages[0];
+      setBuckets(pageData?.items || []);
+    }
+  }, [bucketData]);
 
   return (
     <div className="group pl-6 mt-4">
@@ -43,7 +58,7 @@ export function ProjectsCarousel() {
             </CarouselItem>
           </NewBucketModal>
 
-          {loading
+          {isFetching
             ? Array.from({ length: 9 }).map((_, index) => (
                 <CarouselItem
                   key={index}

@@ -16,6 +16,7 @@ import BucketSearchModal from "./BucketSearchModal";
 import BucketGraph from "./BucketGraph";
 import { BucketConfigFormValues } from "@/types/article";
 import { Source } from "@/types/source";
+import { useFetchSourcesForBucket } from "@/hooks/sources";
 
 function BucketPlayground({
   bucket,
@@ -32,6 +33,12 @@ function BucketPlayground({
     description: bucket?.description || "",
   });
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
+  const {
+    data: sources,
+    isLoading,
+    error: sourcesError,
+    refetch: refetchSources,
+  } = useFetchSourcesForBucket(bucket?.bucketId);
   const [fetchedSources, setFetchedSources] = useState<Source[]>([]);
 
   return (
@@ -50,7 +57,8 @@ function BucketPlayground({
               config={config}
               setConfig={setConfig}
               bucket={bucket}
-              refetch={refetch}
+              refreshSources={refetchSources}
+              refreshBucket={refetch}
               view="default"
             >
               <Button className="rounded-full">
@@ -62,7 +70,8 @@ function BucketPlayground({
               config={config}
               setConfig={setConfig}
               bucket={bucket}
-              refetch={refetch}
+              refreshSources={refetchSources}
+              refreshBucket={refetch}
               view="website"
             >
               <Button className="bg-blue-500 hover:bg-blue-600 rounded-full">
@@ -74,7 +83,8 @@ function BucketPlayground({
               config={config}
               setConfig={setConfig}
               bucket={bucket}
-              refetch={refetch}
+              refreshSources={refetchSources}
+              refreshBucket={refetch}
               view="youtube"
             >
               <Button className="bg-red-500 hover:bg-red-600 rounded-full">
@@ -86,7 +96,8 @@ function BucketPlayground({
               config={config}
               setConfig={setConfig}
               bucket={bucket}
-              refetch={refetch}
+              refreshSources={refetchSources}
+              refreshBucket={refetch}
               view="note"
             >
               <Button className="bg-green-500 hover:bg-green-600 rounded-full">
@@ -111,7 +122,8 @@ function BucketPlayground({
               config={config}
               setConfig={setConfig}
               bucket={bucket}
-              refetch={refetch}
+              refreshSources={refetchSources}
+              refreshBucket={refetch}
               view="default"
             >
               <Button className="rounded-full">
@@ -123,7 +135,8 @@ function BucketPlayground({
               config={config}
               setConfig={setConfig}
               bucket={bucket}
-              refetch={refetch}
+              refreshSources={refetchSources}
+              refreshBucket={refetch}
               view="website"
             >
               <Button className="bg-blue-500 hover:bg-blue-600 rounded-full">
@@ -135,7 +148,8 @@ function BucketPlayground({
               config={config}
               setConfig={setConfig}
               bucket={bucket}
-              refetch={refetch}
+              refreshSources={refetchSources}
+              refreshBucket={refetch}
               view="youtube"
             >
               <Button className="bg-red-500 hover:bg-red-600 rounded-full">
@@ -147,7 +161,8 @@ function BucketPlayground({
               config={config}
               setConfig={setConfig}
               bucket={bucket}
-              refetch={refetch}
+              refreshSources={refetchSources}
+              refreshBucket={refetch}
               view="note"
             >
               <Button className="bg-green-500 hover:bg-green-600 rounded-full">
@@ -178,6 +193,7 @@ function BucketPlayground({
             Comment
           </Label>
           <Textarea
+            disabled
             id="comments"
             placeholder="What would you like to learn..."
             className=" resize-none border-0 p-4 shadow-none focus-visible:ring-0"
@@ -185,7 +201,7 @@ function BucketPlayground({
           <div className="flex items-center p-3 pt-0">
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger disabled asChild>
                   <Button variant="ghost" size="icon">
                     <Paperclip className="size-4" />
                     <span className="sr-only">Attach file</span>
@@ -197,7 +213,7 @@ function BucketPlayground({
             </TooltipProvider>
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger disabled asChild>
                   <Button variant="ghost" size="icon">
                     <ImageIcon className="size-4" />
                     <span className="sr-only">Add Image</span>
@@ -206,7 +222,12 @@ function BucketPlayground({
                 <TooltipContent side="top">Add Image</TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <Button type="submit" size="sm" className="ml-auto gap-1.5">
+            <Button
+              type="submit"
+              size="sm"
+              className="ml-auto gap-1.5"
+              disabled
+            >
               Ask
               <CornerDownLeft className="size-3.5" />
             </Button>

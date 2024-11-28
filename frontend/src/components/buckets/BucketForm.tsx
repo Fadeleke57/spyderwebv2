@@ -31,7 +31,7 @@ type BucketConfig = {
 
 function BucketForm({ bucket, user }: FormProps) {
   const isOwner = user?.id === bucket?.userId;
-  const { updateBucket, loading } = useUpdateBucket(bucket?.bucketId);
+  const { mutateAsync: updateBucket, isPending} = useUpdateBucket(bucket?.bucketId);
   const { toast } = useToast();
   const router = useRouter();
 
