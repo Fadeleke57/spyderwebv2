@@ -32,7 +32,6 @@ import { ReactElement, useEffect } from "react";
 import PublicLayout from "@/app/PublicLayout";
 import AppLayout from "@/app/AppLayout";
 import Head from "next/head";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const registerSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
@@ -50,7 +49,6 @@ const Register = () => {
   const form = useForm<RegisterFormInputs>({
     resolver: zodResolver(registerSchema),
   });
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -68,7 +66,7 @@ const Register = () => {
           description: "Redirecting..",
         });
         localStorage.setItem("token", response.data.access_token);
-        window.location.href = isMobile ? "/explore" : "/home";
+        window.location.href = "/buckets";
       }
     } catch (error) {
       console.error("Registration failed", error);
