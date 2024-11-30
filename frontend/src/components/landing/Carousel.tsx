@@ -46,7 +46,7 @@ export default function LandingCarousel() {
 
       <div className="lg:w-7/12">
         <h1 className="scroll-m-20 text-3xl font-bold tracking-tight lg:text-5xl mb-2 lg:mb-4 text-blue-500">
-          accurate, easy-to-use, and most importantly, human. jump start your 
+          Accurate, easy-to-use, and most importantly, human. Jump start your 
           search here.
         </h1>
         <Button

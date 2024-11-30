@@ -1,35 +1,68 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
-import { Article, ArticleAsNode } from "@/types/article";
 import { useState } from "react";
 import { LoadingPage } from "@/components/utility/Loading";
-import { useFetchArticlesDemo } from "@/hooks/articles";
-import { ConfigFormValues } from "@/types/article";
-import { DataDrawerDemo } from "./DataDrawerDemo";
+import BucketDataDrawer from "@/components/buckets/BucketDataDrawer";
+import { useDeleteSource, useFetchSourcesForBucket } from "@/hooks/sources";
+import { Source, SourceAsNode } from "@/types/source";
+import { useFetchBucketById } from "@/hooks/buckets";
+import { formatText } from "@/lib/utils";
 
-interface GraphProps {
-  limit: number;
-  config: ConfigFormValues;
-  setConfig: (value: ConfigFormValues) => void;
-  color: string;
-}
-
-function Graph({ limit, config, setConfig, color }: GraphProps) {
+function GraphDemo() {
+  const trashRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [selectedSource, setSelectedSource] = useState<Source | null>(null);
+  const [, setFetchedSources] = useState<Source[]>([]);
+  const [, setSelectedSourceId] = useState<string | null>(null);
+  const bucketId = "demo";
+  const {
+    data: bucket,
+    isLoading: bucketLoading,
+    refetch: refetchBucket,
+  } = useFetchBucketById(bucketId);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
-  const { articles, loading, error } = useFetchArticlesDemo(
-    limit,
-    config,
-    setConfig
-  );
+  const {
+    data: sources,
+    isLoading,
+    error: sourcesError,
+    refetch: refetchSources,
+  } = useFetchSourcesForBucket(bucketId);
+  const { mutateAsync: deleteSource } = useDeleteSource();
+
+  const handleDeleteSource = async (sourceId: string) => {
+    await deleteSource(sourceId);
+    refetchBucket();
+    refetchSources();
+  };
 
   useEffect(() => {
+    setFetchedSources(sources);
     const width = 3200;
     const height = 2400;
-    const centerX = width / 8 - 100;
-    const centerY = height / 8 -20;
+    const centerX = width / 8 - 70;
+    const centerY = height / 8 - 70;
     const circleRadius = Math.min(width, height) / 2 - 50;
+
+    const zoomToNode = (event: MouseEvent | null, d: SourceAsNode) => {
+      if (event) event.stopPropagation();
+
+      const scale = 3;
+      const [x, y] = [d.x + centerX + 70, d.y + centerY + 60];
+
+      const transform = d3.zoomIdentity
+        .translate(width / 2, height / 2)
+        .scale(scale)
+        .translate(-x, -y);
+
+      svg
+        .transition()
+        .duration(750)
+        .call(zoom.transform as any, transform);
+
+      setSelectedSource(d);
+      setSelectedSourceId(d.sourceId);
+      setDrawerOpen(true);
+    };
 
     const svg = d3
       .select(svgRef.current)
@@ -38,6 +71,18 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
     svg.selectAll("*").remove();
 
     const g = svg.append("g");
+
+    const tooltip = svg
+      .append("g")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+
+    tooltip
+      .append("text")
+      .attr("fill", "#333")
+      .attr("font-size", "18px")
+      .attr("font-weight", "bold")
+      .attr("text-anchor", "middle");
 
     const zoom = d3
       .zoom<SVGSVGElement, unknown>()
@@ -48,56 +93,78 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
 
     svg.call(zoom as any);
 
-    const nodes: ArticleAsNode[] = articles.map((d, i) => {
-      const angle = (i / articles.length) * 2 * Math.PI;
-      const x = centerX + circleRadius * Math.cos(angle);
-      const y = centerY + circleRadius * Math.sin(angle);
-      return { ...d, x, y };
-    });
+    const nodes: SourceAsNode[] =
+      sources &&
+      sources.map((d: Source, i: number) => {
+        const angle = (i / sources.length) * 2 * Math.PI;
+        const x = centerX + circleRadius * Math.cos(angle);
+        const y = centerY + circleRadius * Math.sin(angle);
+        return { ...d, x, y };
+      });
+
+    const fileSizes = nodes && nodes.map((d) => d.size || 4);
+    const minSize = nodes && Math.min(...fileSizes);
+    const maxSize = nodes && Math.max(...fileSizes);
 
     const sizeScale = d3
       .scalePow()
-      .exponent(2) // more or less exponential scaling
-      .domain([0, 100])
-      .range([5, 50]);
+      .exponent(0.3)
+      .domain([minSize, maxSize])
+      .range([10, 30]);
 
     const simulation = d3
       .forceSimulation(nodes)
       .force("x", d3.forceX(centerX).strength(0.05))
       .force("y", d3.forceY(centerY).strength(0.05))
-      .force("collision", d3.forceCollide(35)) //spacing
+      .force("collision", d3.forceCollide(35))
       .on("tick", () => {
         g.selectAll("circle")
-          .data(nodes)
+          .data(nodes ? nodes : [])
           .join("circle")
           .attr("cx", (d) => d.x)
           .attr("cy", (d) => d.y)
           .attr("r", (d) => {
-            const reliabilityScore = d.reliability_score ?? 0;
-            return sizeScale(reliabilityScore);
+            const fileSize = d.size || 4;
+            return sizeScale(fileSize);
           })
-          .attr("fill", color)
+          .attr("fill", "#5ea4ff")
           .call(drag as any)
-          .on("click", (event, d) => {
-            setSelectedArticle(d);
-            setDrawerOpen(true);
-            d3.select(event.currentTarget).attr("fill", "red");
-          });
+          .on("click", function (event, d) {
+            event.stopPropagation();
+            zoomToNode(event, d);
+          })
+          .on("mouseover", function (event, d) {
+            const [mouseX, mouseY] = d3.pointer(event);
+            const transform = d3.zoomTransform(svg.node() as Element);
 
-        g.selectAll("text")
-          .data(nodes)
-          .join("text")
-          .attr("x", (d) => d.x)
-          .attr("y", (d) => d.y - 20)
-          .attr("text-anchor", "middle")
-          .style("font-size", "12px")
-          .style("font-weight", "bold")
-          .text((d) => (d.header ? d.header.slice(0, 10) + "..." : ""))
-          .attr("fill", color);
+            tooltip
+              .style("opacity", 1)
+              .style("weight", "bold")
+              .attr(
+                "transform",
+                `translate(${transform.applyX(d.x)},${transform.applyY(
+                  d.y - 20
+                )})`
+              );
+
+            tooltip
+              .style("opacity", 1)
+              .attr(
+                "transform",
+                `translate(${transform.applyX(d.x)},${transform.applyY(
+                  d.y - 20
+                )})`
+              );
+
+            tooltip.select("text").text(formatText(d.name || "", 55));
+          })
+          .on("mouseout", function () {
+            tooltip.style("opacity", 0);
+          });
       });
 
     const drag = d3
-      .drag<SVGCircleElement, ArticleAsNode>()
+      .drag<SVGCircleElement, SourceAsNode>()
       .on("start", function (event, d: any) {
         if (!event.active) simulation.alphaTarget(0.3).restart();
         d.fx = d.x;
@@ -111,29 +178,44 @@ function Graph({ limit, config, setConfig, color }: GraphProps) {
         if (!event.active) simulation.alphaTarget(0);
         d.fx = null;
         d.fy = null;
+
+        const trashBounds = trashRef.current?.getBoundingClientRect();
+        const nodeX = event.sourceEvent.clientX;
+        const nodeY = event.sourceEvent.clientY;
+
+        if (
+          trashBounds &&
+          nodeX >= trashBounds.left &&
+          nodeX <= trashBounds.right &&
+          nodeY >= trashBounds.top &&
+          nodeY <= trashBounds.bottom
+        ) {
+          handleDeleteSource(d.sourceId);
+        }
       });
 
-    // cleanup
     return () => {
       simulation.stop();
     };
-  }, [articles, color]);
+  }, [sources, deleteSource, refetchSources, trashRef]);
 
-  if (loading) {
+  if (isLoading) {
     return <LoadingPage></LoadingPage>;
   }
 
   return (
     <>
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
-      <DataDrawerDemo
-        open={isDrawerOpen}
-        setOpen={setDrawerOpen}
-        article={selectedArticle as ArticleAsNode}
-        color={color}
-      />
+      {isDrawerOpen && bucketId && selectedSource && (
+        <BucketDataDrawer
+          sourceId={selectedSource?.sourceId}
+          open={isDrawerOpen}
+          setOpen={setDrawerOpen}
+          bucketId={bucketId}
+        />
+      )}
     </>
   );
 }
 
-export default Graph;
+export default GraphDemo;
