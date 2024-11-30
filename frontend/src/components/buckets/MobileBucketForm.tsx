@@ -25,7 +25,7 @@ function MobileBucketForm({ bucket, user }: FormProps) {
           <span className="sr-only">Settings</span>
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="max-h-[80vh] p-4">
+      <DrawerContent className="h-[90vh] p-4">
         {bucket?.userId === user?.id ? <BucketForm bucket={bucket} user={user} /> : <PublicBucketView bucket={bucket} user={user} />}
       </DrawerContent>
     </Drawer>
