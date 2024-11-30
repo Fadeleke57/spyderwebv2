@@ -7,7 +7,7 @@ export default function Demo() {
   const router = useRouter();
   const isMobile = useIsMobile();
   return (
-    <div className="relative mt-20 lg:mt-20 flex flex-col gap-10 lg:gap-0 lg:flex-row rounded-xl lg:bg-muted lg:p-10 ">
+    <div className="relative mt-4 mb-6 lg:mb-0 lg:mt-20 flex flex-col gap-10 lg:gap-0 lg:flex-row rounded-xl lg:bg-muted lg:p-10 ">
       <div className="lg:pr-16 h-fit lg:border-b-2 lg:border-slate-300 lg:pb-4">
         <h1 className="text-3xl sm:text-4xl lg:text-4xl font-bold tracking-tight mb-2 sm:mb-4 max-w-3xl mx-auto">
           <span className="text-blue-500">Organize</span> and{" "}
@@ -27,7 +27,7 @@ export default function Demo() {
           Why this matters
         </Button>
       </div>
-      <TerminalDemo />
+      {isMobile ? null : <TerminalDemo />}
     </div>
   );
 }
