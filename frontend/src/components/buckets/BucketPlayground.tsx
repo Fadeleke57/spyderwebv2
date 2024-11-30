@@ -175,7 +175,6 @@ function BucketPlayground({
       )}
       <div className="flex-1" />
       <BucketGraph
-        config={config}
         setConfig={setConfig}
         bucketId={bucket?.bucketId}
         hasSources={bucket?.sourceIds?.length ? true : false}
