@@ -101,6 +101,7 @@ export function useFetchUserById(userId: string) {
   return useQuery({
     queryKey: ["user", userId],
     queryFn: async () => {
+      if (!userId) return null;
       const response = await api.get(`/users/`, {
         params: { userId },
       });

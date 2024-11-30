@@ -41,6 +41,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 width={36}
                 height={36}
                 className="rounded-full"
+                priority
               />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">

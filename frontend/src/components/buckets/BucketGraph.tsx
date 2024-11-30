@@ -18,7 +18,6 @@ import {
 import { formatText } from "@/lib/utils";
 
 interface GraphProps {
-  config: BucketConfigFormValues;
   setConfig: (value: BucketConfigFormValues) => void;
   bucketId: string;
   hasSources: boolean;
@@ -29,7 +28,6 @@ interface GraphProps {
 }
 
 function BucketGraph({
-  config,
   bucketId,
   hasSources,
   fetchedSources,
@@ -171,28 +169,13 @@ function BucketGraph({
                 `translate(${transform.applyX(d.x)},${transform.applyY(
                   d.y - 20
                 )})`
-            )
-              ;
-
-            tooltip
-              .transition()
-              .duration(600)
-              .style("opacity", 1)
-              .attr(
-                "transform",
-                `translate(${transform.applyX(d.x)},${transform.applyY(
-                  d.y - 20
-                )})`
               );
 
             tooltip.select("text").text(formatText(d.name || "", 55));
           })
           .on("mouseout", function () {
             tooltip.style("opacity", 0);
-              tooltip
-                .transition()
-                .duration(300)
-                .style("opacity", 0);
+            tooltip.style("opacity", 0);
           });
       });
 

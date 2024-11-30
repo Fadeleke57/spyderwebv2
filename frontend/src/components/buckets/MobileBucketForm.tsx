@@ -3,6 +3,7 @@ import { Bucket } from "@/types/bucket";
 import {
   Drawer,
   DrawerContent,
+  DrawerTitle,
   DrawerTrigger,
 } from "../ui/drawer";
 import { Button } from "../ui/button";
@@ -25,8 +26,13 @@ function MobileBucketForm({ bucket, user }: FormProps) {
           <span className="sr-only">Settings</span>
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="h-[90vh] p-4">
-        {bucket?.userId === user?.id ? <BucketForm bucket={bucket} user={user} /> : <PublicBucketView bucket={bucket} user={user} />}
+      <DrawerContent className="min-h-[80vh] p-4" aria-describedby={undefined}>
+        <DrawerTitle hidden>Title</DrawerTitle>
+        {bucket?.userId === user?.id ? (
+          <BucketForm bucket={bucket} user={user} />
+        ) : (
+          <PublicBucketView bucket={bucket} user={user} />
+        )}
       </DrawerContent>
     </Drawer>
   );

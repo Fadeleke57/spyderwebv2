@@ -34,13 +34,13 @@ export default function TypingAnimation({
   }, [duration, i]);
 
   return (
-    <h1
+    <span
       className={cn(
         "text-4xl font-bold drop-shadow-sm",
         className,
       )}
     >
       {displayedText ? displayedText : text}
-    </h1>
+    </span>
   );
 }
