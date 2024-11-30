@@ -186,10 +186,10 @@ export default function BucketDataDrawer({
                   className="hover:underline hover:text-blue-500 inline"
                 >
                   {presignedUrl || source?.url ? <SquareArrowOutUpRight /> : ""}
-                  <h1>{source?.name || ""}</h1>
+                  <span>{source?.name || ""}</span>
                 </Link>
               ) : (
-                <h1>{title || source?.name || ""}</h1>
+                <span>{title || source?.name || ""}</span>
               )}
             </SheetTitle>
             <SheetDescription className="text-left pr-4 font-semibold text-blue-500">

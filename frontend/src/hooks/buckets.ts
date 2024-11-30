@@ -119,6 +119,7 @@ export const useFetchBucketById = (bucketId: string) => {
   return useQuery({
     queryKey: ["bucket", bucketId],
     queryFn: async () => {
+      if (!bucketId) return null;
       const response = await api.get(`/buckets/id`, {
         params: { bucketId },
       });

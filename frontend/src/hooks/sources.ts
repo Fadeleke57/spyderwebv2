@@ -26,6 +26,7 @@ export const useFetchSourcesForBucket = (webId: string) => {
   return useQuery({
     queryKey: ["sources", webId],
     queryFn: async () => {
+      if (!webId) return null;
       const response = await api.get(`/sources/all/${webId}`);
       const data = await response.data.result;
       return data;

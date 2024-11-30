@@ -117,7 +117,6 @@ function Index() {
           </Button>
         )}
         <SearchInput
-          defaultValue={"whatever"}
           placeholder="What would you like to jump into?"
           onClick={() => setActive(true)}
           onChange={handleSearch}

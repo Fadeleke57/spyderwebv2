@@ -40,6 +40,7 @@ export default function AppLayout({
               width={36}
               height={36}
               className="rounded-full"
+              priority
             ></Image>
           </Link>
           <div className="flex flex-row gap-4 items-center">

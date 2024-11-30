@@ -101,8 +101,8 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
           </div>
         </div>
         <CardHeader className="overflow-hidden">
-          <CardTitle className="break-words hover:cursor-pointer text-xl leading-tight">
-            <h3 className="hyphens-auto">{bucket.name}</h3>
+          <CardTitle className="break-words hover:cursor-pointer text-xl leading-tight hyphens-auto">
+            {bucket.name}
           </CardTitle>
           <CardDescription className="hyphens-auto mb-8 max-w-6xl text-slate-600">
             {bucket.description}
