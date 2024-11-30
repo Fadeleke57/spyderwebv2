@@ -59,8 +59,8 @@ const mainLinks = [
     ],
   },
   {
-    title: "Spydr Terminal",
-    href: "/terminal",
+    title: "Explore",
+    href: "/explore",
     subItems: [],
   },
   {

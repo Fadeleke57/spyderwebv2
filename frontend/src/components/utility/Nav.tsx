@@ -109,9 +109,9 @@ function NavigationMenuFull() {
           </NavigationMenuContent>
         </NavigationMenuItem>
         <NavigationMenuItem>
-          <Link href="/terminal" legacyBehavior passHref>
+          <Link href="/explore" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Spydr Terminal
+              Explore
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
