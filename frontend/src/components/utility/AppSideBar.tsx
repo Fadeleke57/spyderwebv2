@@ -89,23 +89,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <span className="truncate  text-lg text-slate-500">Buckets</span>
           </div>
         </SidebarMenuButton>
-        <SidebarMenuButton
-          size="sm"
-          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-        >
-          <div>
-            <NewBucketModal>
-              <Button className="w-full bg-transparent hover:bg-transparent p-0 flex flex-row gap-2">
-                <div className="flex items-center rounded-lg bg-none text-slate-500 text-sidebar-primary-foreground">
-                  <CirclePlus className="size-5" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate  text-lg text-slate-500">Create</span>
-                </div>
-              </Button>
-            </NewBucketModal>
-          </div>
-        </SidebarMenuButton>
+        <NewBucketModal>
+          <SidebarMenuButton
+            size="sm"
+            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          >
+            <div className="w-full bg-transparent hover:bg-transparent p-0 flex flex-row gap-2">
+              <div className="flex items-center rounded-lg bg-none text-slate-500 text-sidebar-primary-foreground">
+                <CirclePlus className="size-5" />
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate  text-lg text-slate-500">Create</span>
+              </div>
+            </div>
+          </SidebarMenuButton>
+        </NewBucketModal>
         <div className="mt-auto">
           <SidebarTrigger orientation="right" hideWhen="expanded" />
         </div>
