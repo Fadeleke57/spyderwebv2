@@ -23,7 +23,7 @@ Next.js with Typescript and Tailwind<br><br>
 </h4>  
 <ul>
  <li>I initialized a Scrapy Spider with connections to a Neo4j driver</li>
- <li>Using the beautiful https://radimrehurek.com/gensim/, I created a makeshift TF-IDF model that dynamically computes a similarity score between article nodes in the graph. It was slow at first, so I removed mandatory NLTK tokenization and made it an optional parameter for slightly more accurate results</li>
+ <li>Using the beautiful <a href="https://radimrehurek.com/gensim/">genism library</a>, I created a makeshift TF-IDF model that dynamically computes a similarity score between article nodes in the graph. It was slow at first, so I removed mandatory NLTK tokenization and made it an optional parameter for slightly more accurate results</li>
  <li>The flow looks like: Model instantiated -> parent-child article text is extracted -> corpus about the subject matter is generated to train the model -> article text is transformed into a bag-of-words -> perform a text frequency inverse text frequency between both articles -> similarity score calculated </li>
  <li>Upon a Scrapy crawl with a set of root nodes, children's articles are connected to their parent articles and weighted by this similarity score</li>
  <li>Results are dumped to the Neo4j graph</li>
@@ -42,7 +42,7 @@ Curating sources to your argument<br>
  Future integrations:
 </h2>
 Since buckets are essentially a user's mind map/research represented as a knowledge graph, we can place a RAG solution on top of it to garner insights. LightRAG is an optimal solution to the expensive, heavyweight alternative of Microsoft's GraphRAG. Graphs in general provide a more accurate implementation of RAG systems due to the prevalence of contextual knowledge instead of flat document insertion. 
-https://www.youtube.com/watch?v=oageL-1I0GE
+<a href="https://www.youtube.com/watch?v=oageL-1I0GE">See the implementation of lightRAG here</a>
  <br><br>
 
 ## Loom Demo
