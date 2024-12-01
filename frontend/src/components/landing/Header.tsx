@@ -10,7 +10,7 @@ function Header() {
         The new way to news.
       </p>
       <h1 className="text-3xl sm:text-4xl lg:text-5xl tracking-tight mb-2 sm:mb-4 font-extrabold">
-        Uncover the Web of Knowledge with <TypingAnimation className="text-blue-500 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight" text="spydr." />
+        Uncover the Web of Knowledge with <TypingAnimation className="text-blue-500 text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight" text="Spydr." />
       </h1>
       
       <p className="leading-7 mt-4 text-base sm:text-lg font-medium max-w-full sm:max-w-sm lg:max-w-xl sm:mx-0">
