@@ -24,7 +24,7 @@ function index() {
       <div style={{ height: "60vh" }} className="w-full relative">
         <Image src={BGImage} alt="bg" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black opacity-50"></div>
-        <h1 className="absolute bottom-16 left-8 scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl max-w-2xl text-white max-w-lg">
+        <h1 className="absolute bottom-16 left-8 scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl max-w-[70%] text-white md:max-w-lg">
           The Beginnings of an Annotated Internet
         </h1>
       </div>
