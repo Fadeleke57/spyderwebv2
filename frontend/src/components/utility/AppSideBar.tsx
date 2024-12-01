@@ -15,7 +15,12 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { ChartNoAxesGantt, CirclePlus, Home, LayoutGrid } from "lucide-react";
+import {
+  ChartNoAxesGantt,
+  CirclePlus,
+  Home,
+  LayoutGrid,
+} from "lucide-react";
 import { NewBucketModal } from "../buckets/NewBucketModal";
 import { Button } from "../ui/button";
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -27,30 +32,36 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props} className="flex justify-center">
       <SidebarHeader>
-        <div className="flex items-center justify-between rounded-full">
-          <SidebarMenuButton
-            size="lg"
-            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer rounded-full flex flex-row gap-2 items-center"
-            onClick={() => router.push("/explore")}
-            deactive
-          >
-            <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground rounded-full">
-              <Image
-                src={slogo}
-                alt="logo"
-                width={36}
-                height={36}
-                className="rounded-full"
-                priority
-              />
-            </div>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold text-3xl text-black tracking-tighter">
-                spydr
-              </span>
-            </div>
-          </SidebarMenuButton>
-          <SidebarTrigger hideWhen="collapsed" />
+        <div className="flex flex-col items-end justify-center">
+          <div className="w-full flex items-center justify-between rounded-full">
+            <SidebarMenuButton
+              size="lg"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer rounded-full flex flex-row gap-2 items-center"
+              onClick={() => router.push("/explore")}
+              deactive
+            >
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground rounded-full">
+                <Image
+                  src={slogo}
+                  alt="logo"
+                  width={36}
+                  height={36}
+                  className="rounded-full"
+                  priority
+                />
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold text-3xl text-black tracking-tighter">
+                  spydr
+                </span>
+              </div>
+            </SidebarMenuButton>
+            <SidebarTrigger hideWhen="collapsed">
+            </SidebarTrigger>
+          </div>
+          <div className="flex flex-row gap-2 items-center mr-[3px]">
+            <span>⌘B</span>
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent className="flex flex-col mt-8 px-2">
