@@ -15,9 +15,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { useCreateBucket } from "@/hooks/buckets";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Textarea } from "../ui/textarea";
-import { set } from "lodash";
 const bucketSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   description: z.string().min(0, { message: "Description is required" }),
@@ -31,12 +30,13 @@ type BucketConfig = {
   description: string;
   visibility: "private" | "public" | "invite";
 };
+const TOGGLE_MODAL_KEYBOARD_SHORTCUT = "x";
 
 export function NewBucketModal({children}: {children: React.ReactNode}) {
   //make the button more flexible
   const router = useRouter();
   const { toast } = useToast();
-  const { mutateAsync: createBucket, isPending : loading } = useCreateBucket();
+  const { mutateAsync: createBucket, isPending: loading } = useCreateBucket();
   const { user } = useUser();
   const [bucketConfig, setBucketConfig] = useState<BucketConfig>({
     name: "Untitled",
@@ -47,6 +47,27 @@ export function NewBucketModal({children}: {children: React.ReactNode}) {
     resolver: zodResolver(bucketSchema),
   });
   const [open, setOpen] = useState(false);
+
+  //toggle modal
+  const toggleModal = useCallback(() => {
+    return setOpen((open) => !open);
+  }, [setOpen]);
+
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key === TOGGLE_MODAL_KEYBOARD_SHORTCUT &&
+        (event.metaKey || event.ctrlKey)
+      ) {
+        event.preventDefault();
+        toggleModal();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toggleModal]);
 
   const onSubmit: SubmitHandler<BucketFormValues> = async (data) => {
     try {
