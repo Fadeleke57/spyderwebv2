@@ -10,12 +10,8 @@ import {
 import {
   ArrowBigRight,
   Forward,
-  Link,
-  Notebook,
-  Plus,
   Upload,
   X,
-  Youtube,
 } from "lucide-react";
 import { BucketConfigFormValues } from "@/types/article";
 import { Bucket } from "@/types/bucket";
@@ -33,7 +29,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ScrollArea } from "../ui/scroll-area";
-import { waveform } from "ldrs";
 import { Uploading } from "../utility/Loading";
 import { extractVideoId } from "@/lib/utils";
 

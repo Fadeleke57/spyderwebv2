@@ -8,9 +8,7 @@ import logging
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     mongo_client.server_info()  # Connect to both
-    neo4j_driver.verify_connectivity()
     logging.info("Successfully connected to MongoDB and Neo4j")
-
     yield  # Disconnect from both
     mongo_client.close()
     neo4j_driver.close()

@@ -15,14 +15,8 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import {
-  ChartNoAxesGantt,
-  CirclePlus,
-  Home,
-  LayoutGrid,
-} from "lucide-react";
+import { ChartNoAxesGantt, CirclePlus, Home, LayoutGrid } from "lucide-react";
 import { NewBucketModal } from "../buckets/NewBucketModal";
-import { Button } from "../ui/button";
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter();
   const { user } = useUser();
@@ -56,12 +50,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </span>
               </div>
             </SidebarMenuButton>
-            <SidebarTrigger hideWhen="collapsed">
-            </SidebarTrigger>
+            <SidebarTrigger hideWhen="collapsed"></SidebarTrigger>
           </div>
-          <div className="flex flex-row gap-2 items-center mr-[3px]">
+          {/**
+           * 
+           * <div className="flex flex-row gap-2 items-center mr-[3px]">
             <span>⌘B</span>
           </div>
+           */}
         </div>
       </SidebarHeader>
       <SidebarContent className="flex flex-col mt-8 px-2">
@@ -113,6 +109,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate  text-lg text-slate-500">Create</span>
               </div>
+            </div>
+            <div className="flex flex-row gap-2">
+              <span className="bg-slate-200 text-md h-fit p-2 rounded-md font-bold">
+                ⌘
+              </span>
+              <span className="bg-slate-200 text-md h-fit p-2 rounded-md font-bold">
+                X
+              </span>
             </div>
           </SidebarMenuButton>
         </NewBucketModal>
