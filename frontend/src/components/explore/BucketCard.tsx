@@ -82,7 +82,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
               className="w-[25px] h-[25px]"
             />
             <p className="ml-2 text-xs text-slate-500">
-              {bucketOwner ? bucketOwner.full_name : Loading... }
+              {bucketOwner ? bucketOwner.full_name : "Loading..." }
             </p>
             <p className="ml-2 text-xs text-slate-500 font-semibold">*</p>
             <p className="ml-2 text-xs text-slate-500 font-semibold">
