@@ -62,7 +62,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
   };
 
   React.useEffect(() => {
-    setBucketLiked(bucket.likes.includes(user?.id as string));
+    setBucketLiked(bucket.likes.includes(user?.id as string)); //will have to represent as a set to support O(1) operations
     setBucketLikedCount(bucket.likes.length);
     setBucketIterationsCount(bucket.iterations.length);
   }, [bucket, user?.id]);
@@ -82,7 +82,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
               className="w-[25px] h-[25px]"
             />
             <p className="ml-2 text-xs text-slate-500">
-              {bucketOwner?.full_name}
+              {bucketOwner ? bucketOwner.full_name : Loading... }
             </p>
             <p className="ml-2 text-xs text-slate-500 font-semibold">*</p>
             <p className="ml-2 text-xs text-slate-500 font-semibold">
