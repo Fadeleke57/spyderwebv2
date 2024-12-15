@@ -9,7 +9,7 @@ export interface Bucket {
   imageKeys: string[];
   created: string;
   updated: string;
-  private: boolean;
+  visibility: "Private" | "Public" | "Invite";
   likes: string[];
   iterations: string[];
 }
@@ -17,6 +17,6 @@ export interface Bucket {
 export interface UpdateBucket {
   name: string;
   description: string;
-  private: boolean;
+  visibility: "Private" | "Public" | "Invite";
   tags?: string[];
 }

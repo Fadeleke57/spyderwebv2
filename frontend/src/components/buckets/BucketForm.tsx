@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Textarea } from "../ui/textarea";
 import { debounce } from "lodash";
+import { ConfirmModal } from "../utility/ConfirmModal";
 
 type FormProps = {
   bucket: Bucket;
@@ -18,7 +19,7 @@ type FormProps = {
 const bucketSchema = z.object({
   name: z.string().min(1, { message: "Claim is required" }),
   description: z.string().min(1, { message: "Description is required" }),
-  visibility: z.enum(["private", "public", "invite"], {}).default("private"),
+  visibility: z.enum(["Private", "Bublic", "Invite"], {}).default("Private"),
 });
 
 type BucketFormValues = z.infer<typeof bucketSchema>;
@@ -26,19 +27,21 @@ type BucketFormValues = z.infer<typeof bucketSchema>;
 type BucketConfig = {
   name: string;
   description: string;
-  visibility: "private" | "public" | "invite";
+  visibility: "Private" | "Public" | "Invite";
 };
 
 function BucketForm({ bucket, user }: FormProps) {
   const isOwner = user?.id === bucket?.userId;
-  const { mutateAsync: updateBucket, isPending} = useUpdateBucket(bucket?.bucketId);
+  const { mutateAsync: updateBucket, isPending } = useUpdateBucket(
+    bucket?.bucketId
+  );
   const { toast } = useToast();
   const router = useRouter();
 
   const [bucketConfig, setBucketConfig] = useState<BucketConfig>({
     name: bucket?.name,
     description: bucket?.description,
-    visibility: bucket?.private ? "private" : "public",
+    visibility: bucket?.visibility,
   });
 
   const form = useForm<BucketFormValues>({
@@ -52,7 +55,7 @@ function BucketForm({ bucket, user }: FormProps) {
         await updateBucket({
           name: config.name,
           description: config.description,
-          private: config.visibility === "private",
+          visibility: config.visibility,
         });
         toast({ title: "Changes saved." });
       } catch (error: any) {
@@ -87,13 +90,68 @@ function BucketForm({ bucket, user }: FormProps) {
     });
   };
 
+  const handleToggleVisibility = async (visibility: "Private" | "Public") => {
+    try {
+      await updateBucket({
+        name: bucketConfig.name,
+        description: bucketConfig.description,
+        visibility: visibility,
+      });
+      setBucketConfig({
+        ...bucketConfig,
+        visibility,
+      });
+      toast({
+        title: `Bucket visibility updated to ${visibility.toLowerCase()}.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error updating bucket",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <form className="grid w-full items-start gap-6">
       <div className="grid gap-4 rounded-lg pb-8 pt-4 px-4">
         <div>
           <div className="flex flex-col space-y-2">
             <small className="text-sm font-medium leading-none text-blue-500">
-              {bucket?.private ? "Private" : "Public"}
+              {bucketConfig.visibility}
+              {isOwner && (
+                <ConfirmModal
+                  action={() =>
+                    handleToggleVisibility(
+                      bucketConfig.visibility === "Private"
+                        ? "Public"
+                        : "Private"
+                    )
+                  }
+                  actionButtonStr={
+                    bucketConfig.visibility === "Private"
+                      ? "Make Public"
+                      : "Make Private"
+                  }
+                  actionStr={
+                    "Are you sure you want to switch this bucket to " +
+                    (bucketConfig.visibility === "Private"
+                      ? "public"
+                      : "private") +
+                    "?"
+                  }
+                >
+                  <span className="text-red-500 cursor-pointer">
+                    {" "}
+                    (
+                    {bucketConfig.visibility === "Private"
+                      ? "Switch to Public"
+                      : "Switch to Private"}
+                    )
+                  </span>
+                </ConfirmModal>
+              )}
             </small>
             <Textarea
               id="name"
@@ -107,7 +165,7 @@ function BucketForm({ bucket, user }: FormProps) {
                 e.target.style.height = `${e.target.scrollHeight}px`;
                 form.trigger("name");
               }}
-              onChange={(e : any) => onTitleChange(e)}
+              onChange={(e: any) => onTitleChange(e)}
             />
             <Textarea
               id="description"
@@ -120,7 +178,7 @@ function BucketForm({ bucket, user }: FormProps) {
                 e.target.style.height = "auto";
                 e.target.style.height = `${e.target.scrollHeight}px`;
               }}
-              onChange={(e : any) => onDescriptionChange(e)}
+              onChange={(e: any) => onDescriptionChange(e)}
             />
           </div>
         </div>

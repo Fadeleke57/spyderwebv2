@@ -52,12 +52,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenuButton>
             <SidebarTrigger hideWhen="collapsed"></SidebarTrigger>
           </div>
-          {/**
-           * 
-           * <div className="flex flex-row gap-2 items-center mr-[3px]">
-            <span>⌘B</span>
-          </div>
-           */}
         </div>
       </SidebarHeader>
       <SidebarContent className="flex flex-col mt-8 px-2">
