@@ -16,6 +16,7 @@ import boto3
 from urllib.parse import unquote
 from botocore.exceptions import ClientError
 from src.agents.structure_html_agent import process_html
+from pytz import UTC 
 import os
 
 router = APIRouter()
@@ -68,11 +69,11 @@ async def upload_file(user_id: str, web_id: str, file_type: str, file: UploadFil
             "url": object_name,
             "type": file_type,
             "size": os.path.getsize(temp_path),
-            "created_at": datetime.now(),
-            "updated_at": datetime.now(),
+            "created_at": datetime.now(UTC),
+            "updated_at": datetime.now(UTC),
         })
         buckets = get_collection("buckets")
-        buckets.update_one({"bucketId": web_id, "userId": user_id}, {"$push": {"sourceIds": sourceId}})
+        buckets.update_one({"bucketId": web_id, "userId": user_id}, {"$push": {"sourceIds": sourceId}, "$set": {"updated_at": datetime.now(UTC)}})
 
         return {"result": f"File uploaded to {temp_path}"}
     except Exception as e:
@@ -132,11 +133,11 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
         "type": "website",
         "size": len(cleaned_content) * 200,
         "content": f"{title}\n{cleaned_content}",
-        "created_at": datetime.now(),
-        "updated_at": datetime.now(),
+        "created_at": datetime.now(UTC),
+        "updated_at": datetime.now(UTC),
     })
     buckets = get_collection("buckets")
-    buckets.update_one({"bucketId": web_id, "userId": user["id"]}, {"$push": {"sourceIds": sourceId}})
+    buckets.update_one({"bucketId": web_id, "userId": user["id"]}, {"$push": {"sourceIds": sourceId}, "$set": {"updated_at": datetime.now(UTC)}})
     return {"result": sourceId}
 
 @router.get("/all/{web_id}")
@@ -197,11 +198,11 @@ def upload_note(bucket_id: str, note: CreateNote, user=Depends(manager)):
         "url": None,
         "type": "note",
         "size": None,
-        "created_at": datetime.now(),
-        "updated_at": datetime.now(),
+        "created_at": datetime.now(UTC),
+        "updated_at": datetime.now(UTC),
     })
     buckets = get_collection("buckets")
-    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$push": {"sourceIds": sourceId}})
+    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$push": {"sourceIds": sourceId}, "$set": {"updated_at": datetime.now(UTC)}})
     return {"result": sourceId}
 
 @router.post('/youtube/{web_id}/{video_id}')
@@ -224,11 +225,11 @@ def add_youtube(web_id: str, video_id: str, user=Depends(manager)):
         "url": f"https://www.youtube.com/watch?v={video_id}",
         "type": "youtube",
         "size": 300000,
-        "created_at": datetime.now(),
-        "updated_at": datetime.now(),
+        "created_at": datetime.now(UTC),
+        "updated_at": datetime.now(UTC),
     })
     buckets = get_collection("buckets")
-    buckets.update_one({"bucketId": web_id, "userId": user["id"]}, {"$push": {"sourceIds": sourceId}})
+    buckets.update_one({"bucketId": web_id, "userId": user["id"]}, {"$push": {"sourceIds": sourceId}, "$set": {"updated_at": datetime.now(UTC)}})
     return {"result": sourceId}
 
 @router.patch("/update/note/{bucket_id}/{source_id}")
@@ -248,8 +249,8 @@ def update_note(bucket_id: str, source_id: str, note: UpdateNote, user=Depends(m
     check_user(user)
     sources = get_collection("sources")
     
-    update_data = {key: value for key, value in note.dict().items() if value is not None}
-    update_data["updated_at"] = datetime.now()
+    update_data = {key: value for key, value in note.model_dump().items() if value is not None}
+    update_data["updated_at"] = datetime.now(UTC)
     if update_data.get("title"):
         update_data["name"] = update_data["title"]
         update_data.pop("title")
@@ -294,7 +295,7 @@ def delete_source(source_id: str, user=Depends(manager)):
     buckets = get_collection("buckets")
     bucket = buckets.find_one_and_update(
         {"sourceIds": source_id},
-        {"$pull": {"sourceIds": source_id}},
+        {"$pull": {"sourceIds": source_id}, "$set": {"updated_at": datetime.now(UTC)}},
         return_document=True
     )   
     

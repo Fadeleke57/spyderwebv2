@@ -4,7 +4,7 @@ import uuid
 from src.db.mongodb import get_collection
 from src.utils.exceptions import check_user
 from src.models.note import Note, CreateNote, UpdateNote
-
+from pytz import UTC
 from datetime import datetime
 from fastapi.exceptions import HTTPException
 from pydantic import ValidationError
@@ -58,8 +58,8 @@ def create_note(bucket_id: str, article_id: str, note: CreateNote, user=Depends(
         "note_id": str(uuid.uuid4()),
         "title": "New Note",
         "content": note.content,
-        "created_at": datetime.now(),
-        "updated_at": datetime.now(),
+        "created_at": datetime.now(UTC),
+        "updated_at": datetime.now(UTC),
         "user_id": user["id"],
         "bucket_id": bucket_id,
         "article_id": article_id
@@ -88,7 +88,7 @@ def update_note(bucket_id: str, article_id: str, note: UpdateNote, user=Depends(
     check_user(user)
     notes = get_collection("notes")
     try:
-        notes.update_one({"bucketId": bucket_id, "articleId": article_id, "userId": user["id"]}, {"$set": {"content": note.content, "updated_at": datetime.now()}})
+        notes.update_one({"bucketId": bucket_id, "articleId": article_id, "userId": user["id"]}, {"$set": {"content": note.content, "updated_at": datetime.now(UTC)}})
     except ValidationError as e:
         raise HTTPException(status_code=500, detail=e.errors())
     return {"result": "Note updated"}

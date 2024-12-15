@@ -44,5 +44,19 @@ def add_empty_likes_and_iterations_to_users():
         print(f"Updated bucket {bucket['_id']} with new likes: []")
     print(f"Total buckets updated: {updated_count}")
 
+def migrate_buckets_to_visibility_attr():
+    buckets_without_attr = buckets.find({"visibility": {"$exists": False}})
+    updated_count = 0
+
+    for bucket in buckets_without_attr:
+        privacy_on = bucket["private"]
+        buckets.update_one(
+            {"_id": bucket["_id"]},
+            {"$set": {"visibility": "Private" if privacy_on else "Public"}}
+        )
+        updated_count += 1
+        print(f"Updated bucket {bucket['_id']} with new visibility: {'Private' if privacy_on else 'Public'}")
+    print(f"Total buckets updated: {updated_count}")
+
 if __name__ == "__main__":
-    add_empty_likes_and_iterations_to_users()
+    migrate_buckets_to_visibility_attr()

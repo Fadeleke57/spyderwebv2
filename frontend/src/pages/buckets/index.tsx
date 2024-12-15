@@ -40,7 +40,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { NewBucketModal } from "@/components/buckets/NewBucketModal";
 import Head from "next/head";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { max } from "lodash";
+import { Bucket } from "@/types/bucket";
 
 function Index() {
   const { user, Logout } = useFetchUser();
@@ -61,7 +61,7 @@ function Index() {
     isFetchingPreviousPage,
   } = useFetchBuckets();
   const { mutateAsync: deleteBucket } = useDeleteBucket();
-  const [buckets, setBuckets] = useState<any[]>([]);
+  const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const isMobile = useIsMobile();
 
@@ -82,12 +82,12 @@ function Index() {
     {
       label: "Private",
       value: "private",
-      filter: (bucket: any) => bucket?.private,
+      filter: (bucket: Bucket) => bucket.visibility === "Private",
     },
     {
       label: "Public",
       value: "public",
-      filter: (bucket: any) => !bucket?.private,
+      filter: (bucket: Bucket) => bucket.visibility === "Public",
     },
   ];
 
@@ -254,7 +254,7 @@ function Index() {
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline">
-                                {bucket?.private ? "private" : "public"}
+                                {bucket?.visibility === "Private" ? "private" : "public"}
                               </Badge>
                             </TableCell>
                             {!isMobile && (

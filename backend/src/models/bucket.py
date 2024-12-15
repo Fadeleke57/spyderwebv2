@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Literal
 class Bucket(BaseModel):
     bucketId: str
     name: str
@@ -11,14 +11,14 @@ class Bucket(BaseModel):
     imageKeys: list[str]
     created: str
     updated: str
-    private: bool
+    visibility: Literal["Private", "Public", "Invite"]
     likes: list[str]
     iterations: list[str]
 
 class BucketConfig(BaseModel):
     name: str
     description: str
-    private: bool
+    visibility: Literal["Private", "Public", "Invite"]
     tags: list[str] = []
     articleIds: list[str] = []
     sourceIds: list[str] = []
@@ -27,7 +27,7 @@ class BucketConfig(BaseModel):
 class UpdateBucket(BaseModel):
     name: Optional[str]
     description: Optional[str]
-    private: Optional[bool]
+    visibility: Literal["Private", "Public", "Invite"]
 
 class LikeBucket(BaseModel):
     bucketId: str

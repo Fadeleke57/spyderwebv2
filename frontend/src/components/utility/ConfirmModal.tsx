@@ -1,22 +1,42 @@
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { useState } from "react";
 
-export function ConfirmModal({actionStr, action, actionButtonStr, children}: {actionStr: string, action: () => void, actionButtonStr: string, children?: React.ReactNode}) {
+export function ConfirmModal({
+  actionStr,
+  action,
+  actionButtonStr,
+  children,
+}: {
+  actionStr: string;
+  action: () => void;
+  actionButtonStr: string;
+  children?: React.ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const handleAction = () => {
+    action();
+    setIsOpen(false);
+  }
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
-      <DialogContent>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent className="p-10">
         <DialogHeader>
           <DialogTitle>Are you absolutely sure?</DialogTitle>
-          <DialogDescription>
-            {actionStr}
-          </DialogDescription>
+          <DialogDescription>{actionStr}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button>Cancel</Button>
-          <Button>{actionButtonStr}</Button>
+          <Button onClick={() => setIsOpen(false)}>Cancel</Button>
+          <Button onClick={handleAction}>{actionButtonStr}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

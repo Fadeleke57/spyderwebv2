@@ -3,16 +3,17 @@ from src.routes.auth.oauth2 import manager
 from fastapi import APIRouter, Depends, Query
 from typing import Optional
 import uuid
+from pytz import UTC
 from src.db.mongodb import get_collection, get_items_by_field
 from src.utils.exceptions import check_user
 from src.models.user import User
-router = APIRouter()
 from datetime import datetime
 from src.models.bucket import BucketConfig, UpdateBucket
 from fastapi.exceptions import HTTPException
 from src.utils.graph import get_articles_by_ids
 from pymongo import ReturnDocument
 
+router = APIRouter()
 @router.get("/all/user")
 def get_user_buckets(
     page: int = Query(1, ge=1),
@@ -67,7 +68,7 @@ def get_public_buckets():
     List of Bucket
         List of all public buckets
     """
-    buckets = get_items_by_field("buckets", "private", False)
+    buckets = get_items_by_field("buckets", "visibility", "Public")
     buckets = [bucket for bucket in buckets]
     buckets = sorted(buckets, key=lambda x: x["created"], reverse=True)
     return {"result": buckets}
@@ -111,9 +112,9 @@ def create_bucket(config : BucketConfig, user=Depends(manager)):
         "userId": user["id"],
         "articleIds": config.articleIds,
         "sourceIds": config.sourceIds or [],
-        "created": datetime.now(),
-        "updated": datetime.now(),
-        "private": config.private,
+        "created": datetime.now(UTC),
+        "updated": datetime.now(UTC),
+        "visibility": config.visibility,
         "tags": config.tags,
         "likes": [],
         "iterations": [],
@@ -157,7 +158,7 @@ def update_bucket(bucketId: str, config: UpdateBucket, user=Depends(manager)):
     check_user(user)
     buckets= get_collection("buckets")
     buckets.update_one({"bucketId": bucketId, "userId": user["id"]}, {"$set": config.model_dump()})
-    buckets.update_one({"bucketId": bucketId, "userId": user["id"]}, {"$set": {"updated": datetime.now()}})
+    buckets.update_one({"bucketId": bucketId, "userId": user["id"]}, {"$set": {"updated": datetime.now(UTC)}})
     return {"result": "Bucket updated"}
 
 @router.get("/id")
@@ -273,33 +274,6 @@ def remove_article(bucket_id: str, source_id: str, user=Depends(manager)):
     buckets = get_collection("buckets")
     buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$pull": {"sourceIds": source_id}})
     return {"result": True}
-
-@router.get("/articles/{bucket_id}") # to be depreceated
-def get_articles(bucket_id: str, user=Depends(manager.optional)):
-    """
-    Retrieve articles associated with a given bucket.
-
-    Args:
-        bucket_id (str): The ID of the bucket to retrieve articles from.
-        user (Optional[User]): The user making the request. Defaults to None.
-
-    Returns:
-        dict: A JSON response containing the articles associated with the given bucket ID.
-              Raises 404 error if the bucket is not found.
-
-    Note:
-        This endpoint is to be deprecated.
-    """
-    if user:
-        check_user(user)
-    buckets = get_collection("buckets")
-    bucket = buckets.find_one({"bucketId": bucket_id})
-    if not bucket:
-        raise HTTPException(status_code=404, detail="Bucket not found")
-    articleIds = bucket["articleIds"]
-    articles = get_articles_by_ids(articleIds)
-    print("Found length of articles: ", len(articles))
-    return {"result": articles}
 
 @router.get("/sources/{bucket_id}")
 def get_articles(bucket_id: str, user=Depends(manager.optional)):
