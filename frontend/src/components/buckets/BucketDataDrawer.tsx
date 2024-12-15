@@ -130,7 +130,7 @@ export default function BucketDataDrawer({
           <ScrollArea className="px-4 h-[calc(100vh-210px)]">
             <small className="text-muted-foreground">
               {formatDate(
-                new Date(source ? source.updated_at : ""),
+                new Date(source ? source.updated_at + "Z" : ""),
                 "MMMM dd, yyyy hh:mm a"
               )}
             </small>

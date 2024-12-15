@@ -86,7 +86,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
             </p>
             <p className="ml-2 text-xs text-slate-500 font-semibold">*</p>
             <p className="ml-2 text-xs text-slate-500 font-semibold">
-              {formatDistanceToNow(new Date(bucket?.updated), {
+              {formatDistanceToNow(new Date(bucket?.updated ? bucket.updated + "Z" : ""), {
                 addSuffix: true,
               })}
             </p>
@@ -131,7 +131,9 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
           </div>
         </div>
         <p className="text-xs text-slate-500 absolute bottom-4 right-6">
-          {formatDistanceToNow(new Date(bucket.created), { addSuffix: true })}
+          {formatDistanceToNow(new Date(bucket.created + "Z"), {
+            addSuffix: true,
+          })}
         </p>
       </Card>
       <div className="h-[1px] w-full bg-slate-200"></div>

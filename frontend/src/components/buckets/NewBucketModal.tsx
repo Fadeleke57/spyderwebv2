@@ -20,7 +20,7 @@ import { Textarea } from "../ui/textarea";
 const bucketSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   description: z.string().min(0, { message: "Description is required" }),
-  visibility: z.enum(["private", "public", "invite"]).default("private"),
+  visibility: z.enum(["Private", "Public", "Invite"]).default("Private"),
 });
 
 type BucketFormValues = z.infer<typeof bucketSchema>;
@@ -28,7 +28,7 @@ type BucketFormValues = z.infer<typeof bucketSchema>;
 type BucketConfig = {
   name: string;
   description: string;
-  visibility: "private" | "public" | "invite";
+  visibility: "Private" | "Public" | "Invite";
 };
 const TOGGLE_MODAL_KEYBOARD_SHORTCUT = "x";
 
@@ -41,7 +41,7 @@ export function NewBucketModal({children}: {children: React.ReactNode}) {
   const [bucketConfig, setBucketConfig] = useState<BucketConfig>({
     name: "Untitled",
     description: "",
-    visibility: "private",
+    visibility: "Private",
   });
   const form = useForm<BucketFormValues>({
     resolver: zodResolver(bucketSchema),
@@ -78,7 +78,7 @@ export function NewBucketModal({children}: {children: React.ReactNode}) {
       const bucketId = await createBucket({
         name: bucketConfig.name,
         description: bucketConfig.description,
-        private: bucketConfig.visibility === "private",
+        visibility: bucketConfig.visibility,
         tags: [], // add selected tags here, if applicable
         articleIds: [], // empty list for now
         imageKeys: [], // empty list for now
