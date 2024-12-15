@@ -98,7 +98,7 @@ function Index() {
                   </h1>
                   <span className="text-xs text-muted-foreground font-normal m-0">
                     {bucket?.updated &&
-                      formatDistanceToNow(new Date(bucket?.updated), {
+                      formatDistanceToNow(new Date(bucket.updated + "Z"), {
                         addSuffix: true,
                       })}
                   </span>
