@@ -3,9 +3,9 @@ import api from "@/lib/api";
 import { Bucket, UpdateBucket } from "@/types/bucket";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 
-export function useFetchBuckets() {
+export function useFetchBucketsForUser() {
   return useInfiniteQuery({
-    queryKey: ["buckets"],
+    queryKey: ["user", "buckets"],
     queryFn: async ({ pageParam = { page: 1, direction: "forward" } }) => {
       const response = await api.get(`/buckets/all/user`, {
         params: {
@@ -90,29 +90,15 @@ export const useUpdateBucket = (bucketId: string) => {
   })
 }
 
-export function useFetchPublicBuckets() {
-  const [buckets, setBuckets] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get("/buckets/all/public");
-        setBuckets(response.data.result);
-      } catch (err) {
-        setError("Failed to fetch bucket data");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  return { buckets, loading, error };
+export function useFetchPublicBuckets() { //will make an infinite query in the future [will need to adjust search endpoint]
+  return useQuery({
+    queryKey: ["buckets", "public"],
+    queryFn: async () => {
+      const response = await api.get("/buckets/all/public");
+      console.log(response.data.result);
+      return response.data.result;
+    },
+  })
 }
 
 export const useFetchBucketById = (bucketId: string) => {

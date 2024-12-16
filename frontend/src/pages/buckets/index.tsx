@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFetchUser } from "@/hooks/user";
-import { useDeleteBucket, useFetchBuckets } from "@/hooks/buckets";
+import { useDeleteBucket, useFetchBucketsForUser } from "@/hooks/buckets";
 import Link from "next/link";
 import { format } from "date-fns";
 import { formatText } from "@/lib/utils";
@@ -59,7 +59,7 @@ function Index() {
     isFetching,
     isFetchingNextPage,
     isFetchingPreviousPage,
-  } = useFetchBuckets();
+  } = useFetchBucketsForUser();
   const { mutateAsync: deleteBucket } = useDeleteBucket();
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [currentPage, setCurrentPage] = useState(1);

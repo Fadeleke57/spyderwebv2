@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
   CarouselContent,
@@ -10,14 +9,13 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useFetchPublicBuckets } from "@/hooks/buckets";
-import { formatText } from "@/lib/utils";
-import { BookMarked } from "lucide-react";
 import { useRouter } from "next/router";
 import { Skeleton } from "../ui/skeleton";
 import TrendingSearchItem from "./TrendingSearchItem";
+import { Bucket } from "@/types/bucket";
 
 export function TrendingSearchCarousel() {
-  const { buckets, loading, error } = useFetchPublicBuckets();
+  const { data: buckets, isLoading : loading, error } = useFetchPublicBuckets();
   const [bucketsRendered, setBucketsRendered] = useState<boolean>(false);
   const [displayBuckets, setDisplayBuckets] = useState<any[]>(
     Array.from({ length: 9 })
@@ -28,7 +26,7 @@ export function TrendingSearchCarousel() {
   // Update displayBuckets when the actual buckets are loaded
   useEffect(() => {
     if (buckets && !loading) {
-      setDisplayBuckets(buckets.sort((a, b) => b.likes.length - a.likes.length).slice(0, 9));
+      setDisplayBuckets(buckets.sort((a : Bucket, b: Bucket) => b.likes.length - a.likes.length).slice(0, 9));
       setBucketsRendered(true);
     }
 
