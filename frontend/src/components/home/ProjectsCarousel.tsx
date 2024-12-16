@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/carousel";
 import { CopyPlus } from "lucide-react";
 import Link from "next/link";
-import { useFetchBuckets } from "@/hooks/buckets";
+import { useFetchBucketsForUser } from "@/hooks/buckets";
 import { formatText } from "@/lib/utils";
 import { useRouter } from "next/router";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,7 +23,7 @@ export function ProjectsCarousel() {
     isFetching,
     isFetchingNextPage,
     isFetchingPreviousPage,
-  } = useFetchBuckets();
+  } = useFetchBucketsForUser();
   const [buckets, setBuckets] = React.useState<any[]>([]);
   const router = useRouter();
 

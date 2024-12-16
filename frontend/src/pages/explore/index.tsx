@@ -14,7 +14,7 @@ import UserAvatar from "@/components/utility/UserAvatar";
 import useMediaQuery from "@/hooks/general";
 
 function Index() {
-  const { buckets, loading, error } = useFetchPublicBuckets();
+  const { data: buckets, isLoading: loading, error } = useFetchPublicBuckets();
   const [query, setQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [active, setActive] = useState<boolean>(false);
@@ -62,7 +62,7 @@ function Index() {
 
   const filteredBuckets =
     buckets?.filter(
-      (bucket) =>
+      (bucket : Bucket) =>
         bucket.name.toLowerCase().includes(query.toLowerCase()) ||
         bucket.description?.toLowerCase().includes(query.toLowerCase())
     ) || [];
