@@ -3,6 +3,7 @@ from src.routes.auth.oauth2 import manager
 from fastapi import APIRouter, Depends, Query
 from typing import Optional
 import uuid
+from src.lib.s3.index import S3Bucket
 from pytz import UTC
 from src.db.mongodb import get_collection, get_items_by_field
 from src.utils.exceptions import check_user
@@ -12,8 +13,12 @@ from src.models.bucket import BucketConfig, UpdateBucket
 from fastapi.exceptions import HTTPException
 from src.utils.graph import get_articles_by_ids
 from pymongo import ReturnDocument
-
+from src.core.config import settings
+import boto3
 router = APIRouter()
+
+s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
+s3 = boto3.client('s3')
 @router.get("/all/user")
 def get_user_buckets(
     page: int = Query(1, ge=1),
@@ -140,6 +145,14 @@ def delete_bucket(bucketId: str, user=Depends(manager)):
     check_user(user)
     buckets= get_collection("buckets")
     buckets.delete_one({"bucketId": bucketId, "userId": user["id"]})
+
+    sources = get_collection("sources")
+    sourcesForBucket = sources.find({"bucketId": bucketId})
+    for source in sourcesForBucket:
+        if source["type"] == "document":
+            s3.delete_object(Bucket=s3_bucket.bucket_name, Key=source["url"])
+            sources.delete_one({"sourceId": source["sourceId"]})
+
     return {"result": "Bucket deleted"}
 
 @router.patch("/update/{bucketId}")
