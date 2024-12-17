@@ -59,8 +59,9 @@ function Index() {
     isFetching,
     isFetchingNextPage,
     isFetchingPreviousPage,
+    refetch,
   } = useFetchBucketsForUser();
-  const { mutateAsync: deleteBucket } = useDeleteBucket();
+  const { mutateAsync: deleteBucket, isPending, isError } = useDeleteBucket();
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const isMobile = useIsMobile();
@@ -75,6 +76,7 @@ function Index() {
   const handleDeleteBucket = async (id: string | undefined) => {
     if (!id) return;
     await deleteBucket(id);
+    refetch();
   };
 
   const tabs = [
