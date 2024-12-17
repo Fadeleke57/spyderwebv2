@@ -173,9 +173,16 @@ export default function BucketDataDrawer({
     }
   };
 
+  const handleClose = () => {
+    setOpen(false);
+    setTitle("")
+    setContent("")
+    setPresignedUrl("")
+  };
+
   return (
     <div className="grid grid-cols-2 gap-2">
-      <Sheet open={open} onOpenChange={setOpen}>
+      <Sheet open={open} onOpenChange={handleClose}>
         <SheetContent side={"left"} className="w-full lg:max-w-xl">
           <SheetHeader className="border-b pb-4">
             <SheetTitle className="text-left w-[300px] font-bold lg:w-content">
