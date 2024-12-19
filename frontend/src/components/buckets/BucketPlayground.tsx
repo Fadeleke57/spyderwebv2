@@ -1,15 +1,8 @@
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipTrigger,
-  TooltipContent,
-} from "../ui/tooltip";
 import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
-import { Paperclip, CornerDownLeft, ImageIcon, CirclePlus } from "lucide-react";
+import { CirclePlus, Check, ChevronsUpDown } from "lucide-react";
 import { Bucket } from "@/types/bucket";
 import { PublicUser } from "@/types/user";
 import BucketSearchModal from "./BucketSearchModal";
@@ -17,6 +10,23 @@ import BucketGraph from "./BucketGraph";
 import { BucketConfigFormValues } from "@/types/article";
 import { Source } from "@/types/source";
 import { useFetchSourcesForBucket } from "@/hooks/sources";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import BucketDataDrawer from "./BucketDataDrawer";
+import { setDefaultResultOrder } from "dns";
+import { set } from "lodash";
 
 function BucketPlayground({
   bucket,
@@ -32,7 +42,7 @@ function BucketPlayground({
     title: bucket?.name || "",
     description: bucket?.description || "",
   });
-  const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
+  const [selectedSourceId, setSelectedSourceId] = useState<string>("");
   const {
     data: sources,
     isLoading,
@@ -40,6 +50,19 @@ function BucketPlayground({
     refetch: refetchSources,
   } = useFetchSourcesForBucket(bucket?.bucketId);
   const [fetchedSources, setFetchedSources] = useState<Source[]>([]);
+  const [open, setOpen] = React.useState(false);
+  const [value, setValue] = React.useState("");
+  const [isBucketDataDrawerOpen, setIsBucketDataDrawerOpen] = useState(false);
+
+  const handleSourceClick = (sourceId: string) => {
+    console.log("sourceId", sourceId);
+    console.log("drawer open", isBucketDataDrawerOpen);
+    setSelectedSourceId(sourceId);
+    console.log("selectedSourceId", selectedSourceId);
+    setIsBucketDataDrawerOpen(true);
+    setOpen(false);
+    console.log("drawer open", isBucketDataDrawerOpen);
+  };
 
   return (
     <div className="relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 lg:col-span-2">
@@ -183,56 +206,65 @@ function BucketPlayground({
         selectedSourceId={selectedSourceId}
         setSelectedSourceId={setSelectedSourceId}
       />
-      {/* 
-     
-     */}{" "}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 right-0 w-[90%]">
-        <form className="relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring">
-          <Label htmlFor="comments" className="sr-only">
-            Comment
-          </Label>
-          <Textarea
-            disabled
-            id="comments"
-            placeholder="What would you like to learn..."
-            className=" resize-none border-0 p-4 shadow-none focus-visible:ring-0"
-          />
-          <div className="flex items-center p-3 pt-0">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger disabled asChild>
-                  <Button variant="ghost" size="icon">
-                    <Paperclip className="size-4" />
-                    <span className="sr-only">Attach file</span>
-                    <input type="file" className="hidden" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top">Attach File</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger disabled asChild>
-                  <Button variant="ghost" size="icon">
-                    <ImageIcon className="size-4" />
-                    <span className="sr-only">Add Image</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top">Add Image</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <Button
-              type="submit"
-              size="sm"
-              className="ml-auto gap-1.5"
-              disabled
-            >
-              Ask
-              <CornerDownLeft className="size-3.5" />
-            </Button>
-          </div>
-        </form>
+        <Label htmlFor="comments" className="sr-only">
+          Comment
+        </Label>
+        <p
+          id="comments"
+          className=" resize-none border-0 p-4 shadow-none focus-visible:ring-0"
+        ></p>
+        <div className="flex w-full items-center pt-0">
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full h-16 justify-between"
+              >
+                Find sources...
+                <ChevronsUpDown className="opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[710px] p-0 border">
+              <Command>
+                <CommandInput placeholder="Search sources..." />
+                <CommandList>
+                  <CommandEmpty>
+                    No sources found. <span>Create one?</span>
+                  </CommandEmpty>
+                  <CommandGroup>
+                    {sources?.map((source: Source) => (
+                      <CommandItem
+                        key={source.sourceId}
+                        className="cursor-pointer"
+                        onSelect={() => handleSourceClick(source.sourceId)}
+                      >
+                        {source.name}
+                        <Check
+                          className={cn(
+                            "ml-auto",
+                            value === source.name ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
+      {isBucketDataDrawerOpen && selectedSourceId && bucket?.bucketId && (
+        <BucketDataDrawer
+          open={isBucketDataDrawerOpen}
+          setOpen={setIsBucketDataDrawerOpen}
+          sourceId={selectedSourceId}
+          bucketId={bucket.bucketId}
+        />
+      )}
     </div>
   );
 }

@@ -24,7 +24,7 @@ interface GraphProps {
   fetchedSources: Source[];
   setFetchedSources: Dispatch<SetStateAction<Source[]>>;
   selectedSourceId: string | null;
-  setSelectedSourceId: Dispatch<SetStateAction<string | null>>;
+  setSelectedSourceId: Dispatch<SetStateAction<string>>;
 }
 
 function BucketGraph({

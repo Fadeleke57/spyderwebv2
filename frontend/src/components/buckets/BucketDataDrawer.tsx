@@ -116,7 +116,9 @@ export default function BucketDataDrawer({
           <iframe
             width="100%"
             height="450px"
-            src={`https://www.youtube.com/embed/${extractVideoId(source?.url) || ""}`}
+            src={`https://www.youtube.com/embed/${
+              extractVideoId(source?.url) || ""
+            }`}
             title="YouTube video player"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -175,15 +177,16 @@ export default function BucketDataDrawer({
 
   const handleClose = () => {
     setOpen(false);
-    setTitle("")
-    setContent("")
-    setPresignedUrl("")
+    setTitle("");
+    setContent("");
+    setPresignedUrl("");
+    setSource(null);
   };
 
   return (
     <div className="grid grid-cols-2 gap-2">
       <Sheet open={open} onOpenChange={handleClose}>
-        <SheetContent side={"left"} className="w-full lg:max-w-xl">
+        <SheetContent side={"left"} className="w-full lg:max-w-2xl">
           <SheetHeader className="border-b pb-4">
             <SheetTitle className="text-left w-[300px] font-bold lg:w-content">
               {presignedUrl || source?.url ? (
