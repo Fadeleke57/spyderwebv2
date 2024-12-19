@@ -8,6 +8,7 @@ import { UserProvider } from "@/context/UserContext";
 import AppLayout from "@/app/AppLayout";
 import { Inter as FontSans } from "next/font/google";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Analytics } from "@vercel/analytics/react";
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
@@ -40,10 +41,13 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
       </Head>
       <UserProvider>
         {getLayout(
-          <div className={`${fontSans.className}`}>
-            <Component {...pageProps} />
-            <Toaster />
-          </div>
+          <>
+            <Analytics />
+            <div className={`${fontSans.className}`}>
+              <Component {...pageProps} />
+              <Toaster />
+            </div>
+          </>
         )}
       </UserProvider>
     </QueryClientProvider>
