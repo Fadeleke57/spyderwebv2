@@ -214,7 +214,7 @@ function BucketPlayground({
           id="comments"
           className=" resize-none border-0 p-4 shadow-none focus-visible:ring-0"
         ></p>
-        <div className="flex w-full items-center pt-0">
+        <div className="flex w-full flex-col pt-0">
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -227,7 +227,8 @@ function BucketPlayground({
                 <ChevronsUpDown className="opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[710px] p-0 border">
+
+            <PopoverContent>
               <Command>
                 <CommandInput placeholder="Search sources..." />
                 <CommandList>
