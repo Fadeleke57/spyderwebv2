@@ -58,7 +58,7 @@ export default function TerminalDemo() {
           <a className="decoration-blue-500 underline lg:hidden">here</a>
         </p>
         <Button
-          onClick={() => router.push("/login")}
+          onClick={() => router.push("/auth/login")}
           className="hidden lg:inline"
         >
           Try Now

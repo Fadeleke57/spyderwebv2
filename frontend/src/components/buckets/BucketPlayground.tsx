@@ -236,9 +236,9 @@ function BucketPlayground({
                     No sources found. <span>Create one?</span>
                   </CommandEmpty>
                   <CommandGroup>
-                    {sources?.map((source: Source) => (
+                    {sources?.map((source: Source, id: number) => (
                       <CommandItem
-                        key={source.sourceId}
+                        key={id}
                         className="cursor-pointer"
                         onSelect={() => handleSourceClick(source.sourceId)}
                       >
