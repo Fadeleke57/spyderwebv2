@@ -156,6 +156,13 @@ function BucketGraph({
           .on("click", function (event, d) {
             event.stopPropagation();
             zoomToNode(event, d);
+
+            d3.select(svgRef.current)
+              .selectAll("circle")
+              .attr("stroke", "none")
+              .attr("stroke-width", 0);
+
+            d3.select(this).attr("stroke", "#4f46e5").attr("stroke-width", 2);
           })
           .on("mouseover", function (event, d) {
             const [mouseX, mouseY] = d3.pointer(event);
