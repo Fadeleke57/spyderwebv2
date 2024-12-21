@@ -99,26 +99,14 @@ export function NavUser() {
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem className="flex flex-row items-center gap-2">
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem className="flex flex-row items-center gap-2">
-                <BadgeCheck />
+              <DropdownMenuItem className="flex flex-row items-center gap-2 cursor-pointer">
+                <BadgeCheck size={16} />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-row items-center gap-2">
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-row items-center gap-2">
-                <Bell />
-                Notifications
+              <DropdownMenuItem className="flex flex-row items-center gap-2 cursor-pointer">
+                <Bell size={16} />
+                Settings
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

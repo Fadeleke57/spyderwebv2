@@ -208,12 +208,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       >
         <NavUser />
       </SidebarFooter>
-      <span
-        className="absolute bottom-2 right-3 font-bold p-1 cursor-pointer hover:bg-slate-100 rounded-full"
-        onClick={() => window.open("https://discord.gg/ayj8YSvq")}
-      >
-        <DiscordLogoIcon width={20} height={20} strokeWidth={4} />
-      </span>
       <SidebarRail></SidebarRail>
     </Sidebar>
   );
