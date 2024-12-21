@@ -3,7 +3,7 @@ import api from "@/lib/api";
 import { Bucket, UpdateBucket } from "@/types/bucket";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 
-export function useFetchBucketsForUser() {
+export function useFetchBucketsForUser(criteria?: string) {
   return useInfiniteQuery({
     queryKey: ["user", "buckets"],
     queryFn: async ({ pageParam = { page: 1, direction: "forward" } }) => {
@@ -11,6 +11,7 @@ export function useFetchBucketsForUser() {
         params: {
           page: pageParam.page,
           page_size: 5,
+          criteria: criteria,
         },
       });
       return {
@@ -61,8 +62,8 @@ export const useCreateBucket = () => {
     },
     onSuccess: () => {},
     onError: () => {},
-  })
-}
+  });
+};
 
 export function useDeleteBucket() {
   return useMutation({
@@ -74,7 +75,7 @@ export function useDeleteBucket() {
     },
     onSuccess: () => {},
     onError: () => {},
-  })
+  });
 }
 
 export const useUpdateBucket = (bucketId: string) => {
@@ -87,10 +88,11 @@ export const useUpdateBucket = (bucketId: string) => {
     },
     onSuccess: () => {},
     onError: () => {},
-  })
-}
+  });
+};
 
-export function useFetchPublicBuckets() { //will make an infinite query in the future [will need to adjust search endpoint]
+export function useFetchPublicBuckets() {
+  //will make an infinite query in the future [will need to adjust search endpoint]
   return useQuery({
     queryKey: ["buckets", "public"],
     queryFn: async () => {
@@ -98,7 +100,7 @@ export function useFetchPublicBuckets() { //will make an infinite query in the f
       console.log(response.data.result);
       return response.data.result;
     },
-  })
+  });
 }
 
 export const useFetchBucketById = (bucketId: string) => {
@@ -112,7 +114,7 @@ export const useFetchBucketById = (bucketId: string) => {
       return response.data.result;
     },
   });
-}
+};
 
 export function useLikeBucket(bucketId: string) {
   return useMutation({
@@ -122,7 +124,7 @@ export function useLikeBucket(bucketId: string) {
     },
     onSuccess: () => {},
     onError: () => {},
-  })
+  });
 }
 
 export function useUnlikeBucket(bucketId: string) {
@@ -133,7 +135,7 @@ export function useUnlikeBucket(bucketId: string) {
     },
     onSuccess: () => {},
     onError: () => {},
-  })
+  });
 }
 
 export function useAddTagToBucket(bucketId: string) {
@@ -144,16 +146,18 @@ export function useAddTagToBucket(bucketId: string) {
     },
     onSuccess: () => {},
     onError: () => {},
-  })
+  });
 }
 
 export function useRemoveTagFromBucket(bucketId: string) {
   return useMutation({
     mutationFn: async (tag: string) => {
-      const response = await api.patch(`/buckets/remove/tag/${bucketId}/${tag}`);
+      const response = await api.patch(
+        `/buckets/remove/tag/${bucketId}/${tag}`
+      );
       return response.data.result;
     },
     onSuccess: () => {},
     onError: () => {},
-  })
+  });
 }

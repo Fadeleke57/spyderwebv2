@@ -41,6 +41,7 @@ import { NewBucketModal } from "@/components/buckets/NewBucketModal";
 import Head from "next/head";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Bucket } from "@/types/bucket";
+import { ComboBoxResponsive } from "@/components/utility/ResponsiveComobox";
 
 function Index() {
   const { user, Logout } = useFetchUser();
@@ -51,7 +52,9 @@ function Index() {
     prev: null,
     next: null,
   });
-
+  const router = useRouter();
+  const { tab } = router.query;
+  const criteria = tab ? (tab as string) : "all";
   const {
     data,
     fetchNextPage,
@@ -60,13 +63,11 @@ function Index() {
     isFetchingNextPage,
     isFetchingPreviousPage,
     refetch,
-  } = useFetchBucketsForUser();
+  } = useFetchBucketsForUser(criteria);
   const { mutateAsync: deleteBucket, isPending, isError } = useDeleteBucket();
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const isMobile = useIsMobile();
-
-  const router = useRouter();
 
   const handleLogout = async () => {
     await Logout();
@@ -84,12 +85,12 @@ function Index() {
     {
       label: "Private",
       value: "private",
-      filter: (bucket: Bucket) => bucket.visibility === "Private",
+      filter: () => true,
     },
     {
       label: "Public",
       value: "public",
-      filter: (bucket: Bucket) => bucket.visibility === "Public",
+      filter: () => true,
     },
   ];
 
@@ -120,6 +121,24 @@ function Index() {
     }
   };
 
+  const handleTabSwitch = (tab: string) => {
+    router.push(
+      {
+        pathname: "/buckets",
+        query: { tab },
+      },
+      undefined,
+      { shallow: true }
+    );
+  };
+
+  useEffect(() => {
+    if (criteria) {
+      setCurrentPage(1);
+      refetch();
+    }
+  }, [criteria, refetch]);
+
   return (
     <div className="flex lg:min-h-screen justify-center flex-col bg-muted/40">
       <Head>
@@ -137,12 +156,12 @@ function Index() {
       <div className="flex flex-col sm:gap-4 sm:py-4">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <div className="relative ml-auto flex-1 md:grow-0">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
-            />
+            <ComboBoxResponsive
+              className="md:w-[200px] lg:w-[336px] w-flex items-center"
+              searchTarget="buckets"
+            >
+              <span className="text-muted-foreground">Find Buckets..</span>
+            </ComboBoxResponsive>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -187,11 +206,14 @@ function Index() {
           </DropdownMenu>
         </header>
         <div className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-          <Tabs defaultValue="all" className="">
+          <Tabs defaultValue={criteria} onValueChange={handleTabSwitch}>
             <div className="flex items-center">
               <TabsList>
                 {tabs.map((tab) => (
-                  <TabsTrigger key={tab.value} value={tab.value}>
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                  >
                     {tab.label}
                   </TabsTrigger>
                 ))}
@@ -214,10 +236,7 @@ function Index() {
               </div>
             </div>
             {tabs.map((tab) => (
-              <TabsContent
-                value={tab.value}
-                key={tab.value}
-              >
+              <TabsContent value={tab.value} key={tab.value}>
                 <Card>
                   <CardHeader>
                     <CardTitle>Buckets</CardTitle>
@@ -256,7 +275,9 @@ function Index() {
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline">
-                                {bucket?.visibility === "Private" ? "private" : "public"}
+                                {bucket?.visibility === "Private"
+                                  ? "private"
+                                  : "public"}
                               </Badge>
                             </TableCell>
                             {!isMobile && (
@@ -284,7 +305,16 @@ function Index() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuItem className="cursor-pointer" onClick={() => router.push(`/buckets/bucket/${bucket?.bucketId}`)}>Edit</DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onClick={() =>
+                                      router.push(
+                                        `/buckets/bucket/${bucket?.bucketId}`
+                                      )
+                                    }
+                                  >
+                                    Edit
+                                  </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() =>
                                       handleDeleteBucket(bucket?.bucketId)
