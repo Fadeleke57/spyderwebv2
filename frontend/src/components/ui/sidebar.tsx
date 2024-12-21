@@ -18,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { DiscordLogoIcon } from "@radix-ui/react-icons";
 
 export const SIDEBAR_COOKIE_NAME = "sidebar:state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -399,12 +400,20 @@ const SidebarFooter = React.forwardRef<
     return null;
   }
   return (
-    <div
-      ref={ref}
-      data-sidebar="footer"
-      className={cn("flex flex-col gap-2 p-2", className)}
-      {...props}
-    />
+    <>
+      <div
+        ref={ref}
+        data-sidebar="footer"
+        className={cn("flex flex-col gap-2 p-2", className)}
+        {...props}
+      />
+      <span
+        className="absolute bottom-2 right-3 font-bold p-1 cursor-pointer hover:bg-slate-100 rounded-full"
+        onClick={() => window.open("https://discord.gg/ayj8YSvq")}
+      >
+        <DiscordLogoIcon className={`${state === "collapsed" ? "hidden" : ""}`} width={20} height={20} strokeWidth={4} />
+      </span>
+    </>
   );
 });
 SidebarFooter.displayName = "SidebarFooter";

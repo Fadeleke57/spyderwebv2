@@ -15,8 +15,15 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { ChartNoAxesGantt, CirclePlus, Home, LayoutGrid } from "lucide-react";
+import {
+  ChartNoAxesGantt,
+  CirclePlus,
+  Home,
+  LayoutGrid,
+  Link,
+} from "lucide-react";
 import { NewBucketModal } from "../buckets/NewBucketModal";
+import { DiscordLogoIcon } from "@radix-ui/react-icons";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter();
@@ -80,9 +87,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <Home
                 className={`size-5 ${
-                  selectedButton === "home"
-                    ? "text-blue-950"
-                    : "text-slate-500"
+                  selectedButton === "home" ? "text-blue-950" : "text-slate-500"
                 }`}
               />
             </div>
@@ -197,7 +202,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarTrigger orientation="right" hideWhen="expanded" />
         </div>
       </SidebarContent>
-      <SidebarFooter hideWhen={user ? null : "collapsed"} className="mb-8">
+      <SidebarFooter
+        hideWhen={user ? null : "collapsed"}
+        className="mb-8 relative"
+      >
         <NavUser />
       </SidebarFooter>
       <SidebarRail></SidebarRail>
