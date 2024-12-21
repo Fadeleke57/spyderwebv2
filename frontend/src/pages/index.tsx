@@ -4,26 +4,17 @@ import { useEffect, useState } from "react";
 import { LoadingPage } from "@/components/utility/Loading";
 import PublicLayout from "@/app/PublicLayout";
 import { ReactElement } from "react";
-import dynamic from "next/dynamic";
-
-const LandingGrid = dynamic(() => import("@/components/landing/LandingGrid"), {
-  ssr: false,
-  loading: () => <div></div>,
-});
-
-const Demo = dynamic(() => import("@/components/landing/Demo"), {
-  ssr: false,
-  loading: () => <div>Loading demo...</div>,
-});
+import LandingGrid from "@/components/landing/LandingGrid";
+import Demo from "@/components/landing/Demo";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setLoading(false); // Simulate loading effect
-    }, 100); // Add a small delay for smoother UX
-    return () => clearTimeout(timer); // Cleanup timeout
+      setLoading(false);
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   if (loading) {
