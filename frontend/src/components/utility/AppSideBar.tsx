@@ -76,11 +76,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             onClick={() => router.push("/home")}
           >
             <div
-              className={`flex flex-row gap-2 items-center rounded-lg bg-none ${
-                selectedButton === "home" ? "text-blue-950" : "text-slate-500"
-              } text-sidebar-primary-foreground`}
+              className={`flex flex-row gap-2 items-center rounded-lg bg-none text-blue-950 text-sidebar-primary-foreground`}
             >
-              <Home className="size-5" />
+              <Home
+                className={`size-5 ${
+                  selectedButton === "home"
+                    ? "text-blue-950"
+                    : "text-slate-500"
+                }`}
+              />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span
@@ -103,13 +107,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             onClick={() => router.push("/explore")}
           >
             <div
-              className={`flex flex-row gap-2 items-center rounded-lg bg-none ${
-                selectedButton === "explore"
-                  ? "text-blue-950"
-                  : "text-slate-500"
-              } text-sidebar-primary-foreground`}
+              className={`flex flex-row gap-2 items-center rounded-lg bg-none text-blue-950 text-sidebar-primary-foreground`}
             >
-              <LayoutGrid className="size-5" />
+              <LayoutGrid
+                className={`size-5 ${
+                  selectedButton === "explore"
+                    ? "text-blue-950"
+                    : "text-slate-500"
+                }`}
+              />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span
@@ -134,13 +140,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             onClick={() => router.push("/buckets")}
           >
             <div
-              className={`flex flex-row gap-2 items-center rounded-lg bg-none ${
-                selectedButton === "buckets"
-                  ? "text-blue-950"
-                  : "text-slate-500"
-              } text-sidebar-primary-foreground`}
+              className={`flex flex-row gap-2 items-center rounded-lg bg-none text-blue-950 text-sidebar-primary-foreground`}
             >
-              <ChartNoAxesGantt className="size-5" />
+              <ChartNoAxesGantt
+                className={`size-5 ${
+                  selectedButton === "buckets"
+                    ? "text-blue-950"
+                    : "text-slate-500"
+                }`}
+              />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span
