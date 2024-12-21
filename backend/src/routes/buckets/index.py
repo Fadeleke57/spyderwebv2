@@ -23,6 +23,7 @@ s3 = boto3.client('s3')
 def get_user_buckets(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
+    criteria: Optional[str] = None,
     user: User = Depends(manager)
 ):
     """
@@ -40,8 +41,23 @@ def get_user_buckets(
     """
     check_user(user)
 
+    if criteria:
+        if criteria == "public":
+            visibility = "Public"
+        elif criteria == "private":
+            visibility = "Private"
+        else:
+            visibility = None
+    else:
+        visibility = None
+
     # Fetch all buckets for the user
-    buckets = get_items_by_field("buckets", "userId", user["id"])
+    buckets = get_collection("buckets")
+    if visibility:
+        buckets = buckets.find({"visibility": visibility, "userId": user["id"]}, {"_id": 0})
+    else:
+        buckets = buckets.find({"userId": user["id"]}, {"_id": 0})
+    buckets = [bucket for bucket in buckets]
     buckets = sorted(buckets, key=lambda x: x["created"], reverse=True)
 
     # Pagination logic

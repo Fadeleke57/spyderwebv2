@@ -15,17 +15,19 @@ export function ConfirmModal({
   action,
   actionButtonStr,
   children,
+  open,
 }: {
   actionStr: string;
   action: () => void;
   actionButtonStr: string;
   children?: React.ReactNode;
+  open?: boolean;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(open || false);
   const handleAction = () => {
     action();
     setIsOpen(false);
-  }
+  };
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
