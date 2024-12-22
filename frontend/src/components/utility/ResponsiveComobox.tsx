@@ -84,7 +84,7 @@ export function ComboBoxResponsive({
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button variant="outline" className="w-[150px] justify-start">
+        <Button disabled variant="outline" className="w-full justify-start">
           {children}
         </Button>
       </DrawerTrigger>

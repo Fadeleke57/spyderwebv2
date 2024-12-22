@@ -37,7 +37,7 @@ export function ConfirmModal({
           <DialogDescription>{actionStr}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button onClick={() => setIsOpen(false)}>Cancel</Button>
+          <Button variant={"outline"} onClick={() => setIsOpen(false)}>Cancel</Button>
           <Button onClick={handleAction}>{actionButtonStr}</Button>
         </DialogFooter>
       </DialogContent>

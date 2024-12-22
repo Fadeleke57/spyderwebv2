@@ -13,3 +13,7 @@ class Source(BaseModel):
     size: int
     created_at: datetime
     updated_at: datetime
+
+class UpdateSource(BaseModel):
+    name: Optional[str]
+    

@@ -407,12 +407,14 @@ const SidebarFooter = React.forwardRef<
         className={cn("flex flex-col gap-2 p-2", className)}
         {...props}
       />
-      <span
+      {/* Discord button
+       <span
         className="absolute bottom-2 right-3 font-bold p-1 cursor-pointer hover:bg-slate-100 rounded-full"
         onClick={() => window.open("https://discord.gg/ayj8YSvq")}
       >
         <DiscordLogoIcon className={`${state === "collapsed" ? "hidden" : ""}`} width={20} height={20} strokeWidth={4} />
       </span>
+      */}
     </>
   );
 });

@@ -9,12 +9,25 @@ import {
 import { Bucket } from "@/types/bucket";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { IterationCcw, ArrowBigUpDash, EllipsisIcon } from "lucide-react";
+import {
+  IterationCcw,
+  ArrowBigUpDash,
+  EllipsisIcon,
+  Album,
+  EyeOff,
+} from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import { useLikeBucket, useUnlikeBucket } from "@/hooks/buckets";
 import UserAvatar from "../utility/UserAvatar";
 import { useFetchUserById } from "@/hooks/user";
-import { Button } from "../ui/button";
+import { IterateModal } from "../utility/IterateModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Separator } from "../ui/separator";
 
 export function BucketCard({ bucket }: { bucket: Bucket }) {
   const [bucketLikedCount, setBucketLikedCount] = React.useState(
@@ -23,6 +36,9 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
   const { data: bucketOwner, isLoading: bucketOwnerLoading } = useFetchUserById(
     bucket?.userId as string
   );
+  const { data: iteratedFromUser, isLoading: iteratedFromLoading } =
+    useFetchUserById(bucket?.iteratedFrom ? bucket?.iteratedFrom : "");
+
   const [bucketIterationsCount, setBucketIterationsCount] = React.useState(
     bucket.iterations.length
   );
@@ -32,6 +48,10 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
   const [bucketLiked, setBucketLiked] = React.useState(
     bucket.likes.includes(user?.id as string)
   );
+  const [bucketIterated, setBucketIterated] = React.useState(
+    bucket.iterations.includes(user?.id as string)
+  );
+  const [showIterateModal, setShowIterateModal] = React.useState(false);
 
   const handleLikeBucket = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -56,9 +76,19 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
       setBucketLiked(true);
     }
   };
-  const handleBucketSettingsModal = (e: React.MouseEvent) => {
+
+  const handleIterateBucket = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (bucketIterated) {
+      return;
+    }
+    setShowIterateModal(true);
+  };
+
+  const handleStopPropagation = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
   };
 
   React.useEffect(() => {
@@ -72,7 +102,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
       href={`/buckets/bucket/${bucket.bucketId}`}
       className="flex flex-col gap-2 hover:cursor-pointer"
     >
-      <Card className="w-full relative mx-auto min-h-[210px] border-none hover:bg-muted py-6">
+      <Card className="w-full relative mx-auto min-h-[210px] border-none hover:bg-muted py-6 border-b-2">
         <div className="absolute top-0 left-0 w-full flex justify-between items-center px-4">
           <div className="flex flex-row items-center">
             <UserAvatar
@@ -81,23 +111,55 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
               height={20}
               className="w-[25px] h-[25px]"
             />
-            <p className="ml-2 text-xs text-slate-500">
-              {bucketOwner ? bucketOwner.full_name : "Loading..." }
-            </p>
-            <p className="ml-2 text-xs text-slate-500 font-semibold">*</p>
-            <p className="ml-2 text-xs text-slate-500 font-semibold">
-              {formatDistanceToNow(new Date(bucket?.updated ? bucket.updated + "Z" : ""), {
-                addSuffix: true,
-              })}
-            </p>
+            <div className="ml-2 text-slate-500 flex flex-col align-center">
+              <div className="flex flex-row items-center">
+                <p className="text-xs text-slate-600 font-semibold">
+                  {bucketOwner?.full_name}
+                </p>
+                <p className="ml-2 text-xs ">*</p>
+                <p className="ml-2 text-xs">
+                  {formatDistanceToNow(
+                    new Date(bucket?.updated ? bucket.updated + "Z" : ""),
+                    {
+                      addSuffix: true,
+                    }
+                  )}
+                </p>
+              </div>
+              <div className="">
+                {bucket?.iteratedFrom ? (
+                  <p className="text-xs font-normal">
+                    Iterated From{" "}
+                    <span className="font-semibold text-blue-500">
+                      @{iteratedFromUser?.full_name}
+                    </span>
+                  </p>
+                ) : (
+                  ""
+                )}
+              </div>
+            </div>
           </div>
           <div>
-            <Button
-              className="rounded-full bg-transparent hover:bg-slate-200"
-              onClick={handleBucketSettingsModal}
-            >
-              <EllipsisIcon color="black" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="rounded-full p-2 hover:bg-slate-300 border-none focus:outline-none">
+                <EllipsisIcon />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={handleStopPropagation}
+                >
+                  <Album size={16} className="mr-2"></Album>Save
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={handleStopPropagation}
+                >
+                  <EyeOff size={16} className="mr-2"></EyeOff>Hide
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         <CardHeader className="overflow-hidden">
@@ -126,8 +188,20 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
             />
           </div>
           <div className="flex flex-row items-center space-x-1">
-            <p className="text-s text-slate-500">{bucketIterationsCount}</p>
-            <IterationCcw size={20} />
+            <p
+              className={`text-s ${
+                bucketIterated ? "text-blue-400" : "text-slate-500"
+              }`}
+            >
+              {bucketIterationsCount}
+            </p>
+            <IterationCcw
+              className={`${
+                bucketIterated ? "text-blue-400" : "text-slate-500"
+              }`}
+              size={20}
+              onClick={handleIterateBucket}
+            />
           </div>
         </div>
         <p className="text-xs text-slate-500 absolute bottom-4 right-6">
@@ -136,7 +210,13 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
           })}
         </p>
       </Card>
-      <div className="h-[1px] w-full bg-slate-200"></div>
+      {showIterateModal && (
+        <IterateModal
+          bucket={bucket}
+          open={showIterateModal}
+          setIsOpen={setShowIterateModal}
+        />
+      )}
     </Link>
   );
 }

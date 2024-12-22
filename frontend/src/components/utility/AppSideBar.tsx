@@ -204,7 +204,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarFooter
         hideWhen={user ? null : "collapsed"}
-        className="mb-8 relative"
+        className="mb-2 relative"
       >
         <NavUser />
       </SidebarFooter>

@@ -133,7 +133,7 @@ function Index() {
         ) : error ? (
           <p>Error loading buckets</p>
         ) : currentBuckets.length > 0 ? (
-          <div className="w-full grid grid-cols-1">
+          <div className="w-full grid grid-cols-1 gap-1">
             {currentBuckets.map((bucket: Bucket) => (
               <div key={bucket.bucketId} className="cursor-pointer">
                 <BucketCard

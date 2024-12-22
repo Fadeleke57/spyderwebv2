@@ -125,7 +125,6 @@ function BucketGraph({
         const y = centerY + circleRadius * Math.sin(angle);
         return { ...d, x, y };
       });
-
     const fileSizes = nodes && nodes.map((d) => d.size || 4);
     const minSize = nodes && Math.min(...fileSizes);
     const maxSize = nodes && Math.max(...fileSizes);

@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class Search(BaseModel):
     query: str
@@ -16,8 +17,16 @@ class User(BaseModel): #user
     hashed_password: str
     analytics: Analytics
     profile_picture_url: str
+    bucketsHidden: Optional[list[str]]
+    bucketsSaved: Optional[list[str]]
 
 class CreateUser(BaseModel): #creating user
     username: str
     email: str
     password: str
+
+class UpdateUser(BaseModel): #updating user
+    full_name: Optional[str]
+    username: Optional[str]
+    email: Optional[str]
+    password: Optional[str]
