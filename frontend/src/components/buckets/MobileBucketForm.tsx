@@ -21,7 +21,7 @@ function MobileBucketForm({ bucket, user }: FormProps) {
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
+        <Button variant="outline" size="sm" className="md:hidden">
           <Info className="size-4" />
           <span className="sr-only">Settings</span>
         </Button>
