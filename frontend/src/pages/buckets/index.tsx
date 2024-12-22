@@ -188,7 +188,7 @@ function Index() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer"
-                onClick={() => router.push("/settings")}
+                onClick={() => {}}
               >
                 Settings
               </DropdownMenuItem>

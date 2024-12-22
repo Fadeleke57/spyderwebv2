@@ -1,9 +1,11 @@
 import { ReactElement, useEffect } from "react";
 import { useRouter } from "next/router";
 import PublicLayout from "@/app/PublicLayout";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const GoogleCallback = () => {
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const { token, email, name } = router.query;
@@ -11,14 +13,14 @@ const GoogleCallback = () => {
     if (token && email && name) {
       localStorage.setItem("token", token as string);
       setTimeout(() => {
-        window.location.href = "/explore";
+        window.location.href = isMobile ? "/buckets" : "/home";
       }, 2000);
     }
   }, [router.query, router]);
 
   return (
     <div className="w-full h-screen flex justify-center items-center">
-      <p>Loading...</p>
+      <p>Logging you in...</p>
     </div>
   );
 };

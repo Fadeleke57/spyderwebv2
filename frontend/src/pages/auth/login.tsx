@@ -56,7 +56,7 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
-      router.push("/terminal");
+      router.push("/home");
     }
   }, [router, user]);
 
@@ -92,7 +92,7 @@ const Login = () => {
     window.location.href = `${environment.api_url}/auth/login/google`;
     toast({
       title: "Login successful",
-      description: "Redirecting to the terminal.",
+      description: "Redirecting...",
     });
   };
 

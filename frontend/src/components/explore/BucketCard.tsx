@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Separator } from "../ui/separator";
+import { Skeleton } from "../ui/skeleton";
 
 export function BucketCard({ bucket }: { bucket: Bucket }) {
   const [bucketLikedCount, setBucketLikedCount] = React.useState(
@@ -51,6 +52,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
   const [bucketIterated, setBucketIterated] = React.useState(
     bucket.iterations.includes(user?.id as string)
   );
+  const [iteratedFrom, setIteratedFrom] = React.useState<any | null>(null);
   const [showIterateModal, setShowIterateModal] = React.useState(false);
 
   const handleLikeBucket = (e: React.MouseEvent) => {
@@ -95,7 +97,11 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
     setBucketLiked(bucket.likes.includes(user?.id as string)); //will have to represent as a set to support O(1) operations
     setBucketLikedCount(bucket.likes.length);
     setBucketIterationsCount(bucket.iterations.length);
-  }, [bucket, user?.id]);
+
+    if (iteratedFromUser) {
+      setIteratedFrom(iteratedFromUser);
+    }
+  }, [bucket, user?.id, bucket?.likes, bucket?.iterations, iteratedFromUser]);
 
   return (
     <Link
@@ -113,9 +119,13 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
             />
             <div className="ml-2 text-slate-500 flex flex-col align-center">
               <div className="flex flex-row items-center">
-                <p className="text-xs text-slate-600 font-semibold">
-                  {bucketOwner?.full_name}
-                </p>
+                {bucketOwnerLoading ? (
+                  <Skeleton className="h-3 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
+                ) : (
+                  <p className="text-xs text-slate-600 font-semibold">
+                    {bucketOwner?.full_name}
+                  </p>
+                )}
                 <p className="ml-2 text-xs ">*</p>
                 <p className="ml-2 text-xs">
                   {formatDistanceToNow(
@@ -127,16 +137,16 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
                 </p>
               </div>
               <div className="">
-                {bucket?.iteratedFrom ? (
+                {iteratedFrom ? (
                   <p className="text-xs font-normal">
                     Iterated From{" "}
                     <span className="font-semibold text-blue-500">
-                      @{iteratedFromUser?.full_name}
+                      @{iteratedFrom.full_name}
                     </span>
                   </p>
-                ) : (
-                  ""
-                )}
+                ) : bucket.iteratedFrom ? (
+                  <Skeleton className="h-3 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
+                ) : null}
               </div>
             </div>
           </div>
