@@ -34,7 +34,7 @@ export function ShareButton({ link }: { link: string }) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="ml-auto gap-1.5 text-sm">
           <Share className="size-3.5" />
-          Share
+          <span className="hidden md:inline lg:inline">Share</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

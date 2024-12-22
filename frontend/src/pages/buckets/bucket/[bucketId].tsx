@@ -128,7 +128,7 @@ function Index() {
               </>
             )}
           </div>
-          <div className="flex items-center lg:gap-2">
+          <div className="flex items-center gap-2">
             {bucket && <MobileBucketForm bucket={bucket} user={user} />}
 
             {bucket && (
@@ -137,7 +137,7 @@ function Index() {
                 setIsOpen={setShowIterateModal}
                 bucket={bucket}
               >
-                <Button size="sm" variant={"ghost"}>
+                <Button size="sm" variant={"outline"}>
                   <span className="hidden md:inline lg:inline">Iterate{" "}</span>
                   <IterationCcw
                     className="md:ml-2 lg:ml-2"
