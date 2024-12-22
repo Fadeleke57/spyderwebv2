@@ -58,5 +58,36 @@ def migrate_buckets_to_visibility_attr():
         print(f"Updated bucket {bucket['_id']} with new visibility: {'Private' if privacy_on else 'Public'}")
     print(f"Total buckets updated: {updated_count}")
 
+def add_attr_to_users():
+    users_without_saved_attr = users.find({"bucketsSaved": {"$exists": False}})
+    updated_count = 0
+
+    for user in users_without_saved_attr:
+        users.update_one(
+            {"_id": user["_id"]},
+            {"$set": {"bucketsSaved": [], "bucketsHidden": []}}
+        )
+
+        updated_count += 1
+        print(f"Updated user {user['_id']} with bucketsSaved and bucketsHidden: []")
+
+    print(f"Total users updated: {updated_count}")
+
+def add_attr_to_buckets():
+    buckets_without_attr = buckets.find({"iteratedFrom": {"$exists": False}})
+    updated_count = 0
+
+    for bucket in buckets_without_attr:
+        buckets.update_one(
+            {"_id": bucket["_id"]},
+            {"$set": {"iteratedFrom": None}}
+        )
+
+        updated_count += 1
+        print(f"Updated bucket {bucket['_id']} with new iteratedFrom: None")
+
+    print(f"Total buckets updated: {updated_count}")
+
 if __name__ == "__main__":
-    migrate_buckets_to_visibility_attr()
+    add_attr_to_users()
+    add_attr_to_buckets()
