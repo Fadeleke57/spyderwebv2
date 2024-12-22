@@ -92,7 +92,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
   };
 
   React.useEffect(() => {
-    setBucketLiked(bucket.likes.includes(user?.id as string));
+    setBucketLiked(bucket.likes.includes(user?.id as string)); //will have to represent as a set to support O(1) operations
     setBucketLikedCount(bucket.likes.length);
     setBucketIterationsCount(bucket.iterations.length);
   }, [bucket, user?.id]);
