@@ -13,6 +13,7 @@ class Bucket(BaseModel):
     updated: str
     visibility: Literal["Private", "Public", "Invite"]
     likes: list[str]
+    iteratedFrom: Optional[str] #userId 
     iterations: list[str]
 
 class BucketConfig(BaseModel):
@@ -28,6 +29,10 @@ class UpdateBucket(BaseModel):
     name: Optional[str]
     description: Optional[str]
     visibility: Literal["Private", "Public", "Invite"]
+
+class IterateBucket(BaseModel):
+    name: str
+    description: str
 
 class LikeBucket(BaseModel):
     bucketId: str

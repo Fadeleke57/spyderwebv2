@@ -243,12 +243,6 @@ function BucketPlayground({
                         onSelect={() => handleSourceClick(source.sourceId)}
                       >
                         {source.name}
-                        <Check
-                          className={cn(
-                            "ml-auto",
-                            value === source.name ? "opacity-100" : "opacity-0"
-                          )}
-                        />
                       </CommandItem>
                     ))}
                   </CommandGroup>

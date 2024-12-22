@@ -97,7 +97,6 @@ export function useFetchPublicBuckets() {
     queryKey: ["buckets", "public"],
     queryFn: async () => {
       const response = await api.get("/buckets/all/public");
-      console.log(response.data.result);
       return response.data.result;
     },
   });
@@ -155,6 +154,22 @@ export function useRemoveTagFromBucket(bucketId: string) {
       const response = await api.patch(
         `/buckets/remove/tag/${bucketId}/${tag}`
       );
+      return response.data.result;
+    },
+    onSuccess: () => {},
+    onError: () => {},
+  });
+}
+
+export type IterateBucketPayload = {
+  name: string;
+  description: string;
+};
+
+export function useIterateBucket(bucketId: string) {
+  return useMutation({
+    mutationFn: async (config: IterateBucketPayload) => {
+      const response = await api.post(`/buckets/iterate/${bucketId}`, config);
       return response.data.result;
     },
     onSuccess: () => {},

@@ -8,6 +8,8 @@ export interface PublicUser {
   analytics?: {
     searches: string[];
   };
+  hiddenBuckets?: string[];
+  savedBuckets?: string[];
 }
 
 export interface Search {

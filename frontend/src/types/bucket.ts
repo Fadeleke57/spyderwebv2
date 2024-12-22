@@ -4,7 +4,6 @@ export interface Bucket {
   description: string;
   tags: string[];
   userId: string;
-  articleIds: string[]; //list of article ids to fetch from neo4j
   sourceIds?: string[]; //list of misc source ids
   imageKeys: string[];
   created: string;
@@ -12,6 +11,7 @@ export interface Bucket {
   visibility: "Private" | "Public" | "Invite";
   likes: string[];
   iterations: string[];
+  iteratedFrom?: string;
 }
 
 export interface UpdateBucket {

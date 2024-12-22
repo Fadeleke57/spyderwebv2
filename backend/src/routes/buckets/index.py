@@ -9,7 +9,7 @@ from src.db.mongodb import get_collection, get_items_by_field
 from src.utils.exceptions import check_user
 from src.models.user import User
 from datetime import datetime
-from src.models.bucket import BucketConfig, UpdateBucket
+from src.models.bucket import BucketConfig, UpdateBucket, IterateBucket
 from fastapi.exceptions import HTTPException
 from src.utils.graph import get_articles_by_ids
 from pymongo import ReturnDocument
@@ -327,3 +327,76 @@ def get_articles(bucket_id: str, user=Depends(manager.optional)):
     articles = get_articles_by_ids(articleIds)
     print("Found length of articles: ", len(articles))
     return {"result": articles}
+
+@router.post("/iterate/{bucket_id}")
+def iterate_bucket(bucket_id: str, iteratePayload: IterateBucket, user=Depends(manager)):
+    """
+    Iterate over a given bucket and create a new bucket with the same sources but with a new name and description.
+
+    Args:
+        bucket_id (str): The ID of the bucket to iterate over.
+        iteratePayload (IterateBucket): The payload containing the new name and description for the new bucket.
+        user (User): The user making the request.
+
+    Returns:
+        dict: A JSON response containing the ID of the newly created bucket.
+
+    Raises:
+        HTTPException: If the bucket is not found, raises a 404 error.
+    """
+    check_user(user)
+    buckets = get_collection("buckets")
+    sources = get_collection("sources")
+    users = get_collection("users")
+
+    bucketToIterate = buckets.find_one({"bucketId": bucket_id})
+    associatedUser = users.find_one({"id": bucketToIterate["userId"]}, {"_id": 0})
+
+    if not bucketToIterate or not associatedUser:
+        raise HTTPException(status_code=404, detail="Bucket or owner not found")
+    
+    newBucketId = str(uuid.uuid4())
+    newSourceIds = []
+
+    for sourceId in bucketToIterate["sourceIds"]:
+
+        sourceToCopy = sources.find_one({"sourceId": sourceId})
+        if not sourceToCopy:
+            continue
+
+        newSourceId = str(uuid.uuid4())
+
+        sourceToInsert = {
+            "sourceId": newSourceId,
+            "bucketId": newBucketId,
+            "userId": user["id"],
+            "name": sourceToCopy["name"],
+            "content": sourceToCopy["content"] if sourceToCopy["type"] != "document" else None,
+            "url": sourceToCopy["url"],
+            "type": sourceToCopy["type"],
+            "size": sourceToCopy["size"],
+            "created_at": datetime.now(UTC),
+            "updated_at": datetime.now(UTC),
+        }
+        sources.insert_one(sourceToInsert)
+        newSourceIds.append(newSourceId)
+    
+    buckets.insert_one({
+        "bucketId": newBucketId,
+        "name": iteratePayload.name,
+        "description": iteratePayload.description,
+        "userId": user["id"],
+        "articleIds": bucketToIterate["articleIds"],
+        "sourceIds": newSourceIds,
+        "created": datetime.now(UTC),
+        "updated": datetime.now(UTC),
+        "visibility": "Private",
+        "tags": bucketToIterate["tags"],
+        "iteratedFrom": associatedUser["id"],
+        "likes": [],
+        "iterations": [],
+    })
+
+    buckets.find_one_and_update({"bucketId": bucketToIterate["bucketId"]}, {"$push": {"iterations": user["id"]}})
+
+    return {"result": newBucketId}

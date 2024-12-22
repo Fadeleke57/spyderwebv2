@@ -11,6 +11,7 @@ import logging
 from fastapi import APIRouter
 import uuid
 from datetime import datetime
+from pytz import UTC
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -97,7 +98,7 @@ async def auth_callback(code: str):
             "articleIds": [],
             "created": datetime.now(),
             "updated": datetime.now(),
-            "private": True,
+            "visibility": "Private",
             "tags": [],
             "likes": [],
             "iterations": []
@@ -145,10 +146,14 @@ def register(user: CreateUser):
     :return: A JSONResponse with a success message
     """
     Users = get_collection('users')
-    Buckets = get_collection('buckets')
+
     if Users.find_one({"email": user.email}):
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
+        raise HTTPException(status_code=400, detail="There is already an account with this email.")
+    if Users.find_one({"username": user.username}):
+        raise HTTPException(status_code=400, detail="There is already an account with this username.")
+
+    Buckets = get_collection('buckets')
+
     hashed_password = get_password_hash(user.password)
 
     user_data = {
@@ -159,7 +164,9 @@ def register(user: CreateUser):
         "hashed_password": hashed_password,
         "disabled": False,
         "profile_picture_url": None,
-        "analytics": {"searches": []}
+        "analytics": {"searches": []},
+        "bucketsHidden": [],
+        "bucketsSaved": []
     }
 
     Users.insert_one(user_data)
@@ -170,12 +177,12 @@ def register(user: CreateUser):
         "description": "This is your first bucket! Create a new bucket to get started.",
         "userId": Users.find_one({"email": user.email})["id"],
         "articleIds": [],
-        "created": datetime.now(),
-        "updated": datetime.now(),
-        "private": True,
+        "created": datetime.now(UTC),
+        "updated": datetime.now(UTC),
+        "visibility": "Private",
         "tags": [],
         "likes": [],
-        "iterations": []
+        "iterations": [],
     })
 
     access_token = manager.create_access_token(

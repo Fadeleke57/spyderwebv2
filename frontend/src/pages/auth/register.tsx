@@ -70,11 +70,12 @@ const Register = () => {
         localStorage.setItem("token", response.data.access_token);
         window.location.href = isMobile ? "/explore" : "/home";
       }
-    } catch (error) {
-      console.error("Registration failed", error);
+    } catch (error: any) {
       toast({
         title: "Registration failed",
-        description: "Invalid email or password",
+        description: error?.response?.data?.detail
+          ? error?.response?.data?.detail
+          : "Something went wrong",
         variant: "destructive",
       });
     }

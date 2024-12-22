@@ -79,11 +79,11 @@ export function NewBucketModal({children}: {children: React.ReactNode}) {
         name: bucketConfig.name,
         description: bucketConfig.description,
         visibility: bucketConfig.visibility,
-        tags: [], // add selected tags here, if applicable
-        articleIds: [], // empty list for now
-        imageKeys: [], // empty list for now
+        tags: [],
+        articleIds: [],
+        imageKeys: [],
       });
-      form.reset(); // reset the form after successful submission
+      form.reset();
       setOpen(false);
       router.push("/buckets/bucket/" + bucketId);
     } catch (error: any) {

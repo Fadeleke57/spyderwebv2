@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
-from src.models.source import Source
+from src.models.source import Source, UpdateSource
 from src.routes.auth.oauth2 import manager
 from src.utils.exceptions import check_user
 from src.lib.s3.index import S3Bucket
@@ -66,6 +66,7 @@ async def upload_file(user_id: str, web_id: str, file_type: str, file: UploadFil
             "bucketId": web_id,
             "userId": user_id,
             "name": file.filename,
+            "content": None,
             "url": object_name,
             "type": file_type,
             "size": os.path.getsize(temp_path),
@@ -287,9 +288,9 @@ def delete_source(source_id: str, user=Depends(manager)):
     if not source:
         raise HTTPException(status_code=404, detail='Item not found')
     
-    #remove from s3 if it's a document type
-    if source["type"] == "document":
-        s3.delete_object(Bucket=s3_bucket.bucket_name, Key=source["url"])
+    #remove from s3 if it's a document type (commenting out for now for iterations)
+    #if source["type"] == "document":
+    #    s3.delete_object(Bucket=s3_bucket.bucket_name, Key=source["url"])
 
     #clean up bucket
     buckets = get_collection("buckets")
@@ -341,3 +342,19 @@ def get_source(source_id: str):
         file_url = url
         
     return {"result": source, "file_url": file_url}
+
+@router.patch('/edit/source/{sourceId}')
+def edit_source(sourceId : str, info : UpdateSource, user=Depends(manager)):
+    check_user(user)
+    
+    update_data = {key: value for key, value in info.model_dump().items() if value is not None}
+    update_data["updated_at"] = datetime.now(UTC)
+
+    sources = get_collection("sources")
+    source = sources.find_one_and_update({"userId": user["id"], "sourceId": sourceId}, {"$set", update_data}, return_document=True)
+
+    if not source:
+        raise HTTPException(status_code=404, detail="Item not found")
+    else:
+        return {"result", "Source updated"}
+    
