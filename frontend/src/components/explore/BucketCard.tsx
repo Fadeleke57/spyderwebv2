@@ -144,9 +144,9 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
                       @{iteratedFrom.full_name}
                     </span>
                   </p>
-                ) : (
-                  <Skeleton className="h-4 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
-                )}
+                ) : bucket.iteratedFrom ? (
+                  <Skeleton className="h-3 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
+                ) : null}
               </div>
             </div>
           </div>
