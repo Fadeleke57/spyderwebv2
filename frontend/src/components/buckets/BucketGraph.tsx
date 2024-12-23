@@ -149,7 +149,7 @@ function BucketGraph({
 
       g.selectAll("circle")
         .filter((node: any) => node.sourceId === d.sourceId)
-        .style("fill", isHovering ? "#4f46e5" : "#5ea4ff");
+        .style("fill", isHovering ? "#c084fc" : "#5ea4ff");
 
       g.selectAll("text")
         .filter((node: any) => node.sourceId !== d.sourceId)
@@ -190,7 +190,7 @@ function BucketGraph({
               .attr("stroke", "none")
               .attr("stroke-width", 0);
 
-            d3.select(this).attr("stroke", "#4f46e5").attr("stroke-width", 2);
+            d3.select(this).attr("stroke", "#c084fc").attr("stroke-width", 2);
           });
 
         g.selectAll("text")
@@ -201,6 +201,7 @@ function BucketGraph({
           .attr("text-anchor", "middle")
           .attr("fill", "#374151")
           .attr("font-size", "14px")
+          .attr("font-weight", "bold")
           .text((d) => formatText(d.name || "", 50));
       });
 
