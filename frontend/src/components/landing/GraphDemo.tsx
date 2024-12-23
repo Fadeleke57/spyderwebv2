@@ -72,17 +72,14 @@ function GraphDemo() {
 
     const g = svg.append("g");
 
-    const tooltip = svg
-      .append("g")
-      .attr("class", "tooltip")
-      .style("opacity", 0);
-
-    tooltip
-      .append("text")
-      .attr("fill", "#333")
-      .attr("font-size", "18px")
-      .attr("font-weight", "bold")
-      .attr("text-anchor", "middle");
+    svg.append("style").text(`
+      circle {
+        transition: opacity 0.3s ease, fill 0.3s ease;
+      }
+      text {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+    `);
 
     const zoom = d3
       .zoom<SVGSVGElement, unknown>()
@@ -101,7 +98,6 @@ function GraphDemo() {
         const y = centerY + circleRadius * Math.sin(angle);
         return { ...d, x, y };
       });
-
     const fileSizes = nodes && nodes.map((d) => d.size || 4);
     const minSize = nodes && Math.min(...fileSizes);
     const maxSize = nodes && Math.max(...fileSizes);
@@ -112,13 +108,38 @@ function GraphDemo() {
       .domain([minSize, maxSize])
       .range([10, 30]);
 
+    const handleNodeInteraction = (
+      event: any,
+      d: SourceAsNode,
+      isHovering: boolean
+    ) => {
+      g.selectAll("circle")
+        .filter((node: any) => node.sourceId !== d.sourceId)
+        .style("opacity", isHovering ? 0.3 : 1)
+        .style("fill", "#5ea4ff");
+
+      g.selectAll("circle")
+        .filter((node: any) => node.sourceId === d.sourceId)
+        .style("fill", isHovering ? "#4f46e5" : "#5ea4ff");
+
+      g.selectAll("text")
+        .filter((node: any) => node.sourceId !== d.sourceId)
+        .style("opacity", isHovering ? 0.3 : 1)
+        .style("transform", "translateY(0)");
+
+      g.selectAll("text")
+        .filter((node: any) => node.sourceId === d.sourceId)
+        .style("transform", isHovering ? "translateY(10px)" : "translateY(0)");
+    };
+
     const simulation = d3
       .forceSimulation(nodes)
       .force("x", d3.forceX(centerX).strength(0.05))
       .force("y", d3.forceY(centerY).strength(0.05))
-      .force("collision", d3.forceCollide(35))
+      .force("collision", d3.forceCollide(85))
       .on("tick", () => {
-        g.selectAll("circle")
+        const circles = g
+          .selectAll("circle")
           .data(nodes ? nodes : [])
           .join("circle")
           .attr("cx", (d) => d.x)
@@ -129,6 +150,8 @@ function GraphDemo() {
           })
           .attr("fill", "#5ea4ff")
           .call(drag as any)
+          .on("mouseover", (event, d) => handleNodeInteraction(event, d, true))
+          .on("mouseout", (event, d) => handleNodeInteraction(event, d, false))
           .on("click", function (event, d) {
             event.stopPropagation();
             zoomToNode(event, d);
@@ -139,35 +162,17 @@ function GraphDemo() {
               .attr("stroke-width", 0);
 
             d3.select(this).attr("stroke", "#4f46e5").attr("stroke-width", 2);
-          })
-          .on("mouseover", function (event, d) {
-            const [mouseX, mouseY] = d3.pointer(event);
-            const transform = d3.zoomTransform(svg.node() as Element);
-
-            tooltip
-              .style("opacity", 1)
-              .style("weight", "bold")
-              .attr(
-                "transform",
-                `translate(${transform.applyX(d.x)},${transform.applyY(
-                  d.y - 20
-                )})`
-              );
-
-            tooltip
-              .style("opacity", 1)
-              .attr(
-                "transform",
-                `translate(${transform.applyX(d.x)},${transform.applyY(
-                  d.y - 20
-                )})`
-              );
-
-            tooltip.select("text").text(formatText(d.name || "", 55));
-          })
-          .on("mouseout", function () {
-            tooltip.style("opacity", 0);
           });
+
+        g.selectAll("text")
+          .data(nodes ? nodes : [])
+          .join("text")
+          .attr("x", (d) => d.x)
+          .attr("y", (d) => d.y + sizeScale(d.size || 4) + 20)
+          .attr("text-anchor", "middle")
+          .attr("fill", "#374151")
+          .attr("font-size", "14px")
+          .text((d) => formatText(d.name || "", 50));
       });
 
     const drag = d3
@@ -176,6 +181,7 @@ function GraphDemo() {
         if (!event.active) simulation.alphaTarget(0.3).restart();
         d.fx = d.x;
         d.fy = d.y;
+        handleNodeInteraction(event, d, true);
       })
       .on("drag", function (event, d: any) {
         d.fx = event.x;
@@ -185,6 +191,7 @@ function GraphDemo() {
         if (!event.active) simulation.alphaTarget(0);
         d.fx = null;
         d.fy = null;
+        handleNodeInteraction(event, d, false);
 
         const trashBounds = trashRef.current?.getBoundingClientRect();
         const nodeX = event.sourceEvent.clientX;
