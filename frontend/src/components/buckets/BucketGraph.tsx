@@ -73,7 +73,10 @@ function BucketGraph({
       if (event) event.stopPropagation();
 
       const scale = 3;
-      const [x, y] = [isMobile? d.x + centerX + 10: d.x + centerX - 20, d.y + centerY + 40];
+      const [x, y] = [
+        isMobile ? d.x + centerX + 10 : d.x + centerX - 20,
+        d.y + centerY + 40,
+      ];
 
       const transform = d3.zoomIdentity
         .translate(width / 2, height / 2)
@@ -97,6 +100,15 @@ function BucketGraph({
     svg.selectAll("*").remove();
 
     const g = svg.append("g");
+
+    svg.append("style").text(`
+      circle {
+        transition: opacity 0.3s ease, fill 0.3s ease;
+      }
+      text {
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+    `);
 
     const zoom = d3
       .zoom<SVGSVGElement, unknown>()
@@ -125,13 +137,38 @@ function BucketGraph({
       .domain([minSize, maxSize])
       .range([10, 30]);
 
+    const handleNodeInteraction = (
+      event: any,
+      d: SourceAsNode,
+      isHovering: boolean
+    ) => {
+      g.selectAll("circle")
+        .filter((node: any) => node.sourceId !== d.sourceId)
+        .style("opacity", isHovering ? 0.3 : 1)
+        .style("fill", "#5ea4ff");
+
+      g.selectAll("circle")
+        .filter((node: any) => node.sourceId === d.sourceId)
+        .style("fill", isHovering ? "#4f46e5" : "#5ea4ff");
+
+      g.selectAll("text")
+        .filter((node: any) => node.sourceId !== d.sourceId)
+        .style("opacity", isHovering ? 0.3 : 1)
+        .style("transform", "translateY(0)");
+
+      g.selectAll("text")
+        .filter((node: any) => node.sourceId === d.sourceId)
+        .style("transform", isHovering ? "translateY(10px)" : "translateY(0)");
+    };
+
     const simulation = d3
       .forceSimulation(nodes)
       .force("x", d3.forceX(centerX).strength(0.05))
       .force("y", d3.forceY(centerY).strength(0.05))
       .force("collision", d3.forceCollide(85))
       .on("tick", () => {
-        g.selectAll("circle")
+        const circles = g
+          .selectAll("circle")
           .data(nodes ? nodes : [])
           .join("circle")
           .attr("cx", (d) => d.x)
@@ -142,6 +179,8 @@ function BucketGraph({
           })
           .attr("fill", "#5ea4ff")
           .call(drag as any)
+          .on("mouseover", (event, d) => handleNodeInteraction(event, d, true))
+          .on("mouseout", (event, d) => handleNodeInteraction(event, d, false))
           .on("click", function (event, d) {
             event.stopPropagation();
             zoomToNode(event, d);
@@ -171,6 +210,7 @@ function BucketGraph({
         if (!event.active) simulation.alphaTarget(0.3).restart();
         d.fx = d.x;
         d.fy = d.y;
+        handleNodeInteraction(event, d, true);
       })
       .on("drag", function (event, d: any) {
         d.fx = event.x;
@@ -180,6 +220,7 @@ function BucketGraph({
         if (!event.active) simulation.alphaTarget(0);
         d.fx = null;
         d.fy = null;
+        handleNodeInteraction(event, d, false);
 
         const trashBounds = trashRef.current?.getBoundingClientRect();
         const nodeX = event.sourceEvent.clientX;
