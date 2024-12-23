@@ -120,7 +120,7 @@ function GraphDemo() {
 
       g.selectAll("circle")
         .filter((node: any) => node.sourceId === d.sourceId)
-        .style("fill", isHovering ? "#4f46e5" : "#5ea4ff");
+        .style("fill", isHovering ? "#c084fc" : "#5ea4ff");
 
       g.selectAll("text")
         .filter((node: any) => node.sourceId !== d.sourceId)
@@ -129,6 +129,7 @@ function GraphDemo() {
 
       g.selectAll("text")
         .filter((node: any) => node.sourceId === d.sourceId)
+        .attr("font-size", isHovering ? "20px" : "14px")
         .style("transform", isHovering ? "translateY(10px)" : "translateY(0)");
     };
 
@@ -161,7 +162,7 @@ function GraphDemo() {
               .attr("stroke", "none")
               .attr("stroke-width", 0);
 
-            d3.select(this).attr("stroke", "#4f46e5").attr("stroke-width", 2);
+            d3.select(this).attr("stroke", "#c084fc").attr("stroke-width", 2);
           });
 
         g.selectAll("text")
@@ -171,6 +172,7 @@ function GraphDemo() {
           .attr("y", (d) => d.y + sizeScale(d.size || 4) + 20)
           .attr("text-anchor", "middle")
           .attr("fill", "#374151")
+          .attr("font-weight", "bold")
           .attr("font-size", "14px")
           .text((d) => formatText(d.name || "", 50));
       });
