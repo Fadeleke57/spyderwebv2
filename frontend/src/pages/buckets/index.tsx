@@ -19,7 +19,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -42,6 +41,7 @@ import Head from "next/head";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Bucket } from "@/types/bucket";
 import { ComboBoxResponsive } from "@/components/utility/ResponsiveComobox";
+import DeleteModal from "@/components/utility/DeleteModal";
 
 function Index() {
   const { user, Logout } = useFetchUser();
@@ -65,8 +65,11 @@ function Index() {
     refetch,
   } = useFetchBucketsForUser(criteria);
   const { mutateAsync: deleteBucket, isPending, isError } = useDeleteBucket();
+
   const [buckets, setBuckets] = useState<Bucket[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [open, setOpen] = useState(false);
+  const [bucketId, setBucketId] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   const handleLogout = async () => {
@@ -78,6 +81,7 @@ function Index() {
     if (!id) return;
     await deleteBucket(id);
     refetch();
+    setOpen(false);
   };
 
   const tabs = [
@@ -139,6 +143,11 @@ function Index() {
     }
   }, [criteria, refetch]);
 
+  const handleOpenDeleteModal = (id: string) => {
+    setBucketId(id);
+    setOpen(true);
+  };
+
   return (
     <div className="flex lg:min-h-screen justify-center flex-col bg-muted/40">
       <Head>
@@ -186,10 +195,7 @@ function Index() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => {}}
-              >
+              <DropdownMenuItem className="cursor-pointer" onClick={() => {}}>
                 Settings
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">
@@ -210,10 +216,7 @@ function Index() {
             <div className="flex items-center">
               <TabsList>
                 {tabs.map((tab) => (
-                  <TabsTrigger
-                    key={tab.value}
-                    value={tab.value}
-                  >
+                  <TabsTrigger key={tab.value} value={tab.value}>
                     {tab.label}
                   </TabsTrigger>
                 ))}
@@ -295,9 +298,8 @@ function Index() {
                                 </TableCell>
                               </>
                             )}
-
                             <TableCell>
-                              <DropdownMenu>
+                              <DropdownMenu modal={false}>
                                 <DropdownMenuTrigger asChild>
                                   <Button size="icon" variant="ghost">
                                     <MoreHorizontal className="h-4 w-4" />
@@ -317,7 +319,7 @@ function Index() {
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() =>
-                                      handleDeleteBucket(bucket?.bucketId)
+                                      handleOpenDeleteModal(bucket?.bucketId)
                                     }
                                     className="text-destructive hover:text-destructive cursor-pointer"
                                   >
@@ -376,6 +378,15 @@ function Index() {
           </Tabs>
         </div>
       </div>
+      {bucketId && open && (
+        <DeleteModal
+          bucketId={bucketId}
+          handleDelete={handleDeleteBucket}
+          isPending={isPending}
+          open={open}
+          setOpen={setOpen}
+        ></DeleteModal>
+      )}
     </div>
   );
 }

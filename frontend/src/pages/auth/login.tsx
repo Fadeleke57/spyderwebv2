@@ -109,7 +109,10 @@ const Login = () => {
       </Head>
       <Card className="w-[500px] border-none shadow-none">
         <CardHeader>
-          <CardTitle className="font-bold mb-2"><span className="text-slate-400">like it? save it.</span><br></br>login to your spydr account</CardTitle>
+          <CardTitle className="font-bold mb-2">
+            <span className="text-slate-400">like it? save it.</span>
+            <br></br>login to your spydr account
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -179,6 +182,11 @@ const Login = () => {
                     Register
                   </Link>
                 </p>
+                <div className="text-balance text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary  ">
+                  By clicking continue, you agree to our{" "}
+                  <Link href="/about/terms-of-service">Terms of Service</Link>{" "}
+                  and <Link href="/about/privacy-policy">Privacy Policy</Link>.
+                </div>
               </div>
             </form>
           </Form>

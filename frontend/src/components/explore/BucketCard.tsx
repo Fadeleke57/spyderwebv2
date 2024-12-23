@@ -55,9 +55,13 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
   const [iteratedFrom, setIteratedFrom] = React.useState<any | null>(null);
   const [showIterateModal, setShowIterateModal] = React.useState(false);
 
-  const handleLikeBucket = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleStopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
+  };
+
+  const handleLikeBucket = (e: React.MouseEvent) => {
+    handleStopPropagation(e);
     if (!user) {
       return;
     }
@@ -80,17 +84,11 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
   };
 
   const handleIterateBucket = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (bucketIterated) {
+    handleStopPropagation(e);
+    if (bucketIterated || bucket.iterations.includes(user?.id || "")) {
       return;
     }
     setShowIterateModal(true);
-  };
-
-  const handleStopPropagation = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
   };
 
   React.useEffect(() => {
@@ -108,9 +106,9 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
       href={`/buckets/bucket/${bucket.bucketId}`}
       className="flex flex-col gap-2 hover:cursor-pointer"
     >
-      <Card className="w-full relative mx-auto min-h-[210px] border-none hover:bg-muted py-6 border-b-2">
+      <Card className="w-full relative mx-auto min-h-[120px] border-none hover:bg-muted py-6 border-b-2">
         <div className="absolute top-0 left-0 w-full flex justify-between items-center px-4">
-          <div className="flex flex-row items-center">
+          <div className="flex flex-row items-center mt-3">
             <UserAvatar
               userId={bucket?.userId}
               width={20}
@@ -126,8 +124,8 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
                     {bucketOwner?.full_name}
                   </p>
                 )}
-                <p className="ml-2 text-xs ">*</p>
-                <p className="ml-2 text-xs">
+                <p className="ml-2 text-xs text-slate-600 font-semibold">*</p>
+                <p className="ml-2 text-xs text-slate-600 font-semibold">
                   {formatDistanceToNow(
                     new Date(bucket?.updated ? bucket.updated + "Z" : ""),
                     {
@@ -151,29 +149,23 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
             </div>
           </div>
           <div>
-            <DropdownMenu>
+            <DropdownMenu modal={true}>
               <DropdownMenuTrigger className="rounded-full p-2 hover:bg-slate-300 border-none focus:outline-none">
                 <EllipsisIcon />
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={handleStopPropagation}
-                >
+              <DropdownMenuContent onClick={handleStopPropagation}>
+                <DropdownMenuItem className="cursor-pointer">
                   <Album size={16} className="mr-2"></Album>Save
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={handleStopPropagation}
-                >
+                <DropdownMenuItem className="cursor-pointer">
                   <EyeOff size={16} className="mr-2"></EyeOff>Hide
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
-        <CardHeader className="overflow-hidden">
-          <CardTitle className="break-words hover:cursor-pointer text-xl leading-tight hyphens-auto">
+        <CardHeader className="overflow-hidden mt-3">
+          <CardTitle className="break-words hover:cursor-pointer text-lg leading-tight hyphens-auto">
             {bucket.name}
           </CardTitle>
           <CardDescription className="hyphens-auto mb-8 max-w-6xl text-slate-600">
@@ -220,13 +212,11 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
           })}
         </p>
       </Card>
-      {showIterateModal && (
-        <IterateModal
-          bucket={bucket}
-          open={showIterateModal}
-          setIsOpen={setShowIterateModal}
-        />
-      )}
+      <IterateModal
+        bucket={bucket}
+        open={showIterateModal}
+        setIsOpen={setShowIterateModal}
+      />
     </Link>
   );
 }
