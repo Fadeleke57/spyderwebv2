@@ -32,6 +32,7 @@ import { useEffect } from "react";
 import PublicLayout from "@/app/PublicLayout";
 import AppLayout from "@/app/AppLayout";
 import Head from "next/head";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const loginSchema = z.object({
   email: z
@@ -49,6 +50,7 @@ type LoginFormInputs = z.infer<typeof loginSchema>;
 const Login = () => {
   const { user } = useUser();
   const router = useRouter();
+  const isMobile = useIsMobile();
   const { toast } = useToast();
   const form = useForm<LoginFormInputs>({
     resolver: zodResolver(loginSchema),
@@ -56,7 +58,7 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
-      router.push("/home");
+      router.push(isMobile ? "/explore" : "/home");
     }
   }, [router, user]);
 
@@ -76,7 +78,7 @@ const Login = () => {
       );
       if (response.status === 200) {
         localStorage.setItem("token", response.data.access_token);
-        window.location.href = "/home";
+        window.location.href = isMobile ? "/explore" : "/home";
       }
     } catch (error) {
       console.error("Login failed", error);
