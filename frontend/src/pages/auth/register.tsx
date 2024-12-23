@@ -86,7 +86,7 @@ const Register = () => {
   };
 
   return (
-    <div className="w-full flex items-center justify-center p-6 lg:pt-20">
+    <div className="w-full flex flex-col items-center justify-center p-6 lg:pt-20">
       <Head>
         <title>{"register - spydr"}</title>
         <meta
@@ -191,6 +191,11 @@ const Register = () => {
                     Login
                   </Link>
                 </p>
+                <div className="text-balance text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary  ">
+                  By clicking continue, you agree to our{" "}
+                  <Link href="/about/terms-of-service">Terms of Service</Link>{" "}
+                  and <Link href="/about/privacy-policy">Privacy Policy</Link>.
+                </div>
               </div>
             </form>
           </Form>

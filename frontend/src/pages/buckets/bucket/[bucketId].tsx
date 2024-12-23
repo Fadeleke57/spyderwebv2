@@ -9,7 +9,7 @@ import MobileBucketForm from "@/components/buckets/MobileBucketForm";
 import PublicBucketView from "@/components/buckets/PublicBucketView";
 import { useFetchUserById } from "@/hooks/user";
 import { formatDistanceToNow, isMonday } from "date-fns";
-import { ShareButton } from "@/components/utility/ShareButton";
+import ShareDialog from "@/components/utility/ShareButton";
 import UserAvatar from "@/components/utility/UserAvatar";
 import {
   SkeletonCard,
@@ -96,8 +96,8 @@ function Index() {
         />
       </Head>
       <div className="flex flex-col">
-        <header className="sticky top-0 z-10 flex h-[65px] items-center justify-between gap-1 border-b bg-background px-4">
-          <div className="flex items-center gap-2">
+        <header className="sticky top-0 z-10 flex h-[80px] lg:h[55px] items-center justify-between gap-1 border-b bg-background px-4">
+          <div className="flex z-40 items-center gap-2 mb-3 lg:mb-0  max-w-[210px] lg:max-w-2xl">
             {loading || bucketOwnerLoading ? (
               <SkeletonUserCard />
             ) : (
@@ -105,7 +105,7 @@ function Index() {
                 <UserAvatar userId={bucket?.userId} />{" "}
                 <div className="flex flex-col gap-0">
                   <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
-                    {bucketOwner?.full_name || "Bucket"}{" "}
+                    {bucketOwner?.full_name || ""}{" "}
                   </h1>
                   {bucket?.iteratedFrom ? (
                     <p className="text-xs font-normal text-muted-foreground">
@@ -128,17 +128,24 @@ function Index() {
               </>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mb-3 lg:mb-0">
             {bucket && <MobileBucketForm bucket={bucket} user={user} />}
 
-            {bucket && (
+            {bucket && bucketOwner && (
               <IterateModal
                 open={showIterateModal}
                 setIsOpen={setShowIterateModal}
                 bucket={bucket}
               >
-                <Button size="sm" variant={"outline"}>
-                  <span className="hidden md:inline lg:inline">Iterate{" "}</span>
+                <Button
+                  disabled={
+                    bucket.iterations.includes(user?.id || "") ||
+                    bucketOwner.id === user?.id
+                  }
+                  size="sm"
+                  variant={"outline"}
+                >
+                  <span className="hidden md:inline lg:inline">Iterate </span>
                   <IterationCcw
                     className="md:ml-2 lg:ml-2"
                     size={16}
@@ -148,7 +155,7 @@ function Index() {
               </IterateModal>
             )}
 
-            <ShareButton
+            <ShareDialog
               link={`${window.location.origin}/buckets/bucket/${bucketId}`}
             />
           </div>

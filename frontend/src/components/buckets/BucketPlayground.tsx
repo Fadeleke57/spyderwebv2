@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Label } from "../ui/label";
-import { CirclePlus, Check, ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, Link, File, Notebook, Youtube } from "lucide-react";
 import { Bucket } from "@/types/bucket";
 import { PublicUser } from "@/types/user";
 import BucketSearchModal from "./BucketSearchModal";
@@ -23,10 +22,19 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import BucketDataDrawer from "./BucketDataDrawer";
-import { setDefaultResultOrder } from "dns";
-import { set } from "lodash";
+
+import { PlusCircle } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DialogTrigger } from "../ui/dialog";
 
 function BucketPlayground({
   bucket,
@@ -37,31 +45,39 @@ function BucketPlayground({
   user: PublicUser | null;
   refetch: () => void;
 }) {
-  const isOwner = user && user?.id === bucket?.userId;
   const [config, setConfig] = useState<BucketConfigFormValues>({
     title: bucket?.name || "",
     description: bucket?.description || "",
   });
-  const [selectedSourceId, setSelectedSourceId] = useState<string>("");
+
   const {
     data: sources,
     isLoading,
     error: sourcesError,
     refetch: refetchSources,
   } = useFetchSourcesForBucket(bucket?.bucketId);
+
+  const isOwner = user && user?.id === bucket?.userId;
+  const [selectedSourceId, setSelectedSourceId] = useState<string>("");
   const [fetchedSources, setFetchedSources] = useState<Source[]>([]);
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
   const [isBucketDataDrawerOpen, setIsBucketDataDrawerOpen] = useState(false);
+  const [isBucketSearchModalOpen, setIsBucketSearchModalOpen] = useState(false);
+  const [bucketSearchModalView, setBucketSearchModalView] = useState<
+    "youtube" | "website" | "default" | "note"
+  >("default");
 
   const handleSourceClick = (sourceId: string) => {
-    console.log("sourceId", sourceId);
-    console.log("drawer open", isBucketDataDrawerOpen);
     setSelectedSourceId(sourceId);
-    console.log("selectedSourceId", selectedSourceId);
     setIsBucketDataDrawerOpen(true);
     setOpen(false);
-    console.log("drawer open", isBucketDataDrawerOpen);
+  };
+
+  const handleDropdownButtonClick = (
+    view: "youtube" | "website" | "default" | "note"
+  ) => {
+    setBucketSearchModalView(view);
+    setIsBucketSearchModalOpen(true);
   };
 
   return (
@@ -73,62 +89,74 @@ function BucketPlayground({
       (bucket?.sourceIds?.length === undefined ||
         bucket?.sourceIds?.length === null ||
         bucket?.sourceIds?.length > 0) ? (
-        <div className="absolute right-3 top-8">
-          <div className="flex flex-col gap-2 whitespace-nowrap mt-2 justify-center">
-            {" "}
-            <BucketSearchModal
-              config={config}
-              setConfig={setConfig}
-              bucket={bucket}
-              refreshSources={refetchSources}
-              refreshBucket={refetch}
-              view="default"
-            >
-              <Button className="rounded-full">
-                <CirclePlus className="size-4 mr-2" />
-                File
-              </Button>
-            </BucketSearchModal>
-            <BucketSearchModal
-              config={config}
-              setConfig={setConfig}
-              bucket={bucket}
-              refreshSources={refetchSources}
-              refreshBucket={refetch}
-              view="website"
-            >
-              <Button className="bg-blue-500 hover:bg-blue-600 rounded-full">
-                <CirclePlus className="size-4 mr-2" />
-                Website
-              </Button>
-            </BucketSearchModal>
-            <BucketSearchModal
-              config={config}
-              setConfig={setConfig}
-              bucket={bucket}
-              refreshSources={refetchSources}
-              refreshBucket={refetch}
-              view="youtube"
-            >
-              <Button className="bg-red-500 hover:bg-red-600 rounded-full">
-                <CirclePlus className="size-4 mr-2" />
-                YouTube
-              </Button>
-            </BucketSearchModal>
-            <BucketSearchModal
-              config={config}
-              setConfig={setConfig}
-              bucket={bucket}
-              refreshSources={refetchSources}
-              refreshBucket={refetch}
-              view="note"
-            >
-              <Button className="bg-green-500 hover:bg-green-600 rounded-full">
-                <CirclePlus className="size-4 mr-2" />
-                Note
-              </Button>
-            </BucketSearchModal>
-          </div>
+        <div className="absolute right-3 top-10">
+          <BucketSearchModal
+            open={isBucketSearchModalOpen}
+            setOpen={setIsBucketSearchModalOpen}
+            bucket={bucket}
+            config={config}
+            setConfig={setConfig}
+            refreshSources={refetchSources}
+            refreshBucket={refetch}
+            view={bucketSearchModalView}
+          >
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="rounded-full h-8">
+                  <PlusCircle size={16} className="mr-2" />
+                  Add
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side="left"
+                sideOffset={5}
+                className="w-40 right-0"
+              >
+                <DropdownMenuGroup>
+                  <DialogTrigger
+                    asChild
+                    onClick={() => handleDropdownButtonClick("website")}
+                  >
+                    <DropdownMenuItem className="cursor-pointer">
+                      <Link size={16} className="mr-2" />
+                      <span>Website</span>
+                      {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
+                    </DropdownMenuItem>
+                  </DialogTrigger>
+                  <DialogTrigger
+                    asChild
+                    onClick={() => handleDropdownButtonClick("default")}
+                  >
+                    <DropdownMenuItem className="cursor-pointer">
+                      <File size={16} className="mr-2" />
+                      <span>File</span>
+                      {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
+                    </DropdownMenuItem>
+                  </DialogTrigger>
+                  <DialogTrigger
+                    asChild
+                    onClick={() => handleDropdownButtonClick("note")}
+                  >
+                    <DropdownMenuItem className="cursor-pointer">
+                      <Notebook size={16} className="mr-2" />
+                      <span>Note</span>
+                      {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
+                    </DropdownMenuItem>
+                  </DialogTrigger>
+                  <DialogTrigger
+                    asChild
+                    onClick={() => handleDropdownButtonClick("youtube")}
+                  >
+                    <DropdownMenuItem className="cursor-pointer">
+                      <Youtube size={16} className="mr-2" />
+                      <span>Youtube</span>
+                      {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
+                    </DropdownMenuItem>
+                  </DialogTrigger>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </BucketSearchModal>
         </div>
       ) : null}
       {isOwner && bucket?.sourceIds?.length === 0 && (
@@ -142,56 +170,71 @@ function BucketPlayground({
           <div className="flex flex-wrap gap-2 whitespace-nowrap mt-2 justify-center">
             {" "}
             <BucketSearchModal
+              open={isBucketSearchModalOpen}
+              setOpen={setIsBucketSearchModalOpen}
+              bucket={bucket}
               config={config}
               setConfig={setConfig}
-              bucket={bucket}
               refreshSources={refetchSources}
               refreshBucket={refetch}
-              view="default"
+              view={bucketSearchModalView}
             >
-              <Button className="rounded-full">
-                <CirclePlus className="size-4 mr-2" />
-                Upload File
-              </Button>
-            </BucketSearchModal>
-            <BucketSearchModal
-              config={config}
-              setConfig={setConfig}
-              bucket={bucket}
-              refreshSources={refetchSources}
-              refreshBucket={refetch}
-              view="website"
-            >
-              <Button className="bg-blue-500 hover:bg-blue-600 rounded-full">
-                <CirclePlus className="size-4 mr-2" />
-                Add Website
-              </Button>
-            </BucketSearchModal>
-            <BucketSearchModal
-              config={config}
-              setConfig={setConfig}
-              bucket={bucket}
-              refreshSources={refetchSources}
-              refreshBucket={refetch}
-              view="youtube"
-            >
-              <Button className="bg-red-500 hover:bg-red-600 rounded-full">
-                <CirclePlus className="size-4 mr-2" />
-                <span>Add YouTube Video</span>
-              </Button>
-            </BucketSearchModal>
-            <BucketSearchModal
-              config={config}
-              setConfig={setConfig}
-              bucket={bucket}
-              refreshSources={refetchSources}
-              refreshBucket={refetch}
-              view="note"
-            >
-              <Button className="bg-green-500 hover:bg-green-600 rounded-full">
-                <CirclePlus className="size-4 mr-2" />
-                Add Note
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="rounded-full h-8">
+                    <PlusCircle size={16} className="mr-2" />
+                    Create
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  side="bottom"
+                  sideOffset={5}
+                  className="w-40 right-0"
+                >
+                  <DropdownMenuGroup>
+                    <DialogTrigger
+                      asChild
+                      onClick={() => handleDropdownButtonClick("website")}
+                    >
+                      <DropdownMenuItem className="cursor-pointer">
+                        <Link size={16} className="mr-2" />
+                        <span>Website</span>
+                        {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
+                      </DropdownMenuItem>
+                    </DialogTrigger>
+                    <DialogTrigger
+                      asChild
+                      onClick={() => handleDropdownButtonClick("default")}
+                    >
+                      <DropdownMenuItem className="cursor-pointer">
+                        <File size={16} className="mr-2" />
+                        <span>File</span>
+                        {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
+                      </DropdownMenuItem>
+                    </DialogTrigger>
+                    <DialogTrigger
+                      asChild
+                      onClick={() => handleDropdownButtonClick("note")}
+                    >
+                      <DropdownMenuItem className="cursor-pointer">
+                        <Notebook size={16} className="mr-2" />
+                        <span>Note</span>
+                        {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
+                      </DropdownMenuItem>
+                    </DialogTrigger>
+                    <DialogTrigger
+                      asChild
+                      onClick={() => handleDropdownButtonClick("youtube")}
+                    >
+                      <DropdownMenuItem className="cursor-pointer">
+                        <Youtube size={16} className="mr-2" />
+                        <span>Youtube</span>
+                        {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
+                      </DropdownMenuItem>
+                    </DialogTrigger>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </BucketSearchModal>
           </div>
         </div>

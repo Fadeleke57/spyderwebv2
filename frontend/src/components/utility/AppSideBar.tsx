@@ -12,6 +12,7 @@ import {
   SidebarMenuButton,
   SidebarRail,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -24,6 +25,16 @@ import {
 } from "lucide-react";
 import { NewBucketModal } from "../buckets/NewBucketModal";
 import { DiscordLogoIcon } from "@radix-ui/react-icons";
+
+const SidebarIndicator = ({ show }: { show: boolean }) => {
+  const { state } = useSidebar();
+  console.log("state", state);
+  if (state === "collapsed" || !show) return null;
+
+  return (
+    <div className="absolute top-0 -right-1 z-[100] h-full w-2 bg-slate-600 rounded-l-sm" />
+  );
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter();
@@ -87,23 +98,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <Home
                 className={`size-5 ${
-                  selectedButton === "home" ? "text-blue-950" : "text-slate-500"
+                  selectedButton === "home"
+                    ? "text-slate-600 font-semibold"
+                    : "text-slate-500"
                 }`}
               />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span
                 className={`truncate text-lg ${
-                  selectedButton === "home" ? "text-blue-950" : "text-slate-500"
+                  selectedButton === "home"
+                    ? "text-slate-600 font-semibold"
+                    : "text-slate-500"
                 }`}
               >
                 Home
               </span>
             </div>
           </SidebarMenuButton>
-          {selectedButton === "home" && (
-            <div className="absolute top-0 -right-1 z-[100] h-full w-2 bg-blue-950 rounded-l-sm"></div>
-          )}
+          <SidebarIndicator show={selectedButton === "home"} />
         </div>
         <div className="relative px-2">
           <SidebarMenuButton
@@ -117,7 +130,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <LayoutGrid
                 className={`size-5 ${
                   selectedButton === "explore"
-                    ? "text-blue-950"
+                    ? "text-slate-600 font-semibold"
                     : "text-slate-500"
                 }`}
               />
@@ -126,7 +139,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <span
                 className={`truncate text-lg ${
                   selectedButton === "explore"
-                    ? "text-blue-950"
+                    ? "text-slate-600 font-semibold"
                     : "text-slate-500"
                 }`}
               >
@@ -134,9 +147,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </span>
             </div>
           </SidebarMenuButton>
-          {selectedButton === "explore" && (
-            <div className="absolute top-0 -right-1 z-[100] h-full w-2 bg-blue-950 rounded-l-sm"></div>
-          )}
+          <SidebarIndicator show={selectedButton === "explore"} />
         </div>
         <div className="relative px-2">
           <SidebarMenuButton
@@ -145,12 +156,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             onClick={() => router.push("/buckets")}
           >
             <div
-              className={`flex flex-row gap-2 items-center rounded-lg bg-none text-blue-950 text-sidebar-primary-foreground`}
+              className={`flex flex-row gap-2 items-center rounded-lg bg-none text-sidebar-primary-foreground`}
             >
               <ChartNoAxesGantt
                 className={`size-5 ${
                   selectedButton === "buckets"
-                    ? "text-blue-950"
+                    ? "text-slate-600 font-semibold"
                     : "text-slate-500"
                 }`}
               />
@@ -159,7 +170,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <span
                 className={`truncate text-lg ${
                   selectedButton === "buckets"
-                    ? "text-blue-950"
+                    ? "text-slate-600 font-semibold"
                     : "text-slate-500"
                 }`}
               >
@@ -167,9 +178,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               </span>
             </div>
           </SidebarMenuButton>
-          {selectedButton === "buckets" && (
-            <div className="absolute top-0 -right-1 z-[100] h-full w-2 bg-blue-950 rounded-l-sm"></div>
-          )}
+          <SidebarIndicator show={selectedButton === "buckets"} />
         </div>
         <NewBucketModal>
           <div className="px-2">

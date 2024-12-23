@@ -24,7 +24,7 @@ function Index() {
         />
       </Head>
       <h1 className="text-2xl lg:text-4xl font-extrabold tracking-tight">
-        Welcome to spydr, {user?.full_name}
+        welcome to spydr, {user?.full_name}
       </h1>
       <div>
         <span className="text-lg font-semibold ml-2">Explore</span>
