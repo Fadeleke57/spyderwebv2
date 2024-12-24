@@ -96,7 +96,7 @@ const Register = () => {
           }`}
         />
       </Head>
-      <Card className="w-[500px] border-none shadow-none">
+      <Card className="max-w-[500px] border-none shadow-none">
         <CardHeader>
           <CardTitle className="font-bold mb-2">
             <span className="text-slate-400">like it? save it.</span>
