@@ -34,7 +34,6 @@ function LandingGrid() {
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* First Large Item */}
       <div className="hidden lg:block w-full h-full col-span-2 row-span-2 relative rounded-2xl border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
         <Image
           src={firstItem.image}
@@ -44,7 +43,6 @@ function LandingGrid() {
         <Link
           href={{
             pathname: "/explore",
-            query: { topic: firstItem.name.toLowerCase() },
           }}
         >
           <div className="w-full h-full absolute top-0 left-0 bg-neutral-950/70 group-hover:bg-transparent rounded-2xl"></div>
@@ -54,12 +52,10 @@ function LandingGrid() {
         </Link>
       </div>
 
-      {/* First Block */}
       {firstBlock.map((topic, id) => (
         <Link
           href={{
             pathname: "/explore",
-            query: { topic: topic.name.toLowerCase() },
           }}
           key={id}
         >
@@ -86,7 +82,6 @@ function LandingGrid() {
         <Link
           href={{
             pathname: "/explore",
-            query: { topic: firstItem.name.toLowerCase() },
           }}
         >
           <div className="w-full h-full absolute top-0 left-0 bg-neutral-950/70 group-hover:bg-transparent rounded-2xl"></div>
@@ -96,12 +91,10 @@ function LandingGrid() {
         </Link>
       </div>
 
-      {/* Last Block */}
       {lastBlock.map((topic, id) => (
         <Link
           href={{
             pathname: "/explore",
-            query: { topic: topic.name.toLowerCase() },
           }}
           key={id}
         >
