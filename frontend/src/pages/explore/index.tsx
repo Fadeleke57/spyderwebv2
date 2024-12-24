@@ -7,21 +7,34 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
 import { formatText } from "@/lib/utils";
 import { useUser } from "@/context/UserContext";
-import { SkeletonCard, SkeletonUserCard } from "@/components/utility/SkeletonCard";
+import { SkeletonCard } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
-import { PlusCircle } from "lucide-react";
-import UserAvatar from "@/components/utility/UserAvatar";
 import useMediaQuery from "@/hooks/general";
+import { TagsScroll } from "@/components/explore/TagsScroll";
 
 function Index() {
   const { data: buckets, isLoading: loading, error } = useFetchPublicBuckets();
   const [query, setQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [active, setActive] = useState<boolean>(false);
   const searchInputWrapperRef = useRef<any>(null);
   const bucketsPerPage = 20;
   const { user } = useUser();
   const router = useRouter();
+  const { tag } = router.query;
+  let formattedTag: null | string;
+  if (tag instanceof Array) {
+    formattedTag = tag[0];
+  } else if (tag) {
+    formattedTag = tag;
+  } else {
+    formattedTag = null;
+  }
+
+  useEffect(() => {
+    setActiveTag(formattedTag);
+  }, [formattedTag, tag]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -62,7 +75,7 @@ function Index() {
 
   const filteredBuckets =
     buckets?.filter(
-      (bucket : Bucket) =>
+      (bucket: Bucket) =>
         bucket.name.toLowerCase().includes(query.toLowerCase()) ||
         bucket.description?.toLowerCase().includes(query.toLowerCase())
     ) || [];
@@ -85,8 +98,15 @@ function Index() {
     ? `Discover buckets matching your query "${query}".`
     : "Explore public buckets on Spydr. Find shared research and projects.";
 
+  const bucketTagFilter = (bucket: Bucket) => {
+    if (!activeTag) {
+      return true;
+    }
+    return bucket.tags.includes(activeTag);
+  };
+
   return (
-    <div className="flex flex-1 flex-col gap-8 py-2 lg:py-10 mx-auto w-full relative">
+    <div className="flex flex-1 flex-col gap-4 py-2 lg:py-10 mx-auto w-full relative">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -122,6 +142,7 @@ function Index() {
           onChange={handleSearch}
           value={query}
         ></SearchInput>
+        <TagsScroll activeTag={activeTag} setActiveTag={setActiveTag} />
       </div>
       <div className="w-full lg:min-h-[62vh] lg:px-16">
         {loading ? (
@@ -134,7 +155,7 @@ function Index() {
           <p>Error loading buckets</p>
         ) : currentBuckets.length > 0 ? (
           <div className="w-full grid grid-cols-1 gap-1">
-            {currentBuckets.map((bucket: Bucket) => (
+            {currentBuckets.filter(bucketTagFilter).map((bucket: Bucket) => (
               <div key={bucket.bucketId} className="cursor-pointer">
                 <BucketCard
                   bucket={{
