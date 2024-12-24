@@ -89,9 +89,9 @@ def get_public_buckets():
     List of Bucket
         List of all public buckets
     """
-    buckets = get_items_by_field("buckets", "visibility", "Public")
-    buckets = [bucket for bucket in buckets]
-    buckets = sorted(buckets, key=lambda x: x["created"], reverse=True)
+    buckets = get_collection("buckets")
+    buckets = buckets.find({"visibility": "Public"}, {"_id": 0})
+    buckets = sorted(buckets, key=lambda x: x["updated"], reverse=True)
     return {"result": buckets}
 
 @router.get("/liked/user") # get all liked buckets belonging to a user
