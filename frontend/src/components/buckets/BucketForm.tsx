@@ -10,6 +10,7 @@ import { z } from "zod";
 import { Textarea } from "../ui/textarea";
 import { debounce } from "lodash";
 import { ConfirmModal } from "../utility/ConfirmModal";
+import { TagsPopover } from "../home/TagsPopover";
 
 type FormProps = {
   bucket: Bucket;
@@ -19,7 +20,7 @@ type FormProps = {
 const bucketSchema = z.object({
   name: z.string().min(1, { message: "Claim is required" }),
   description: z.string().min(1, { message: "Description is required" }),
-  visibility: z.enum(["Private", "Bublic", "Invite"], {}).default("Private"),
+  visibility: z.enum(["Private", "Public", "Invite"], {}).default("Private"),
 });
 
 type BucketFormValues = z.infer<typeof bucketSchema>;
@@ -71,7 +72,7 @@ function BucketForm({ bucket, user }: FormProps) {
 
   const onConfigChange = (newConfig: BucketConfig) => {
     setBucketConfig(newConfig);
-    debouncedSave(newConfig); // Autosave with debounced function
+    debouncedSave(newConfig);
   };
 
   const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,45 +115,48 @@ function BucketForm({ bucket, user }: FormProps) {
   };
 
   return (
-    <form className="grid w-full items-start gap-6">
+    <form className="relative grid w-full items-start gap-6">
       <div className="grid gap-4 rounded-lg pb-8 pt-4 px-4">
         <div>
           <div className="flex flex-col space-y-2">
-            <small className="text-sm font-medium leading-none text-blue-500">
-              {bucketConfig.visibility}
-              {isOwner && (
-                <ConfirmModal
-                  action={() =>
-                    handleToggleVisibility(
+            <div className="flex flex-row items-center space-x-2 justify-between">
+              <small className="text-sm font-medium leading-none text-blue-500">
+                {bucketConfig.visibility}
+                {isOwner && (
+                  <ConfirmModal
+                    action={() =>
+                      handleToggleVisibility(
+                        bucketConfig.visibility === "Private"
+                          ? "Public"
+                          : "Private"
+                      )
+                    }
+                    actionButtonStr={
                       bucketConfig.visibility === "Private"
-                        ? "Public"
-                        : "Private"
-                    )
-                  }
-                  actionButtonStr={
-                    bucketConfig.visibility === "Private"
-                      ? "Make Public"
-                      : "Make Private"
-                  }
-                  actionStr={
-                    "Are you sure you want to switch this bucket to " +
-                    (bucketConfig.visibility === "Private"
-                      ? "public"
-                      : "private") +
-                    "?"
-                  }
-                >
-                  <span className="text-red-500 cursor-pointer">
-                    {" "}
-                    (
-                    {bucketConfig.visibility === "Private"
-                      ? "Switch to Public"
-                      : "Switch to Private"}
-                    )
-                  </span>
-                </ConfirmModal>
-              )}
-            </small>
+                        ? "Make Public"
+                        : "Make Private"
+                    }
+                    actionStr={
+                      "Are you sure you want to switch this bucket to " +
+                      (bucketConfig.visibility === "Private"
+                        ? "public"
+                        : "private") +
+                      "?"
+                    }
+                  >
+                    <span className="text-red-500 cursor-pointer">
+                      {" "}
+                      (
+                      {bucketConfig.visibility === "Private"
+                        ? "Switch to Public"
+                        : "Switch to Private"}
+                      )
+                    </span>
+                  </ConfirmModal>
+                )}
+              </small>
+            </div>
+            <TagsPopover bucket={bucket} />
             <Textarea
               id="name"
               placeholder="Give it a title..."
