@@ -88,6 +88,19 @@ def add_attr_to_buckets():
 
     print(f"Total buckets updated: {updated_count}")
 
+def clear_out_buckets_tags():
+    updated_count = 0
+    all_buckets = buckets.find()
+    for bucket in all_buckets:
+        buckets.update_one(
+            {"_id": bucket["_id"]},
+            {"$set": {"tags": []}}
+        )
+
+        updated_count += 1
+        print(f"Updated bucket {bucket['_id']} with new tags: []")
+
+    print(f"Total buckets updated: {updated_count}")
+
 if __name__ == "__main__":
-    add_attr_to_users()
-    add_attr_to_buckets()
+    clear_out_buckets_tags()

@@ -10,7 +10,12 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "robohash.org",
-        pathname: "/**", // Match all paths under this domain
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        pathname: "/**",
       },
     ],
   },

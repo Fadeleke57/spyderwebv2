@@ -268,41 +268,21 @@ def unlike_bucket(bucket_id: str, user=Depends(manager)):
         raise HTTPException(status_code=400, detail="Not liked yet or bucket not found")
     return {"result": len(result["likes"])}
 
-@router.patch("/add/source/{bucket_id}/{source_id}")
-def add_article(bucket_id: str, source_id: str, user=Depends(manager)):
-    """
-    Add a source to a bucket.
-
-    Args:
-        bucket_id (str): The ID of the bucket.
-        source_id (str): The ID of the source to add.
-        user (User): The user making the request.
-
-    Returns:
-        dict: A JSON response with a result key.
-    """
+@router.patch("/add/tag/{bucket_id}/{tag}")
+def add_tag(bucket_id: str, tag: str, user=Depends(manager)):
     check_user(user)
     buckets = get_collection("buckets")
-    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$push": {"articleIds": source_id}})
-    return {"result": True}
-
-@router.patch("/remove/source/{bucket_id}/{source_id}")
-def remove_article(bucket_id: str, source_id: str, user=Depends(manager)):
-    """
-    Remove a source from a bucket.
-
-    Args:
-        bucket_id (str): The ID of the bucket.
-        source_id (str): The ID of the source to remove.
-        user (User): The user making the request.
-
-    Returns:
-        dict: A JSON response of the form {"result": True} if the source was removed, or 404 if the bucket or source does not exist.
-    """
+    formatted_tag = tag.lower()
+    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$addToSet": {"tags": formatted_tag}})
+    return {"result": "Tag added"}
+    
+@router.patch("/remove/tag/{bucket_id}/{tag}")
+def remove_tag(bucket_id: str, tag: str, user=Depends(manager)):
     check_user(user)
     buckets = get_collection("buckets")
-    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$pull": {"sourceIds": source_id}})
-    return {"result": True}
+    formatted_tag = tag.lower()
+    buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$pull": {"tags": formatted_tag}})
+    return {"result": "Tag added"}
 
 @router.get("/sources/{bucket_id}")
 def get_articles(bucket_id: str, user=Depends(manager.optional)):
