@@ -59,17 +59,17 @@ def migrate_buckets_to_visibility_attr():
     print(f"Total buckets updated: {updated_count}")
 
 def add_attr_to_users():
-    users_without_saved_attr = users.find({"bucketsSaved": {"$exists": False}})
+    users_without_saved_attr = users.find({"username": {"$exists": False}})
     updated_count = 0
 
     for user in users_without_saved_attr:
         users.update_one(
             {"_id": user["_id"]},
-            {"$set": {"bucketsSaved": [], "bucketsHidden": []}}
+            {"$set": {"username": user["full_name"]}}
         )
 
         updated_count += 1
-        print(f"Updated user {user['_id']} with bucketsSaved and bucketsHidden: []")
+        print(f"Updated user {user['_id']} with new username: {user['full_name']}")
 
     print(f"Total users updated: {updated_count}")
 
@@ -90,4 +90,3 @@ def add_attr_to_buckets():
 
 if __name__ == "__main__":
     add_attr_to_users()
-    add_attr_to_buckets()

@@ -107,9 +107,9 @@ export function IterateModal({
         <DialogTrigger asChild>{children}</DialogTrigger>
         <DrawerContent
           onClick={handleStopPropagation}
-          className="min-h-[90svh] lg:px-16 lg:max-w-[700px] rounded-md"
+          className="min-h-[90dvh] lg:px-16 lg:max-w-[700px] rounded-md"
         >
-          <DrawerHeader className="p-6">
+          <DrawerHeader className="p-6 pb-0">
             <DrawerTitle className="text-left lg:text-2xl">
               Iterate Bucket
             </DrawerTitle>
@@ -119,7 +119,6 @@ export function IterateModal({
               affecting the original project.
             </DrawerDescription>
           </DrawerHeader>
-          <Separator className="my-2 h-px bg-slate-200" />
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-6">
             <div className="flex flex-col gap-2">
@@ -132,7 +131,7 @@ export function IterateModal({
                 value={formData.name}
                 onChange={handleInputChange}
               />
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 By default, iterations are named the same as the original. You
                 can customize the name to distinguish it further.
               </p>
@@ -192,7 +191,6 @@ export function IterateModal({
             affecting the original project.
           </DialogDescription>
         </DialogHeader>
-        <Separator className="my-2 h-px bg-slate-200" />
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
@@ -205,7 +203,7 @@ export function IterateModal({
               value={formData.name}
               onChange={handleInputChange}
             />
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               By default, iterations are named the same as the original. You can
               customize the name to distinguish it further.
             </p>

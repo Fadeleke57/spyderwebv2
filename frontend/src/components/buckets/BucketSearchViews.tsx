@@ -14,11 +14,11 @@ function UploadFile({
 }) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="w-full h-full bg-muted p-10 rounded-xl border-dashed border-2 border-slate-400">
+      <div className="w-full h-full bg-muted p-10 rounded-xl border-dashed border-2 border-slate-400 dark:border-muted-foreground">
         <div className="flex flex-col gap-2 items-center">
           <div>
             <label htmlFor="file">
-              <div className="relative p-4 rounded-full bg-slate-400 cursor-pointer hover:bg-slate-500">
+              <div className="relative p-4 rounded-full bg-slate-400 cursor-pointer hover:bg-slate-500 dark:bg-muted-foreground">
                 <Upload size={24} color="white" className="cursor-pointer" />
               </div>
             </label>

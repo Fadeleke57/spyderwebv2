@@ -54,82 +54,16 @@ function NavigationMenuFull() {
   const handleLogout = async () => {
     logout();
     router.push("/auth/login");
-  }
+  };
   return (
     <NavigationMenu>
-      <NavigationMenuList>
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>About</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid gap-3 p-4 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-              <li className="row-span-3">
-                <NavigationMenuLink asChild>
-                  <Link
-                    className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                    href="/"
-                  >
-                    <Image
-                      src={logo}
-                      alt="logo"
-                      className="w-full h-full rounded-md"
-                    />
-                    <div className="mb-2 mt-4 text-lg font-medium">Spydr</div>
-                    <p className="text-sm leading-tight text-muted-foreground">
-                      Access to the latest news and information.
-                    </p>
-                  </Link>
-                </NavigationMenuLink>
-              </li>
-              <ListItem href="/about" title="About Spydr">
-                Learn more about what we do and why we&apos;re different
-              </ListItem>
-              <ListItem href="/about/privacy-policy" title="Privacy Policy">
-                Learn about our privacy policy.
-              </ListItem>
-              <ListItem href="/about/terms-of-service" title="Terms of Service">
-                Terms and conditions to using Spydr.
-              </ListItem>
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>Getting started</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {components.map((component) => (
-                <ListItem
-                  key={component.title}
-                  title={component.title}
-                  href={component.href}
-                >
-                  {component.description}
-                </ListItem>
-              ))}
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
+      <NavigationMenuList className="hidden md:flex">
+        <NavigationMenuItem className="bg-transparent">
           <Link href="/explore" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
               Explore
             </NavigationMenuLink>
           </Link>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          {user ? (
-            <NavigationMenuLink
-              className={navigationMenuTriggerStyle()}
-              onClick={handleLogout}
-            >
-              Logout
-            </NavigationMenuLink>
-          ) : (
-            <Link href="/auth/login" legacyBehavior passHref>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                Login
-              </NavigationMenuLink>
-            </Link>
-          )}
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
@@ -205,22 +139,34 @@ export function Navbar() {
 
   const desktopNav = (
     <div
-      className={`flex items-center justify-between px-10 transition ease duration-300 ${
+      className={`flex items-center justify-between px-6 lg:px-10 transition ease duration-300 ${
         showNav ? "translate-y-0" : "-translate-y-full"
-      } fixed top-0 left-0 2xl:left-60 bg-white z-50 w-full`}
+      } bg-background py-2 fixed top-0 left-0 2xl:left-60 z-50 w-full`}
     >
-      <div className="flex items-center gap-2">
         <Link href="/">
-          <Image ref={logoRef} src={logo} alt="logo" width={50} height={50} />
+          <div className="flex gap-2 items-center justify-center rounded-lg rounded-full">
+            <Image
+              src={logo}
+              alt="logo"
+              width={36}
+              height={36}
+              className="rounded-full"
+              priority
+            />
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-semibold text-3xl tracking-tighter">
+                spydr
+              </span>
+            </div>
+          </div>
         </Link>
         <NavigationMenuFull />
-      </div>
     </div>
   );
 
   const mobileNav = <MobileNav />;
 
   return (
-    <div className="w-full p-6 lg:p-0">{matches ? mobileNav : desktopNav}</div>
+    <div className="w-full p-6 lg:p-0">{desktopNav}</div>
   );
 }

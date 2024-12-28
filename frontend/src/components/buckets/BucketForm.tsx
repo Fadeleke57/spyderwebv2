@@ -118,7 +118,7 @@ function BucketForm({ bucket, user }: FormProps) {
       <div className="grid gap-4 rounded-lg pb-8 pt-4 px-4">
         <div>
           <div className="flex flex-col space-y-2">
-            <small className="text-sm font-medium leading-none text-blue-500">
+            <small className="text-sm font-medium leading-none text-blue-500 dark:text-blue-400">
               {bucketConfig.visibility}
               {isOwner && (
                 <ConfirmModal
@@ -142,7 +142,7 @@ function BucketForm({ bucket, user }: FormProps) {
                     "?"
                   }
                 >
-                  <span className="text-red-500 cursor-pointer">
+                  <span className="text-red-500 dark:text-foreground cursor-pointer">
                     {" "}
                     (
                     {bucketConfig.visibility === "Private"

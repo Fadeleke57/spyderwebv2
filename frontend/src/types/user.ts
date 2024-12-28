@@ -1,7 +1,7 @@
 export interface PublicUser {
   id: string;
   email: string;
-  username?: string;
+  username: string;
   full_name: string;
   profile_picture_url?: string;
   disabled?: boolean;

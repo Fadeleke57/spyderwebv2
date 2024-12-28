@@ -3,14 +3,17 @@ import withAuth from "@/hoc/withAuth";
 import { TrendingSearchCarousel } from "@/components/home/TrendingSearchCarousel";
 import { ProjectsCarousel } from "@/components/home/ProjectsCarousel";
 import { useUser } from "@/context/UserContext";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Head from "next/head";
+import { useRouter } from "next/router";
 
 function Index() {
   const { user } = useUser();
+  const router = useRouter();
+  const { loginSource } = router.query;
+
   return (
-    <div className="flex flex-col gap-12 lg:gap-20 p-6 py-16 min-h-screen overflow-x-hidden max-w-[1100px] mx-auto">
+    <div className="flex flex-col gap-12 lg:gap-20 p-6 py-16 min-h-screen overflow-x-hidden max-w-[920px] mx-auto">
       <Head>
         <title>{"home - spydr"}</title>
         <meta name="description" content={"Welcome to spydr"} />
@@ -23,11 +26,11 @@ function Index() {
           }`}
         />
       </Head>
-      <h1 className="text-2xl lg:text-4xl font-extrabold tracking-tight">
-        welcome to spydr, {user?.full_name}
+      <h1 className="text-2xl text-center lg:text-4xl font-extrabold tracking-tight">
+        Welcome to Spydr, {user?.username}
       </h1>
       <div>
-        <span className="text-lg font-semibold ml-2">Explore</span>
+        <span className="text-lg font-semibold ml-2">Popular</span>
         <TrendingSearchCarousel />
       </div>
       <div>

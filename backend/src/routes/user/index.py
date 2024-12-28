@@ -35,14 +35,33 @@ def get_user(userId: str, user: User = Depends(manager.optional)):
         raise HTTPException(status_code=404, detail="User not found")
     return {"result": user}
 
-@router.patch("/edit")
-def edit_user(updates: UpdateUser, userToEdit : User = Depends(manager)):
-    check_user(userToEdit)
+@router.patch("/edit/")
+def edit_user(updates: UpdateUser, user : User = Depends(manager)):
+    check_user(user)
     users = get_collection("users")
-    user = users.find_one_and_update({"id": userToEdit["id"]}, {"$set": updates.model_dump()}, return_document=True)
+
+    if updates.username:
+        username_exists = users.find_one({"username": updates.username})
+        if username_exists and username_exists["id"] != user["id"]:
+            raise HTTPException(status_code=400, detail="Username already exists")
+    
+    update_data = updates.model_dump(exclude_none=True)
+    users.update_one(
+        {"id": user["id"]}, 
+        {"$set": update_data}, 
+    )
     if not user:
+        print("User was not found after editing")
         raise HTTPException(status_code=404, detail="User not found")
-    return {"result": user}
+    
+    return {"result": "success"}
+
+@router.get("/check/email") 
+def check_email(email: str):
+    users = get_collection("users")
+    user = users.find_one({"email": email})
+    result = True if user else False
+    return {"result": result}
 
 """
 @router.post("/save/bucket/{bucketId}")

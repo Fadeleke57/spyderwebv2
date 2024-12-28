@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -43,24 +44,24 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --background: 0 0% 12%; /* Dark grey */
+    --foreground: 60 1% 91%; /* Light grey/white */
+    --card: 0 0% 15%; /* Slightly lighter than background */
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 0 0% 15%; /* Match card for uniformity */
     --popover-foreground: 210 40% 98%;
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 0 1% 19%; /* Light grey/white */;
+    --muted-foreground: 0 0% 59%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 0 0% 20%; /* Slightly darker for subtle borders */
+    --input: 0 0% 20%; /* Match border for consistency */
     --ring: 212.7 26.8% 83.9%;
     --chart-1: 217 91% 60%;
     --chart-2: 160 60% 45%;
@@ -72,7 +73,7 @@
   }
 
   :root {
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
@@ -83,13 +84,13 @@
   }
 
   .dark {
-    --sidebar-background: 240 5.9% 10%;
+    --sidebar-background: 0 0% 12%; /* Match dark mode background */
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 0 0% 15%; /* Slightly lighter than dark background */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent: 0 0% 20%; /* Accent matches dark theme tones */
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-border: 0 0% 20%; /* Match input/border color */
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
@@ -98,7 +99,7 @@
   * {
     @apply border-border;
   }
-  body {
+  body,html {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
   }

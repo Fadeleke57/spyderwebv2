@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 import * as d3 from "d3";
 import { BucketConfigFormValues } from "@/types/article";
 import { useState, Dispatch, SetStateAction } from "react";
@@ -15,8 +15,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { formatText } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTheme } from "next-themes";
+import {
+  formatText,
+  mapThemeToBaseNodeColor,
+  mapThemetoHoverNodeColor,
+  mapThemeToTextColor,
+} from "@/lib/utils";
+import { D3Selection } from "@/types/graph";
 
 interface GraphProps {
   setConfig: (value: BucketConfigFormValues) => void;
@@ -37,22 +44,29 @@ function BucketGraph({
   setSelectedSourceId,
 }: GraphProps) {
   const trashRef = useRef<HTMLDivElement | null>(null);
-  const isMobile = useIsMobile();
-  const { user } = useUser();
   const svgRef = useRef<SVGSVGElement | null>(null);
+
+  const isMobile = useIsMobile();
+
+  const { user } = useUser();
+  const { theme } = useTheme();
+
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
+
   const {
     data: bucket,
     isLoading: bucketLoading,
     refetch: refetchBucket,
   } = useFetchBucketById(bucketId);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
+
   const {
     data: sources,
     isLoading,
     error: sourcesError,
     refetch: refetchSources,
   } = useFetchSourcesForBucket(bucketId);
+
   const { mutateAsync: deleteSource } = useDeleteSource();
 
   const handleDeleteSource = async (sourceId: string) => {
@@ -60,6 +74,61 @@ function BucketGraph({
     refetchBucket();
     refetchSources();
   };
+
+  const wrapText = useCallback((text: D3Selection, width: number) => {
+    text.each(function () {
+      const textNode = d3.select(this);
+      const originalText = formatText(textNode.text(), 50);
+
+      if (!originalText) return;
+
+      const words = originalText.split(/\s+/).reverse();
+      const y = textNode.attr("y");
+      const x = textNode.attr("x");
+      const dy = parseFloat(textNode.attr("dy")) || 0;
+      const lineHeight = 1.1; // ems
+
+      //clear existing content once
+      textNode.text(null);
+
+      let currentLine: string[] = [];
+      let lineNumber = 0;
+
+      //create initial tspan
+      let tspan = textNode
+        .append("tspan")
+        .attr("x", x)
+        .attr("y", y)
+        .attr("dy", dy + "em");
+
+      //process words
+      while (words.length > 0) {
+        const word = words.pop()!;
+        currentLine.push(word);
+
+        const lineText = currentLine.join(" ");
+        tspan.text(lineText);
+
+        //check if line needs wrapping
+        if (
+          (tspan.node()?.getComputedTextLength() as any) > width &&
+          currentLine.length > 1
+        ) {
+          currentLine.pop();
+          tspan.text(currentLine.join(" "));
+
+          //start new line
+          currentLine = [word];
+          tspan = textNode
+            .append("tspan")
+            .attr("x", x)
+            .attr("y", y)
+            .attr("dy", ++lineNumber * lineHeight + dy + "em")
+            .text(word);
+        }
+      }
+    });
+  }, []);
 
   useEffect(() => {
     setFetchedSources(sources);
@@ -145,11 +214,16 @@ function BucketGraph({
       g.selectAll("circle")
         .filter((node: any) => node.sourceId !== d.sourceId)
         .style("opacity", isHovering ? 0.3 : 1)
-        .style("fill", "#5ea4ff");
+        .style("fill", mapThemeToBaseNodeColor(theme));
 
       g.selectAll("circle")
         .filter((node: any) => node.sourceId === d.sourceId)
-        .style("fill", isHovering ? "#c084fc" : "#5ea4ff");
+        .style(
+          "fill",
+          isHovering
+            ? mapThemetoHoverNodeColor(theme)
+            : mapThemeToBaseNodeColor(theme)
+        );
 
       g.selectAll("text")
         .filter((node: any) => node.sourceId !== d.sourceId)
@@ -177,7 +251,7 @@ function BucketGraph({
             const fileSize = d.size || 4;
             return sizeScale(fileSize);
           })
-          .attr("fill", "#5ea4ff")
+          .attr("fill", mapThemeToBaseNodeColor(theme))
           .call(drag as any)
           .on("mouseover", (event, d) => handleNodeInteraction(event, d, true))
           .on("mouseout", (event, d) => handleNodeInteraction(event, d, false))
@@ -190,19 +264,23 @@ function BucketGraph({
               .attr("stroke", "none")
               .attr("stroke-width", 0);
 
-            d3.select(this).attr("stroke", "#c084fc").attr("stroke-width", 2);
+            d3.select(this)
+              .attr("stroke", mapThemetoHoverNodeColor(theme))
+              .attr("stroke-width", 2);
           });
 
+        // Usage with your existing code:
         g.selectAll("text")
           .data(nodes ? nodes : [])
           .join("text")
           .attr("x", (d) => d.x)
           .attr("y", (d) => d.y + sizeScale(d.size || 4) + 20)
           .attr("text-anchor", "middle")
-          .attr("fill", "#374151")
+          .attr("fill", mapThemeToTextColor(theme))
           .attr("font-size", "14px")
           .attr("font-weight", "bold")
-          .text((d) => formatText(d.name || "", 50));
+          .text((d) => d.name || "")
+          .call(wrapText, 300);
       });
 
     const drag = d3
@@ -253,8 +331,8 @@ function BucketGraph({
         <div ref={trashRef} className="absolute left-3 top-3 cursor-pointer">
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger className="p-0 m-0 bg-red-600 rounded-full p-2">
-                <Trash size={20} className=" text-white" />
+              <TooltipTrigger className="p-0 m-0 bg-red-600 dark:bg-muted rounded-full p-2">
+                <Trash size={20} className="text-white dark:text-foreground" />
               </TooltipTrigger>
               <TooltipContent>
                 <p>Drag sources here to delete</p>

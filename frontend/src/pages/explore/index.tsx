@@ -7,17 +7,17 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
 import { formatText } from "@/lib/utils";
 import { useUser } from "@/context/UserContext";
-import { SkeletonCard, SkeletonUserCard } from "@/components/utility/SkeletonCard";
+import { SkeletonCard } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
-import { PlusCircle } from "lucide-react";
-import UserAvatar from "@/components/utility/UserAvatar";
 import useMediaQuery from "@/hooks/general";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 function Index() {
   const { data: buckets, isLoading: loading, error } = useFetchPublicBuckets();
   const [query, setQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [active, setActive] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
   const searchInputWrapperRef = useRef<any>(null);
   const bucketsPerPage = 20;
   const { user } = useUser();
@@ -51,7 +51,7 @@ function Index() {
     const parts = text.split(regex);
     return parts.map((part, index) =>
       regex.test(part) ? (
-        <span key={index} className="bg-yellow-200">
+        <span key={index} className="bg-yellow-200 dark:bg-violet-400">
           {part}
         </span>
       ) : (
@@ -62,7 +62,7 @@ function Index() {
 
   const filteredBuckets =
     buckets?.filter(
-      (bucket : Bucket) =>
+      (bucket: Bucket) =>
         bucket.name.toLowerCase().includes(query.toLowerCase()) ||
         bucket.description?.toLowerCase().includes(query.toLowerCase())
     ) || [];
@@ -102,17 +102,15 @@ function Index() {
       <div className="px-4 lg:px-20">
         {!user && isMobile && (
           <Button
-            className="w-full mb-2 bg-blue-500"
-            onClick={() => router.push("/auth/register")}
+            className="w-full mb-2"
+            variant={"secondary"}
+            onClick={() => setOpen(true)}
           >
             Sign Up
           </Button>
         )}
         {!user && isMobile && (
-          <Button
-            className="w-full mb-4"
-            onClick={() => router.push("/auth/login")}
-          >
+          <Button className="w-full mb-4" onClick={() => setOpen(true)}>
             Login
           </Button>
         )}
@@ -154,6 +152,7 @@ function Index() {
           </div>
         )}
       </div>
+      {open && <AuthModal type="login" referrer="explore" open={open} setOpen={setOpen} />}
     </div>
   );
 }

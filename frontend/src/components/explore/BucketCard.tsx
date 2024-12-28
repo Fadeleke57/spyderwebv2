@@ -27,8 +27,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
+import { AuthModal } from "../auth/AuthModal";
 
 export function BucketCard({ bucket }: { bucket: Bucket }) {
   const [bucketLikedCount, setBucketLikedCount] = React.useState(
@@ -54,6 +54,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
   );
   const [iteratedFrom, setIteratedFrom] = React.useState<any | null>(null);
   const [showIterateModal, setShowIterateModal] = React.useState(false);
+  const [authModalOpen, setAuthModalOpen] = React.useState(false);
 
   const handleStopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -63,6 +64,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
   const handleLikeBucket = (e: React.MouseEvent) => {
     handleStopPropagation(e);
     if (!user) {
+      setAuthModalOpen(true);
       return;
     }
 
@@ -85,6 +87,11 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
 
   const handleIterateBucket = (e: React.MouseEvent) => {
     handleStopPropagation(e);
+    if (!user) {
+      setAuthModalOpen(true);
+      return;
+    }
+
     if (bucketIterated || bucket.iterations.includes(user?.id || "")) {
       return;
     }
@@ -106,7 +113,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
       href={`/buckets/bucket/${bucket.bucketId}`}
       className="flex flex-col gap-2 hover:cursor-pointer"
     >
-      <Card className="w-full relative mx-auto min-h-[120px] border-none hover:bg-muted py-6 border-b-2">
+      <Card className="w-full relative mx-auto min-h-[120px] border-none bg-background hover:bg-muted py-6 border-b-2">
         <div className="absolute top-0 left-0 w-full flex justify-between items-center px-4">
           <div className="flex flex-row items-center mt-3">
             <UserAvatar
@@ -120,12 +127,14 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
                 {bucketOwnerLoading ? (
                   <Skeleton className="h-3 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
                 ) : (
-                  <p className="text-xs text-slate-600 font-semibold">
-                    {bucketOwner?.full_name}
+                  <p className="text-xs text-slate-600 dark:text-foreground font-semibold">
+                    {bucketOwner?.username}
                   </p>
                 )}
-                <p className="ml-2 text-xs text-slate-600 font-semibold">*</p>
-                <p className="ml-2 text-xs text-slate-600 font-semibold">
+                <p className="ml-2 text-xs text-slate-600 dark:text-foreground font-semibold">
+                  *
+                </p>
+                <p className="ml-2 text-xs text-slate-600 dark:text-foreground font-semibold">
                   {formatDistanceToNow(
                     new Date(bucket?.updated ? bucket.updated + "Z" : ""),
                     {
@@ -136,10 +145,10 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
               </div>
               <div className="">
                 {iteratedFrom ? (
-                  <p className="text-xs font-normal">
+                  <p className="text-xs text-muted-foreground font-normal">
                     Iterated From{" "}
-                    <span className="font-semibold text-blue-500">
-                      @{iteratedFrom.full_name}
+                    <span className="font-semibold text-blue-500 dark:text-blue-400">
+                      @{iteratedFrom.username}
                     </span>
                   </p>
                 ) : bucket.iteratedFrom ? (
@@ -150,7 +159,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
           </div>
           <div>
             <DropdownMenu modal={true}>
-              <DropdownMenuTrigger className="rounded-full p-2 hover:bg-slate-300 border-none focus:outline-none">
+              <DropdownMenuTrigger className="rounded-full hover:bg-slate-300 dark:hover:bg-muted p-2 border-none focus:outline-none text-muted-foreground dark:text-foreground">
                 <EllipsisIcon />
               </DropdownMenuTrigger>
               <DropdownMenuContent onClick={handleStopPropagation}>
@@ -165,10 +174,10 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
           </div>
         </div>
         <CardHeader className="overflow-hidden mt-3">
-          <CardTitle className="break-words hover:cursor-pointer text-lg leading-tight hyphens-auto">
+          <CardTitle className="break-words hover:cursor-pointer text-lg leading-tight hyphens-auto text-foreground">
             {bucket.name}
           </CardTitle>
-          <CardDescription className="hyphens-auto mb-8 max-w-6xl text-slate-600">
+          <CardDescription className="hyphens-auto mb-8 max-w-6xl text-muted-foreground">
             {bucket.description}
           </CardDescription>
         </CardHeader>
@@ -176,37 +185,47 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
         <div className="absolute bottom-4 left-6 flex flex-row space-x-2">
           <div className="flex flex-row items-center space-x-1">
             <p
-              className={`text-s ${
-                bucketLiked ? "text-blue-400" : "text-slate-500"
+              className={`text-sm ${
+                bucketLiked
+                  ? "text-blue-500 dark:text-blue-400"
+                  : "text-muted-foreground"
               }`}
             >
               {bucketLikedCount}
             </p>
             <ArrowBigUpDash
-              size={28}
-              className={`${bucketLiked ? "text-blue-400" : "text-slate-500"}`}
+              size={24}
+              className={`${
+                bucketLiked
+                  ? "text-blue-500 dark:text-blue-400"
+                  : "text-muted-foreground hover:text-blue-500 dark:hover:text-blue-400"
+              } ${bucketLiked ? "fill-blue-500 dark:fill-blue-400" : "none"}`}
               onClick={handleLikeBucket}
               strokeWidth={1.4}
             />
           </div>
           <div className="flex flex-row items-center space-x-1">
             <p
-              className={`text-s ${
-                bucketIterated ? "text-blue-400" : "text-slate-500"
+              className={`text-sm ${
+                bucketIterated
+                  ? "text-blue-500 dark:text-blue-400"
+                  : "text-muted-foreground"
               }`}
             >
               {bucketIterationsCount}
             </p>
             <IterationCcw
               className={`${
-                bucketIterated ? "text-blue-400" : "text-slate-500"
+                bucketIterated
+                  ? "text-blue-500 dark:text-blue-400"
+                  : "text-muted-foreground hover:text-blue-500 dark:hover:text-blue-400"
               }`}
-              size={20}
+              size={16}
               onClick={handleIterateBucket}
             />
           </div>
         </div>
-        <p className="text-xs text-slate-500 absolute bottom-4 right-6">
+        <p className="text-xs text-muted-foreground absolute bottom-4 right-6">
           {formatDistanceToNow(new Date(bucket.created + "Z"), {
             addSuffix: true,
           })}
@@ -217,6 +236,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
         open={showIterateModal}
         setIsOpen={setShowIterateModal}
       />
+      <AuthModal referrer="bucket" type="login" open={authModalOpen} setOpen={setAuthModalOpen} />
     </Link>
   );
 }

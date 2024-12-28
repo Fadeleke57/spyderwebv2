@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends
 from src.routes.auth.oauth2 import manager
 from src.db.mongodb import get_collection
-from src.utils.graph import get_article_by_id, run_semantic_search
+#from src.utils.graph import get_article_by_id, run_semantic_search
 from src.utils.generation import generate_queries
-from src.db.neo4j import driver as Neo4jDriver
+#from src.db.neo4j import driver as Neo4jDriver
 from src.utils.exceptions import check_user
 from src.models.article import GenerateArticlesForBucketPayload
 router = APIRouter()
 
+"""
 @router.post("/start/process") 
 async def start_process(payload: GenerateArticlesForBucketPayload, user=Depends(manager)):
     check_user(user)
@@ -29,3 +30,4 @@ async def start_process(payload: GenerateArticlesForBucketPayload, user=Depends(
         else:
             print(f"Warning: No article node found in record: {article_record}")
     return {"result": result}
+"""

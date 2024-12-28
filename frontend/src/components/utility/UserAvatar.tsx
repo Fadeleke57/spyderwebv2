@@ -10,7 +10,7 @@ function UserAvatar({ userId, className, width, height }: { userId?: string, cla
     <Button
       variant="outline"
       size="icon"
-      className={cn("rounded-full", className)}
+      className={cn("rounded-full dark:bg-muted", className)}
     >
       {userId ? (
         <Image

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { File, MoreHorizontal, PlusCircle, Search } from "lucide-react";
+import { File, MoreHorizontal, PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -74,7 +74,7 @@ function Index() {
 
   const handleLogout = async () => {
     await Logout();
-    window.location.href = "/";
+    window.location.href = "/explore";
   };
 
   const handleDeleteBucket = async (id: string | undefined) => {
@@ -149,7 +149,7 @@ function Index() {
   };
 
   return (
-    <div className="flex lg:min-h-screen justify-center flex-col bg-muted/40">
+    <div className="flex lg:min-h-screen justify-center flex-col max-w-[960px] mx-auto">
       <Head>
         <title>{"all buckets"}</title>
         <meta name="description" content={"Welcome to spydr"} />
@@ -177,7 +177,7 @@ function Index() {
               <Button
                 variant="outline"
                 size="icon"
-                className="overflow-hidden rounded-full"
+                className="overflow-hidden rounded-full dark:bg-muted dark:hover:text-foreground dark:border"
               >
                 {user?.id ? (
                   <Image
@@ -195,7 +195,12 @@ function Index() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer" onClick={() => {}}>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => {
+                  router.push("/settings");
+                }}
+              >
                 Settings
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">
@@ -203,7 +208,7 @@ function Index() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                className="cursor-pointer text-destructive hover:text-destructive"
+                className="cursor-pointer text-red-500 hover:text-red-600 dark:hover:text-red-500"
                 onClick={handleLogout}
               >
                 Logout
@@ -222,7 +227,11 @@ function Index() {
                 ))}
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
-                <Button size="sm" variant="outline" className="h-8 gap-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 gap-1 dark:hover:bg-muted dark:hover:text-foreground"
+                >
                   <File className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     Export
@@ -321,7 +330,7 @@ function Index() {
                                     onClick={() =>
                                       handleOpenDeleteModal(bucket?.bucketId)
                                     }
-                                    className="text-destructive hover:text-destructive cursor-pointer"
+                                    className="text-red-400 hover:text-destructive cursor-pointer"
                                   >
                                     Delete
                                   </DropdownMenuItem>

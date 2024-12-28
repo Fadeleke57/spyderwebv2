@@ -12,9 +12,9 @@ const GoogleCallback = () => {
 
     if (token && email && name) {
       localStorage.setItem("token", token as string);
-      setTimeout(() => {
-        window.location.href = isMobile ? "/buckets" : "/home";
-      }, 2000);
+      window.location.href = isMobile
+        ? "/buckets"
+        : "/home?login-source=welcome";
     }
   }, [router.query, router]);
 

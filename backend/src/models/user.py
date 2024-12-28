@@ -26,7 +26,7 @@ class CreateUser(BaseModel): #creating user
     password: str
 
 class UpdateUser(BaseModel): #updating user
-    full_name: Optional[str]
-    username: Optional[str]
-    email: Optional[str]
-    password: Optional[str]
+    full_name: Optional[str] = None
+    username: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
