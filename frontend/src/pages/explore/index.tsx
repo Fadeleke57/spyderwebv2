@@ -11,7 +11,7 @@ import { SkeletonCard } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
 import useMediaQuery from "@/hooks/general";
 import { AuthModal } from "@/components/auth/AuthModal";
-
+import TagsScroll from "@/components/explore/TagsScroll";
 function Index() {
   const { data: buckets, isLoading: loading, error } = useFetchPublicBuckets();
   const [query, setQuery] = useState<string>("");
@@ -76,8 +76,7 @@ function Index() {
 
   const filteredBuckets =
     buckets?.filter(
-      (bucket: Bucket) =>
-      (bucket: Bucket) =>
+      (bucket: Bucket) => (bucket: Bucket) =>
         bucket.name.toLowerCase().includes(query.toLowerCase()) ||
         bucket.description?.toLowerCase().includes(query.toLowerCase())
     ) || [];
@@ -142,7 +141,6 @@ function Index() {
           onChange={handleSearch}
           value={query}
         ></SearchInput>
-        <TagsScroll activeTag={activeTag} setActiveTag={setActiveTag} />
       </div>
       <div className="w-full lg:min-h-[62vh] lg:px-16">
         {loading ? (
@@ -175,7 +173,14 @@ function Index() {
           </div>
         )}
       </div>
-      {open && <AuthModal type="login" referrer="explore" open={open} setOpen={setOpen} />}
+      {open && (
+        <AuthModal
+          type="login"
+          referrer="explore"
+          open={open}
+          setOpen={setOpen}
+        />
+      )}
     </div>
   );
 }
