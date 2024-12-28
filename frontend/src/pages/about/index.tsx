@@ -7,7 +7,7 @@ import Link from "next/link";
 
 function index() {
   return (
-    <div className="min-h-screen flex flex-col lg:pt-10">
+    <div className="min-h-screen flex flex-col">
       <Head>
         <title>{"about - spydr"}</title>
         <meta name="description" content={"Learn more about spydr"} />

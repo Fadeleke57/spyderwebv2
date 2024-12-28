@@ -11,7 +11,7 @@ from src.models.user import User
 from datetime import datetime
 from src.models.bucket import BucketConfig, UpdateBucket, IterateBucket
 from fastapi.exceptions import HTTPException
-from src.utils.graph import get_articles_by_ids
+#from src.utils.graph import get_articles_by_ids
 from pymongo import ReturnDocument
 from src.core.config import settings
 import boto3
@@ -58,7 +58,7 @@ def get_user_buckets(
     else:
         buckets = buckets.find({"userId": user["id"]}, {"_id": 0})
     buckets = [bucket for bucket in buckets]
-    buckets = sorted(buckets, key=lambda x: x["created"], reverse=True)
+    buckets = sorted(buckets, key=lambda x: x["updated"], reverse=True)
 
     # Pagination logic
     total_buckets = len(buckets)

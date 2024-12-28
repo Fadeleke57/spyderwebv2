@@ -108,5 +108,42 @@ export function useFetchUserById(userId: string) {
       const data = await response.data.result;
       return data;
     },
-  })
+  });
+}
+
+type UpdateUser = {
+  full_name?: string;
+  username?: string;
+  email?: string;
+};
+
+export function useEditUser() {
+  return useMutation({
+    mutationFn: async (updates: UpdateUser) => {
+      console.log("payload was ", updates);
+      const response = await api.patch(`/users/edit/`, updates, {
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await response.data.result;
+      return data;
+    },
+    onError: (err: any) => {
+      console.error(err);
+    },
+  });
+}
+
+export function useCheckEmailExists() {
+  return useMutation({
+    mutationFn: async (email: string) => {
+      const response = await api.get(`/users/check/email/`, {
+        params: { email },
+      });
+      const data = await response.data.result;
+      return data;
+    },
+    onError: (err: any) => {
+      console.error(err);
+    },
+  });
 }

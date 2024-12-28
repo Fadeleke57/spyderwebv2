@@ -7,11 +7,14 @@ import { SIDEBAR_COOKIE_NAME } from "@/components/ui/sidebar";
 import useMediaQuery from "@/hooks/general";
 import { ChartNoAxesGantt, CirclePlus, Home, LayoutGrid } from "lucide-react";
 import { NewBucketModal } from "@/components/buckets/NewBucketModal";
-import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
 import slogo from "@/assets/s_logo.jpg";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+import { AuthModal } from "@/components/auth/AuthModal";
+import { useUser } from "@/context/UserContext";
+import { usePathname } from "next/navigation";
 const fontSans = FontSans({
   weight: "400",
   subsets: ["latin"],
@@ -22,8 +25,29 @@ export default function AppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const isSidebarOpen = localStorage.getItem(SIDEBAR_COOKIE_NAME) === "true";
+  const pathname = usePathname();
+  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+  const { user } = useUser();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const router = useRouter();
+
+  const handleButtonClick = (route: string) => {
+    if (!user) {
+      setAuthModalOpen(true);
+      return;
+    }
+    router.push(route);
+  };
+
+  const isActivePage = (path: string) => {
+    if (path === "/explore") {
+      return pathname === "/explore";
+    }
+    if (path === "/buckets") {
+      return pathname?.startsWith("/buckets") && pathname !== "/buckets/new";
+    }
+    return false;
+  };
 
   if (isMobile) {
     return (
@@ -32,7 +56,7 @@ export default function AppLayout({
           "min-h-screen bg-background font-sans antialiased flex flex-col relative pt-20"
         )}
       >
-        <div className="fixed top-0 z-50 h-16 w-[101vw] bg-slate-100 flex flex-row items-center justify-between px-5">
+        <div className="fixed top-0 z-50 h-16 w-[101vw] border-b bg-background dark:bg-background flex flex-row items-center justify-between px-5">
           <Link href="/explore">
             <Image
               src={slogo}
@@ -41,40 +65,93 @@ export default function AppLayout({
               height={36}
               className="rounded-full"
               priority
-            ></Image>
+            />
           </Link>
           <div className="flex flex-row gap-4 items-center">
-            <div
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              onClick={() => router.push("/explore")}
-            >
-              <div className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none text-slate-500 text-sidebar-primary-foreground">
-                <LayoutGrid className="size-5" />
-                <span className="text-xs font-semibold">Explore</span>
+            <div onClick={() => router.push("/explore")}>
+              <div className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none">
+                <LayoutGrid
+                  className={cn(
+                    "size-5",
+                    isActivePage("/explore")
+                      ? "text-primary"
+                      : "text-slate-500 dark:text-foreground"
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-xs font-semibold",
+                    isActivePage("/explore")
+                      ? "text-primary"
+                      : "text-slate-500 dark:text-foreground"
+                  )}
+                >
+                  Explore
+                </span>
+                <div
+                  className={cn(
+                    "h-1 w-6 rounded-full transition-all duration-200",
+                    isActivePage("/explore") ? "bg-primary" : "bg-transparent"
+                  )}
+                />
               </div>
             </div>
-            <div
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              onClick={() => router.push("/buckets")}
-            >
-              <div className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none text-slate-500 text-sidebar-primary-foreground">
-                <ChartNoAxesGantt className="size-5" />
-                <span className="text-xs font-semibold">Buckets</span>
+
+            <div onClick={() => handleButtonClick("/buckets")}>
+              <div className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none">
+                <ChartNoAxesGantt
+                  className={cn(
+                    "size-5",
+                    isActivePage("/buckets")
+                      ? "text-primary"
+                      : "text-slate-500 dark:text-foreground"
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-xs font-semibold",
+                    isActivePage("/buckets")
+                      ? "text-primary"
+                      : "text-slate-500 dark:text-foreground"
+                  )}
+                >
+                  Buckets
+                </span>
+                <div
+                  className={cn(
+                    "h-1 w-6 rounded-full transition-all duration-200",
+                    isActivePage("/buckets") ? "bg-primary" : "bg-transparent"
+                  )}
+                />
               </div>
             </div>
+
             <div>
-              <NewBucketModal>
-                <Button className="w-full bg-transparent hover:bg-transparent p-0 flex flex-row gap-2">
-                  <div className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none text-slate-500 text-sidebar-primary-foreground">
+              {user ? (
+                <NewBucketModal>
+                  <div className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none text-slate-500 dark:text-foreground">
                     <CirclePlus className="size-5" />
                     <span className="text-xs font-semibold">Create</span>
+                    <div className={cn("h-1 w-6")} />
                   </div>
-                </Button>
-              </NewBucketModal>
+                </NewBucketModal>
+              ) : (
+                <div
+                  onClick={() => handleButtonClick("/buckets/new")}
+                  className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none text-slate-500 dark:text-foreground"
+                >
+                  <CirclePlus className="size-5" />
+                  <span className="text-xs font-semibold">Create</span>
+                  <div className={cn("h-1 w-6")} />
+                </div>
+              )}
             </div>
           </div>
         </div>
         {children}
+        {isAuthModalOpen && (
+          <AuthModal type="login" referrer="app" open={isAuthModalOpen} setOpen={setAuthModalOpen} />
+        )}
       </div>
     );
   }
@@ -85,9 +162,7 @@ export default function AppLayout({
       defaultOpen={isSidebarOpen}
     >
       <AppSidebar />
-      <SidebarInset className="overflow-x-hidden">
-        {children}
-      </SidebarInset>
+      <SidebarInset className="overflow-x-hidden">{children}</SidebarInset>
     </SidebarProvider>
   );
 }

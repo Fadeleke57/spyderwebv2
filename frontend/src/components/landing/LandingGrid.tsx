@@ -34,7 +34,8 @@ function LandingGrid() {
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div className="hidden lg:block w-full h-full col-span-2 row-span-2 relative rounded-2xl border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
+      {/* First Large Item */}
+      <div className="hidden lg:block w-full h-full col-span-2 row-span-2 relative rounded-2xl border border-gray-200 dark:border-none shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
         <Image
           src={firstItem.image}
           alt="logo"
@@ -59,7 +60,7 @@ function LandingGrid() {
           }}
           key={id}
         >
-          <div className="w-full h-full row-span-2 lg:row-span-1 relative rounded-2xl border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
+          <div className="w-full h-full row-span-2 lg:row-span-1 relative rounded-2xl border border-gray-200 dark:border-none shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
             <Image
               src={topic.image}
               alt="logo"
@@ -73,7 +74,7 @@ function LandingGrid() {
         </Link>
       ))}
 
-      <div className="lg:hidden w-full h-full row-span-2 relative rounded-2xl border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
+      <div className="lg:hidden w-full h-full row-span-2 relative rounded-2xl border border-gray-200 dark:border-none shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
         <Image
           src={firstItem.image}
           alt="logo"
@@ -98,7 +99,7 @@ function LandingGrid() {
           }}
           key={id}
         >
-          <div className="w-full h-full relative rounded-2xl border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
+          <div className="w-full h-full relative rounded-2xl border border-gray-200 dark:border-none shadow-md dark:bg-gray-800 dark:border-gray-700 cursor-pointer overflow-hidden group">
             <Image
               src={topic.image}
               alt="logo"

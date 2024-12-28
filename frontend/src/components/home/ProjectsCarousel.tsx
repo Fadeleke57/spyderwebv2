@@ -46,9 +46,8 @@ export function ProjectsCarousel() {
           <NewBucketModal>
             <CarouselItem className="basis-1/2 lg:basis-1/3">
               <div className="p-1 cursor-pointer">
-                <Card className="bg-muted opacity-35 hover:opacity-75 duration-200 transition ease-in border-none">
-                  <CardContent className="flex aspect-square items-center justify-center p-6">
-                    <span className="text-3xl font-semibold flex flex-row items-center text-slate-700">
+                <Card className="bg-muted dark:bg-card opacity-35 hover:opacity-75 duration-200 transition ease-in border-none">
+                  <CardContent className="flex aspect-square items-center justify-center p-6">                    <span className="text-3xl font-semibold flex flex-row items-center text-muted-foreground">
                       <CopyPlus className="mr-2" />
                       Create
                     </span>
@@ -81,11 +80,11 @@ export function ProjectsCarousel() {
                     <Card className="">
                       <CardContent className="flex aspect-square items-center justify-center p-10">
                         <div className="w-full flex flex-col overflow-hidden hyphens-auto break-words">
-                          <h1 className="text-3xl font-semibold hyphens-auto">
+                          <h1 className="text-xl font-semibold hyphens-auto">
                             {formatText(bucket.name, 50)}
                           </h1>
-                          <p className="text-slate-700">
-                            {formatText(bucket.description, 100)}
+                          <p className="text-muted-foreground">
+                            {formatText(bucket.description, 30)}
                           </p>
                         </div>
                       </CardContent>

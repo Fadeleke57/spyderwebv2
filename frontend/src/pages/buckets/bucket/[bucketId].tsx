@@ -21,6 +21,7 @@ import { Bucket } from "@/types/bucket";
 import { IterationCcw } from "lucide-react";
 import { IterateModal } from "@/components/utility/IterateModal";
 import { Button } from "@/components/ui/button";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 function Index() {
   const router = useRouter();
@@ -34,7 +35,8 @@ function Index() {
 
   const [bucket, setBucket] = React.useState<Bucket | null>(bucketData || null);
   const [showIterateModal, setShowIterateModal] = React.useState(false);
-
+  const [authModalOpen, setAuthModalOpen] = React.useState(false);
+  console.log("authModalOpen", authModalOpen);
   useEffect(() => {
     if (bucketData) {
       setBucket(bucketData);
@@ -105,13 +107,13 @@ function Index() {
                 <UserAvatar userId={bucket?.userId} />{" "}
                 <div className="flex flex-col gap-0">
                   <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
-                    {bucketOwner?.full_name || ""}{" "}
+                    {bucketOwner?.username || ""}{" "}
                   </h1>
                   {bucket?.iteratedFrom ? (
                     <p className="text-xs font-normal text-muted-foreground">
                       Iterated From{" "}
-                      <span className="font-semibold text-blue-500">
-                        @{iteratedFromUser?.full_name}
+                      <span className="font-semibold text-blue-500 dark:text-blue-400">
+                        @{iteratedFromUser?.username}
                       </span>
                     </p>
                   ) : (
@@ -131,7 +133,7 @@ function Index() {
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
             {bucket && <MobileBucketForm bucket={bucket} user={user} />}
 
-            {bucket && bucketOwner && (
+            {user && bucket && bucketOwner ? (
               <IterateModal
                 open={showIterateModal}
                 setIsOpen={setShowIterateModal}
@@ -153,6 +155,15 @@ function Index() {
                   />
                 </Button>
               </IterateModal>
+            ) : (
+              <Button
+                size="sm"
+                variant={"outline"}
+                onClick={() => setAuthModalOpen(true)}
+              >
+                <span className="hidden md:inline lg:inline">Iterate </span>
+                <IterationCcw className="md:ml-2 lg:ml-2" size={16} />
+              </Button>
             )}
 
             <ShareDialog
@@ -182,6 +193,7 @@ function Index() {
           ) : null}
         </div>
       </div>
+      <AuthModal referrer={"bucker"} type="login" open={authModalOpen} setOpen={setAuthModalOpen} />
     </div>
   );
 }

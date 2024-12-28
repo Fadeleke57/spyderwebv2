@@ -119,44 +119,41 @@ function BucketForm({ bucket, user }: FormProps) {
       <div className="grid gap-4 rounded-lg pb-8 pt-4 px-4">
         <div>
           <div className="flex flex-col space-y-2">
-            <div className="flex flex-row items-center space-x-2 justify-between">
-              <small className="text-sm font-medium leading-none text-blue-500">
-                {bucketConfig.visibility}
-                {isOwner && (
-                  <ConfirmModal
-                    action={() =>
-                      handleToggleVisibility(
-                        bucketConfig.visibility === "Private"
-                          ? "Public"
-                          : "Private"
-                      )
-                    }
-                    actionButtonStr={
+            <small className="text-sm font-medium leading-none text-blue-500 dark:text-blue-400">
+              {bucketConfig.visibility}
+              {isOwner && (
+                <ConfirmModal
+                  action={() =>
+                    handleToggleVisibility(
                       bucketConfig.visibility === "Private"
-                        ? "Make Public"
-                        : "Make Private"
-                    }
-                    actionStr={
-                      "Are you sure you want to switch this bucket to " +
-                      (bucketConfig.visibility === "Private"
-                        ? "public"
-                        : "private") +
-                      "?"
-                    }
-                  >
-                    <span className="text-red-500 cursor-pointer">
-                      {" "}
-                      (
-                      {bucketConfig.visibility === "Private"
-                        ? "Switch to Public"
-                        : "Switch to Private"}
-                      )
-                    </span>
-                  </ConfirmModal>
-                )}
-              </small>
-            </div>
-            <TagsPopover bucket={bucket} />
+                        ? "Public"
+                        : "Private"
+                    )
+                  }
+                  actionButtonStr={
+                    bucketConfig.visibility === "Private"
+                      ? "Make Public"
+                      : "Make Private"
+                  }
+                  actionStr={
+                    "Are you sure you want to switch this bucket to " +
+                    (bucketConfig.visibility === "Private"
+                      ? "public"
+                      : "private") +
+                    "?"
+                  }
+                >
+                  <span className="text-red-500 dark:text-foreground cursor-pointer">
+                    {" "}
+                    (
+                    {bucketConfig.visibility === "Private"
+                      ? "Switch to Public"
+                      : "Switch to Private"}
+                    )
+                  </span>
+                </ConfirmModal>
+              )}
+            </small>
             <Textarea
               id="name"
               placeholder="Give it a title..."

@@ -16,23 +16,16 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import {
-  ChartNoAxesGantt,
-  CirclePlus,
-  Home,
-  LayoutGrid,
-  Link,
-} from "lucide-react";
+import { ChartNoAxesGantt, CirclePlus, Home, LayoutGrid } from "lucide-react";
 import { NewBucketModal } from "../buckets/NewBucketModal";
-import { DiscordLogoIcon } from "@radix-ui/react-icons";
+import { AuthModal } from "../auth/AuthModal";
 
 const SidebarIndicator = ({ show }: { show: boolean }) => {
   const { state } = useSidebar();
-  console.log("state", state);
   if (state === "collapsed" || !show) return null;
 
   return (
-    <div className="absolute top-0 -right-1 z-[100] h-full w-2 bg-slate-600 rounded-l-sm" />
+    <div className="absolute top-0 -right-1 z-[100] h-full w-2 bg-slate-600 dark:bg-foreground rounded-l-sm" />
   );
 };
 
@@ -40,6 +33,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter();
   const { user } = useUser();
   const [selectedButton, setSelectedButton] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (router.pathname.startsWith("/home")) {
@@ -53,7 +47,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   }, [router.pathname]);
 
-  const handleOpenSettingsModal = () => {};
+  const handleButtonClick = (route: string) => {
+    if (!user) {
+      setOpen(true);
+      return;
+    }
+
+    router.push(route);
+  };
 
   return (
     <Sidebar collapsible="icon" {...props} className="flex justify-center">
@@ -77,7 +78,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold text-3xl text-black tracking-tighter">
+                <span className="truncate font-semibold text-3xl text-black dark:text-foreground tracking-tighter">
                   spydr
                 </span>
               </div>
@@ -90,8 +91,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"
-            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none`}
-            onClick={() => router.push("/home")}
+            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground  py-4 rounded-md`}
+            onClick={() => handleButtonClick("/home")}
           >
             <div
               className={`flex flex-row gap-2 items-center rounded-lg bg-none text-blue-950 text-sidebar-primary-foreground`}
@@ -99,8 +100,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <Home
                 className={`size-5 ${
                   selectedButton === "home"
-                    ? "text-slate-600 font-semibold"
-                    : "text-slate-500"
+                    ? "text-muted-foreground dark:text-foreground font-semibold"
+                    : "text-muted-foreground"
                 }`}
               />
             </div>
@@ -108,8 +109,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <span
                 className={`truncate text-lg ${
                   selectedButton === "home"
-                    ? "text-slate-600 font-semibold"
-                    : "text-slate-500"
+                    ? "text-muted-foreground dark:text-foreground font-semibold"
+                    : "text-muted-foreground"
                 }`}
               >
                 Home
@@ -121,7 +122,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"
-            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none`}
+            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground  py-4 rounded-md`}
             onClick={() => router.push("/explore")}
           >
             <div
@@ -130,8 +131,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <LayoutGrid
                 className={`size-5 ${
                   selectedButton === "explore"
-                    ? "text-slate-600 font-semibold"
-                    : "text-slate-500"
+                    ? "text-muted-foreground dark:text-foreground font-semibold"
+                    : "text-muted-foreground"
                 }`}
               />
             </div>
@@ -139,8 +140,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <span
                 className={`truncate text-lg ${
                   selectedButton === "explore"
-                    ? "text-slate-600 font-semibold"
-                    : "text-slate-500"
+                    ? "text-muted-foreground dark:text-foreground font-semibold"
+                    : "text-muted-foreground"
                 }`}
               >
                 Explore
@@ -152,8 +153,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"
-            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none`}
-            onClick={() => router.push("/buckets")}
+            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none  py-4 rounded-md`}
+            onClick={() => handleButtonClick("/buckets")}
           >
             <div
               className={`flex flex-row gap-2 items-center rounded-lg bg-none text-sidebar-primary-foreground`}
@@ -161,8 +162,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <ChartNoAxesGantt
                 className={`size-5 ${
                   selectedButton === "buckets"
-                    ? "text-slate-600 font-semibold"
-                    : "text-slate-500"
+                    ? "text-muted-foreground dark:text-foreground font-semibold"
+                    : "text-muted-foreground"
                 }`}
               />
             </div>
@@ -170,8 +171,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <span
                 className={`truncate text-lg ${
                   selectedButton === "buckets"
-                    ? "text-slate-600 font-semibold"
-                    : "text-slate-500"
+                    ? "text-muted-foreground dark:text-foreground font-semibold"
+                    : "text-muted-foreground"
                 }`}
               >
                 Buckets
@@ -180,33 +181,55 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuButton>
           <SidebarIndicator show={selectedButton === "buckets"} />
         </div>
-        <NewBucketModal>
+        {user ? (
+          <NewBucketModal>
+            <div className="px-2">
+              <SidebarMenuButton
+                size="sm"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none py-4 rounded-md"
+              >
+                <div className="w-full bg-transparent hover:bg-transparent p-0 flex flex-row gap-2">
+                  <div className="flex items-center rounded-lg bg-none text-muted-foreground">
+                    <CirclePlus className="size-5" />
+                  </div>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate text-lg text-muted-foreground dark:text-muted-foreground">
+                      Create
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-row gap-2 items-center">
+                  <span className="bg-slate-200 dark:bg-muted-foreground text-md h-[28px]  p-2 rounded-md font-bold flex items-center">
+                    ⌘
+                  </span>
+                  <span className="bg-slate-200 dark:bg-muted-foreground text-md h-[28px] p-2 rounded-md font-bold flex items-center">
+                    X
+                  </span>
+                </div>
+              </SidebarMenuButton>
+            </div>
+          </NewBucketModal>
+        ) : (
           <div className="px-2">
             <SidebarMenuButton
+              onClick={() => setOpen(true)}
               size="sm"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none px-2"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none py-4 rounded-md"
             >
               <div className="w-full bg-transparent hover:bg-transparent p-0 flex flex-row gap-2">
-                <div className="flex items-center rounded-lg bg-none text-slate-500 text-sidebar-primary-foreground">
+                <div className="flex items-center rounded-lg bg-none text-muted-foreground">
                   <CirclePlus className="size-5" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate text-lg text-slate-500">
+                  <span className="truncate text-lg text-muted-foreground dark:text-muted-foreground">
                     Create
                   </span>
                 </div>
               </div>
-              <div className="flex flex-row gap-2">
-                <span className="bg-slate-200 text-md h-fit p-2 rounded-md font-bold">
-                  ⌘
-                </span>
-                <span className="bg-slate-200 text-md h-fit p-2 rounded-md font-bold">
-                  X
-                </span>
-              </div>
             </SidebarMenuButton>
           </div>
-        </NewBucketModal>
+        )}
+
         <div className="mt-auto px-2">
           <SidebarTrigger orientation="right" hideWhen="expanded" />
         </div>
@@ -218,6 +241,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser />
       </SidebarFooter>
       <SidebarRail></SidebarRail>
+      {open && <AuthModal type="login" referrer="sidebar" open={open} setOpen={setOpen} />}
     </Sidebar>
   );
 }

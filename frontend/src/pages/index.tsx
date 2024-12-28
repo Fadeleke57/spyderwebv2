@@ -1,36 +1,23 @@
 import Header from "@/components/landing/Header";
-import LandingCarousel from "@/components/landing/Carousel";
 import { useEffect, useState } from "react";
-import { LoadingPage } from "@/components/utility/Loading";
 import PublicLayout from "@/app/PublicLayout";
 import { ReactElement } from "react";
-import LandingGrid from "@/components/landing/LandingGrid";
-import Demo from "@/components/landing/Demo";
+import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/router";
 
 export default function Home() {
-  const [loading, setLoading] = useState(true);
-
+  const { user } = useUser();
+  const router = useRouter();
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 100);
-    return () => clearTimeout(timer);
+    if (user) {
+      router.push("/explore");
+    }
   }, []);
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[100svh] flex-col items-center justify-center">
-        <LoadingPage />
-      </div>
-    );
-  }
   return (
-    <div className="flex min-h-[100svh] flex-col items-start justify-between p-6 lg:px-10 lg:py-24 overflow-x-hidden">
+    <div className="flex min-h-[85dvh] lg:min-h-[90dvh] flex-col items-start justify-between p-6 pt-20 lg:px-10  lg:pt-24 overflow-x-hidden">
       <div className="flex flex-col gap-8 w-full mx-auto">
         <Header />
-        <LandingGrid />
-        <Demo />
-        <LandingCarousel />
       </div>
     </div>
   );

@@ -31,7 +31,7 @@ const SearchInput = React.forwardRef<HTMLInputElement, InputProps>(
         className="rounded-md flex items-center border-2 pl-4 transition-all duration-150 ease-in-out"
         onClick={() => setActive(true)}
       >
-        <Search size={16} color={active ? "#3b82f6" : "black"} />
+        <Search size={16} className="text-muted-foreground dark:text-foreground" />
         <input
           type={type}
           className={cn(

@@ -1,16 +1,17 @@
 from fastapi import APIRouter, Depends
-from src.db.neo4j import driver as Neo4jDriver, run_query
+#from src.db.neo4j import driver as Neo4jDriver, run_query
 from src.routes.auth.oauth2 import manager
 from src.utils.queries import queries
 import re
 from src.db.mongodb import get_collection, add_search_to_user
-from src.utils.graph import split_into_sentences_nltk, highlight_match, run_semantic_search, run_keyword_search
+#from src.utils.graph import split_into_sentences_nltk, highlight_match, run_semantic_search, run_keyword_search
 from src.utils.exceptions import check_user
 from src.models.article import Article
 from src.models.user import User
 router = APIRouter()
 from datetime import datetime
 
+"""
 @router.get("/")
 def get_articles(limit: int = 50, query: str = None, topic: str = None, enableSpydrSearch: bool = False, user = Depends(manager.optional)):
     if user:
@@ -73,11 +74,11 @@ def get_articles(limit: int = 50, query: str = None, topic: str = None):
 
     # search query
     if query:
-        query_clauses.append("""
+        query_clauses.append(
             (toLower(a.text) CONTAINS toLower($text) 
             OR toLower(a.header) CONTAINS toLower($text) 
             OR toLower(a.author) CONTAINS toLower($text))
-        """)
+        )
         params['text'] = query
 
     # topic filter
@@ -88,12 +89,12 @@ def get_articles(limit: int = 50, query: str = None, topic: str = None):
     #final query
     where_clause = " AND ".join(query_clauses)
     full_where_clause = f"WHERE {where_clause}" if where_clause else ""
-    cypher_query = f"""
+    cypher_query = f
         MATCH (a:Article)
         {full_where_clause}
         RETURN a
         LIMIT $limit
-    """
+
     
     result = run_query(cypher_query, params)
 
@@ -105,3 +106,4 @@ def get_article_by_id(id: str):
     if not result:
         return {"result": []}
     return {"result": result}
+"""

@@ -2,11 +2,9 @@
 
 import {
   BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Sparkles,
+  Settings,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,31 +24,37 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useUser } from "@/context/UserContext";
-import Router from "next/router";
-import Link from "next/link";
+import Router, { useRouter } from "next/router";
 import { Button } from "../ui/button";
+import { AuthModal } from "../auth/AuthModal";
+import { useState } from "react";
 export function NavUser() {
   const { isMobile } = useSidebar();
+  const [open, setOpen] = useState(false);
   const { user, logout } = useUser();
+  const router = useRouter();
+
+  const handleLogin = () => {
+    setOpen(true);
+  };
 
   if (!user) {
     return (
       <div className="flex flex-col gap-2 w-full">
-        <Link href="/auth/login" className="w-full">
-          <Button className="w-full">Login</Button>
-        </Link>
-        <Link href="/auth/register" className="w-full">
-          <Button className="w-full bg-blue-500 hover:bg-blue-600">
-            Sign Up
-          </Button>
-        </Link>
+        <Button onClick={handleLogin} className="w-full">
+          Login
+        </Button>
+        <Button onClick={handleLogin} variant={"secondary"} className="w-full">
+          Sign Up
+        </Button>
+        {open && <AuthModal type="login" referrer="nav" open={open} setOpen={setOpen} />}
       </div>
     );
   }
 
   const handleLogout = () => {
-      logout();
-      Router.push("/");
+    logout();
+    router.push("/explore");
   };
 
   return (
@@ -58,11 +62,8 @@ export function NavUser() {
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Avatar className="h-8 w-8 rounded-lg">
+            <SidebarMenuButton size="lg" isActive={false}>
+              <Avatar className="h-8 w-8 rounded-full dark:bg-muted">
                 <AvatarImage
                   src={`https://robohash.org/${user.id}?size=300x300`}
                   alt={user.full_name}
@@ -70,7 +71,7 @@ export function NavUser() {
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{user.full_name}</span>
+                <span className="truncate font-semibold">{user.username}</span>
                 <span className="truncate text-xs">{user.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -93,19 +94,25 @@ export function NavUser() {
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
-                    {user.full_name}
+                    {user.username}
                   </span>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuGroup>
-              <DropdownMenuItem className="flex flex-row items-center gap-2 cursor-pointer">
+              <DropdownMenuItem
+                className="flex flex-row items-center gap-2 cursor-pointer"
+                onClick={() => router.push("/settings?tab=account")}
+              >
                 <BadgeCheck size={16} />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-row items-center gap-2 cursor-pointer">
-                <Bell size={16} />
+              <DropdownMenuItem
+                className="flex flex-row items-center gap-2 cursor-pointer"
+                onClick={() => router.push("/settings")}
+              >
+                <Settings size={16} />
                 Settings
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -114,8 +121,8 @@ export function NavUser() {
               className="flex flex-row items-center gap-2 cursor-pointer"
               onClick={handleLogout}
             >
-              <LogOut className="text-red-500" />
-              <span className="font-semibold text-red-500">Log out</span>
+              <LogOut className="text-red-500" size={16} />
+              <span className="text-red-500">Log out</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

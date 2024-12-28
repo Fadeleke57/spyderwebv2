@@ -8,7 +8,7 @@ export default function withAuth(Component: any) {
     useEffect(() => {
 
       if (!user) {
-        router.push("/auth/login");
+        router.push("/explore");
       }
     }, [router, user]);
 

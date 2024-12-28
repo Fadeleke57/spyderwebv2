@@ -164,7 +164,7 @@ export default function BucketDataDrawer({
                 onChange={handleContentChange}
               />
             ) : (
-              <p className="text-slate-500">{content}</p>
+              <p className="text-muted-foreground">{content}</p>
             )}
 
             {updateError && <p className="text-red-500">{updateError}</p>}

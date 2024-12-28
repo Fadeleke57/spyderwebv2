@@ -36,7 +36,7 @@ const ShareDialog = ({ link }: { link: string }) => {
       <Drawer>
         <DrawerTrigger asChild>
           <Button
-            variant="outline"
+            
             size="sm"
             className="ml-auto gap-1.5 text-sm"
           >
@@ -94,7 +94,7 @@ const ShareDialog = ({ link }: { link: string }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="ml-auto gap-1.5 text-sm">
+        <Button size="sm" className="ml-auto gap-1.5 text-sm">
           <Share className="size-3.5" />
           <span className="hidden md:inline lg:inline">Share</span>
         </Button>
@@ -142,7 +142,7 @@ const ShareDialog = ({ link }: { link: string }) => {
         </div>
         <DialogFooter className="sm:justify-start">
           <DialogClose asChild>
-            <Button type="button" variant="secondary">
+            <Button type="button">
               Close
             </Button>
           </DialogClose>

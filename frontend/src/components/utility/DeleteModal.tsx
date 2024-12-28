@@ -34,7 +34,7 @@ function DeleteModal({
           Are you sure you want to delete this bucket? This action cannot be
           undone.
         </DialogDescription>
-        <DialogFooter>
+        <DialogFooter className="flex flex-col space-y-2 lg:flex-row lg:space-x-2">
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>

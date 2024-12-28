@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTheme } from "next-themes";
 
 function LoadingPage() {
   useEffect(() => {
@@ -12,25 +13,39 @@ function LoadingPage() {
     loadQuantum();
   }, []);
 
+  const { theme } = useTheme();
+
   return (
     <div className="w-full h-full flex justify-center items-center z-50">
-      <l-quantum size="150" speed="2.4" color="black"></l-quantum>
+      <l-quantum
+        size="150"
+        speed="2.4"
+        color={`${theme === "light" ? "black" : "white"}`}
+      ></l-quantum>
     </div>
   );
 }
 
-
 function Uploading() {
   useEffect(() => {
     const loadWave = async () => {
-      const { waveform} = await import("ldrs");
+      const { waveform } = await import("ldrs");
       waveform.register();
     };
 
     loadWave();
   }, []);
 
-  return <l-waveform size="35" stroke="7" speed="1" color="black"></l-waveform>;
+  const { theme } = useTheme();
+
+  return (
+    <l-waveform
+      size="35"
+      stroke="7"
+      speed="1"
+      color={`${theme === "light" ? "black" : "white"}`}
+    ></l-waveform>
+  );
 }
 
 export const LandingLoader = () => {
@@ -57,13 +72,15 @@ export const VideoLoader = () => {
     };
     loadVideo();
   });
+
+  const { theme } = useTheme();
   return (
     <div className="w-full h-full flex justify-center items-center z-50">
       <l-hourglass
         size="40"
         bg-opacity="0.1"
         speed="1.75"
-        color="black"
+        color={`${theme === "light" ? "black" : "white"}`}
       ></l-hourglass>
     </div>
   );

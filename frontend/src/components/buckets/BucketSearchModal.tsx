@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -360,7 +361,9 @@ export default function BucketSearchModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {children}
+
       <DialogContent
+        hideClose
         aria-describedby={undefined}
         className="max-w-[80vw] min-h-[70vh] flex flex-col gap-6 items-center px-6 lg:p-12 overflow-y-auto no-scrollbar rounded-xl border-none"
       >

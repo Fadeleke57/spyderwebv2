@@ -10,14 +10,15 @@ import { useUser } from "@/context/UserContext";
 import { SkeletonCard } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
 import useMediaQuery from "@/hooks/general";
-import { TagsScroll } from "@/components/explore/TagsScroll";
-
+import { AuthModal } from "@/components/auth/AuthModal";
+import TagsScroll from "@/components/explore/TagsScroll";
 function Index() {
   const { data: buckets, isLoading: loading, error } = useFetchPublicBuckets();
   const [query, setQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [active, setActive] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
   const searchInputWrapperRef = useRef<any>(null);
   const bucketsPerPage = 20;
   const { user } = useUser();
@@ -64,7 +65,7 @@ function Index() {
     const parts = text.split(regex);
     return parts.map((part, index) =>
       regex.test(part) ? (
-        <span key={index} className="bg-yellow-200">
+        <span key={index} className="bg-yellow-200 dark:bg-violet-400">
           {part}
         </span>
       ) : (
@@ -75,7 +76,7 @@ function Index() {
 
   const filteredBuckets =
     buckets?.filter(
-      (bucket: Bucket) =>
+      (bucket: Bucket) => (bucket: Bucket) =>
         bucket.name.toLowerCase().includes(query.toLowerCase()) ||
         bucket.description?.toLowerCase().includes(query.toLowerCase())
     ) || [];
@@ -122,17 +123,15 @@ function Index() {
       <div className="px-4 lg:px-20">
         {!user && isMobile && (
           <Button
-            className="w-full mb-2 bg-blue-500"
-            onClick={() => router.push("/auth/register")}
+            className="w-full mb-2"
+            variant={"secondary"}
+            onClick={() => setOpen(true)}
           >
             Sign Up
           </Button>
         )}
         {!user && isMobile && (
-          <Button
-            className="w-full mb-4"
-            onClick={() => router.push("/auth/login")}
-          >
+          <Button className="w-full mb-4" onClick={() => setOpen(true)}>
             Login
           </Button>
         )}
@@ -142,7 +141,6 @@ function Index() {
           onChange={handleSearch}
           value={query}
         ></SearchInput>
-        <TagsScroll activeTag={activeTag} setActiveTag={setActiveTag} />
       </div>
       <div className="w-full lg:min-h-[62vh] lg:px-16">
         {loading ? (
@@ -175,6 +173,14 @@ function Index() {
           </div>
         )}
       </div>
+      {open && (
+        <AuthModal
+          type="login"
+          referrer="explore"
+          open={open}
+          setOpen={setOpen}
+        />
+      )}
     </div>
   );
 }

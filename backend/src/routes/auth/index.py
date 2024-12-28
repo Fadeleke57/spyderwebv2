@@ -12,6 +12,7 @@ from fastapi import APIRouter
 import uuid
 from datetime import datetime
 from pytz import UTC
+from src.utils.auth import generate_username
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -82,13 +83,17 @@ async def auth_callback(code: str):
     if not user:
         Users.insert_one({
             "id": str(uuid.uuid4()),
-            "username": user_data["name"],
+            "username": generate_username(),
             "full_name": user_data["name"],
             "email": user_data["email"],
             "hashed_password": None,  # no password for google registrations
             "disabled": False,
             "profile_picture_url": profile_picture_url,
-            "analytics": { "searches": [] }
+            "analytics": { "searches": [] },
+            "created": datetime.now(UTC),
+            "updated": datetime.now(UTC),
+            "bucketsHidden": [],
+            "bucketsSaved": []
         })
         Buckets.insert_one({
             "bucketId": str(uuid.uuid4()),
@@ -165,6 +170,8 @@ def register(user: CreateUser):
         "disabled": False,
         "profile_picture_url": None,
         "analytics": {"searches": []},
+        "created": datetime.now(UTC),
+        "updated": datetime.now(UTC),
         "bucketsHidden": [],
         "bucketsSaved": []
     }
