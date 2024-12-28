@@ -1,10 +1,6 @@
 import React from "react";
 import { Bucket } from "@/types/bucket";
 import { PublicUser } from "@/types/user";
-import { ChartContainer } from "@/components/ui/chart";
-import { Textarea } from "@/components/ui/textarea";
-import BucketChart from "./BucketChart";
-import { Button } from "../ui/button";
 
 function PublicBucketView({
   bucket,

@@ -44,7 +44,6 @@ function LandingGrid() {
         <Link
           href={{
             pathname: "/explore",
-            query: { topic: firstItem.name.toLowerCase() },
           }}
         >
           <div className="w-full h-full absolute top-0 left-0 bg-neutral-950/70 group-hover:bg-transparent rounded-2xl"></div>
@@ -54,12 +53,10 @@ function LandingGrid() {
         </Link>
       </div>
 
-      {/* First Block */}
       {firstBlock.map((topic, id) => (
         <Link
           href={{
             pathname: "/explore",
-            query: { topic: topic.name.toLowerCase() },
           }}
           key={id}
         >
@@ -86,7 +83,6 @@ function LandingGrid() {
         <Link
           href={{
             pathname: "/explore",
-            query: { topic: firstItem.name.toLowerCase() },
           }}
         >
           <div className="w-full h-full absolute top-0 left-0 bg-neutral-950/70 group-hover:bg-transparent rounded-2xl"></div>
@@ -96,12 +92,10 @@ function LandingGrid() {
         </Link>
       </div>
 
-      {/* Last Block */}
       {lastBlock.map((topic, id) => (
         <Link
           href={{
             pathname: "/explore",
-            query: { topic: topic.name.toLowerCase() },
           }}
           key={id}
         >
