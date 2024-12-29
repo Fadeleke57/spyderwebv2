@@ -279,7 +279,7 @@ function BucketGraph({
           .attr("fill", mapThemeToTextColor(theme))
           .attr("font-size", "14px")
           .attr("font-weight", "bold")
-          .text((d) => (formatText(d.name, 50) || "")
+          .text((d) => (formatText(d.name, 50) || ""))
       });
 
     const drag = d3
