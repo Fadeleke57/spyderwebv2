@@ -51,7 +51,7 @@ function Index() {
     const parts = text.split(regex);
     return parts.map((part, index) =>
       regex.test(part) ? (
-        <span key={index} className="bg-yellow-200">
+        <span key={index} className="bg-yellow-200 dark:bg-violet-400">
           {part}
         </span>
       ) : (
