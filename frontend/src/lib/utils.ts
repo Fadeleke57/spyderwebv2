@@ -56,7 +56,7 @@ export const mapThemeToTextColor = (theme: string | undefined) => {
 };
 
 export const handleLinkedInWebView = () => {
-  if (typeof window === "undefined") return; // Guard for server-side rendering
+  if (typeof window === "undefined") return;
 
   const userAgent = window.navigator.userAgent;
   const url = window.location.href;

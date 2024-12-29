@@ -15,27 +15,13 @@ import TagsScroll from "@/components/explore/TagsScroll";
 function Index() {
   const { data: buckets, isLoading: loading, error } = useFetchPublicBuckets();
   const [query, setQuery] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [activeTag, setActiveTag] = useState<string | null>(null);
-  const [active, setActive] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [active, setActive] = useState<boolean>(false);
   const searchInputWrapperRef = useRef<any>(null);
   const bucketsPerPage = 20;
   const { user } = useUser();
   const router = useRouter();
-  const { tag } = router.query;
-  let formattedTag: null | string;
-  if (tag instanceof Array) {
-    formattedTag = tag[0];
-  } else if (tag) {
-    formattedTag = tag;
-  } else {
-    formattedTag = null;
-  }
-
-  useEffect(() => {
-    setActiveTag(formattedTag);
-  }, [formattedTag, tag]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -65,7 +51,7 @@ function Index() {
     const parts = text.split(regex);
     return parts.map((part, index) =>
       regex.test(part) ? (
-        <span key={index} className="bg-yellow-200 dark:bg-violet-400">
+        <span key={index} className="bg-yellow-200">
           {part}
         </span>
       ) : (
@@ -76,7 +62,7 @@ function Index() {
 
   const filteredBuckets =
     buckets?.filter(
-      (bucket: Bucket) => (bucket: Bucket) =>
+      (bucket: Bucket) =>
         bucket.name.toLowerCase().includes(query.toLowerCase()) ||
         bucket.description?.toLowerCase().includes(query.toLowerCase())
     ) || [];
@@ -98,14 +84,6 @@ function Index() {
   const description = query
     ? `Discover buckets matching your query "${query}".`
     : "Explore public buckets on Spydr. Find shared research and projects.";
-
-  const bucketTagFilter = (bucket: Bucket) => {
-    if (!activeTag) {
-      return true;
-    }
-    return bucket.tags.includes(activeTag);
-  };
-
   return (
     <div className="flex flex-1 flex-col gap-4 py-2 lg:py-10 mx-auto w-full relative">
       <Head>
@@ -153,7 +131,7 @@ function Index() {
           <p>Error loading buckets</p>
         ) : currentBuckets.length > 0 ? (
           <div className="w-full grid grid-cols-1 gap-1">
-            {currentBuckets.filter(bucketTagFilter).map((bucket: Bucket) => (
+            {currentBuckets.map((bucket: Bucket) => (
               <div key={bucket.bucketId} className="cursor-pointer">
                 <BucketCard
                   bucket={{
