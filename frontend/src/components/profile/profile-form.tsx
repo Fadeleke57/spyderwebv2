@@ -27,11 +27,11 @@ import { toast } from "../ui/use-toast";
 const profileFormSchema = z.object({
   username: z
     .string()
-    .min(2, {
+    .min(6, {
       message: "Username must be at least 6 characters.",
     })
-    .max(14, {
-      message: "Username must not be longer than 14 characters.",
+    .max(20, {
+      message: "Username must not be longer than 20 characters.",
     })
     .regex(/^[a-zA-Z0-9_]+$/, {
       message: "Username can only contain letters, numbers, and underscores.",
@@ -66,27 +66,27 @@ export function ProfileForm({
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues,
-    mode: "onChange",
   });
 
   const handleEditUsername = async () => {
+
     const isValid = await form.trigger("username");
-    if (isValid) {
-      const newUsername = form.getValues("username");
-      try {
-        await editUser({ username: newUsername });
-        await refetch();
-        setIsEditingUsername(false);
-      } catch (error: any) {
-        toast({
-          title: "Error updating username",
-          description:
-            error.response.status === 400
-              ? "Username already exists"
-              : error.message,
-          variant: "destructive",
-        });
-      }
+    if (!isValid) return;
+
+    const newUsername = form.getValues("username");
+    try {
+      await editUser({ username: newUsername });
+      await refetch();
+      setIsEditingUsername(false);
+    } catch (error: any) {
+      toast({
+        title: "Error updating username",
+        description:
+          error.response.status === 400
+            ? "Username already exists"
+            : error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -99,7 +99,7 @@ export function ProfileForm({
     if (user?.username) {
       form.setValue("username", user.username);
     }
-  });
+  }, [user?.username, form]);
 
   return (
     <Form {...form}>
@@ -187,7 +187,7 @@ export function ProfileForm({
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem className="w-ful px-4">
+            <FormItem className="w-full px-4">
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input

@@ -28,7 +28,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useFetchUser } from "@/hooks/user";
 import { useDeleteBucket, useFetchBucketsForUser } from "@/hooks/buckets";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -42,9 +41,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Bucket } from "@/types/bucket";
 import { ComboBoxResponsive } from "@/components/utility/ResponsiveComobox";
 import DeleteModal from "@/components/utility/DeleteModal";
+import { useUser } from "@/context/UserContext";
 
 function Index() {
-  const { user, Logout } = useFetchUser();
+  const { user, logout } = useUser();
   const [cursors, setCursors] = useState<{
     prev: number | null;
     next: number | null;
@@ -73,7 +73,7 @@ function Index() {
   const isMobile = useIsMobile();
 
   const handleLogout = async () => {
-    await Logout();
+    logout();
     window.location.href = "/explore";
   };
 

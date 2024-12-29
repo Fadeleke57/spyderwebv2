@@ -3,45 +3,54 @@ import api from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
 import { PublicUser, Search } from "@/types/user";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-export function useFetchUser() {
-  const [user, setUser] = useState<PublicUser | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token");
+export function useCheckUserState() {
+  const queryClient = useQueryClient();
 
-        if (!token) {
-          return;
-        }
-
-        const response = await api.get("/auth/me");
-
-        setUser(response.data);
-      } catch (error) {
-        console.error("Failed to fetch user", error);
-        setError("Failed to fetch user:" + error);
-        setUser(null);
-      } finally {
-        setLoading(false);
+  const {
+    data: user,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["user"],
+    queryFn: async (): Promise<PublicUser | null> => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        return null;
       }
-    };
+      const response = await api.get("/auth/me");
+      if (response.data) {
+        return response.data;
+      } else {
+        return null;
+      }
+    },
+    retry: false, //dont retry when error
+  });
 
-    fetchUser();
-  }, []);
-  async function Logout() {
-    setUser(null);
-    await api.post("/auth/logout"); //backend session
-    localStorage.removeItem("token"); //frontend session
-    toast({
-      title: "Logged out",
-      description: "You have been logged out.",
-    });
-  }
-  return { user, loading, error, Logout };
+  const { mutate: logout } = useMutation({
+    mutationFn: async () => {
+      await api.post("/auth/logout");
+      localStorage.removeItem("token");
+    },
+    onSuccess: () => {
+      queryClient.setQueryData(["user"], null);
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+
+      toast({
+        title: "Logged out",
+        description: "You have been logged out.",
+      });
+    },
+  });
+
+  return {
+    user,
+    isLoading,
+    error,
+    logout,
+  };
 }
 
 export function useFetchSearchHistory() {
