@@ -1,6 +1,6 @@
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import type { ReactElement, ReactNode } from "react";
+import { useEffect, type ReactElement, type ReactNode } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { Toaster } from "@/components/ui/toaster";
@@ -10,6 +10,7 @@ import { Inter as FontSans } from "next/font/google";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/hoc/theme-provider";
+import { handleLinkedInWebView } from "@/lib/utils";
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
@@ -27,9 +28,12 @@ const fontSans = FontSans({
 const queryClient = new QueryClient();
 
 function App({ Component, pageProps }: AppPropsWithLayout) {
-
   const getLayout =
     Component.getLayout || ((page) => <AppLayout>{page}</AppLayout>);
+
+  useEffect(() => {
+    handleLinkedInWebView();
+  }, []);
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>

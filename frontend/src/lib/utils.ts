@@ -54,3 +54,20 @@ export const mapThemeToTextColor = (theme: string | undefined) => {
       return "#b8b8b8";
   }
 };
+
+export const handleLinkedInWebView = () => {
+  if (typeof window === "undefined") return; // Guard for server-side rendering
+
+  const userAgent = window.navigator.userAgent;
+  const url = window.location.href;
+
+  if (
+    userAgent.includes("Mobile") &&
+    (userAgent.includes("iPhone") || userAgent.includes("iPad")) &&
+    userAgent.includes("LinkedInApp")
+  ) {
+    window.location.href = "x-safari-" + url;
+    return true;
+  }
+  return false;
+};
