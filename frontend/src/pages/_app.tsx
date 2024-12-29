@@ -30,6 +30,17 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
 
   const getLayout =
     Component.getLayout || ((page) => <AppLayout>{page}</AppLayout>);
+  
+  const userAgent = window.navigator.userAgent;
+  const url = window.location.href;
+  if (
+    userAgent.includes("Mobile") &&
+    (userAgent.includes("iPhone") || userAgent.includes("iPad")) &&
+    userAgent.includes("LinkedInApp")
+  ) {
+    window.location.href = "x-safari-" + url;
+    return;
+  }
 
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
