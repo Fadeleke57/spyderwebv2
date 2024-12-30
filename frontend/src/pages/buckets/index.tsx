@@ -74,7 +74,7 @@ function Index() {
 
   const handleLogout = async () => {
     logout();
-    window.location.href = "/explore";
+    router.push("/explore");
   };
 
   const handleDeleteBucket = async (id: string | undefined) => {
