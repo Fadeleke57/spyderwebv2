@@ -337,8 +337,8 @@ def iterate_bucket(bucket_id: str, iteratePayload: IterateBucket, user=Depends(m
     
     newBucketId = str(uuid.uuid4())
     newSourceIds = []
-
-    for sourceId in bucketToIterate["sourceIds"]:
+    bucketToIterateSources = bucketToIterate.get("sourceIds", [])
+    for sourceId in bucketToIterateSources:
 
         sourceToCopy = sources.find_one({"sourceId": sourceId})
         if not sourceToCopy:

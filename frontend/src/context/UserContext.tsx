@@ -3,18 +3,18 @@ import {
   useContext,
   ReactNode,
 } from "react";
-import { useFetchUser } from "@/hooks/user";
 import { PublicUser } from "@/types/user";
+import { useCheckUserState } from "@/hooks/user";
 
 type UserContextType = {
-  user: PublicUser | null;
+  user: PublicUser | null | undefined;
   logout: () => void;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const { user, loading, error, Logout } = useFetchUser();
+  const { user, isLoading: loading, error, logout } = useCheckUserState();
 
   if (loading) {
     return null;
@@ -25,7 +25,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <UserContext.Provider value={{ user, logout: Logout }}>
+    <UserContext.Provider value={{ user, logout: logout }}>
       {children}
     </UserContext.Provider>
   );
