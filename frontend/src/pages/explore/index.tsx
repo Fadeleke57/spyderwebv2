@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useFetchPublicBuckets } from "@/hooks/buckets";
+import { useFetchPopularBuckets, useFetchPublicBuckets } from "@/hooks/buckets";
 import { BucketCard } from "@/components/explore/BucketCard";
 import { Bucket } from "@/types/bucket";
 import { SearchInput } from "@/components/ui/input";
@@ -11,9 +11,11 @@ import { SkeletonCard } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
 import useMediaQuery from "@/hooks/general";
 import { AuthModal } from "@/components/auth/AuthModal";
-import TagsScroll from "@/components/explore/TagsScroll";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 function Index() {
   const { data: buckets, isLoading: loading, error } = useFetchPublicBuckets();
+  const { data: popularBuckets } = useFetchPopularBuckets();
   const [query, setQuery] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -85,7 +87,7 @@ function Index() {
     ? `Discover buckets matching your query "${query}".`
     : "Explore public buckets on Spydr. Find shared research and projects.";
   return (
-    <div className="flex flex-1 flex-col gap-4 py-2 lg:py-10 mx-auto w-full relative">
+    <div className="flex flex-1 flex-col gap-4 py-2 lg:py-10 mx-auto w-full lg:h-[calc(108.9vh-64px)] overflow-y-auto">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -120,7 +122,7 @@ function Index() {
           value={query}
         ></SearchInput>
       </div>
-      <div className="w-full lg:min-h-[62vh] lg:px-16">
+      <div className="w-full lg:px-16 flex flex row gap-6 relative">
         {loading ? (
           <div className="w-full flex flex-col gap-3">
             <SkeletonCard />
@@ -146,10 +148,39 @@ function Index() {
             ))}
           </div>
         ) : (
-          <div className="px-4">
+          <div className="px-4 basis-11/12">
             <p>No buckets found</p>
           </div>
         )}
+
+        <div className="hidden lg:flex flex-col basis-1/2 gap-2 border rounded-lg h-[calc(60vh-64px)] sticky top-0 p-4">
+          <div className="rounded-md">
+            <h1 className="text-xl font-bold mb-2">Popular</h1>
+            <div className="flex flex-col gap-2">
+              {popularBuckets ? (
+                popularBuckets.map((bucket: Bucket) => (
+                  <div key={bucket.bucketId} className="cursor-pointer">
+                    <span className="text-xs text-muted-foreground">
+                      {bucket.likes.length} upvotes
+                    </span>
+                    <br />
+                    <span onClick={() => router.push(`/buckets/bucket/${bucket.bucketId}`)} className="text-sm font-semibold hover:underline">
+                      {formatText(bucket.name, 90)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col gap-4">
+                  <Skeleton className="h-8 w-full rounded-xl" />
+                  <Skeleton className="h-8 w-full rounded-xl" />
+                  <Skeleton className="h-8 w-full rounded-xl" />
+                  <Skeleton className="h-8 w-full rounded-xl" />
+                </div>
+              )}
+            </div>
+          </div>
+          
+        </div>
       </div>
       {open && (
         <AuthModal

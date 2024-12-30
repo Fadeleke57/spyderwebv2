@@ -176,3 +176,13 @@ export function useIterateBucket(bucketId: string) {
     onError: () => {},
   });
 }
+
+export function useFetchPopularBuckets() {
+  return useQuery({
+    queryKey: ["buckets", "popular"],
+    queryFn: async () => {
+      const response = await api.get("/buckets/popular");
+      return response.data.result;
+    },
+  });
+}
