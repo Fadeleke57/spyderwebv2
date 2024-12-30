@@ -280,6 +280,7 @@ function BucketGraph({
           .attr("font-size", "14px")
           .attr("font-weight", "bold")
           .text((d) => (formatText(d.name, 50) || ""))
+          .call(wrapText, 300);
       });
 
     const drag = d3

@@ -23,7 +23,6 @@ export function TrendingSearchCarousel() {
 
   const router = useRouter();
 
-  // Update displayBuckets when the actual buckets are loaded
   useEffect(() => {
     if (buckets && !loading) {
       setDisplayBuckets(buckets.sort((a : Bucket, b: Bucket) => b.likes.length - a.likes.length).slice(0, 9));

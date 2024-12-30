@@ -380,3 +380,12 @@ def iterate_bucket(bucket_id: str, iteratePayload: IterateBucket, user=Depends(m
     buckets.find_one_and_update({"bucketId": bucketToIterate["bucketId"]}, {"$push": {"iterations": user["id"]}})
 
     return {"result": newBucketId}
+
+
+@router.get("/popular") 
+def get_popular_buckets():
+    buckets = get_collection("buckets")
+    buckets = buckets.find({"visibility": "Public"}, {"_id": 0})
+    buckets = sorted(buckets, key=lambda x: len(x["likes"]), reverse=True)
+    buckets = buckets[:3]
+    return {"result": buckets}
