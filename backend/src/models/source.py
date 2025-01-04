@@ -15,5 +15,5 @@ class Source(BaseModel):
     updated_at: datetime
 
 class UpdateSource(BaseModel):
-    name: Optional[str]
+    name: Optional[str] = None
     

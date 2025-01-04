@@ -347,14 +347,11 @@ def get_source(source_id: str):
 def edit_source(sourceId : str, info : UpdateSource, user=Depends(manager)):
     check_user(user)
     
-    update_data = {key: value for key, value in info.model_dump().items() if value is not None}
+    update_data = info.model_dump(exclude_none=True)
     update_data["updated_at"] = datetime.now(UTC)
 
     sources = get_collection("sources")
-    source = sources.find_one_and_update({"userId": user["id"], "sourceId": sourceId}, {"$set", update_data}, return_document=True)
+    sources.update_one({"userId": user["id"], "sourceId": sourceId}, {"$set": update_data})
 
-    if not source:
-        raise HTTPException(status_code=404, detail="Item not found")
-    else:
-        return {"result", "Source updated"}
+    return {"result", "Source updated"}
     
