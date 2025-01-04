@@ -128,5 +128,20 @@ export const useFetchSource = (sourceId: string) => {
       const data = await response.data;
       return data;
     },
-  })
-}
+  });
+};
+
+export const useEditSourceTitle = (sourceId: string) => {
+  return useMutation({
+    mutationFn: async (title: string) => {
+      const response = await api.patch(`/sources/edit/source/${sourceId}`, {
+        name: title,
+      });
+      const data = await response.data.result;
+      return data;
+    },
+    onError: (err: any) => {
+      console.error(err);
+    },
+  });
+};
