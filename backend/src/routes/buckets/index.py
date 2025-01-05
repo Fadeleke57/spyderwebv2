@@ -207,11 +207,12 @@ def get_bucket_by_id(bucketId : str, user=Depends(manager.optional)):
     """
     if user:
         check_user(user)
-    buckets=get_collection("buckets")
+    buckets = get_collection("buckets")
     bucket = buckets.find_one({"bucketId" : bucketId}, {"_id": 0})
-    if bucket:
-        print("Bucket found",bucket)
+
     if not bucket:
+        raise HTTPException(status_code=404, detail="Item not found")
+    elif bucket["visibility"] == "Private" and user.get("id", "") != bucket["userId"]:
         raise HTTPException(status_code=404, detail="Item not found")
     else: 
         return {"result": bucket}
@@ -283,30 +284,6 @@ def remove_tag(bucket_id: str, tag: str, user=Depends(manager)):
     formatted_tag = tag.lower()
     buckets.update_one({"bucketId": bucket_id, "userId": user["id"]}, {"$pull": {"tags": formatted_tag}})
     return {"result": "Tag added"}
-
-@router.get("/sources/{bucket_id}")
-def get_articles(bucket_id: str, user=Depends(manager.optional)):
-    """
-    Retrieve articles for a given bucket.
-
-    Args:
-        bucket_id (str): The ID of the bucket to retrieve articles from.
-        user (User, optional): The user making the request. Defaults to None.
-
-    Returns:
-        dict: A JSON response containing the articles associated with the given bucket ID.
-              Raises 404 error if the bucket is not found.
-    """
-    if user:
-        check_user(user)
-    buckets = get_collection("buckets")
-    bucket = buckets.find_one({"bucketId": bucket_id})
-    if not bucket:
-        raise HTTPException(status_code=404, detail="Bucket not found")
-    articleIds = bucket["sourceIds"]
-    articles = get_articles_by_ids(articleIds)
-    print("Found length of articles: ", len(articles))
-    return {"result": articles}
 
 @router.post("/iterate/{bucket_id}")
 def iterate_bucket(bucket_id: str, iteratePayload: IterateBucket, user=Depends(manager)):
