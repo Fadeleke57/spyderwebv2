@@ -32,7 +32,7 @@ export function TrendingSearchCarousel() {
   }, [buckets, loading]);
 
   return (
-    <div className="relative group pl-6 mt-4">
+    <div className="relative group pl-6 mt-4 mb-6 lg:mb-0">
       <Carousel
         opts={{
           align: "start",
@@ -42,12 +42,12 @@ export function TrendingSearchCarousel() {
         <CarouselContent>
           {!bucketsRendered
             ? Array.from({ length: 9 }).map((_, index) => (
-                <CarouselItem key={index} className="basis-1/3 lg:basis-1/5">
+                <CarouselItem key={index} className="basis-1/2 lg:basis-1/5">
                   <Skeleton className="md:w-[250px] md:h-[250px] lg:w-[200px] lg:h-[200px] rounded-xl" />
                 </CarouselItem>
               ))
             : displayBuckets.map((bucket, index) => (
-                <CarouselItem key={index} className="basis-1/3 lg:basis-1/5">
+                <CarouselItem key={index} className="basis-1/2 lg:basis-1/5">
                   <TrendingSearchItem bucket={bucket} />
                 </CarouselItem>
               ))}

@@ -44,10 +44,12 @@ export function ProjectsCarousel() {
       >
         <CarouselContent>
           <NewBucketModal>
-            <CarouselItem className="basis-1/2 lg:basis-1/3">
+            <CarouselItem className="basis-11/12 lg:basis-1/3">
               <div className="p-1 cursor-pointer">
                 <Card className="bg-muted dark:bg-card opacity-35 hover:opacity-75 duration-200 transition ease-in border-none">
-                  <CardContent className="flex aspect-square items-center justify-center p-6">                    <span className="text-3xl font-semibold flex flex-row items-center text-muted-foreground">
+                  <CardContent className="flex aspect-square items-center justify-center p-6">
+                    {" "}
+                    <span className="text-3xl font-semibold flex flex-row items-center text-muted-foreground">
                       <CopyPlus className="mr-2" />
                       Create
                     </span>
@@ -61,7 +63,7 @@ export function ProjectsCarousel() {
             ? Array.from({ length: 9 }).map((_, index) => (
                 <CarouselItem
                   key={index}
-                  className="basis-1/2 lg:basis-1/3 p-0"
+                  className="basis-11/12 lg:basis-1/3 p-0"
                 >
                   <Card className="h-full p-2 border-none">
                     <Skeleton className="w-full h-full rounded-lg" />
@@ -71,7 +73,7 @@ export function ProjectsCarousel() {
             : buckets?.map((bucket, index) => (
                 <CarouselItem
                   key={index}
-                  className="basis-1/2 lg:basis-1/3"
+                  className="basis-11/12 lg:basis-1/3"
                   onClick={() =>
                     router.push(`/buckets/bucket/${bucket.bucketId}`)
                   }

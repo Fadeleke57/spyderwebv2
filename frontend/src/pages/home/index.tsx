@@ -6,6 +6,7 @@ import { useUser } from "@/context/UserContext";
 import Link from "next/link";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { Settings } from "lucide-react";
 
 function Index() {
   const { user } = useUser();
@@ -26,6 +27,7 @@ function Index() {
           }`}
         />
       </Head>
+      <Settings onClick={() => router.push("/settings")} className="absolute top-24 right-4 lg:top-8 lg:right-8 cursor-pointer hover:opacity-50" />
       <h1 className="text-2xl text-center lg:text-4xl font-extrabold tracking-tight">
         Welcome to Spydr, {user?.username}
       </h1>
