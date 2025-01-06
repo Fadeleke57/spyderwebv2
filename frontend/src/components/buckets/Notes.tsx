@@ -5,11 +5,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "date-fns";
 
 interface NoteComponentProps {
-    content?: string;
-    isOwner?: boolean;
-    source: any;
-    handleNoteContentChange: any;
-    updateError: any;
+  content?: string;
+  isOwner?: boolean;
+  source: any;
+  handleNoteContentChange: any;
+  updateError: any;
 }
 const NoteComponent = ({
   content,
@@ -17,7 +17,9 @@ const NoteComponent = ({
   source,
   handleNoteContentChange,
   updateError,
-} : NoteComponentProps) => {
+}: NoteComponentProps) => {
+  const [editing, setEditing] = React.useState(false);
+
   return (
     <ScrollArea className="h-[calc(97vh-210px)]">
       <small className="text-muted-foreground">
@@ -28,19 +30,31 @@ const NoteComponent = ({
       </small>
 
       {isOwner ? (
-        <Textarea
-          value={content}
-          placeholder="Content... (Supports Markdown)"
-          rows={1}
-          className="mt-4 w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-foreground"
-          onInput={(e : any) => {
-            e.target.style.height = "auto";
-            e.target.style.height = `${e.target.scrollHeight}px`;
-          }}
-          onChange={handleNoteContentChange}
-        />
+        editing || !content ? (
+          <Textarea
+            value={content}
+            placeholder="Content... (Supports Markdown)"
+            rows={1}
+            className="mt-4 w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-foreground"
+            onInput={(e: any) => {
+              e.target.style.height = "auto";
+              e.target.style.height = `${e.target.scrollHeight}px`;
+            }}
+            onChange={handleNoteContentChange}
+          />
+        ) : (
+          <div
+            className="prose dark:prose-invert max-w-none mt-4"
+            onClick={() => setEditing(true)}
+          >
+            <ReactMarkdown>{content}</ReactMarkdown>
+          </div>
+        )
       ) : (
-        <div className="prose dark:prose-invert max-w-none mt-4">
+        <div
+          className="prose dark:prose-invert max-w-none mt-4"
+          onClick={() => setEditing(true)}
+        >
           <ReactMarkdown>{content}</ReactMarkdown>
         </div>
       )}
