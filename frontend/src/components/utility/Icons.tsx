@@ -1,3 +1,5 @@
+import { File, Link, Pencil, Youtube } from "lucide-react";
+
 export const googleIcon = (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -23,3 +25,18 @@ export const googleIcon = (
     />
   </svg>
 );
+
+export const mapSourceToIcon = (type : string, size : number) => {
+  switch (type) {
+    case "document":
+      return <File size={size} />;
+    case "youtube":
+      return <Youtube size={size} />;
+    case "website":
+      return <Link size={size} />;
+    case "note":
+      return <Pencil size={size} />;
+    default:
+      return null;
+  }
+}

@@ -57,10 +57,12 @@ export function ProfileForm({
   const { mutateAsync: editUser, isPending, error } = useEditUser();
   const isMobile = useIsMobile();
   const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [isEditingBio, setIsEditingBio] = useState(false);
 
   const defaultValues: Partial<ProfileFormValues> = {
     username: user?.username || "",
     email: user?.email || "",
+    bio: user?.bio || "",
   };
 
   const form = useForm<ProfileFormValues>({
@@ -69,7 +71,6 @@ export function ProfileForm({
   });
 
   const handleEditUsername = async () => {
-
     const isValid = await form.trigger("username");
     if (!isValid) return;
 
@@ -90,16 +91,42 @@ export function ProfileForm({
     }
   };
 
-  const handleCancelEdit = () => {
-    form.setValue("username", user?.username || "");
-    setIsEditingUsername(false);
+  const handleEditBio = async () => {
+    const isValid = await form.trigger("bio");
+    if (!isValid) return;
+
+    const newBio = form.getValues("bio");
+    try {
+      await editUser({ bio: newBio });
+      await refetch();
+      setIsEditingBio(false);
+    } catch (error: any) {
+      toast({
+        title: "Error updating bio",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCancelEdit = (field: "username" | "bio") => {
+    if (field === "username") {
+      form.setValue("username", user?.username || "");
+      setIsEditingUsername(false);
+    } else {
+      form.setValue("bio", user?.bio || "");
+      setIsEditingBio(false);
+    }
   };
 
   useEffect(() => {
     if (user?.username) {
       form.setValue("username", user.username);
     }
-  }, [user?.username, form]);
+    if (user?.bio) {
+      form.setValue("bio", user.bio);
+    }
+  }, [user?.username, user?.bio, form]);
 
   return (
     <Form {...form}>
@@ -167,7 +194,7 @@ export function ProfileForm({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={handleCancelEdit}
+                      onClick={() => handleCancelEdit("username")}
                       disabled={isPending}
                     >
                       <X className="h-4 w-4" />
@@ -207,15 +234,50 @@ export function ProfileForm({
           name="bio"
           render={({ field }) => (
             <FormItem className="px-4">
-              <FormLabel>Bio</FormLabel>
-              <FormControl>
-                <Textarea
-                  disabled
-                  placeholder="Tell us a little bit about yourself"
-                  className="resize-none"
-                  {...field}
-                />
-              </FormControl>
+              <div className="flex items-center justify-between">
+                <FormLabel>Bio</FormLabel>
+                {!isEditingBio && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditingBio(true)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <FormControl>
+                  <Textarea
+                    placeholder="Tell us a little bit about yourself"
+                    className="resize-none"
+                    disabled={!isEditingBio}
+                    {...field}
+                  />
+                </FormControl>
+                {isEditingBio && (
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleEditBio}
+                      disabled={isPending}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCancelEdit("bio")}
+                      disabled={isPending}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
               <FormDescription>
                 Give a brief description of yourself
               </FormDescription>

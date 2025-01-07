@@ -58,13 +58,7 @@ function NavigationMenuFull() {
   return (
     <NavigationMenu>
       <NavigationMenuList className="hidden md:flex">
-        <NavigationMenuItem className="bg-transparent">
-          <Link href="/explore" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Explore
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
+        
       </NavigationMenuList>
     </NavigationMenu>
   );

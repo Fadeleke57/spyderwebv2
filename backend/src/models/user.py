@@ -16,17 +16,19 @@ class User(BaseModel): #user
     disabled: bool
     hashed_password: str
     analytics: Analytics
+    bio: str
     profile_picture_url: str
     bucketsHidden: Optional[list[str]]
     bucketsSaved: Optional[list[str]]
 
-class CreateUser(BaseModel): #creating user
+class CreateUser(BaseModel): # creating user
     username: str
     email: str
     password: str
 
-class UpdateUser(BaseModel): #updating user
+class UpdateUser(BaseModel): # updating user
     full_name: Optional[str] = None
     username: Optional[str] = None
     email: Optional[str] = None
     password: Optional[str] = None
+    bio: Optional[str] = None

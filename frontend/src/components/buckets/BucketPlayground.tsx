@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DialogTrigger } from "../ui/dialog";
+import { mapSourceToIcon } from "../utility/Icons";
 
 function BucketPlayground({
   bucket,
@@ -285,7 +286,7 @@ function BucketPlayground({
                         className="cursor-pointer"
                         onSelect={() => handleSourceClick(source.sourceId)}
                       >
-                        {source.name}
+                        {mapSourceToIcon(source.type, 16)}{source.name}
                       </CommandItem>
                     ))}
                   </CommandGroup>

@@ -4,12 +4,11 @@ export interface PublicUser {
   username: string;
   full_name: string;
   profile_picture_url?: string;
-  disabled?: boolean;
-  analytics?: {
-    searches: string[];
-  };
-  hiddenBuckets?: string[];
-  savedBuckets?: string[];
+  bio: string;
+  disabled: boolean;
+  analytics: {};
+  hiddenBuckets: string[];
+  savedBuckets: string[];
 }
 
 export interface Search {

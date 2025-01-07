@@ -157,12 +157,10 @@ def register(user: CreateUser):
     if Users.find_one({"username": user.username}):
         raise HTTPException(status_code=400, detail="There is already an account with this username.")
 
-    Buckets = get_collection('buckets')
-
     hashed_password = get_password_hash(user.password)
-
+    userId = str(uuid.uuid4())
     user_data = {
-        "id": str(uuid.uuid4()),
+        "id": userId,
         "username": user.username,
         "full_name": user.username,
         "email": user.email,
@@ -175,15 +173,15 @@ def register(user: CreateUser):
         "bucketsHidden": [],
         "bucketsSaved": []
     }
-
     Users.insert_one(user_data)
 
+    Buckets = get_collection('buckets')
+    bucketId = str(uuid.uuid4())
     Buckets.insert_one({
-        "bucketId": str(uuid.uuid4()),
+        "bucketId": bucketId,
         "name": "Welcome to Spydr!",
         "description": "This is your first bucket! Create a new bucket to get started.",
-        "userId": Users.find_one({"email": user.email})["id"],
-        "articleIds": [],
+        "userId": userId,
         "created": datetime.now(UTC),
         "updated": datetime.now(UTC),
         "visibility": "Private",
@@ -191,6 +189,23 @@ def register(user: CreateUser):
         "likes": [],
         "iterations": [],
     })
+
+    sourceId = str(uuid.uuid4())
+    Sources = get_collection('sources')
+    Sources.insert_one({
+        "sourceId": sourceId,
+        "bucketId": bucketId,
+        "userId": userId,
+        "name": "How to use Spydr (click me!)",
+        "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new bucket or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your bucket.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your bucket with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other buckets and start from there.\n### Have fun!",
+        "url": None,
+        "type": "note",
+        "size": None,
+        "created_at": datetime.now(UTC),
+        "updated_at": datetime.now(UTC),
+    })
+
+    Buckets.update_one({"bucketId": bucketId, "userId": userId}, {"$push": {"sourceIds": sourceId}, "$set": {"updated_at": datetime.now(UTC)}})
 
     access_token = manager.create_access_token(
         data={"sub": user.email},

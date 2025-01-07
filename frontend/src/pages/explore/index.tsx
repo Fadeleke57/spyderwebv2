@@ -11,8 +11,8 @@ import { SkeletonCard } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
 import useMediaQuery from "@/hooks/general";
 import { AuthModal } from "@/components/auth/AuthModal";
-import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+
 function Index() {
   const { data: buckets, isLoading: loading, error } = useFetchPublicBuckets();
   const { data: popularBuckets } = useFetchPopularBuckets();
@@ -153,7 +153,7 @@ function Index() {
           </div>
         )}
 
-        <div className="hidden lg:flex flex-col basis-1/2 gap-2 border rounded-lg h-[calc(62vh-64px)] overflow-y-auto sticky top-0 p-4">
+        <div className="hidden lg:flex flex-col basis-1/2 gap-2 border rounded-lg h-[calc(64vh-68px)] overflow-y-auto sticky top-0 p-4">
           <div className="rounded-md">
             <h1 className="text-xl font-bold mb-2">Popular</h1>
             <div className="flex flex-col gap-2">
