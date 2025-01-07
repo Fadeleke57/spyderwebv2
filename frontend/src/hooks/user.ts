@@ -124,6 +124,8 @@ type UpdateUser = {
   full_name?: string;
   username?: string;
   email?: string;
+  password?: string;
+  bio?: string;
 };
 
 export function useEditUser() {

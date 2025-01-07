@@ -143,7 +143,7 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
           title: "Success",
           description: "Login successful!",
         });
-        window.location.href = isMobile ? "/buckets" : "/home";
+        window.location.href = "/home";
       }
     } catch (error) {
       toast({
@@ -170,7 +170,7 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
           description: "Registration successful!",
         });
         setOpen(false);
-        window.location.href = isMobile ? "/buckets" : "/home";
+        window.location.href = "/home";
       }
     } catch (error: any) {
       toast({
