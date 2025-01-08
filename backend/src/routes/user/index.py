@@ -27,13 +27,16 @@ def delete_search_history(user: User = Depends(manager)):
     return {"result": "Search history deleted"}
 
 @router.get("/")
-def get_user(userId: str, user: User = Depends(manager.optional)):
-    if user:
-        check_user(user)
-    user = get_item_by_id("users", userId)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return {"result": user}
+def get_user(userId: str, userMakingRequest: User = Depends(manager.optional)):
+    if userMakingRequest:
+        check_user(userMakingRequest)
+
+    requestedUser = get_item_by_id("users", userId)
+
+    if not requestedUser:
+        return {"result": None}
+
+    return {"result": requestedUser}
 
 @router.patch("/edit/")
 def edit_user(updates: UpdateUser, user : User = Depends(manager)):

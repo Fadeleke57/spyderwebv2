@@ -1,14 +1,20 @@
 import React from "react";
 import { Bucket } from "@/types/bucket";
-import { PublicUser } from "@/types/user";
+import { useGetAllImagesForBucket } from "@/hooks/buckets";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import Image from "next/image";
 
-function PublicBucketView({
-  bucket,
-  user,
-}: {
-  bucket: Bucket;
-  user: PublicUser | null;
-}) {
+function PublicBucketView({ bucket }: { bucket: Bucket }) {
+  const { data: imageUrls, isLoading: imagesLoading } =
+    useGetAllImagesForBucket(bucket.bucketId);
+  const [images, setImages] = React.useState<string[]>([]);
+  console.log(imageUrls)
+  React.useEffect(() => {
+    if (imageUrls) {
+      setImages(imageUrls);
+    }
+  }, [bucket, imageUrls, images]);
+
   return (
     <div className="grid w-full items-start gap-6">
       <div className="grid gap-6 rounded-lg pb-8 pt-4 px-4">
@@ -26,6 +32,24 @@ function PublicBucketView({
           </div>
         </div>
       </div>
+      {images.length > 0 && (
+        <ScrollArea className="w-full flex flex-row px-4 my-2">
+          {images && images.map((image: string, index: number) => (
+            <div key={index} className="flex-1">
+              <Image
+                height={300}
+                width={500}
+                src={image}
+                alt={bucket.name}
+                className="rounded-md w-full border h-auto object-cover"
+                style={{ maxHeight: "400px" }}
+              />
+            </div>
+          ))}
+
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      )}
     </div>
   );
 }

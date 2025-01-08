@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { File, MoreHorizontal, PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +42,7 @@ import { Bucket } from "@/types/bucket";
 import { ComboBoxResponsive } from "@/components/utility/ResponsiveComobox";
 import DeleteModal from "@/components/utility/DeleteModal";
 import { useUser } from "@/context/UserContext";
+import { toast } from "@/components/ui/use-toast";
 
 function Index() {
   const { user, logout } = useUser();
@@ -77,12 +78,22 @@ function Index() {
     router.push("/explore");
   };
 
-  const handleDeleteBucket = async (id: string | undefined) => {
-    if (!id) return;
-    await deleteBucket(id);
-    refetch();
-    setOpen(false);
-  };
+   const handleDeleteBucket = useCallback(async () => {
+     if (!bucketId) return;
+
+     try {
+       await deleteBucket(bucketId);
+       setOpen(false);
+       refetch();
+     } catch (error) {
+       console.error(error);
+       toast({
+         title: "Error deleting bucket",
+         description: "Failed to delete bucket",
+         variant: "destructive",
+       })
+     }
+   }, [bucketId, deleteBucket]);
 
   const tabs = [
     { label: "All", value: "all", filter: () => true },
@@ -389,8 +400,8 @@ function Index() {
       </div>
       {bucketId && open && (
         <DeleteModal
-          bucketId={bucketId}
-          handleDelete={handleDeleteBucket}
+          itemType="bucket"
+          onDelete={handleDeleteBucket}
           isPending={isPending}
           open={open}
           setOpen={setOpen}

@@ -15,9 +15,14 @@ import {
   EllipsisIcon,
   Album,
   EyeOff,
+  Scroll,
 } from "lucide-react";
 import { useUser } from "@/context/UserContext";
-import { useLikeBucket, useUnlikeBucket } from "@/hooks/buckets";
+import {
+  useGetAllImagesForBucket,
+  useLikeBucket,
+  useUnlikeBucket,
+} from "@/hooks/buckets";
 import UserAvatar from "../utility/UserAvatar";
 import { useFetchUserById } from "@/hooks/user";
 import { IterateModal } from "../utility/IterateModal";
@@ -29,32 +34,47 @@ import {
 } from "../ui/dropdown-menu";
 import { Skeleton } from "../ui/skeleton";
 import { AuthModal } from "../auth/AuthModal";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
+import Image from "next/image";
+import { ScrollBar } from "../ui/scroll-area";
 
 export function BucketCard({ bucket }: { bucket: Bucket }) {
   const [bucketLikedCount, setBucketLikedCount] = React.useState(
     bucket.likes.length
   );
+
   const { data: bucketOwner, isLoading: bucketOwnerLoading } = useFetchUserById(
-    bucket?.userId as string
+    bucket.userId
   );
+  const { data: imageUrls, isLoading: imagesLoading } =
+    useGetAllImagesForBucket(bucket.bucketId);
+
   const { data: iteratedFromUser, isLoading: iteratedFromLoading } =
-    useFetchUserById(bucket?.iteratedFrom ? bucket?.iteratedFrom : "");
+    useFetchUserById(bucket?.iteratedFrom || "");
 
   const [bucketIterationsCount, setBucketIterationsCount] = React.useState(
     bucket.iterations.length
   );
+
   const { user } = useUser();
+
   const { mutateAsync: likeBucket } = useLikeBucket(bucket.bucketId);
   const { mutateAsync: unlikeBucket } = useUnlikeBucket(bucket.bucketId);
+
   const [bucketLiked, setBucketLiked] = React.useState(
     bucket.likes.includes(user?.id as string)
   );
-  const [bucketIterated, setBucketIterated] = React.useState(
+
+  const [bucketIterated, _] = React.useState(
     bucket.iterations.includes(user?.id as string)
   );
+
+  const [images, setImages] = React.useState<string[]>([]);
+
   const [iteratedFrom, setIteratedFrom] = React.useState<any | null>(null);
   const [showIterateModal, setShowIterateModal] = React.useState(false);
   const [authModalOpen, setAuthModalOpen] = React.useState(false);
+  const [showImageModal, setShowImageModal] = React.useState(false);
 
   const handleStopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -99,14 +119,25 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
   };
 
   React.useEffect(() => {
-    setBucketLiked(bucket.likes.includes(user?.id as string)); //will have to represent as a set to support O(1) operations
+    setBucketLiked(bucket.likes.includes(user?.id as string));
     setBucketLikedCount(bucket.likes.length);
     setBucketIterationsCount(bucket.iterations.length);
 
     if (iteratedFromUser) {
       setIteratedFrom(iteratedFromUser);
     }
-  }, [bucket, user?.id, bucket?.likes, bucket?.iterations, iteratedFromUser]);
+
+    if (imageUrls) {
+      setImages(imageUrls);
+    }
+  }, [
+    bucket,
+    user?.id,
+    bucket?.likes,
+    bucket?.iterations,
+    iteratedFromUser,
+    imageUrls,
+  ]);
 
   return (
     <Link
@@ -181,6 +212,24 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
             {bucket.description}
           </CardDescription>
         </CardHeader>
+
+        {images.length > 0 && (
+          <ScrollArea className="w-full flex flex-row px-4 my-2">
+            <div className="flex-1">
+              <Image
+                height={300}
+                width={500}
+                src={images[0]}
+                alt={bucket.name}
+                className="rounded-md w-full border h-auto object-cover"
+                style={{ maxHeight: "1000px" }}
+              />
+            </div>
+
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        )}
+
         <CardContent />
         <div className="absolute bottom-4 left-6 flex flex-row space-x-2">
           <div className="flex flex-row items-center space-x-1">
@@ -236,7 +285,12 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
         open={showIterateModal}
         setIsOpen={setShowIterateModal}
       />
-      <AuthModal referrer="bucket" type="login" open={authModalOpen} setOpen={setAuthModalOpen} />
+      <AuthModal
+        referrer="bucket"
+        type="login"
+        open={authModalOpen}
+        setOpen={setAuthModalOpen}
+      />
     </Link>
   );
 }

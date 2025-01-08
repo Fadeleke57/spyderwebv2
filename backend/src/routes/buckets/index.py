@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File
+from pydantic import BaseModel, HttpUrl
 from src.routes.auth.oauth2 import manager
 from fastapi import APIRouter, Depends, Query
 from typing import Optional
+import os
+from werkzeug.utils import secure_filename
 import uuid
 from src.lib.s3.index import S3Bucket
 from pytz import UTC
@@ -11,10 +14,12 @@ from src.models.user import User
 from datetime import datetime
 from src.models.bucket import BucketConfig, UpdateBucket, IterateBucket
 from fastapi.exceptions import HTTPException
-#from src.utils.graph import get_articles_by_ids
+from botocore.exceptions import ClientError
+from src.lib.logger.index import logger
 from pymongo import ReturnDocument
 from src.core.config import settings
 import boto3
+from urllib.parse import urlparse
 router = APIRouter()
 
 s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
@@ -51,7 +56,6 @@ def get_user_buckets(
     else:
         visibility = None
 
-    # Fetch all buckets for the user
     buckets = get_collection("buckets")
     if visibility:
         buckets = buckets.find({"visibility": visibility, "userId": user["id"]}, {"_id": 0})
@@ -60,7 +64,7 @@ def get_user_buckets(
     buckets = [bucket for bucket in buckets]
     buckets = sorted(buckets, key=lambda x: x["updated"], reverse=True)
 
-    # Pagination logic
+    #pagination
     total_buckets = len(buckets)
     start_index = (page - 1) * page_size
     end_index = start_index + page_size
@@ -79,7 +83,7 @@ def get_user_buckets(
         "prevCursor": prev_cursor,
     }
 
-@router.get("/all/public") # get all public buckets
+@router.get("/all/public") #get all public buckets
 def get_public_buckets():
     """
     Retrieve all public buckets.
@@ -94,7 +98,7 @@ def get_public_buckets():
     buckets = sorted(buckets, key=lambda x: x["updated"], reverse=True)
     return {"result": buckets}
 
-@router.get("/liked/user") # get all liked buckets belonging to a user
+@router.get("/liked/user") #get all liked buckets belonging to a user
 def get_user_liked_buckets(user: User = Depends(manager)):
     """
     Retrieve all buckets liked by a user.
@@ -131,16 +135,138 @@ def create_bucket(config : BucketConfig, user=Depends(manager)):
         "name": config.name,
         "description": config.description,
         "userId": user["id"],
-        "articleIds": config.articleIds,
         "sourceIds": config.sourceIds or [],
         "created": datetime.now(UTC),
         "updated": datetime.now(UTC),
         "visibility": config.visibility,
-        "tags": config.tags,
+        "tags": config.tags or [],
         "likes": [],
         "iterations": [],
+        "imageKeys": [],
+        "iteratedFrom": None
     })
     return {"result": bucketId}
+
+@router.post("/upload/image/{bucket_id}")
+async def upload_file(
+    bucket_id: str, 
+    files: list[UploadFile] = File(..., description="Multiple files as UploadFile"),
+    user=Depends(manager)
+):
+    
+    check_user(user)
+    uploaded_keys = []
+
+    try:
+        for file in files:
+            #sanitize filename
+            safe_filename = secure_filename(file.filename)
+            object_name = f"files/{user['id']}/{bucket_id}/images/{safe_filename}"
+
+            temp_dir = "/tmp/bucket_uploads"
+            os.makedirs(temp_dir, exist_ok=True)
+            
+            temp_path = os.path.join(temp_dir, f"{uuid.uuid4()}_{safe_filename}")
+
+            try:
+                contents = await file.read()
+                with open(temp_path, "wb") as buffer:
+                    buffer.write(contents)
+
+                s3_bucket.upload_file(
+                    temp_path,
+                    object_name,
+                )
+
+                uploaded_keys.append(object_name)
+
+                buckets = get_collection("buckets")
+                result = buckets.update_one(
+                    {
+                        "bucketId": bucket_id,
+                        "userId": user["id"]
+                    },
+                    {
+                        "$push": {"imageKeys": object_name},
+                        "$set": {"updated_at": datetime.now(UTC)}
+                    }
+                )
+
+                if result.modified_count == 0:
+                    raise HTTPException(status_code=404, detail="Bucket not found")
+
+            except Exception as e:
+                logger.error(f"Error uploading file {safe_filename}: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Error uploading file: {str(e)}")
+            finally:
+                #clean up
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+
+        return {"imageKeys": uploaded_keys}
+
+    except Exception as e:
+        logger.error(f"Upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/delete/image/{bucket_id}/{image_name}")
+def delete_image(
+    bucket_id: str, 
+    image_name: str,
+    user=Depends(manager)
+):
+    check_user(user)
+
+    buckets = get_collection("buckets")
+
+    filepath = f"files/{user['id']}/{bucket_id}/images/{image_name}"
+
+    result = buckets.update_one(
+        {
+            "bucketId": bucket_id,
+            "userId": user["id"],
+            "imageKeys": filepath
+        },
+        {
+            "$pull": {"imageKeys": filepath},
+            "$set": {"updated_at": datetime.now(UTC)}
+        }
+    )
+
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Bucket not found")
+    
+    s3.delete_object(
+        Bucket=s3_bucket.bucket_name,
+        Key=filepath
+    )
+    return {"result": "Image deleted"}
+    
+@router.get("/images/bucket/{bucket_id}")
+def get_bucket_images(bucket_id : str):
+    Buckets = get_collection("buckets")
+    bucket = Buckets.find_one({"bucketId": bucket_id})
+    if not bucket:
+        raise HTTPException(status_code=404, detail=f"Bucket not found!")
+
+    imageKeys = bucket.get("imageKeys", [])
+    urls = []
+    try:
+        for key in imageKeys:
+            url = s3.generate_presigned_url(
+                'get_object',
+                Params={
+                    'Bucket': s3_bucket.bucket_name,
+                    'Key': key,
+                    'ResponseContentDisposition': 'inline',
+                },
+                ExpiresIn=604800
+            )
+            urls.append(url)
+    except ClientError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    logger.info(f"Urls generated {urls}")
+    return {"result": urls}
 
 @router.delete("/delete")
 def delete_bucket(bucketId: str, user=Depends(manager)):

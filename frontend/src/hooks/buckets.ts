@@ -65,6 +65,62 @@ export const useCreateBucket = () => {
   });
 };
 
+export const useUploadImageToBucket = () => {
+  return useMutation({
+    mutationFn: async ({
+      bucketId,
+      files,
+    }: {
+      bucketId: string;
+      files: File[];
+    }) => {
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      const { data } = await api.post(
+        `/buckets/upload/image/${bucketId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return data.imageKeys;
+    },
+  });
+};
+
+export const useDeleteImageFromBucket = () => {
+  return useMutation({
+    mutationFn: async ({
+      bucketId,
+      imageUrl,
+    }: {
+      bucketId: string;
+      imageUrl: string;
+    }) => {
+      const imageName = imageUrl.split("/").pop();
+      const response = await api.delete(`/buckets/delete/image/${bucketId}/${imageName}`);
+      return response.data.result;
+    },
+  });
+};
+
+export function useGetAllImagesForBucket(bucketId: string) {
+  return useQuery({
+    queryKey: ["images", "bucket", bucketId],
+    queryFn: async () => {
+      const response = await api.get(`/buckets/images/bucket/${bucketId}`);
+      return response.data.result;
+    },
+  });
+}
+
 export function useDeleteBucket() {
   return useMutation({
     mutationFn: async (bucketId: string) => {
