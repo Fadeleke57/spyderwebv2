@@ -222,6 +222,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
                 src={images[0]}
                 alt={bucket.name}
                 className="rounded-md w-full border h-auto object-cover"
+                unoptimized
                 style={{ maxHeight: "1000px" }}
               />
             </div>

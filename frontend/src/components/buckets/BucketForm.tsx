@@ -5,6 +5,7 @@ import {
   useDeleteImageFromBucket,
   useGetAllImagesForBucket,
   useUpdateBucket,
+  useUploadImageToBucket,
 } from "@/hooks/buckets";
 import { useToast } from "../ui/use-toast";
 import { useRouter } from "next/router";
@@ -18,8 +19,14 @@ import { TagsPopover } from "../home/TagsPopover";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { X } from "lucide-react";
+import { ImageIcon, X } from "lucide-react";
 import DeleteModal from "../utility/DeleteModal";
+import {
+  MAX_IMAGE_SIZE,
+  ALLOWED_IMAGE_TYPES,
+  ALLOWED_GIF_TYPES,
+} from "@/lib/utils";
+import ConfirmImageModal from "../utility/ConfirmImageModal";
 
 type FormProps = {
   bucket: Bucket;
@@ -48,9 +55,16 @@ function BucketForm({ bucket, user }: FormProps) {
   } = useGetAllImagesForBucket(bucket.bucketId);
 
   const { mutateAsync: deleteImage } = useDeleteImageFromBucket();
+  const { mutateAsync: uploadImages, isPending : addingImages } = useUploadImageToBucket();
   const [images, setImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [imageConfig, setImageConfig] = useState<{
+    stagedImages: File[];
+  }>({
+    stagedImages: [],
+  });
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
   useEffect(() => {
     if (imageUrls) {
@@ -163,46 +177,149 @@ function BucketForm({ bucket, user }: FormProps) {
     setDeleteModalOpen(true);
   };
 
+  const validateFile = (file: File, isGif: boolean = false) => {
+    if (file.size > MAX_IMAGE_SIZE) {
+      toast({
+        title: "File too large",
+        description: "Maximum file size is 5MB",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    const allowedTypes = isGif ? ALLOWED_GIF_TYPES : ALLOWED_IMAGE_TYPES;
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: `Please upload ${
+          isGif ? "GIF" : "JPG, PNG, or WebP"
+        } files only`,
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleUploadImages = async () => {
+    if (!imageConfig.stagedImages.length) return;
+
+    try {
+      await uploadImages({
+        bucketId: bucket.bucketId,
+        files: imageConfig.stagedImages,
+      });
+
+      setImageConfig((prev) => ({ ...prev, stagedImages: [] }));
+      setConfirmModalOpen(false);
+      refetchImages();
+
+      toast({
+        title: "Images uploaded successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error uploading images",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRemoveStagedImage = (index: number) => {
+    setImageConfig((prev) => ({
+      ...prev,
+      stagedImages: prev.stagedImages.filter((_, i) => i !== index),
+    }));
+  };
+
+const handleStageImage = (files: FileList | null) => {
+  if (!files) return;
+
+  if (imageConfig.stagedImages.length + files.length > 4) {
+    toast({
+      title: "Too many files",
+      description: "Please upload a maximum of 4 files",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  const validFiles = Array.from(files).filter((file) => validateFile(file));
+  if (validFiles.length > 0) {
+    setImageConfig((prev) => ({
+      ...prev,
+      stagedImages: [...validFiles, ...prev.stagedImages],
+    }));
+    setConfirmModalOpen(true);
+  }
+};
+
   return (
-    <form className="relative grid w-full items-start gap-6">
-      <div className="grid gap-4 rounded-lg pb-8 pt-4 px-4">
+    <form className="relative grid w-full items-start">
+      <div className="grid gap-4 rounded-lg pb-4 pt-4 px-4">
         <div>
-          <div className="flex flex-col space-y-2">
-            <small className="text-sm font-medium leading-none text-blue-500 dark:text-blue-400">
-              {bucketConfig.visibility}
-              {isOwner && (
-                <ConfirmModal
-                  action={() =>
-                    handleToggleVisibility(
+          <div className="flex flex-col">
+            <div className="flex flex-col">
+              <small className="text-sm font-medium leading-none text-blue-500 dark:text-blue-400">
+                {bucketConfig.visibility}
+                {isOwner && (
+                  <ConfirmModal
+                    action={() =>
+                      handleToggleVisibility(
+                        bucketConfig.visibility === "Private"
+                          ? "Public"
+                          : "Private"
+                      )
+                    }
+                    actionButtonStr={
                       bucketConfig.visibility === "Private"
-                        ? "Public"
-                        : "Private"
-                    )
-                  }
-                  actionButtonStr={
-                    bucketConfig.visibility === "Private"
-                      ? "Make Public"
-                      : "Make Private"
-                  }
-                  actionStr={
-                    "Are you sure you want to switch this bucket to " +
-                    (bucketConfig.visibility === "Private"
-                      ? "public"
-                      : "private") +
-                    "?"
-                  }
-                >
-                  <span className="text-red-500 dark:text-foreground cursor-pointer">
-                    {" "}
-                    (
-                    {bucketConfig.visibility === "Private"
-                      ? "Switch to Public"
-                      : "Switch to Private"}
-                    )
-                  </span>
-                </ConfirmModal>
-              )}
-            </small>
+                        ? "Make Public"
+                        : "Make Private"
+                    }
+                    actionStr={
+                      "Are you sure you want to switch this bucket to " +
+                      (bucketConfig.visibility === "Private"
+                        ? "public"
+                        : "private") +
+                      "?"
+                    }
+                  >
+                    <span className="text-red-500 dark:text-foreground cursor-pointer">
+                      {" "}
+                      (
+                      {bucketConfig.visibility === "Private"
+                        ? "Switch to Public"
+                        : "Switch to Private"}
+                      )
+                    </span>
+                  </ConfirmModal>
+                )}
+              </small>
+              <Button
+                type="button"
+                variant="ghost"
+                className="hover:bg-transparent w-fit p-0"
+              >
+                <label htmlFor="image-file">
+                  <ImageIcon
+                    size={17}
+                    className="cursor-pointer hover:text-muted-foreground"
+                  />
+                </label>
+                <input
+                  type="file"
+                  id="image-file"
+                  multiple
+                  accept="image/jpeg,image/png,image/webp"
+                  className="absolute inset-0 opacity-0 cursor-pointer p-0"
+                  hidden
+                  onChange={(e) => handleStageImage(e.target.files)}
+                />
+              </Button>
+            </div>
+
             <Textarea
               id="name"
               placeholder="Give it a title..."
@@ -243,6 +360,7 @@ function BucketForm({ bucket, user }: FormProps) {
                   width={500}
                   src={image}
                   alt={bucket.name}
+                  unoptimized
                   className="rounded-md w-full border h-auto object-cover"
                   style={{ maxHeight: "400px" }}
                 />
@@ -267,6 +385,14 @@ function BucketForm({ bucket, user }: FormProps) {
         open={deleteModalOpen}
         setOpen={setDeleteModalOpen}
         itemType="image"
+      />
+      <ConfirmImageModal
+        open={confirmModalOpen}
+        setOpen={setConfirmModalOpen}
+        stagedImages={imageConfig.stagedImages}
+        onConfirm={handleUploadImages}
+        onRemoveImage={handleRemoveStagedImage}
+        isPending={addingImages}
       />
     </form>
   );
