@@ -2,9 +2,8 @@ from pydantic_settings import BaseSettings
 import os
 from dotenv import load_dotenv
 
-env = os.getenv("ENV", "prod")
-load_dotenv(f".env.{env}")
-print(f"Loading .env.{env}...")
+load_dotenv(f".env")
+print(f"Loading .env")
 
 class Settings(BaseSettings):
     mongo_initdb_database: str
@@ -24,7 +23,7 @@ class Settings(BaseSettings):
     youtube_api_key: str
 
     class Config:
-        env_file = f".env.{env}"
+        env_file = f".env"
         extra = "ignore"
 
 settings = Settings()
