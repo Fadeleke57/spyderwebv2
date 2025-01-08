@@ -5,7 +5,7 @@ import os
 import random
 import string
 from dotenv import load_dotenv
-
+from urllib.parse import urlparse
 def generate_username():
     adjectives = [
     "swift", "silent", "brave", "clever", "witty", "nimble", "mighty", "fierce",
@@ -143,5 +143,14 @@ def clear_out_buckets_tags():
 
     print(f"Total buckets updated: {updated_count}")
 
+def extract_file_path(url):
+    # Parse the URL
+    parsed_url = urlparse(url)
+    # Extract and return the path
+    return parsed_url.path    
+
 if __name__ == "__main__":
-    add_attr_to_users()
+    # Example usage
+    url = "https://spydr-user-content.s3.amazonaws.com/files/8f05ff19-ab84-47ba-bd02-bed09c405981/1b535f44-df08-4396-9a53-29f93cc3a67a/images/IMG_1656.jpeg?response-content-disposition=inline&AWSAccessKeyId=AKIA5FTZFTBJWXEDSXKK&Signature=yt6wftdXEbfeHqL6LNyTl7OTD4k%3D&Expires=1736917285"
+    file_path = extract_file_path(url)
+    print(file_path)

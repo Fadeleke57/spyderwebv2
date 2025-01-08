@@ -283,7 +283,7 @@ function BucketPlayground({
                     {sources?.map((source: Source, id: number) => (
                       <CommandItem
                         key={id}
-                        className="cursor-pointer"
+                        className="cursor-pointer items-start"
                         onSelect={() => handleSourceClick(source.sourceId)}
                       >
                         {mapSourceToIcon(source.type, 16)}{source.name}

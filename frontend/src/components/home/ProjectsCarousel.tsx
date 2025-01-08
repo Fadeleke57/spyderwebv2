@@ -8,7 +8,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { CopyPlus } from "lucide-react";
-import Link from "next/link";
 import { useFetchBucketsForUser } from "@/hooks/buckets";
 import { formatText } from "@/lib/utils";
 import { useRouter } from "next/router";

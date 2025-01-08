@@ -13,7 +13,7 @@ export function useCheckUserState() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["user"],
+    queryKey: ["user", "me", "state"],
     queryFn: async (): Promise<PublicUser | null> => {
       const token = localStorage.getItem("token");
       if (!token) {

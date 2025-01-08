@@ -11,6 +11,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/hoc/theme-provider";
 import { handleLinkedInWebView } from "@/lib/utils";
+import { SidebarProvider } from "@/components/ui/sidebar";
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
 };
@@ -48,15 +49,17 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
         </Head>
 
         <UserProvider>
-          {getLayout(
-            <>
-              <Analytics />
-              <div className={`${fontSans.className}`}>
-                <Component {...pageProps} />
-                <Toaster />
-              </div>
-            </>
-          )}
+          <SidebarProvider defaultOpen={true}>
+            {getLayout(
+              <>
+                <Analytics />
+                <div className={`${fontSans.className}`}>
+                  <Component {...pageProps} />
+                  <Toaster />
+                </div>
+              </>
+            )}
+          </SidebarProvider>
         </UserProvider>
       </QueryClientProvider>
     </ThemeProvider>

@@ -15,13 +15,13 @@ class Bucket(BaseModel):
     likes: list[str]
     iteratedFrom: Optional[str] #userId 
     iterations: list[str]
+    imageKeys: Optional[list[str]]
 
 class BucketConfig(BaseModel):
     name: str
     description: str
     visibility: Literal["Private", "Public", "Invite"]
     tags: list[str] = []
-    articleIds: list[str] = []
     sourceIds: list[str] = []
     imageKeys: list[str] = []
 
