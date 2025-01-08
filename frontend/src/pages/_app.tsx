@@ -49,17 +49,15 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
         </Head>
 
         <UserProvider>
-          <SidebarProvider defaultOpen={true}>
-            {getLayout(
-              <>
-                <Analytics />
-                <div className={`${fontSans.className}`}>
-                  <Component {...pageProps} />
-                  <Toaster />
-                </div>
-              </>
-            )}
-          </SidebarProvider>
+          {getLayout(
+            <>
+              <Analytics />
+              <div className={`${fontSans.className}`}>
+                <Component {...pageProps} />
+                <Toaster />
+              </div>
+            </>
+          )}
         </UserProvider>
       </QueryClientProvider>
     </ThemeProvider>
