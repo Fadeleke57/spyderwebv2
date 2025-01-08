@@ -16,11 +16,11 @@ import { useCreateBucket, useUploadImageToBucket } from "@/hooks/buckets";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { Textarea } from "../ui/textarea";
-import { ImageIcon, Loader, LoaderCircle, X } from "lucide-react";
-import { GifIcon } from "../utility/Icons";
+import { ImageIcon, LoaderCircle, X } from "lucide-react";
 import Image from "next/image";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MAX_IMAGE_SIZE, ALLOWED_IMAGE_TYPES, ALLOWED_GIF_TYPES } from "@/lib/utils";
 
 const bucketSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -37,9 +37,6 @@ type BucketConfig = {
 };
 
 const TOGGLE_MODAL_KEYBOARD_SHORTCUT = "x";
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const ALLOWED_GIF_TYPES = ["image/gif"];
 
 export function NewBucketModal({ children }: { children: React.ReactNode }) {
   //make the button more flexible
@@ -141,7 +138,7 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
   };
 
   const validateFile = (file: File, isGif: boolean = false) => {
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > MAX_IMAGE_SIZE) {
       toast({
         title: "File too large",
         description: "Maximum file size is 5MB",
@@ -176,7 +173,7 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
       });
       return;
     }
-
+ 
     const validFiles = Array.from(files).filter((file) => validateFile(file));
     if (validFiles.length > 0) {
       setImageConfig((prev) => ({
@@ -340,8 +337,8 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
                         </figcaption>
                       </figure>
                     ))}
-                    </div>
-                    <ScrollBar orientation="horizontal"/>
+                  </div>
+                  <ScrollBar orientation="horizontal" />
                 </ScrollArea>
               )}
               <ScrollBar />
