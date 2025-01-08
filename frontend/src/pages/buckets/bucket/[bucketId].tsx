@@ -182,7 +182,7 @@ function Index() {
               {bucket && isOwner ? (
                 <BucketForm bucket={bucket} user={user ? user : null} />
               ) : bucket ? (
-                <PublicBucketView bucket={bucket} user={user ? user : null} />
+                <PublicBucketView bucket={bucket} />
               ) : null}
             </ScrollArea>
           )}
