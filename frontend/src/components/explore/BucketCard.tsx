@@ -48,9 +48,6 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
   );
   const { data: imageUrls, isLoading: imagesLoading } =
     useGetAllImagesForBucket(bucket.bucketId);
-  if (imageUrls?.length) {
-    console.log("imageUrls", imageUrls);
-  }
 
   const { data: iteratedFromUser, isLoading: iteratedFromLoading } =
     useFetchUserById(bucket?.iteratedFrom || "");
@@ -218,18 +215,16 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
 
         {images.length > 0 && (
           <ScrollArea className="w-full flex flex-row px-4 my-2">
-            {images.map((image: string, index: number) => (
-              <div key={index} className="flex-1">
-                <Image
-                  height={300}
-                  width={500}
-                  src={image}
-                  alt={bucket.name}
-                  className="rounded-md w-full border h-auto object-cover"
-                  style={{ maxHeight: "1000px" }}
-                />
-              </div>
-            ))}
+            <div className="flex-1">
+              <Image
+                height={300}
+                width={500}
+                src={images[0]}
+                alt={bucket.name}
+                className="rounded-md w-full border h-auto object-cover"
+                style={{ maxHeight: "1000px" }}
+              />
+            </div>
 
             <ScrollBar orientation="horizontal" />
           </ScrollArea>

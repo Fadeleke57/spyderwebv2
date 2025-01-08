@@ -251,14 +251,14 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-              <ScrollArea className={"flex flex-col rounded-lg h-[35dvh] lg:h-[60dvh]"}>
-              <div className="flex flex-col space-y-2">
+            <ScrollArea className={"flex flex-col h-[35dvh] lg:h-[60dvh]"}>
+              <div className="flex flex-col space-y-1">
                 <Textarea
                   id="name"
                   rows={1}
                   placeholder="Give it a title..."
                   {...form.register("name")}
-                  className="w-full min-h-[2rem] bg-transparent p-0 text-3xl font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-2xl font-semibold"
+                  className="w-full min-h-[2rem] bg-transparent p-0 text-3xl font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-xl font-semibold"
                   onInput={(e: any) => {
                     e.target.style.height = "auto";
                     e.target.style.height = `${e.target.scrollHeight}px`;
@@ -288,17 +288,17 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
 
               {(imageConfig.stagedImages.length > 0 ||
                 imageConfig.stagedGifs.length > 0) && (
-                <div className="w-full whitespace-wrap pt-16 w-[290px] lg:w-[500px] overflow-auto rounded-md">
-                  <div className="flex flex-row w-max space-x-4 pb-4 pr-4">
+                <ScrollArea className="w-full whitespace-wrap pt-16 w-full lg:w-[500px] rounded-md">
+                  <div className="flex flex-row w-full space-x-4 pb-4 pr-4">
                     {imageConfig.stagedImages.map((file, index) => (
                       <figure key={index} className="shrink-0 relative">
-                        <div className="overflow-hidden rounded-md w-[150px] h[150px] lg:h-[250px]">
+                        <div className="rounded-md w-full h-[150px] lg:h-[250px]">
                           <Image
                             width={150}
                             height={250}
                             src={URL.createObjectURL(file)}
                             alt={`Preview ${index}`}
-                            className="object-cover w-full h-full"
+                            className="object-cover w-full h-full rounded-md"
                           />
                           <Button
                             type="button"
@@ -317,7 +317,7 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
                     ))}
                     {imageConfig.stagedGifs.map((file, index) => (
                       <figure key={index} className="shrink-0 relative">
-                        <div className="overflow-hidden rounded-md w-[150px] h[150px] lg:h-[250px]">
+                        <div className="overflow-hidden rounded-md w-[150px] lg:h-[250px]">
                           <Image
                             width={150}
                             height={250}
@@ -340,8 +340,9 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
                         </figcaption>
                       </figure>
                     ))}
-                  </div>
-                </div>
+                    </div>
+                    <ScrollBar orientation="horizontal"/>
+                </ScrollArea>
               )}
               <ScrollBar />
             </ScrollArea>

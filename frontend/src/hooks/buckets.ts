@@ -105,8 +105,6 @@ export const useDeleteImageFromBucket = () => {
       imageUrl: string;
     }) => {
       const imageName = imageUrl.split("/").pop();
-      console.log("imageUrl", imageUrl);
-      console.log("imageName", imageName);
       const response = await api.delete(`/buckets/delete/image/${bucketId}/${imageName}`);
       return response.data.result;
     },
