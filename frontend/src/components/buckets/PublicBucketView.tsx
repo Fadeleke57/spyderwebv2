@@ -8,7 +8,7 @@ function PublicBucketView({ bucket }: { bucket: Bucket }) {
   const { data: imageUrls, isLoading: imagesLoading } =
     useGetAllImagesForBucket(bucket.bucketId);
   const [images, setImages] = React.useState<string[]>([]);
-  console.log(imageUrls)
+
   React.useEffect(() => {
     if (imageUrls) {
       setImages(imageUrls);
@@ -17,7 +17,7 @@ function PublicBucketView({ bucket }: { bucket: Bucket }) {
 
   return (
     <div className="grid w-full items-start gap-6">
-      <div className="grid gap-6 rounded-lg pb-8 pt-4 px-4">
+      <div className="grid gap-6 rounded-lg pb-2 pt-4 px-4">
         <div>
           <div className="flex flex-col space-y-2">
             <small className="text-sm font-medium leading-none text-blue-500 dark:text-blue-400">
@@ -47,7 +47,6 @@ function PublicBucketView({ bucket }: { bucket: Bucket }) {
               />
             </div>
           ))}
-
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
       )}
