@@ -87,7 +87,7 @@ function Index() {
     ? `Discover buckets matching your query "${query}".`
     : "Explore public buckets on Spydr. Find shared research and projects.";
   return (
-    <div className="flex flex-1 flex-col gap-4 py-2 lg:py-10 mx-auto w-full lg:h-[calc(108.9vh-64px)] overflow-y-auto">
+    <div className="flex flex-1 flex-col gap-4 pb-2 lg:pb-10 mx-auto w-full lg:h-[calc(108.9vh-64px)] overflow-y-auto relative">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -100,7 +100,7 @@ function Index() {
           }`}
         />
       </Head>{" "}
-      <div className="px-4 lg:px-20">
+      <div className="p-4 lg:px-20 border border-2 border-l-[1px] relative lg:sticky lg:top-0 bg-background lg:z-50">
         {!user && isMobile && (
           <Button
             className="w-full mb-2"
@@ -153,7 +153,7 @@ function Index() {
           </div>
         )}
 
-        <div className="hidden lg:flex flex-col basis-1/2 gap-2 border rounded-lg h-[calc(64vh-68px)] overflow-y-auto sticky top-0 p-4">
+        <div className="hidden lg:flex flex-col basis-1/2 gap-2 border rounded-lg h-[calc(64vh-68px)] overflow-y-auto sticky top-[80px] p-4">
           <div className="rounded-md">
             <h1 className="text-xl font-bold mb-2">Popular</h1>
             <div className="flex flex-col gap-2">
@@ -164,7 +164,12 @@ function Index() {
                       {bucket.likes.length} upvotes
                     </span>
                     <br />
-                    <span onClick={() => router.push(`/buckets/bucket/${bucket.bucketId}`)} className="text-sm font-semibold hover:underline">
+                    <span
+                      onClick={() =>
+                        router.push(`/buckets/bucket/${bucket.bucketId}`)
+                      }
+                      className="text-sm font-semibold hover:underline"
+                    >
                       {formatText(bucket.name, 90)}
                     </span>
                   </div>
@@ -179,7 +184,6 @@ function Index() {
               )}
             </div>
           </div>
-          
         </div>
       </div>
       {open && (
