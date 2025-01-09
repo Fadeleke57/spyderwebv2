@@ -33,21 +33,20 @@ function PublicBucketView({ bucket }: { bucket: Bucket }) {
         </div>
       </div>
       {images.length > 0 && (
-        <ScrollArea className="w-full flex flex-row px-4">
-          {images &&
-            images.map((image: string, index: number) => (
-              <div key={index} className="flex-1">
-                <Image
-                  height={300}
-                  width={500}
-                  src={image}
-                  alt={bucket.name}
-                  className="rounded-md w-full border h-auto object-cover"
-                  style={{ maxHeight: "400px" }}
-                />
-              </div>
-            ))}
-
+        <ScrollArea className="w-full flex flex-row px-4 my-2">
+          {images && images.map((image: string, index: number) => (
+            <div key={index} className="flex-1">
+              <Image
+                height={300}
+                width={500}
+                src={image}
+                alt={bucket.name}
+                className="rounded-md w-full border h-auto object-cover"
+                style={{ maxHeight: "400px" }}
+                unoptimized
+              />
+            </div>
+          ))}
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
       )}
