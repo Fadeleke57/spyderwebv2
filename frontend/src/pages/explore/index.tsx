@@ -100,7 +100,7 @@ function Index() {
           }`}
         />
       </Head>{" "}
-      <div className="p-4 lg:px-20 border border-2 border-l-[1px] relative lg:sticky lg:top-0 bg-background lg:z-50">
+      <div className="p-4 lg:px-16 border border-2 border-l-[1px] border-r-0 relative lg:sticky lg:top-0 bg-background lg:z-50">
         {!user && isMobile && (
           <Button
             className="w-full mb-2"
