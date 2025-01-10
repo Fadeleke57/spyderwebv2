@@ -87,7 +87,7 @@ def unsave_bucket(bucketId: str, user: User = Depends(manager)):
     Users.update_one({"id": user["id"]}, {"$pull": {"bucketsSaved": bucketId}})
     return {"result": True}
 
-@router.patch("/check/email") 
+@router.get("/check/email") 
 def check_email(email: str):
     users = get_collection("users")
     user = users.find_one({"email": email})
