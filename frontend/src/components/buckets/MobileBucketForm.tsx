@@ -29,7 +29,7 @@ function MobileBucketForm({ bucket, user }: FormProps) {
         </Button>
       </DrawerTrigger>
       <DrawerContent
-        className="h-[95vh] p-4"
+        className="max-h-[95dvh] p-4"
         aria-describedby={undefined}
       >
         <DrawerTitle hidden>Title</DrawerTitle>

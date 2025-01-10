@@ -16,6 +16,7 @@ import {
   EllipsisIcon,
   EyeOff,
   Bookmark,
+  Star,
 } from "lucide-react";
 import {
   useGetAllImagesForBucket,
@@ -331,8 +332,8 @@ export function BucketCard({
             >
               {bucketLikedCount}
             </p>
-            <ArrowBigUpDash
-              size={24}
+            <Star
+              size={16}
               className={`${
                 bucketLiked
                   ? "text-blue-500 dark:text-blue-400"
@@ -358,7 +359,7 @@ export function BucketCard({
                   ? "text-blue-500 dark:text-blue-400"
                   : "text-muted-foreground hover:text-blue-500 dark:hover:text-blue-400"
               }`}
-              size={16}
+              size={14}
               onClick={handleIterateBucket}
             />
           </div>
