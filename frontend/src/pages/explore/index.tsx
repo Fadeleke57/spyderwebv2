@@ -38,7 +38,7 @@ function Index() {
     if (inView && hasNextPage) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage]);
+  }, [inView, hasNextPage, fetchNextPage]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -84,8 +84,6 @@ function Index() {
       bucket.name.toLowerCase().includes(query.toLowerCase()) ||
       bucket.description?.toLowerCase().includes(query.toLowerCase())
   );
-
-  console.log("filteredBuckets", filteredBuckets);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
 

@@ -16,7 +16,7 @@ const GoogleCallback = () => {
         ? "/buckets"
         : "/home?login-source=welcome";
     }
-  }, [router.query, router]);
+  }, [router.query, router, isMobile]);
 
   return (
     <div className="w-full h-screen flex justify-center items-center">
