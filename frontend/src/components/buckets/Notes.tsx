@@ -8,7 +8,7 @@ import { Source, SourceAsNode } from "@/types/source";
 interface NoteComponentProps {
   content?: string;
   isOwner?: boolean;
-  source: SourceAsNode;
+  source: SourceAsNode | null;
   handleNoteContentChange: any;
   updateError: any;
 }
