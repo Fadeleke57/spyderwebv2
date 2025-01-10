@@ -162,7 +162,7 @@ function Index() {
                 popularBuckets.map((bucket: Bucket) => (
                   <div key={bucket.bucketId} className="cursor-pointer">
                     <span className="text-xs text-muted-foreground">
-                      {bucket.likes.length} upvotes
+                      {bucket.likes.length} stars
                     </span>
                     <br />
                     <span
