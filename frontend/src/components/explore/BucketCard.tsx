@@ -167,8 +167,7 @@ export function BucketCard({
     setBucketLiked(bucket.likes.includes(user?.id as string));
     setBucketLikedCount(bucket.likes.length);
     setBucketIterationsCount(bucket.iterations.length);
-    console.log("user", user);
-    console.log("bucket", bucket);
+  
     if (user) {
       setBucketSaved(user.bucketsSaved?.includes(bucket.bucketId) || false);
       setBucketHidden(user.bucketsHidden?.includes(bucket.bucketId) || false);

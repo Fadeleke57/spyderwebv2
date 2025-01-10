@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 import logging
 
+
 def check_user(user):
     """
     Checks if a user is disabled and raises an HTTPException if they are.

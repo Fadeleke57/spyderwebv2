@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useFetchPopularBuckets, useFetchPublicBuckets } from "@/hooks/buckets";
 import { BucketCard } from "@/components/explore/BucketCard";
 import { Bucket } from "@/types/bucket";
+import { useInView } from "react-intersection-observer";
 import { SearchInput } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
@@ -14,8 +15,16 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import { Skeleton } from "@/components/ui/skeleton";
 
 function Index() {
-  const { data: buckets, isLoading: loading, error } = useFetchPublicBuckets();
-  const { data: popularBuckets } = useFetchPopularBuckets();
+  const { ref, inView } = useInView();
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useFetchPublicBuckets();
+  const { data: popularBuckets } = useFetchPopularBuckets(3);
   const [query, setQuery] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -24,6 +33,12 @@ function Index() {
   const bucketsPerPage = 20;
   const { user } = useUser();
   const router = useRouter();
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -62,21 +77,15 @@ function Index() {
     );
   };
 
-  const filteredBuckets =
-    buckets?.filter(
-      (bucket: Bucket) =>
-        bucket.name.toLowerCase().includes(query.toLowerCase()) ||
-        bucket.description?.toLowerCase().includes(query.toLowerCase())
-    ) || [];
+  const allBuckets = data?.pages.flatMap((page) => page.result) || [];
 
-  const indexOfLastBucket = currentPage * bucketsPerPage;
-  const indexOfFirstBucket = indexOfLastBucket - bucketsPerPage;
-  const currentBuckets = filteredBuckets.slice(
-    indexOfFirstBucket,
-    indexOfLastBucket
+  const filteredBuckets = allBuckets.filter(
+    (bucket: Bucket) =>
+      bucket.name.toLowerCase().includes(query.toLowerCase()) ||
+      bucket.description?.toLowerCase().includes(query.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredBuckets.length / bucketsPerPage);
+  console.log("filteredBuckets", filteredBuckets);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -123,7 +132,7 @@ function Index() {
         ></SearchInput>
       </div>
       <div className="w-full lg:px-16 flex flex row gap-6 relative">
-        {loading ? (
+        {isLoading ? (
           <div className="w-full flex flex-col gap-3">
             <SkeletonCard />
             <SkeletonCard />
@@ -131,9 +140,9 @@ function Index() {
           </div>
         ) : error ? (
           <p>Error loading buckets</p>
-        ) : currentBuckets.length > 0 ? (
+        ) : filteredBuckets.length > 0 ? (
           <div className="w-full grid grid-cols-1 gap-1">
-            {currentBuckets.map((bucket: Bucket) => (
+            {filteredBuckets.map((bucket: Bucket) => (
               <div key={bucket.bucketId} className="cursor-pointer">
                 <BucketCard
                   user={user || null}
@@ -147,6 +156,14 @@ function Index() {
                 />
               </div>
             ))}
+    
+            <div ref={ref} className="h-10 w-full">
+              {isFetchingNextPage && (
+                <div className="w-full flex flex-col gap-3">
+                  <SkeletonCard />
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div className="px-4 basis-11/12">

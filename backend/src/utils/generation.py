@@ -2,6 +2,7 @@ from openai import OpenAI
 
 client = OpenAI()
 
+
 def generate_queries(claim):
     """
     Break down a claim into 4-5 specific, researchable queries.
@@ -22,7 +23,7 @@ def generate_queries(claim):
         f"Claim: {claim}\n\n"
         "Queries:"
     )
-    
+
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[
@@ -36,17 +37,14 @@ def generate_queries(claim):
                     "not comprehensible or clear enough or has no relevant information "
                     ", return an empty string. Also, if the claim is inapropriate, return "
                     " or seeks to incite hatred or violence, return an empty string."
-                )
+                ),
             },
-            {
-                "role": "user",
-                "content": claim
-            }
+            {"role": "user", "content": claim},
         ],
-        max_tokens=1024
+        max_tokens=1024,
     )
-    
+
     content = response.choices[0].message.content
 
-    queries = [query.strip() for query in content.split('\n') if query.strip()]
+    queries = [query.strip() for query in content.split("\n") if query.strip()]
     return queries

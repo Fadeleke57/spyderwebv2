@@ -13,8 +13,9 @@ SECRET_KEY = settings.fastapi_secret_key
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-manager = LoginManager(SECRET_KEY, token_url='/auth/token', use_cookie=True)
+manager = LoginManager(SECRET_KEY, token_url="/auth/token", use_cookie=True)
 manager.cookie_name = "access_token"
+
 
 # Normal auth -------------------------------------------------------------------------
 def verify_password(plain_password, hashed_password):
@@ -30,6 +31,7 @@ def verify_password(plain_password, hashed_password):
     """
     return pwd_context.verify(plain_password, hashed_password)
 
+
 def get_password_hash(password):
     """
     Hashes a plain password using the password hashing context.
@@ -41,6 +43,7 @@ def get_password_hash(password):
         str: The hashed password.
     """
     return pwd_context.hash(password)
+
 
 def get_user(db, email: str):
     """
@@ -54,6 +57,7 @@ def get_user(db, email: str):
         dict: The user document from the database if found, None otherwise.
     """
     return db.find_one({"email": email})
+
 
 # Google OAuth -----------------------------------------------------------------------------------------------
 async def get_google_token(code: str):
@@ -79,6 +83,7 @@ async def get_google_token(code: str):
         ) as response:
             return await response.json()
 
+
 async def get_google_user(token: str):
     """
     Retrieve user information from Google using the access token.
@@ -95,5 +100,7 @@ async def get_google_user(token: str):
             params={"access_token": token},
         ) as response:
             user_info = await response.json()
-            profile_picture_url = user_info.get("picture")  # Extract the profile picture URL
+            profile_picture_url = user_info.get(
+                "picture"
+            )  # Extract the profile picture URL
             return user_info, profile_picture_url

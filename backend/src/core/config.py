@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv(f".env")
 print(f"Loading .env")
 
+
 class Settings(BaseSettings):
     mongo_initdb_database: str
     mongo_url: str
@@ -25,5 +26,6 @@ class Settings(BaseSettings):
     class Config:
         env_file = f".env"
         extra = "ignore"
+
 
 settings = Settings()

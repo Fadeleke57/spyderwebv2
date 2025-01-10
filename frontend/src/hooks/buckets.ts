@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { Bucket, UpdateBucket } from "@/types/bucket";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
+import { formatDate } from "date-fns";
 
 export function useFetchBucketsForUser(criteria?: string) {
   return useInfiniteQuery({
@@ -148,11 +149,35 @@ export const useUpdateBucket = (bucketId: string) => {
 };
 
 export function useFetchPublicBuckets() {
-  //will make an infinite query in the future [will need to adjust search endpoint]
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["buckets", "public"],
+    queryFn: async ({ pageParam = null }) => {
+      const response = await api.get("/buckets/all/public", {
+        params: {
+          cursor: pageParam,
+          limit: 10,
+        },
+      });
+      return response.data;
+    },
+    initialPageParam: null,
+    getNextPageParam: (lastPage, pages) => {
+      console.log("lastPage", lastPage);
+      console.log("pages", pages);
+      return lastPage.nextCursor;
+    },
+  });
+}
+
+export function useFetchPopularBuckets(limit: number) {
+  return useQuery({
+    queryKey: ["buckets", "popular"],
     queryFn: async () => {
-      const response = await api.get("/buckets/all/public");
+      const response = await api.get("/buckets/popular", {
+        params: {
+          limit,
+        },
+      });
       return response.data.result;
     },
   });
@@ -230,15 +255,5 @@ export function useIterateBucket(bucketId: string) {
     },
     onSuccess: () => {},
     onError: () => {},
-  });
-}
-
-export function useFetchPopularBuckets() {
-  return useQuery({
-    queryKey: ["buckets", "popular"],
-    queryFn: async () => {
-      const response = await api.get("/buckets/popular");
-      return response.data.result;
-    },
   });
 }
