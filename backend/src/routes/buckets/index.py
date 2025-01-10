@@ -537,7 +537,6 @@ def iterate_bucket(
             "name": iteratePayload.name,
             "description": iteratePayload.description,
             "userId": user["id"],
-            "articleIds": bucketToIterate["articleIds"],
             "sourceIds": newSourceIds,
             "created": datetime.now(UTC),
             "updated": datetime.now(UTC),
