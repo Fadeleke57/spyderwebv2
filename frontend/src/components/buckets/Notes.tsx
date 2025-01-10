@@ -3,11 +3,12 @@ import ReactMarkdown from "react-markdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "date-fns";
+import { Source, SourceAsNode } from "@/types/source";
 
 interface NoteComponentProps {
   content?: string;
   isOwner?: boolean;
-  source: any;
+  source: SourceAsNode | null;
   handleNoteContentChange: any;
   updateError: any;
 }
@@ -24,7 +25,7 @@ const NoteComponent = ({
     <ScrollArea className="h-[calc(97vh-210px)]">
       <small className="text-muted-foreground">
         {formatDate(
-          new Date(source ? source.updated_at + "Z" : ""),
+          new Date(source ? source.updated + "Z" : ""),
           "MMMM dd, yyyy hh:mm a"
         )}
       </small>
