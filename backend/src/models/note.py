@@ -1,13 +1,16 @@
 from pydantic import BaseModel
 from typing import Literal, Optional
 
+
 class CreateNote(BaseModel):
     title: str
     content: str
 
+
 class UpdateNote(BaseModel):
     title: Optional[str]
     content: Optional[str]
+
 
 class Note(BaseModel):
     note_id: str

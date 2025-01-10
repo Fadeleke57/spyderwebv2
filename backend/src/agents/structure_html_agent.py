@@ -1,9 +1,10 @@
 import json
 from src.lib.openai.index import CLIENT
 
+
 def process_html(raw_html_content):
 
-    try :
+    try:
         prompt = (
             "Extract the title or main idea from the following HTML content.\n\n"
             "Usually, the title will be available, but if not, try to extract the main idea.\n\n"
@@ -16,19 +17,22 @@ def process_html(raw_html_content):
             "{title} - {source}\n\n"
             f"HTML Content:\n{raw_html_content}"
         )
-        
+
         response = CLIENT.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are an AI that extracts titles or main ideas from HTML content."},
-                {"role": "user", "content": prompt}
+                {
+                    "role": "system",
+                    "content": "You are an AI that extracts titles or main ideas from HTML content.",
+                },
+                {"role": "user", "content": prompt},
             ],
-            max_tokens=50 
+            max_tokens=50,
         )
-        
+
         content = response.choices[0].message.content.strip()
         return content
-    
+
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         return "Error processing HTML content"

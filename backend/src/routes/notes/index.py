@@ -11,6 +11,7 @@ from pydantic import ValidationError
 
 router = APIRouter()
 
+
 @router.get("/{bucket_id}/{source_id}")
 def get_note(bucket_id: str, article_id: str, user=Depends(manager)):
     """
@@ -29,13 +30,18 @@ def get_note(bucket_id: str, article_id: str, user=Depends(manager)):
     """
     check_user(user)
     notes = get_collection("notes")
-    note = notes.find_one({"bucketId": bucket_id, "articleId": article_id, "userId": user["id"]})
+    note = notes.find_one(
+        {"bucketId": bucket_id, "articleId": article_id, "userId": user["id"]}
+    )
     if not note:
         raise HTTPException(status_code=404, detail="Item not found")
     return {"result": note}
 
+
 @router.post("/create")
-def create_note(bucket_id: str, article_id: str, note: CreateNote, user=Depends(manager)):
+def create_note(
+    bucket_id: str, article_id: str, note: CreateNote, user=Depends(manager)
+):
     """
     Create a new note for a given bucket and article.
 
@@ -62,9 +68,9 @@ def create_note(bucket_id: str, article_id: str, note: CreateNote, user=Depends(
         "updated_at": datetime.now(UTC),
         "user_id": user["id"],
         "bucket_id": bucket_id,
-        "article_id": article_id
+        "article_id": article_id,
     }
-    try :
+    try:
         notes.insert_one(full_note)
         return {"result": "Note created"}
     except ValidationError as e:
@@ -72,7 +78,9 @@ def create_note(bucket_id: str, article_id: str, note: CreateNote, user=Depends(
 
 
 @router.patch("/{bucket_id}/{article_id}")
-def update_note(bucket_id: str, article_id: str, note: UpdateNote, user=Depends(manager)):
+def update_note(
+    bucket_id: str, article_id: str, note: UpdateNote, user=Depends(manager)
+):
     """
     Update a note.
 
@@ -88,7 +96,10 @@ def update_note(bucket_id: str, article_id: str, note: UpdateNote, user=Depends(
     check_user(user)
     notes = get_collection("notes")
     try:
-        notes.update_one({"bucketId": bucket_id, "articleId": article_id, "userId": user["id"]}, {"$set": {"content": note.content, "updated_at": datetime.now(UTC)}})
+        notes.update_one(
+            {"bucketId": bucket_id, "articleId": article_id, "userId": user["id"]},
+            {"$set": {"content": note.content, "updated_at": datetime.now(UTC)}},
+        )
     except ValidationError as e:
         raise HTTPException(status_code=500, detail=e.errors())
     return {"result": "Note updated"}

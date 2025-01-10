@@ -6,6 +6,9 @@ import random
 import string
 from dotenv import load_dotenv
 from urllib.parse import urlparse
+from datetime import datetime
+from pytz import UTC
+
 def generate_username():
     adjectives = [
     "swift", "silent", "brave", "clever", "witty", "nimble", "mighty", "fierce",
@@ -52,6 +55,7 @@ client = MongoClient(mongoUrl)
 db = client[mongoInitdbDatabase]
 users = db['users']
 buckets = db['buckets']
+sources = db['sources']
 
 def add_uuid_to_users():
     users_without_id = users.find({"id": {"$exists": False}})
@@ -133,14 +137,16 @@ def clear_out_buckets_tags():
     updated_count = 0
     all_buckets = buckets.find()
     for bucket in all_buckets:
-        buckets.update_one(
+        created = bucket.get("created_at", None) or bucket.get("created", None) or datetime.now(UTC)
+        last_updated = bucket.get("updated_at", None) or bucket.get("updated", None) or datetime.now(UTC)
+        sources.update_one(
             {"_id": bucket["_id"]},
-            {"$set": {"tags": []}}
+            {"$set": {"updated": last_updated, "created": created}}
         )
 
         updated_count += 1
-        print(f"Updated bucket {bucket['_id']} with new tags: []")
-
+        print(f"Updated bucket {bucket['_id']} with new updated: {last_updated}")
+    sources.update_many({}, {"$unset": {"updated_at": "", "created_at": ""}})
     print(f"Total buckets updated: {updated_count}")
 
 def extract_file_path(url):
@@ -150,7 +156,4 @@ def extract_file_path(url):
     return parsed_url.path    
 
 if __name__ == "__main__":
-    # Example usage
-    url = "https://spydr-user-content.s3.amazonaws.com/files/8f05ff19-ab84-47ba-bd02-bed09c405981/1b535f44-df08-4396-9a53-29f93cc3a67a/images/IMG_1656.jpeg?response-content-disposition=inline&AWSAccessKeyId=AKIA5FTZFTBJWXEDSXKK&Signature=yt6wftdXEbfeHqL6LNyTl7OTD4k%3D&Expires=1736917285"
-    file_path = extract_file_path(url)
-    print(file_path)
+    clear_out_buckets_tags()

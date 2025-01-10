@@ -122,7 +122,7 @@ export default function BucketDataDrawer({
           <>
             <small className="text-muted-foreground">
               {formatDate(
-                new Date(source ? source.updated_at + "Z" : ""),
+                new Date(source ? source.updated + "Z" : ""),
                 "MMMM dd, yyyy hh:mm a"
               )}
             </small>
@@ -139,7 +139,7 @@ export default function BucketDataDrawer({
           <>
             <small className="text-muted-foreground">
               {formatDate(
-                new Date(source ? source.updated_at + "Z" : ""),
+                new Date(source ? source.updated + "Z" : ""),
                 "MMMM dd, yyyy hh:mm a"
               )}
             </small>
@@ -158,7 +158,7 @@ export default function BucketDataDrawer({
           <>
             <small className="text-muted-foreground">
               {formatDate(
-                new Date(source ? source.updated_at + "Z" : ""),
+                new Date(source ? source.updated + "Z" : ""),
                 "MMMM dd, yyyy hh:mm a"
               )}
             </small>

@@ -5,8 +5,8 @@ export type Source = {
   name: string;
   url: string;
   type: string;
-  created_at: Date;
-  updated_at: Date;
+  created: Date;
+  updated: Date;
   size?: number;
   content?: string;
 };
@@ -20,8 +20,8 @@ export type SourceAsNode = {
   type: string;
   size?: number;
   content?: string;
-  created_at: Date;
-  updated_at: Date;
+  created: Date;
+  updated: Date;
   x: number;
   y: number;
 };

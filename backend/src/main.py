@@ -23,7 +23,7 @@ origins = [
     "https://spydr.dev",
     "https://api.spydr.dev",
     "https://vercel.spydr.dev",
-    "https://spydrweb-git-feature-farouk-adelekes-projects.vercel.app"
+    "https://spydrweb-git-feature-farouk-adelekes-projects.vercel.app",
 ]
 
 app.add_middleware(
@@ -41,6 +41,7 @@ app.include_router(buckets_router, prefix="/buckets")
 app.include_router(generation_router, prefix="/generation")
 app.include_router(notes_router, prefix="/notes")
 app.include_router(sources_router, prefix="/sources")
+
 
 @app.get("/")
 def read_root():
