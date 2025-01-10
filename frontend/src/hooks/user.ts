@@ -158,3 +158,55 @@ export function useCheckEmailExists() {
     },
   });
 }
+
+export function useHideBucket(bucketId: string) {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.patch(`/users/hide/bucket/${bucketId}`);
+      const data = await response.data.result;
+      return data;
+    },
+    onError: (err: any) => {
+      console.error(err);
+    },
+  });
+}
+
+export function useUnhideBucket(bucketId: string) {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.patch(`/users/unhide/bucket/${bucketId}`);
+      const data = await response.data.result;
+      return data;
+    },
+    onError: (err: any) => {
+      console.error(err);
+    },
+  });
+}
+
+export function useSaveBucket(bucketId: string) {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.patch(`/users/save/bucket/${bucketId}`);
+      const data = await response.data.result;
+      return data;
+    },
+    onError: (err: any) => {
+      console.error(err);
+    },
+  });
+}
+
+export function useUnsaveBucket(bucketId: string) {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.patch(`/users/unsave/bucket/${bucketId}`);
+      const data = await response.data.result;
+      return data;
+    },
+    onError: (err: any) => {
+      console.error(err);
+    },
+  });
+}

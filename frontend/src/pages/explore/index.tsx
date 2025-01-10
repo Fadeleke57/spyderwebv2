@@ -136,6 +136,7 @@ function Index() {
             {currentBuckets.map((bucket: Bucket) => (
               <div key={bucket.bucketId} className="cursor-pointer">
                 <BucketCard
+                  user={user || null}
                   bucket={{
                     ...bucket,
                     name: getHighlightedText(
