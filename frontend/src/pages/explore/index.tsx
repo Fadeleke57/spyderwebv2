@@ -154,7 +154,7 @@ function Index() {
           </div>
         )}
 
-        <div className="hidden lg:flex flex-col basis-1/2 gap-2 border rounded-lg h-[calc(64vh-68px)] overflow-y-auto sticky top-[80px] p-4">
+        <div className="hidden lg:flex flex-col basis-1/2 gap-2 border rounded-lg h-[calc(64vh-68px)] overflow-y-auto sticky top-[88px] p-4">
           <div className="rounded-md">
             <h1 className="text-xl font-bold mb-2">Popular</h1>
             <div className="flex flex-col gap-2">
