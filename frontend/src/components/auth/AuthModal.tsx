@@ -189,9 +189,9 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
       >
         <DialogClose />
         <div>
-          <DialogTitle className="text-center">Join the community</DialogTitle>
+          <DialogTitle className="text-center">{isExistingUser && step !== "email" ? "Welcome back" : "Join the community"}</DialogTitle>
           <DialogDescription className="text-center">
-            Sign up or sign in to get started.
+            {isExistingUser && step === "email" ? "Enter your email or continue with Google" : step === "auth" && isExistingUser ? "Login to continue to your account" : "Create an account"}
           </DialogDescription>
         </div>
 
