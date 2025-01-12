@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { Bucket, UpdateBucket } from "@/types/bucket";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
-import { formatDate } from "date-fns";
 
-export function useFetchBucketsForUser(criteria?: string) {
+export function useFetchUserBuckets(criteria?: string) {
   return useInfiniteQuery({
     queryKey: ["user", "buckets"],
     queryFn: async ({ pageParam = { page: 1, direction: "forward" } }) => {
@@ -66,6 +65,16 @@ export const useCreateBucket = () => {
   });
 };
 
+export const useFetchSavedBuckets = () => {
+  return useQuery({
+    queryKey: ["buckets", "saved"],
+    queryFn: async () => {
+      const response = await api.get("/buckets/saved/user");
+      return response.data.result;
+    },
+  });
+};
+
 export const useUploadImageToBucket = () => {
   return useMutation({
     mutationFn: async ({
@@ -106,7 +115,9 @@ export const useDeleteImageFromBucket = () => {
       imageUrl: string;
     }) => {
       const imageName = imageUrl.split("/").pop();
-      const response = await api.delete(`/buckets/delete/image/${bucketId}/${imageName}`);
+      const response = await api.delete(
+        `/buckets/delete/image/${bucketId}/${imageName}`
+      );
       return response.data.result;
     },
   });
