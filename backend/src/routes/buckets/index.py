@@ -450,6 +450,14 @@ def unlike_bucket(bucket_id: str, user=Depends(manager)):
     return {"result": len(result["likes"])}
 
 
+@router.get("/saved/user")
+def get_user_saved_buckets(user=Depends(manager)):
+    check_user(user)
+    buckets = get_collection("buckets")
+    result = buckets.find_one({"bucketId": {"$in": user["bucketsSaved"]}}, {"_id": 0})
+    return {"result": result}
+
+
 @router.patch("/add/tag/{bucket_id}/{tag}")
 def add_tag(bucket_id: str, tag: str, user=Depends(manager)):
     check_user(user)

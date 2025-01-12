@@ -110,11 +110,11 @@ def add_attr_to_users():
 
         users.update_one(
             {"_id": user["_id"]},
-            {"$set": {"analytics": {} }}
+            {"$set": {"created": datetime.now(UTC), "updated": datetime.now(UTC)}}
         )
 
         updated_count += 1
-        print(f"Updated user {user['_id']} with new analytics")
+        print(f"Updated user {user['_id']} with new created and updated: {datetime.now(UTC)}")
 
     print(f"Total users updated: {updated_count}")
 
@@ -133,20 +133,20 @@ def add_attr_to_buckets():
 
     print(f"Total buckets updated: {updated_count}")
 
-def clear_out_buckets_tags():
+def clear_out_bucket_articles():
     updated_count = 0
     all_buckets = buckets.find()
-    for bucket in all_buckets:
-        created = bucket.get("created_at", None) or bucket.get("created", None) or datetime.now(UTC)
-        last_updated = bucket.get("updated_at", None) or bucket.get("updated", None) or datetime.now(UTC)
-        sources.update_one(
+    """
+        for bucket in all_buckets:
+        buckets.update_one(
             {"_id": bucket["_id"]},
-            {"$set": {"updated": last_updated, "created": created}}
+            {"$unset": {"articleIds": ""}}
         )
 
         updated_count += 1
-        print(f"Updated bucket {bucket['_id']} with new updated: {last_updated}")
-    sources.update_many({}, {"$unset": {"updated_at": "", "created_at": ""}})
+        print(f"Updated bucket {bucket['_id']}")
+    """
+    buckets.update_many({}, {"$unset": {"articleIds": ""}})
     print(f"Total buckets updated: {updated_count}")
 
 def extract_file_path(url):
@@ -156,4 +156,4 @@ def extract_file_path(url):
     return parsed_url.path    
 
 if __name__ == "__main__":
-    clear_out_buckets_tags()
+    clear_out_bucket_articles()

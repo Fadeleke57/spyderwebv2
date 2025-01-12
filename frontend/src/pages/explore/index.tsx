@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useFetchPopularBuckets, useFetchPublicBuckets } from "@/hooks/buckets";
+import { useFetchPopularBuckets, useFetchPublicBuckets, useFetchSavedBuckets } from "@/hooks/buckets";
 import { BucketCard } from "@/components/explore/BucketCard";
 import { Bucket } from "@/types/bucket";
 import { useInView } from "react-intersection-observer";
@@ -24,7 +24,8 @@ function Index() {
     hasNextPage,
     isFetchingNextPage,
   } = useFetchPublicBuckets();
-  const { data: popularBuckets } = useFetchPopularBuckets(3);
+  const { data: popularBuckets, isLoading: popularBucketsLoading, error: popularBucketsError } = useFetchPopularBuckets(3);
+  const { data: savedBuckets, isLoading: savedBucketsLoading, error: savedBucketsError } = useFetchSavedBuckets();
   const [query, setQuery] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -130,13 +131,7 @@ function Index() {
         ></SearchInput>
       </div>
       <div className="w-full lg:px-16 flex flex row gap-6 relative">
-        {isLoading ? (
-          <div className="w-full flex flex-col gap-3">
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
-        ) : error ? (
+        {error ? (
           <p>Error loading buckets</p>
         ) : filteredBuckets.length > 0 ? (
           <div className="w-full grid grid-cols-1 gap-1">

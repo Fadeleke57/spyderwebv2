@@ -28,7 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useDeleteBucket, useFetchBucketsForUser } from "@/hooks/buckets";
+import { useDeleteBucket, useFetchUserBuckets } from "@/hooks/buckets";
 import Link from "next/link";
 import { format } from "date-fns";
 import { formatText } from "@/lib/utils";
@@ -64,7 +64,7 @@ function Index() {
     isFetchingNextPage,
     isFetchingPreviousPage,
     refetch,
-  } = useFetchBucketsForUser(criteria);
+  } = useFetchUserBuckets(criteria);
   const { mutateAsync: deleteBucket, isPending, isError } = useDeleteBucket();
 
   const [buckets, setBuckets] = useState<Bucket[]>([]);

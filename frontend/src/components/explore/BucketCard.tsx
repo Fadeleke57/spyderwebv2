@@ -44,6 +44,7 @@ import Image from "next/image";
 import { ScrollBar } from "../ui/scroll-area";
 import { PublicUser } from "@/types/user";
 import { ImageModal } from "./ImageModal";
+import { SkeletonCard } from "../utility/SkeletonCard";
 
 export function BucketCard({
   bucket,
@@ -167,7 +168,7 @@ export function BucketCard({
     setBucketLiked(bucket.likes.includes(user?.id as string));
     setBucketLikedCount(bucket.likes.length);
     setBucketIterationsCount(bucket.iterations.length);
-  
+
     if (user) {
       setBucketSaved(user.bucketsSaved?.includes(bucket.bucketId) || false);
       setBucketHidden(user.bucketsHidden?.includes(bucket.bucketId) || false);
@@ -184,6 +185,10 @@ export function BucketCard({
 
   if (user && user.bucketsHidden.includes(bucket.bucketId)) {
     return null;
+  }
+
+  if (imagesLoading || bucketOwnerLoading || iteratedFromLoading) {
+    return <SkeletonCard />;
   }
 
   if (bucketHidden) {

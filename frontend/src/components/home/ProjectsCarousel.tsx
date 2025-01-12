@@ -8,7 +8,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { CopyPlus } from "lucide-react";
-import { useFetchBucketsForUser } from "@/hooks/buckets";
+import { useFetchUserBuckets } from "@/hooks/buckets";
 import { formatText } from "@/lib/utils";
 import { useRouter } from "next/router";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,7 +22,7 @@ export function ProjectsCarousel() {
     isFetching,
     isFetchingNextPage,
     isFetchingPreviousPage,
-  } = useFetchBucketsForUser();
+  } = useFetchUserBuckets();
   const [buckets, setBuckets] = React.useState<any[]>([]);
   const router = useRouter();
 
