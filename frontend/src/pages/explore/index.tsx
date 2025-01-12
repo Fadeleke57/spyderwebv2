@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useFetchPopularBuckets, useFetchPublicBuckets, useFetchSavedBuckets } from "@/hooks/buckets";
+import {
+  useFetchPopularBuckets,
+  useFetchPublicBuckets,
+  useFetchSavedBuckets,
+} from "@/hooks/buckets";
 import { BucketCard } from "@/components/explore/BucketCard";
 import { Bucket } from "@/types/bucket";
 import { useInView } from "react-intersection-observer";
@@ -24,8 +28,16 @@ function Index() {
     hasNextPage,
     isFetchingNextPage,
   } = useFetchPublicBuckets();
-  const { data: popularBuckets, isLoading: popularBucketsLoading, error: popularBucketsError } = useFetchPopularBuckets(3);
-  const { data: savedBuckets, isLoading: savedBucketsLoading, error: savedBucketsError } = useFetchSavedBuckets();
+  const {
+    data: popularBuckets,
+    isLoading: popularBucketsLoading,
+    error: popularBucketsError,
+  } = useFetchPopularBuckets(3);
+  const {
+    data: savedBuckets,
+    isLoading: savedBucketsLoading,
+    error: savedBucketsError,
+  } = useFetchSavedBuckets();
   const [query, setQuery] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -131,39 +143,31 @@ function Index() {
         ></SearchInput>
       </div>
       <div className="w-full lg:px-16 flex flex row gap-6 relative">
-        {error ? (
-          <p>Error loading buckets</p>
-        ) : filteredBuckets.length > 0 ? (
-          <div className="w-full grid grid-cols-1 gap-1">
-            {filteredBuckets.map((bucket: Bucket) => (
-              <div key={bucket.bucketId} className="cursor-pointer">
-                <BucketCard
-                  user={user || null}
-                  bucket={{
-                    ...bucket,
-                    name: getHighlightedText(
-                      formatText(bucket.name, 140),
-                      query
-                    ) as string,
-                  }}
-                />
-              </div>
-            ))}
-    
-            <div ref={ref} className="h-10 w-full">
-              {isFetchingNextPage && (
-                <div className="w-full flex flex-col gap-3">
-                  <SkeletonCard />
-                </div>
-              )}
+        {error && <p>Error loading buckets</p>}
+        <div className="w-full grid grid-cols-1 gap-1">
+          {filteredBuckets.map((bucket: Bucket) => (
+            <div key={bucket.bucketId} className="cursor-pointer">
+              <BucketCard
+                user={user || null}
+                bucket={{
+                  ...bucket,
+                  name: getHighlightedText(
+                    formatText(bucket.name, 140),
+                    query
+                  ) as string,
+                }}
+              />
             </div>
-          </div>
-        ) : (
-          <div className="px-4 basis-11/12">
-            <p>No buckets found</p>
-          </div>
-        )}
+          ))}
 
+          <div ref={ref} className="h-10 w-full">
+            {isFetchingNextPage && (
+              <div className="w-full flex flex-col gap-3">
+                <SkeletonCard />
+              </div>
+            )}
+          </div>
+        </div>
         <div className="hidden lg:flex flex-col basis-1/2 gap-2 border rounded-lg h-[calc(64vh-68px)] overflow-y-auto sticky top-[88px] p-4">
           <div className="rounded-md">
             <h1 className="text-xl font-bold mb-2">Popular</h1>
