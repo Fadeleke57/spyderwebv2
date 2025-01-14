@@ -43,7 +43,7 @@ import { ScrollArea } from "@radix-ui/react-scroll-area";
 import Image from "next/image";
 import { ScrollBar } from "../ui/scroll-area";
 import { PublicUser } from "@/types/user";
-import { ImageModal } from "./ImageModal";
+import { ImageModal } from "../utility/ImageModal";
 import { SkeletonCard } from "../utility/SkeletonCard";
 
 export function BucketCard({

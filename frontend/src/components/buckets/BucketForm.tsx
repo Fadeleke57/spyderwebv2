@@ -27,6 +27,7 @@ import {
   ALLOWED_GIF_TYPES,
 } from "@/lib/utils";
 import ConfirmImageModal from "../utility/ConfirmImageModal";
+import { ImageModal } from "../utility/ImageModal";
 
 type FormProps = {
   bucket: Bucket;
@@ -55,7 +56,8 @@ function BucketForm({ bucket, user }: FormProps) {
   } = useGetAllImagesForBucket(bucket.bucketId);
 
   const { mutateAsync: deleteImage } = useDeleteImageFromBucket();
-  const { mutateAsync: uploadImages, isPending : addingImages } = useUploadImageToBucket();
+  const { mutateAsync: uploadImages, isPending: addingImages } =
+    useUploadImageToBucket();
   const [images, setImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -65,6 +67,7 @@ function BucketForm({ bucket, user }: FormProps) {
     stagedImages: [],
   });
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
   useEffect(() => {
     if (imageUrls) {
@@ -177,6 +180,13 @@ function BucketForm({ bucket, user }: FormProps) {
     setDeleteModalOpen(true);
   };
 
+  const handleImageClick = (e: React.MouseEvent, imageUrl: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedImage(imageUrl);
+    setImageModalOpen(true);
+  };
+
   const validateFile = (file: File, isGif: boolean = false) => {
     if (file.size > MAX_IMAGE_SIZE) {
       toast({
@@ -234,27 +244,27 @@ function BucketForm({ bucket, user }: FormProps) {
     }));
   };
 
-const handleStageImage = (files: FileList | null) => {
-  if (!files) return;
+  const handleStageImage = (files: FileList | null) => {
+    if (!files) return;
 
-  if (imageConfig.stagedImages.length + files.length > 4) {
-    toast({
-      title: "Too many files",
-      description: "Please upload a maximum of 4 files",
-      variant: "destructive",
-    });
-    return;
-  }
+    if (imageConfig.stagedImages.length + files.length > 4) {
+      toast({
+        title: "Too many files",
+        description: "Please upload a maximum of 4 files",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const validFiles = Array.from(files).filter((file) => validateFile(file));
-  if (validFiles.length > 0) {
-    setImageConfig((prev) => ({
-      ...prev,
-      stagedImages: [...validFiles, ...prev.stagedImages],
-    }));
-    setConfirmModalOpen(true);
-  }
-};
+    const validFiles = Array.from(files).filter((file) => validateFile(file));
+    if (validFiles.length > 0) {
+      setImageConfig((prev) => ({
+        ...prev,
+        stagedImages: [...validFiles, ...prev.stagedImages],
+      }));
+      setConfirmModalOpen(true);
+    }
+  };
 
   return (
     <form className="relative grid w-full items-start">
@@ -363,6 +373,7 @@ const handleStageImage = (files: FileList | null) => {
                   unoptimized
                   className="rounded-md w-full border h-auto object-cover"
                   style={{ maxHeight: "400px" }}
+                  onClick={(e) => handleImageClick(e, image)}
                 />
                 <Button
                   type="button"
@@ -393,6 +404,12 @@ const handleStageImage = (files: FileList | null) => {
         onConfirm={handleUploadImages}
         onRemoveImage={handleRemoveStagedImage}
         isPending={addingImages}
+      />
+      <ImageModal
+        isOpen={imageModalOpen}
+        setIsOpen={setImageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        imageUrl={selectedImage || ""}
       />
     </form>
   );
