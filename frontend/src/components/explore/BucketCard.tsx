@@ -306,7 +306,6 @@ export function BucketCard({
                   src={images[0]}
                   alt={bucket.name}
                   className="rounded-md w-full border h-auto object-cover"
-                  unoptimized
                   onClick={(e) => handleImageClick(e, images[0])}
                   style={{ maxHeight: "1000px" }}
                 />

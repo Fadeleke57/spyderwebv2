@@ -144,3 +144,33 @@ export const useEditSourceTitle = (sourceId: string) => {
     },
   });
 };
+
+export const useUploadImageToSource = () => {
+  return useMutation({
+    mutationFn: async ({
+      sourceId,
+      files,
+    }: {
+      sourceId: string;
+      files: File[];
+    }) => {
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      const { data } = await api.post(
+        `/sources/upload/image/${sourceId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return data.imageUrls;
+    },
+  });
+};

@@ -100,7 +100,7 @@ export const useUploadImageToBucket = () => {
         }
       );
 
-      return data.imageKeys;
+      return data.imageUrls;
     },
   });
 };

@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from typing import Literal, Optional
 from datetime import datetime
 
-
 class Source(BaseModel):
     sourceId: str
     bucketId: str
@@ -14,7 +13,6 @@ class Source(BaseModel):
     size: int
     created: datetime
     updated: datetime
-
 
 class UpdateSource(BaseModel):
     name: Optional[str] = None

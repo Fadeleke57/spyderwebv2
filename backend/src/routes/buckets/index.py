@@ -212,7 +212,7 @@ async def upload_file(
 ):
 
     check_user(user)
-    uploaded_keys = []
+    uploaded_image_urls = []
 
     try:
         for file in files:
@@ -235,7 +235,8 @@ async def upload_file(
                     object_name,
                 )
 
-                uploaded_keys.append(object_name)
+                url = f"https://{s3_bucket.bucket_name}.s3.{s3_bucket.region_name}.amazonaws.com/{object_name}"
+                uploaded_image_urls.append(url)
 
                 buckets = get_collection("buckets")
                 result = buckets.update_one(
@@ -259,7 +260,7 @@ async def upload_file(
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
 
-        return {"imageKeys": uploaded_keys}
+        return {"imageUrls": uploaded_image_urls}
 
     except Exception as e:
         logger.error(f"Upload error: {str(e)}")
@@ -297,15 +298,7 @@ def get_bucket_images(bucket_id: str):
     urls = []
     try:
         for key in imageKeys:
-            url = s3.generate_presigned_url(
-                "get_object",
-                Params={
-                    "Bucket": s3_bucket.bucket_name,
-                    "Key": key,
-                    "ResponseContentDisposition": "inline",
-                },
-                ExpiresIn=604800,
-            )
+            url = f"https://{s3_bucket.bucket_name}.s3.{s3_bucket.region_name}.amazonaws.com/{key}"
             urls.append(url)
     except ClientError as e:
         raise HTTPException(status_code=500, detail=str(e))

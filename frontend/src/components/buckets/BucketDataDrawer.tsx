@@ -5,17 +5,17 @@ import {
   SheetDescription,
   SheetFooter,
   SheetHeader,
+  SheetOverlay,
   SheetTitle,
 } from "@/components/ui/sheet";
 import { useEditSourceTitle, useFetchSource } from "@/hooks/sources";
-import { useUpdateNote } from "@/hooks/sources"; // Assuming your hook is located here
+import { useUpdateNote } from "@/hooks/sources";
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { Check, Edit, Pencil, SquareArrowOutUpRight, X } from "lucide-react";
+import { Check, Edit, X } from "lucide-react";
 import { formatDate } from "date-fns";
-import { ScrollArea } from "../ui/scroll-area";
 import { Textarea } from "../ui/textarea";
-import { debounce, set } from "lodash";
+import { debounce} from "lodash";
 import { useUser } from "@/context/UserContext";
 import { toast } from "../ui/use-toast";
 import { extractVideoId } from "@/lib/utils";
@@ -180,6 +180,7 @@ export default function BucketDataDrawer({
       case "note":
         return (
           <NoteComponent
+            bucketId={bucketId}
             source={source}
             content={content}
             isOwner={isOwner}
@@ -193,17 +194,19 @@ export default function BucketDataDrawer({
   };
 
   const handleClose = () => {
-    setOpen(false);
     setTitle("");
     setContent("");
     setPresignedUrl("");
     setSource(null);
+    setOpen(false);
+    setIsEditing(false);
+    setNewTitle("");
   };
 
   return (
     <div className="grid grid-cols-2 gap-2">
       <Sheet open={open} onOpenChange={handleClose}>
-        <SheetClose className="absolute right-4 top-10" />
+        <SheetClose onClick={handleClose} className="absolute right-4 top-10" />
         <SheetContent side={"left"} className="w-full lg:max-w-2xl">
           <SheetHeader className="border-b pb-4">
             <SheetTitle className="text-left w-11/12 font-bold flex items-center justify-between">
