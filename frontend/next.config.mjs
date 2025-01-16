@@ -19,9 +19,14 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "spydr-user-content.s3.amazonaws.com",
+        hostname: "spydr-user-content.s3.**.amazonaws.com",
         pathname: "/**",
-      }
+      },
+      {
+        protocol: "https",
+        hostname: "spydr-user-content-prod.s3.**.amazonaws.com",
+        pathname: "/**",
+      },
     ],
   },
 };

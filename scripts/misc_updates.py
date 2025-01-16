@@ -153,7 +153,22 @@ def extract_file_path(url):
     # Parse the URL
     parsed_url = urlparse(url)
     # Extract and return the path
-    return parsed_url.path    
+    return parsed_url.path 
+
+def remove_imageKeys_to_sources():
+    sources_without_attr = sources.find({"imageKeys": {"$exists": True}})
+    updated_count = 0
+
+    for source in sources_without_attr:
+        sources.update_one(
+            {"_id": source["_id"]},
+            {"$unset": {"imageKeys": ""}}
+        )
+
+        updated_count += 1
+        print(f"Updated source {source['_id']} with new imageKeys: None")
+
+    print(f"Total sources updated: {updated_count}")
 
 if __name__ == "__main__":
-    clear_out_bucket_articles()
+    remove_imageKeys_to_sources()

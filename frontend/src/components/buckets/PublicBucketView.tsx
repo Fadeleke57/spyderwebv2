@@ -54,7 +54,6 @@ function PublicBucketView({ bucket }: { bucket: Bucket }) {
                   alt={bucket.name}
                   className="rounded-md w-full border h-auto object-cover"
                   style={{ maxHeight: "400px" }}
-                  unoptimized
                   onClick={(e) => handleImageClick(e, image)}
                 />
               </div>

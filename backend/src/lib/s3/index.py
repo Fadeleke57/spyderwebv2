@@ -3,7 +3,7 @@ from botocore.exceptions import ClientError
 
 
 class S3Bucket:
-    def __init__(self, bucket_name: str):
+    def __init__(self, bucket_name: str, region_name="us-east-1"):
         """
         Initializes the S3Bucket object.
 
@@ -19,6 +19,7 @@ class S3Bucket:
         self.s3 = boto3.resource("s3")
         self.bucket = self.s3.Bucket(bucket_name)
         self.bucket_name = bucket_name
+        self.region_name = region_name
 
     def upload_file(self, file_path, object_name=None):
         """

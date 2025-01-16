@@ -5,6 +5,7 @@ from src.utils.exceptions import check_user
 from src.lib.s3.index import S3Bucket
 from src.db.mongodb import get_collection, insert_item
 from uuid import uuid4
+from werkzeug.utils import secure_filename
 from datetime import datetime
 from src.core.config import settings
 from src.utils.youtube import get_video_transcript, get_video_info
@@ -14,6 +15,7 @@ from bs4 import BeautifulSoup
 from src.models.note import CreateNote, UpdateNote
 import boto3
 from urllib.parse import unquote
+from src.lib.logger.index import logger
 from botocore.exceptions import ClientError
 from src.agents.structure_html_agent import process_html
 from pytz import UTC
@@ -399,3 +401,63 @@ def edit_source(sourceId: str, info: UpdateSource, user=Depends(manager)):
     )
 
     return {"result", "Source updated"}
+
+@router.post("/upload/image/{source_id}")
+async def upload_file_to_source(
+    source_id: str,
+    files: list[UploadFile] = File(..., description="Multiple files as UploadFile"),
+    user=Depends(manager),
+):
+
+    check_user(user)
+    uploaded_image_urls = []
+
+    try:
+        for file in files:
+            # sanitize filename
+            object_name = f"files/{user['id']}/{source_id}/images/{uuid4()}_{secure_filename(file.filename)}"
+
+            temp_dir = "/tmp/note_uploads"
+            os.makedirs(temp_dir, exist_ok=True)
+
+            temp_path = os.path.join(temp_dir, f"{uuid4()}_{file.filename}")
+
+            try:
+                contents = await file.read()
+                with open(temp_path, "wb") as buffer:
+                    buffer.write(contents)
+
+                s3_bucket.upload_file(
+                    temp_path,
+                    object_name,
+                )
+
+                url = f"https://{s3_bucket.bucket_name}.s3.{s3_bucket.region_name}.amazonaws.com/{object_name}"
+                if not url:
+                    raise HTTPException(status_code=500, detail="Error generating URL")
+
+                uploaded_image_urls.append(url)
+
+                sources = get_collection("sources")
+                sources.update_one(
+                    {"sourceId": source_id, "userId": user["id"]},
+                    {
+                        "$set": {"updated": datetime.now(UTC)},
+                    },
+                )
+
+            except Exception as e:
+                logger.error(f"Error uploading file {file.filename}: {str(e)}")
+                raise HTTPException(
+                    status_code=500, detail=f"Error uploading file: {str(e)}"
+                )
+            finally:
+                # clean up
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+
+        return {"imageUrls": uploaded_image_urls}
+
+    except Exception as e:
+        logger.error(f"Upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
