@@ -1,8 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import Image from "next/image";
 
 interface ImageModalProps {
@@ -22,17 +18,20 @@ export function ImageModal({ isOpen, onClose, imageUrl }: ImageModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="w-full h-fit p-0 gap-0 rounded-md"
+        className="max-w-full w-full h-screen p-0 gap-0 border-none flex justify-center items-center bg-black"
         onClick={(e) => handleModalClick(e)}
       >
         <DialogTitle hidden></DialogTitle>
-        <Image
-          src={imageUrl}
-          alt="Image Popup"
-          width={1200}
-          height={800}
-          className="max-h-screen w-auto object-contain rounded-md"
-        />
+        <div className="relative max-w-full max-h-screen overflow-hidden rounded-lg border">
+          <Image
+            src={imageUrl}
+            alt="Image Popup"
+            width={1200}
+            height={800}
+            className="w-auto h-full max-h-screen object-contain"
+            priority
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );
