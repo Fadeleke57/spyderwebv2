@@ -22,20 +22,17 @@ export function ImageModal({ isOpen, onClose, imageUrl }: ImageModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-4xl w-full lg:max-h-screen p-0 gap-0 border-none border"
+        className="w-full h-fit p-0 gap-0 rounded-md"
         onClick={(e) => handleModalClick(e)}
       >
         <DialogTitle hidden></DialogTitle>
-        <div className="relative w-full h-full overflow-hidden rounded-lg border">
-          <Image
-            src={imageUrl}
-            alt={"Image Popup"}
-            width={1200}
-            height={800}
-            className="w-full h-auto object-contain"
-            unoptimized
-          />
-        </div>
+        <Image
+          src={imageUrl}
+          alt="Image Popup"
+          width={1200}
+          height={800}
+          className="max-h-screen w-auto object-contain rounded-md"
+        />
       </DialogContent>
     </Dialog>
   );
