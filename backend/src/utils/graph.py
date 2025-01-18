@@ -1,9 +1,10 @@
 import nltk
 import os
 from src.lib.pinecone.index import PC, PCINDEX, get_embedding
-#from src.db.neo4j import driver as Neo4jDriver, run_query
+
+# from src.db.neo4j import driver as Neo4jDriver, run_query
 current_dir = os.path.dirname(__file__)
-nltk_data_path = os.path.join(current_dir, '..', 'nltk_data')
+nltk_data_path = os.path.join(current_dir, "..", "nltk_data")
 nltk.data.path.append(os.path.abspath(nltk_data_path))
 from typing import List
 from nltk.tokenize import sent_tokenize
@@ -11,11 +12,14 @@ from neo4j import Record
 from src.utils.queries import queries
 from typing import Optional
 
+
 def split_into_sentences_nltk(text):
     return sent_tokenize(text)
 
-def highlight_match(match): #for frontend highlight
+
+def highlight_match(match):  # for frontend highlight
     return f'<span class="font-bold text-blue-400">{match.group(0)}</span>'
+
 
 """
 def run_keyword_search(query: str, topic: str, limit: int):
@@ -46,16 +50,20 @@ def run_keyword_search(query: str, topic: str, limit: int):
     return run_query(cypher_query, params)
 """
 
+
 ### execute semantic search
-def run_semantic_search(query: str,limit: int):
+def run_semantic_search(query: str, limit: int):
     query_embedding = get_embedding(query)
-    pinecone_response = PCINDEX.query(vector=query_embedding, top_k=limit, include_metadata=True)
+    pinecone_response = PCINDEX.query(
+        vector=query_embedding, top_k=limit, include_metadata=True
+    )
     results = []
-    for match in pinecone_response['matches']:
-        result = match['metadata']
-        result['id'] = match['id']
+    for match in pinecone_response["matches"]:
+        result = match["metadata"]
+        result["id"] = match["id"]
         results.append(result)
     return results
+
 
 ### execute an exact match search for article ids in neo4j
 """

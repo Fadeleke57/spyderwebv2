@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -6,6 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Bucket } from "@/types/bucket";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
@@ -13,13 +14,22 @@ import {
   IterationCcw,
   ArrowBigUpDash,
   EllipsisIcon,
-  Album,
   EyeOff,
+  Bookmark,
+  Star,
 } from "lucide-react";
-import { useUser } from "@/context/UserContext";
-import { useLikeBucket, useUnlikeBucket } from "@/hooks/buckets";
+import {
+  useGetAllImagesForBucket,
+  useLikeBucket,
+  useUnlikeBucket,
+} from "@/hooks/buckets";
 import UserAvatar from "../utility/UserAvatar";
-import { useFetchUserById } from "@/hooks/user";
+import {
+  useFetchUserById,
+  useHideBucket,
+  useSaveBucket,
+  useUnsaveBucket,
+} from "@/hooks/user";
 import { IterateModal } from "../utility/IterateModal";
 import {
   DropdownMenu,
@@ -29,39 +39,90 @@ import {
 } from "../ui/dropdown-menu";
 import { Skeleton } from "../ui/skeleton";
 import { AuthModal } from "../auth/AuthModal";
+import { ScrollArea } from "@radix-ui/react-scroll-area";
+import Image from "next/image";
+import { ScrollBar } from "../ui/scroll-area";
+import { PublicUser } from "@/types/user";
+import { ImageModal } from "../utility/ImageModal";
+import { SkeletonCard } from "../utility/SkeletonCard";
 
-export function BucketCard({ bucket }: { bucket: Bucket }) {
-  const [bucketLikedCount, setBucketLikedCount] = React.useState(
-    bucket.likes.length
-  );
+export function BucketCard({
+  bucket,
+  user,
+}: {
+  bucket: Bucket;
+  user: PublicUser | null;
+}) {
+  const [bucketLikedCount, setBucketLikedCount] = useState(bucket.likes.length);
+  const [bucketSaved, setBucketSaved] = useState(false);
+  const [bucketHidden, setBucketHidden] = useState(false);
+  const [bucketLiked, setBucketLiked] = useState(false);
+  const [bucketIterated, _] = useState(false);
+
   const { data: bucketOwner, isLoading: bucketOwnerLoading } = useFetchUserById(
-    bucket?.userId as string
+    bucket.userId
   );
+  const { data: imageUrls, isLoading: imagesLoading } =
+    useGetAllImagesForBucket(bucket.bucketId);
   const { data: iteratedFromUser, isLoading: iteratedFromLoading } =
-    useFetchUserById(bucket?.iteratedFrom ? bucket?.iteratedFrom : "");
-
-  const [bucketIterationsCount, setBucketIterationsCount] = React.useState(
+    useFetchUserById(bucket.iteratedFrom || "");
+  const [bucketIterationsCount, setBucketIterationsCount] = useState(
     bucket.iterations.length
   );
-  const { user } = useUser();
+
+  const [images, setImages] = useState<string[]>([]);
+  const [iteratedFrom, setIteratedFrom] = useState<any | null>(null);
+  const [showIterateModal, setShowIterateModal] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string>("");
+
   const { mutateAsync: likeBucket } = useLikeBucket(bucket.bucketId);
   const { mutateAsync: unlikeBucket } = useUnlikeBucket(bucket.bucketId);
-  const [bucketLiked, setBucketLiked] = React.useState(
-    bucket.likes.includes(user?.id as string)
-  );
-  const [bucketIterated, setBucketIterated] = React.useState(
-    bucket.iterations.includes(user?.id as string)
-  );
-  const [iteratedFrom, setIteratedFrom] = React.useState<any | null>(null);
-  const [showIterateModal, setShowIterateModal] = React.useState(false);
-  const [authModalOpen, setAuthModalOpen] = React.useState(false);
+  const { mutateAsync: hideBucket } = useHideBucket(bucket.bucketId);
+  const { mutateAsync: saveBucket } = useSaveBucket(bucket.bucketId);
+  const { mutateAsync: unsaveBucket } = useUnsaveBucket(bucket.bucketId);
 
   const handleStopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
   };
 
-  const handleLikeBucket = (e: React.MouseEvent) => {
+  const handleHideBucket = async (e: React.MouseEvent) => {
+    handleStopPropagation(e);
+    if (!user) {
+      setAuthModalOpen(true);
+      return;
+    }
+
+    setBucketHidden(true);
+    await hideBucket();
+  };
+
+  const handleUnhideBucket = async (e: React.MouseEvent) => {
+    handleStopPropagation(e);
+    setBucketHidden(false);
+    await hideBucket();
+  };
+
+  const handleSaveBucket = async (e: React.MouseEvent) => {
+    handleStopPropagation(e);
+    if (!user) {
+      setAuthModalOpen(true);
+      return;
+    }
+
+    if (bucketSaved) {
+      await unsaveBucket();
+      setBucketSaved(false);
+    } else {
+      await saveBucket();
+      setBucketSaved(true);
+    }
+  };
+
+  const handleLikeBucket = async (e: React.MouseEvent) => {
     handleStopPropagation(e);
     if (!user) {
       setAuthModalOpen(true);
@@ -69,18 +130,16 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
     }
 
     if (bucketLiked) {
-      unlikeBucket().then((numLikes) => {
-        if (numLikes !== undefined && numLikes !== null) {
-          setBucketLikedCount(numLikes);
-        }
-      });
+      const numLikes = await unlikeBucket();
+      if (numLikes !== undefined && numLikes !== null) {
+        setBucketLikedCount(numLikes);
+      }
       setBucketLiked(false);
     } else {
-      likeBucket().then((numLikes) => {
-        if (numLikes !== undefined && numLikes !== null) {
-          setBucketLikedCount(numLikes);
-        }
-      });
+      const numLikes = await likeBucket();
+      if (numLikes !== undefined && numLikes !== null) {
+        setBucketLikedCount(numLikes);
+      }
       setBucketLiked(true);
     }
   };
@@ -98,15 +157,59 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
     setShowIterateModal(true);
   };
 
-  React.useEffect(() => {
-    setBucketLiked(bucket.likes.includes(user?.id as string)); //will have to represent as a set to support O(1) operations
+  const handleImageClick = (e: React.MouseEvent, imageUrl: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedImage(imageUrl);
+    setShowImageModal(true);
+  };
+
+  useEffect(() => {
+    setBucketLiked(bucket.likes.includes(user?.id as string));
     setBucketLikedCount(bucket.likes.length);
     setBucketIterationsCount(bucket.iterations.length);
+
+    if (user) {
+      setBucketSaved(user.bucketsSaved?.includes(bucket.bucketId) || false);
+      setBucketHidden(user.bucketsHidden?.includes(bucket.bucketId) || false);
+    }
 
     if (iteratedFromUser) {
       setIteratedFrom(iteratedFromUser);
     }
-  }, [bucket, user?.id, bucket?.likes, bucket?.iterations, iteratedFromUser]);
+
+    if (imageUrls) {
+      setImages(imageUrls);
+    }
+  }, [bucket, user, iteratedFromUser, imageUrls]);
+
+  if (user && user.bucketsHidden.includes(bucket.bucketId)) {
+    return null;
+  }
+
+  if (imagesLoading || bucketOwnerLoading || iteratedFromLoading) {
+    return <SkeletonCard />;
+  }
+
+  if (bucketHidden) {
+    return (
+      <Card className="w-full relative mx-auto min-h-[60px] border-none bg-background hover:bg-muted py-2 border-b-2">
+        <div className="flex items-center justify-between px-6">
+          <p className="text-sm text-muted-foreground">
+            Bucket hidden successfully
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleUnhideBucket}
+            className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-500"
+          >
+            Undo
+          </Button>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Link
@@ -158,16 +261,27 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
             </div>
           </div>
           <div>
-            <DropdownMenu modal={true}>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger className="rounded-full hover:bg-slate-300 dark:hover:bg-muted p-2 border-none focus:outline-none text-muted-foreground dark:text-foreground">
-                <EllipsisIcon />
+                <EllipsisIcon onClick={handleStopPropagation} />
               </DropdownMenuTrigger>
               <DropdownMenuContent onClick={handleStopPropagation}>
-                <DropdownMenuItem className="cursor-pointer">
-                  <Album size={16} className="mr-2"></Album>Save
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={handleSaveBucket}
+                >
+                  <Bookmark
+                    size={16}
+                    className={`mr-2 ${bucketSaved && "fill-foreground"}`}
+                  />
+                  {bucketSaved ? "Unsave" : "Save"}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                  <EyeOff size={16} className="mr-2"></EyeOff>Hide
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={handleHideBucket}
+                >
+                  <EyeOff size={16} className="mr-2" />
+                  Hide
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -181,6 +295,34 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
             {bucket.description}
           </CardDescription>
         </CardHeader>
+
+        {images.length > 0 && (
+          <>
+            <ScrollArea className="w-full flex flex-row px-4 my-2">
+              <div className="flex-1">
+                <Image
+                  height={300}
+                  width={500}
+                  src={images[0]}
+                  alt={bucket.name}
+                  className="rounded-md w-full border h-auto object-cover"
+                  onClick={(e) => handleImageClick(e, images[0])}
+                  style={{ maxHeight: "1000px" }}
+                />
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+            <ImageModal
+              isOpen={showImageModal}
+              setIsOpen={setShowImageModal}
+              onClose={() => setShowImageModal(false)}
+              imageUrl={selectedImage}
+              title={bucket.name}
+              description={bucket.description}
+            />
+          </>
+        )}
+
         <CardContent />
         <div className="absolute bottom-4 left-6 flex flex-row space-x-2">
           <div className="flex flex-row items-center space-x-1">
@@ -193,8 +335,8 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
             >
               {bucketLikedCount}
             </p>
-            <ArrowBigUpDash
-              size={24}
+            <Star
+              size={16}
               className={`${
                 bucketLiked
                   ? "text-blue-500 dark:text-blue-400"
@@ -220,7 +362,7 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
                   ? "text-blue-500 dark:text-blue-400"
                   : "text-muted-foreground hover:text-blue-500 dark:hover:text-blue-400"
               }`}
-              size={16}
+              size={14}
               onClick={handleIterateBucket}
             />
           </div>
@@ -236,7 +378,12 @@ export function BucketCard({ bucket }: { bucket: Bucket }) {
         open={showIterateModal}
         setIsOpen={setShowIterateModal}
       />
-      <AuthModal referrer="bucket" type="login" open={authModalOpen} setOpen={setAuthModalOpen} />
+      <AuthModal
+        referrer="bucket"
+        type="login"
+        open={authModalOpen}
+        setOpen={setAuthModalOpen}
+      />
     </Link>
   );
 }

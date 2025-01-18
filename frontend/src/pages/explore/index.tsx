@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useFetchPublicBuckets } from "@/hooks/buckets";
+import {
+  useFetchPopularBuckets,
+  useFetchPublicBuckets,
+  useFetchSavedBuckets,
+} from "@/hooks/buckets";
 import { BucketCard } from "@/components/explore/BucketCard";
 import { Bucket } from "@/types/bucket";
+import { useInView } from "react-intersection-observer";
 import { SearchInput } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
@@ -11,31 +16,42 @@ import { SkeletonCard } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
 import useMediaQuery from "@/hooks/general";
 import { AuthModal } from "@/components/auth/AuthModal";
-import TagsScroll from "@/components/explore/TagsScroll";
+import { Skeleton } from "@/components/ui/skeleton";
+
 function Index() {
-  const { data: buckets, isLoading: loading, error } = useFetchPublicBuckets();
+  const { ref, inView } = useInView();
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useFetchPublicBuckets();
+  const {
+    data: popularBuckets,
+    isLoading: popularBucketsLoading,
+    error: popularBucketsError,
+  } = useFetchPopularBuckets(3);
+  const {
+    data: savedBuckets,
+    isLoading: savedBucketsLoading,
+    error: savedBucketsError,
+  } = useFetchSavedBuckets();
   const [query, setQuery] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [activeTag, setActiveTag] = useState<string | null>(null);
-  const [active, setActive] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [active, setActive] = useState<boolean>(false);
   const searchInputWrapperRef = useRef<any>(null);
   const bucketsPerPage = 20;
   const { user } = useUser();
   const router = useRouter();
-  const { tag } = router.query;
-  let formattedTag: null | string;
-  if (tag instanceof Array) {
-    formattedTag = tag[0];
-  } else if (tag) {
-    formattedTag = tag;
-  } else {
-    formattedTag = null;
-  }
 
   useEffect(() => {
-    setActiveTag(formattedTag);
-  }, [formattedTag, tag]);
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, fetchNextPage]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -74,21 +90,13 @@ function Index() {
     );
   };
 
-  const filteredBuckets =
-    buckets?.filter(
-      (bucket: Bucket) => (bucket: Bucket) =>
-        bucket.name.toLowerCase().includes(query.toLowerCase()) ||
-        bucket.description?.toLowerCase().includes(query.toLowerCase())
-    ) || [];
+  const allBuckets = data?.pages.flatMap((page) => page.result) || [];
 
-  const indexOfLastBucket = currentPage * bucketsPerPage;
-  const indexOfFirstBucket = indexOfLastBucket - bucketsPerPage;
-  const currentBuckets = filteredBuckets.slice(
-    indexOfFirstBucket,
-    indexOfLastBucket
+  const filteredBuckets = allBuckets.filter(
+    (bucket: Bucket) =>
+      bucket.name.toLowerCase().includes(query.toLowerCase()) ||
+      bucket.description?.toLowerCase().includes(query.toLowerCase())
   );
-
-  const totalPages = Math.ceil(filteredBuckets.length / bucketsPerPage);
 
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -98,16 +106,8 @@ function Index() {
   const description = query
     ? `Discover buckets matching your query "${query}".`
     : "Explore public buckets on Spydr. Find shared research and projects.";
-
-  const bucketTagFilter = (bucket: Bucket) => {
-    if (!activeTag) {
-      return true;
-    }
-    return bucket.tags.includes(activeTag);
-  };
-
   return (
-    <div className="flex flex-1 flex-col gap-4 py-2 lg:py-10 mx-auto w-full relative">
+    <div className="flex flex-1 flex-col gap-4 pb-2 lg:pb-10 mx-auto w-full lg:h-[calc(108.9vh-64px)] overflow-y-auto relative">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -120,7 +120,7 @@ function Index() {
           }`}
         />
       </Head>{" "}
-      <div className="px-4 lg:px-20">
+      <div className="p-4 lg:px-16 border border-2 border-l-[1px] border-r-0 relative lg:sticky lg:top-0 bg-background lg:z-50">
         {!user && isMobile && (
           <Button
             className="w-full mb-2"
@@ -142,36 +142,64 @@ function Index() {
           value={query}
         ></SearchInput>
       </div>
-      <div className="w-full lg:min-h-[62vh] lg:px-16">
-        {loading ? (
-          <div className="w-full flex flex-col gap-3">
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
-        ) : error ? (
-          <p>Error loading buckets</p>
-        ) : currentBuckets.length > 0 ? (
-          <div className="w-full grid grid-cols-1 gap-1">
-            {currentBuckets.filter(bucketTagFilter).map((bucket: Bucket) => (
-              <div key={bucket.bucketId} className="cursor-pointer">
-                <BucketCard
-                  bucket={{
-                    ...bucket,
-                    name: getHighlightedText(
-                      formatText(bucket.name, 140),
-                      query
-                    ) as string,
-                  }}
-                />
+      <div className="w-full lg:px-16 flex flex row gap-6 relative">
+        {error && <p>Error loading buckets</p>}
+        <div className="w-full grid grid-cols-1 gap-1">
+          {filteredBuckets.map((bucket: Bucket) => (
+            <div key={bucket.bucketId} className="cursor-pointer">
+              <BucketCard
+                user={user || null}
+                bucket={{
+                  ...bucket,
+                  name: getHighlightedText(
+                    formatText(bucket.name, 140),
+                    query
+                  ) as string,
+                }}
+              />
+            </div>
+          ))}
+
+          <div ref={ref} className="h-10 w-full">
+            {isFetchingNextPage && (
+              <div className="w-full flex flex-col gap-3">
+                <SkeletonCard />
               </div>
-            ))}
+            )}
           </div>
-        ) : (
-          <div className="px-4">
-            <p>No buckets found</p>
+        </div>
+        <div className="hidden lg:flex flex-col basis-1/2 gap-2 border rounded-lg h-[calc(64vh-68px)] overflow-y-auto sticky top-[88px] p-4">
+          <div className="rounded-md">
+            <h1 className="text-xl font-bold mb-2">Popular</h1>
+            <div className="flex flex-col gap-2">
+              {popularBuckets ? (
+                popularBuckets.map((bucket: Bucket) => (
+                  <div key={bucket.bucketId} className="cursor-pointer">
+                    <span className="text-xs text-muted-foreground">
+                      {bucket.likes.length} stars
+                    </span>
+                    <br />
+                    <span
+                      onClick={() =>
+                        router.push(`/buckets/bucket/${bucket.bucketId}`)
+                      }
+                      className="text-sm font-semibold hover:underline"
+                    >
+                      {formatText(bucket.name, 90)}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col gap-4">
+                  <Skeleton className="h-8 w-full rounded-xl" />
+                  <Skeleton className="h-8 w-full rounded-xl" />
+                  <Skeleton className="h-8 w-full rounded-xl" />
+                  <Skeleton className="h-8 w-full rounded-xl" />
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        </div>
       </div>
       {open && (
         <AuthModal

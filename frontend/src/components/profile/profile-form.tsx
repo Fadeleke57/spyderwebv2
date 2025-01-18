@@ -27,11 +27,11 @@ import { toast } from "../ui/use-toast";
 const profileFormSchema = z.object({
   username: z
     .string()
-    .min(2, {
+    .min(6, {
       message: "Username must be at least 6 characters.",
     })
-    .max(14, {
-      message: "Username must not be longer than 14 characters.",
+    .max(20, {
+      message: "Username must not be longer than 20 characters.",
     })
     .regex(/^[a-zA-Z0-9_]+$/, {
       message: "Username can only contain letters, numbers, and underscores.",
@@ -57,49 +57,76 @@ export function ProfileForm({
   const { mutateAsync: editUser, isPending, error } = useEditUser();
   const isMobile = useIsMobile();
   const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [isEditingBio, setIsEditingBio] = useState(false);
 
   const defaultValues: Partial<ProfileFormValues> = {
     username: user?.username || "",
     email: user?.email || "",
+    bio: user?.bio || "",
   };
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues,
-    mode: "onChange",
   });
 
   const handleEditUsername = async () => {
     const isValid = await form.trigger("username");
-    if (isValid) {
-      const newUsername = form.getValues("username");
-      try {
-        await editUser({ username: newUsername });
-        await refetch();
-        setIsEditingUsername(false);
-      } catch (error: any) {
-        toast({
-          title: "Error updating username",
-          description:
-            error.response.status === 400
-              ? "Username already exists"
-              : error.message,
-          variant: "destructive",
-        });
-      }
+    if (!isValid) return;
+
+    const newUsername = form.getValues("username");
+    try {
+      await editUser({ username: newUsername });
+      await refetch();
+      setIsEditingUsername(false);
+    } catch (error: any) {
+      toast({
+        title: "Error updating username",
+        description:
+          error.response.status === 400
+            ? "Username already exists"
+            : error.message,
+        variant: "destructive",
+      });
     }
   };
 
-  const handleCancelEdit = () => {
-    form.setValue("username", user?.username || "");
-    setIsEditingUsername(false);
+  const handleEditBio = async () => {
+    const isValid = await form.trigger("bio");
+    if (!isValid) return;
+
+    const newBio = form.getValues("bio");
+    try {
+      await editUser({ bio: newBio });
+      await refetch();
+      setIsEditingBio(false);
+    } catch (error: any) {
+      toast({
+        title: "Error updating bio",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCancelEdit = (field: "username" | "bio") => {
+    if (field === "username") {
+      form.setValue("username", user?.username || "");
+      setIsEditingUsername(false);
+    } else {
+      form.setValue("bio", user?.bio || "");
+      setIsEditingBio(false);
+    }
   };
 
   useEffect(() => {
     if (user?.username) {
       form.setValue("username", user.username);
     }
-  });
+    if (user?.bio) {
+      form.setValue("bio", user.bio);
+    }
+  }, [user?.username, user?.bio, form]);
 
   return (
     <Form {...form}>
@@ -167,7 +194,7 @@ export function ProfileForm({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={handleCancelEdit}
+                      onClick={() => handleCancelEdit("username")}
                       disabled={isPending}
                     >
                       <X className="h-4 w-4" />
@@ -187,7 +214,7 @@ export function ProfileForm({
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem className="w-ful px-4">
+            <FormItem className="w-full px-4">
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input
@@ -207,15 +234,50 @@ export function ProfileForm({
           name="bio"
           render={({ field }) => (
             <FormItem className="px-4">
-              <FormLabel>Bio</FormLabel>
-              <FormControl>
-                <Textarea
-                  disabled
-                  placeholder="Tell us a little bit about yourself"
-                  className="resize-none"
-                  {...field}
-                />
-              </FormControl>
+              <div className="flex items-center justify-between">
+                <FormLabel>Bio</FormLabel>
+                {!isEditingBio && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditingBio(true)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <FormControl>
+                  <Textarea
+                    placeholder="Tell us a little bit about yourself"
+                    className="resize-none"
+                    disabled={!isEditingBio}
+                    {...field}
+                  />
+                </FormControl>
+                {isEditingBio && (
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleEditBio}
+                      disabled={isPending}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCancelEdit("bio")}
+                      disabled={isPending}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
               <FormDescription>
                 Give a brief description of yourself
               </FormDescription>

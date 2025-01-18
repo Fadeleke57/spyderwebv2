@@ -1,8 +1,9 @@
 import boto3
 from botocore.exceptions import ClientError
 
+
 class S3Bucket:
-    def __init__(self, bucket_name : str):
+    def __init__(self, bucket_name: str, region_name="us-east-1"):
         """
         Initializes the S3Bucket object.
 
@@ -14,10 +15,11 @@ class S3Bucket:
             bucket (boto3.bucket): A boto3 S3 bucket object.
             bucket_name (str): The name of the bucket.
         """
-        
-        self.s3 = boto3.resource('s3')
+
+        self.s3 = boto3.resource("s3")
         self.bucket = self.s3.Bucket(bucket_name)
         self.bucket_name = bucket_name
+        self.region_name = region_name
 
     def upload_file(self, file_path, object_name=None):
         """
@@ -31,10 +33,12 @@ class S3Bucket:
             ClientError: If there's an error uploading the file.
         """
         if object_name is None:
-            object_name = file_path.split('/')[-1]
+            object_name = file_path.split("/")[-1]
         try:
             self.bucket.upload_file(file_path, object_name)
-            print(f"File {file_path} uploaded successfully to {self.bucket_name}/{object_name}")
+            print(
+                f"File {file_path} uploaded successfully to {self.bucket_name}/{object_name}"
+            )
         except ClientError as e:
             print(f"Error uploading file: {e}")
 
@@ -55,7 +59,7 @@ class S3Bucket:
         except ClientError as e:
             print(f"Error downloading file: {e}")
 
-    def list_objects(self, prefix=''):
+    def list_objects(self, prefix=""):
         """
         Lists all objects in the bucket with the given prefix.
 
@@ -88,7 +92,7 @@ class S3Bucket:
         except ClientError as e:
             print(f"Error deleting object: {e}")
 
-    def download_file_object(self, key : str, file_object : str):
+    def download_file_object(self, key: str, file_object: str):
         """
         Downloads a file from S3.
 

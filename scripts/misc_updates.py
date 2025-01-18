@@ -5,6 +5,9 @@ import os
 import random
 import string
 from dotenv import load_dotenv
+from urllib.parse import urlparse
+from datetime import datetime
+from pytz import UTC
 
 def generate_username():
     adjectives = [
@@ -52,6 +55,7 @@ client = MongoClient(mongoUrl)
 db = client[mongoInitdbDatabase]
 users = db['users']
 buckets = db['buckets']
+sources = db['sources']
 
 def add_uuid_to_users():
     users_without_id = users.find({"id": {"$exists": False}})
@@ -98,20 +102,19 @@ def migrate_buckets_to_visibility_attr():
     print(f"Total buckets updated: {updated_count}")
 
 def add_attr_to_users():
-    users_without_saved_attr = users.find({"username": {"$exists": True}})
+    users_without_saved_attr = users.find({"bio": {"$exists": False}})
     all_users = users.find()
     updated_count = 0
 
     for user in all_users:
 
-        new_username = generate_username()
         users.update_one(
             {"_id": user["_id"]},
-            {"$set": {"username": new_username}}
+            {"$set": {"created": datetime.now(UTC), "updated": datetime.now(UTC)}}
         )
 
         updated_count += 1
-        print(f"Updated user {user['_id']} with new username: {new_username}")
+        print(f"Updated user {user['_id']} with new created and updated: {datetime.now(UTC)}")
 
     print(f"Total users updated: {updated_count}")
 
@@ -130,19 +133,42 @@ def add_attr_to_buckets():
 
     print(f"Total buckets updated: {updated_count}")
 
-def clear_out_buckets_tags():
+def clear_out_bucket_articles():
     updated_count = 0
     all_buckets = buckets.find()
-    for bucket in all_buckets:
+    """
+        for bucket in all_buckets:
         buckets.update_one(
             {"_id": bucket["_id"]},
-            {"$set": {"tags": []}}
+            {"$unset": {"articleIds": ""}}
         )
 
         updated_count += 1
-        print(f"Updated bucket {bucket['_id']} with new tags: []")
-
+        print(f"Updated bucket {bucket['_id']}")
+    """
+    buckets.update_many({}, {"$unset": {"articleIds": ""}})
     print(f"Total buckets updated: {updated_count}")
 
+def extract_file_path(url):
+    # Parse the URL
+    parsed_url = urlparse(url)
+    # Extract and return the path
+    return parsed_url.path 
+
+def remove_imageKeys_to_sources():
+    sources_without_attr = sources.find({"imageKeys": {"$exists": True}})
+    updated_count = 0
+
+    for source in sources_without_attr:
+        sources.update_one(
+            {"_id": source["_id"]},
+            {"$unset": {"imageKeys": ""}}
+        )
+
+        updated_count += 1
+        print(f"Updated source {source['_id']} with new imageKeys: None")
+
+    print(f"Total sources updated: {updated_count}")
+
 if __name__ == "__main__":
-    add_attr_to_users()
+    remove_imageKeys_to_sources()

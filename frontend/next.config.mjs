@@ -17,6 +17,16 @@ const nextConfig = {
         hostname: "images.unsplash.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "spydr-user-content.s3.**.amazonaws.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "spydr-user-content-prod.s3.**.amazonaws.com",
+        pathname: "/**",
+      },
     ],
   },
 };

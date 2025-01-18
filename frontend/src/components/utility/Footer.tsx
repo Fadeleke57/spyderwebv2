@@ -11,7 +11,7 @@ function Footer() {
           </small>
           <Link
             href="/about/terms-of-service"
-            className="inline p-0 decoration-none hover:text-slate-700"
+            className="inline p-0 decoration-none dark:hover:text-muted-foreground hover:text-slate-700"
           >
             <small className="text-sm font-medium leading-none">
               Terms <span className="hidden lg:inline">of Service</span>
@@ -19,11 +19,17 @@ function Footer() {
           </Link>
           <Link
             href="/about/privacy-policy"
-            className="inline p-0 decoration-none hover:text-slate-700"
+            className="inline p-0 decoration-none dark:hover:text-muted-foreground hover:text-slate-700"
           >
             <small className="text-sm font-medium leading-none">
               Privacy <span className="hidden lg:inline">Policy</span>
             </small>
+          </Link>
+          <Link
+            href="/"
+            className="inline p-0 decoration-none dark:hover:text-muted-foreground hover:text-slate-700"
+          >
+            <small className="text-sm font-medium leading-none">Feedback</small>
           </Link>
         </div>
         <div>

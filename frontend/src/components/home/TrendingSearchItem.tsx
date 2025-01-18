@@ -1,7 +1,7 @@
 import React from "react";
 import { Bucket } from "@/types/bucket";
 import { formatText } from "@/lib/utils";
-import { BookMarked } from "lucide-react";
+import { BookMarked, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/router";
 import {
@@ -25,10 +25,10 @@ function TrendingSearchItem({ bucket }: { bucket: Bucket }) {
           </span>
         </CardContent>
         <div className="absolute bottom-3 right-3 flex flex-row items-center space-x-2 text-zinc-400 dark:text-muted-foreground">
-          <span>{bucket.likes.length}</span>
-          <ArrowBigUpDash
+          <span className="text-xs">{bucket.likes.length}</span>
+          <Star
             className="fill-zinc-400 dark:fill-muted-foreground"
-            size={20}
+            size={16}
           />
         </div>
       </Card>

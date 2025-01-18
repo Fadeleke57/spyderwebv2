@@ -1,11 +1,12 @@
-
 import requests
 from src.core.config import settings
 from youtube_transcript_api import YouTubeTranscriptApi
 from fastapi import HTTPException
+
 API_KEY = settings.youtube_api_key
 
-def get_video_info(video_id : str) -> dict:
+
+def get_video_info(video_id: str) -> dict:
     """
     Get the information of a YouTube video from its video ID.
 
@@ -22,7 +23,7 @@ def get_video_info(video_id : str) -> dict:
         HTTPException: If there is an error with the API call.
     """
     url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={API_KEY}"
-    try :
+    try:
         response = requests.get(url)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
@@ -34,7 +35,8 @@ def get_video_info(video_id : str) -> dict:
     }
     return formatted
 
-def get_video_transcript(video_id : str) -> list:
+
+def get_video_transcript(video_id: str) -> list:
     """
     Given a video id, returns a list of transcripts from the YouTube video.
     Raises a 400 error if an exception occurs.

@@ -2,7 +2,14 @@ from fastapi import Depends, HTTPException, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_login.exceptions import InvalidCredentialsException
 from fastapi.responses import JSONResponse, RedirectResponse
-from src.routes.auth.oauth2 import get_google_token, get_google_user, manager, get_password_hash, verify_password, get_user
+from src.routes.auth.oauth2 import (
+    get_google_token,
+    get_google_user,
+    manager,
+    get_password_hash,
+    verify_password,
+    get_user,
+)
 from src.core.config import settings
 from src.models.user import User, CreateUser
 from src.db.mongodb import get_collection
@@ -24,7 +31,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 
 router = APIRouter()
 
-@manager.user_loader(db_session=get_collection('users'))
+
+@manager.user_loader(db_session=get_collection("users"))
 def load_user(email: str, db_session):
     """
     User loader callback for FastAPI-Login.
@@ -44,6 +52,7 @@ def load_user(email: str, db_session):
         logging.debug("No user found.")
     return user
 
+
 @router.get("/login/google")
 def login():
     """
@@ -62,6 +71,7 @@ def login():
     )
     return RedirectResponse(google_auth_url)
 
+
 @router.get("/callback")
 async def auth_callback(code: str):
     """
@@ -75,50 +85,56 @@ async def auth_callback(code: str):
     token_data = await get_google_token(code)
     user_data, profile_picture_url = await get_google_user(token_data["access_token"])
     email = user_data["email"]
-    
-    Users = get_collection('users')
-    Buckets = get_collection('buckets')
+
+    Users = get_collection("users")
+    Buckets = get_collection("buckets")
     user = Users.find_one({"email": email})
-    
+
     if not user:
-        Users.insert_one({
-            "id": str(uuid.uuid4()),
-            "username": generate_username(),
-            "full_name": user_data["name"],
-            "email": user_data["email"],
-            "hashed_password": None,  # no password for google registrations
-            "disabled": False,
-            "profile_picture_url": profile_picture_url,
-            "analytics": { "searches": [] },
-            "created": datetime.now(UTC),
-            "updated": datetime.now(UTC),
-            "bucketsHidden": [],
-            "bucketsSaved": []
-        })
-        Buckets.insert_one({
-            "bucketId": str(uuid.uuid4()),
-            "name": "Welcome to Spydr!",
-            "description": "This is your first bucket! Create a new bucket to get started.",
-            "userId": Users.find_one({"email": email})["id"],
-            "articleIds": [],
-            "created": datetime.now(),
-            "updated": datetime.now(),
-            "visibility": "Private",
-            "tags": [],
-            "likes": [],
-            "iterations": []
-        })
+        Users.insert_one(
+            {
+                "id": str(uuid.uuid4()),
+                "username": generate_username(),
+                "full_name": user_data["name"],
+                "email": user_data["email"],
+                "hashed_password": None,  # no password for google registrations
+                "disabled": False,
+                "profile_picture_url": profile_picture_url,
+                "analytics": {"searches": []},
+                "created": datetime.now(UTC),
+                "updated": datetime.now(UTC),
+                "bucketsHidden": [],
+                "bucketsSaved": [],
+            }
+        )
+        Buckets.insert_one(
+            {
+                "bucketId": str(uuid.uuid4()),
+                "name": "Welcome to Spydr!",
+                "description": "This is your first bucket! Create a new bucket to get started.",
+                "userId": Users.find_one({"email": email})["id"],
+                "articleIds": [],
+                "created": datetime.now(),
+                "updated": datetime.now(),
+                "visibility": "Private",
+                "tags": [],
+                "likes": [],
+                "iterations": [],
+            }
+        )
         user = Users.find_one({"email": email})
-    
+
     access_token = manager.create_access_token(
-        data={"sub": email},
-        expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        data={"sub": email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    response = RedirectResponse(url=f"{settings.next_url}/auth/google-callback?token={access_token}&email={email}&name={user_data['name']}")
+    response = RedirectResponse(
+        url=f"{settings.next_url}/auth/google-callback?token={access_token}&email={email}&name={user_data['name']}"
+    )
     manager.set_cookie(response, access_token)
     return response
 
-@router.post('/token') # normal auth
+
+@router.post("/token")  # normal auth
 def login(data: OAuth2PasswordRequestForm = Depends()):
     """
     Generate an access token for a user.
@@ -128,19 +144,20 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
     :param data: The username and password to verify
     :return: A JSONResponse with an access token in the response body
     """
-    collection = get_collection('users')
+    collection = get_collection("users")
     user = collection.find_one({"email": data.username})
-    if not user or not verify_password(data.password, user['hashed_password']):
+    if not user or not verify_password(data.password, user["hashed_password"]):
         raise InvalidCredentialsException
     access_token = manager.create_access_token(
         data={"sub": data.username},
-        expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
     response = JSONResponse(content={"access_token": access_token}, status_code=200)
     manager.set_cookie(response, access_token)
     return response
 
-@router.post('/register')
+
+@router.post("/register")
 def register(user: CreateUser):
     """
     Register a new user.
@@ -150,19 +167,21 @@ def register(user: CreateUser):
     :param user: The user to register
     :return: A JSONResponse with a success message
     """
-    Users = get_collection('users')
+    Users = get_collection("users")
 
     if Users.find_one({"email": user.email}):
-        raise HTTPException(status_code=400, detail="There is already an account with this email.")
+        raise HTTPException(
+            status_code=400, detail="There is already an account with this email."
+        )
     if Users.find_one({"username": user.username}):
-        raise HTTPException(status_code=400, detail="There is already an account with this username.")
-
-    Buckets = get_collection('buckets')
+        raise HTTPException(
+            status_code=400, detail="There is already an account with this username."
+        )
 
     hashed_password = get_password_hash(user.password)
-
+    userId = str(uuid.uuid4())
     user_data = {
-        "id": str(uuid.uuid4()),
+        "id": userId,
         "username": user.username,
         "full_name": user.username,
         "email": user.email,
@@ -173,40 +192,64 @@ def register(user: CreateUser):
         "created": datetime.now(UTC),
         "updated": datetime.now(UTC),
         "bucketsHidden": [],
-        "bucketsSaved": []
+        "bucketsSaved": [],
     }
-
     Users.insert_one(user_data)
 
-    Buckets.insert_one({
-        "bucketId": str(uuid.uuid4()),
-        "name": "Welcome to Spydr!",
-        "description": "This is your first bucket! Create a new bucket to get started.",
-        "userId": Users.find_one({"email": user.email})["id"],
-        "articleIds": [],
-        "created": datetime.now(UTC),
-        "updated": datetime.now(UTC),
-        "visibility": "Private",
-        "tags": [],
-        "likes": [],
-        "iterations": [],
-    })
+    Buckets = get_collection("buckets")
+    bucketId = str(uuid.uuid4())
+    Buckets.insert_one(
+        {
+            "bucketId": bucketId,
+            "name": "Welcome to Spydr!",
+            "description": "This is your first bucket! Create a new bucket to get started.",
+            "userId": userId,
+            "created": datetime.now(UTC),
+            "updated": datetime.now(UTC),
+            "visibility": "Private",
+            "tags": [],
+            "likes": [],
+            "iterations": [],
+        }
+    )
+
+    sourceId = str(uuid.uuid4())
+    Sources = get_collection("sources")
+    Sources.insert_one(
+        {
+            "sourceId": sourceId,
+            "bucketId": bucketId,
+            "userId": userId,
+            "name": "How to use Spydr (click me!)",
+            "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new bucket or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your bucket.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your bucket with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other buckets and start from there.\n### Have fun!",
+            "url": None,
+            "type": "note",
+            "size": None,
+            "created": datetime.now(UTC),
+            "updated": datetime.now(UTC),
+        }
+    )
+
+    Buckets.update_one(
+        {"bucketId": bucketId, "userId": userId},
+        {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
+    )
 
     access_token = manager.create_access_token(
-        data={"sub": user.email},
-        expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        data={"sub": user.email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 
     response = JSONResponse(
         content={
             "msg": "User registered successfully",
             "access_token": access_token,
-            "token_type": "bearer"
+            "token_type": "bearer",
         },
-        status_code=201
+        status_code=201,
     )
-    manager.set_cookie(response, access_token) 
+    manager.set_cookie(response, access_token)
     return response
+
 
 @router.get("/me")
 def get_current_user(user=Depends(manager)):
@@ -215,7 +258,7 @@ def get_current_user(user=Depends(manager)):
 
     :return: The current user
     """
-    
+
     try:
         if not user:
             logging.error("User not found in /auth/me")
@@ -226,7 +269,8 @@ def get_current_user(user=Depends(manager)):
     except Exception as e:
         logging.error(f"Exception in /auth/me: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
-    
+
+
 @router.post("/logout")
 async def logout(response: Response, user=Depends(manager)):
     """

@@ -46,6 +46,9 @@ export default function AppLayout({
     if (path === "/buckets") {
       return pathname?.startsWith("/buckets") && pathname !== "/buckets/new";
     }
+    if (path === "/home") {
+      return pathname === "/home";
+    }
     return false;
   };
 
@@ -125,7 +128,34 @@ export default function AppLayout({
                 />
               </div>
             </div>
-
+            <div onClick={() => handleButtonClick("/home")}>
+              <div className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none">
+                <Home
+                  className={cn(
+                    "size-5",
+                    isActivePage("/home")
+                      ? "text-primary"
+                      : "text-slate-500 dark:text-foreground"
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-xs font-semibold",
+                    isActivePage("/home")
+                      ? "text-primary"
+                      : "text-slate-500 dark:text-foreground"
+                  )}
+                >
+                  Home
+                </span>
+                <div
+                  className={cn(
+                    "h-1 w-6 rounded-full transition-all duration-200",
+                    isActivePage("/home") ? "bg-primary" : "bg-transparent"
+                  )}
+                />
+              </div>
+            </div>
             <div>
               {user ? (
                 <NewBucketModal>
@@ -150,7 +180,12 @@ export default function AppLayout({
         </div>
         {children}
         {isAuthModalOpen && (
-          <AuthModal type="login" referrer="app" open={isAuthModalOpen} setOpen={setAuthModalOpen} />
+          <AuthModal
+            type="login"
+            referrer="app"
+            open={isAuthModalOpen}
+            setOpen={setAuthModalOpen}
+          />
         )}
       </div>
     );

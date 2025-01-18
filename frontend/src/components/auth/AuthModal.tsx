@@ -143,7 +143,7 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
           title: "Success",
           description: "Login successful!",
         });
-        window.location.href = isMobile ? "/buckets" : "/home";
+        window.location.href = "/home";
       }
     } catch (error) {
       toast({
@@ -170,7 +170,7 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
           description: "Registration successful!",
         });
         setOpen(false);
-        window.location.href = isMobile ? "/buckets" : "/home";
+        window.location.href = "/home";
       }
     } catch (error: any) {
       toast({
@@ -189,9 +189,9 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
       >
         <DialogClose />
         <div>
-          <DialogTitle className="text-center">Join the community</DialogTitle>
+          <DialogTitle className="text-center">{isExistingUser && step !== "email" ? "Welcome back" : "Join the community"}</DialogTitle>
           <DialogDescription className="text-center">
-            Sign up or sign in to get started.
+            {isExistingUser && step === "email" ? "Enter your email or continue with Google" : step === "auth" && isExistingUser ? "Login to continue to your account" : "Create an account"}
           </DialogDescription>
         </div>
 

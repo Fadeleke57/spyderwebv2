@@ -1,4 +1,3 @@
-import { useState, useCallback, useEffect } from "react";
 import api from "@/lib/api";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
@@ -128,5 +127,50 @@ export const useFetchSource = (sourceId: string) => {
       const data = await response.data;
       return data;
     },
-  })
-}
+  });
+};
+
+export const useEditSourceTitle = (sourceId: string) => {
+  return useMutation({
+    mutationFn: async (title: string) => {
+      const response = await api.patch(`/sources/edit/source/${sourceId}`, {
+        name: title,
+      });
+      const data = await response.data.result;
+      return data;
+    },
+    onError: (err: any) => {
+      console.error(err);
+    },
+  });
+};
+
+export const useUploadImageToSource = () => {
+  return useMutation({
+    mutationFn: async ({
+      sourceId,
+      files,
+    }: {
+      sourceId: string;
+      files: File[];
+    }) => {
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      const { data } = await api.post(
+        `/sources/upload/image/${sourceId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return data.imageUrls;
+    },
+  });
+};

@@ -1,24 +1,26 @@
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
+  SheetOverlay,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useFetchSource } from "@/hooks/sources";
-import { useUpdateNote } from "@/hooks/sources"; // Assuming your hook is located here
+import { useEditSourceTitle, useFetchSource } from "@/hooks/sources";
+import { useUpdateNote } from "@/hooks/sources";
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { SquareArrowOutUpRight } from "lucide-react";
+import { Check, Edit, X } from "lucide-react";
 import { formatDate } from "date-fns";
-import { ScrollArea } from "../ui/scroll-area";
 import { Textarea } from "../ui/textarea";
-import { debounce, set } from "lodash";
+import { debounce} from "lodash";
 import { useUser } from "@/context/UserContext";
 import { toast } from "../ui/use-toast";
 import { extractVideoId } from "@/lib/utils";
 import { SourceAsNode } from "@/types/source";
+import NoteComponent from "./Notes";
 
 interface BucketDataDrawerProps {
   open: boolean;
@@ -40,10 +42,17 @@ export default function BucketDataDrawer({
     error: sourceError,
     refetch: refetchSource,
   } = useFetchSource(sourceId);
+  const {
+    mutateAsync: editSourceTitle,
+    isPending: isTitleLoading,
+    error: titleError,
+  } = useEditSourceTitle(sourceId);
   const [source, setSource] = useState<SourceAsNode | null>(null);
   const [presignedUrl, setPresignedUrl] = useState("");
   const [title, setTitle] = useState(source?.name);
   const [content, setContent] = useState(source?.content);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newTitle, setNewTitle] = useState(source?.name);
 
   useEffect(() => {
     if (!sourceData) return;
@@ -59,7 +68,7 @@ export default function BucketDataDrawer({
     error: updateError,
   } = useUpdateNote(bucketId, sourceId);
 
-  const isOwner = source?.userId && user?.id === source?.userId;
+  const isOwner = (source?.userId && user?.id) === source?.userId;
 
   const debouncedSave = useCallback(
     debounce(async (newTitle: string, newContent: string) => {
@@ -76,99 +85,108 @@ export default function BucketDataDrawer({
     [updateNote]
   );
 
-  const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleNewTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newTitle = e.target.value;
-    setTitle(newTitle);
-    debouncedSave(newTitle, content || "");
+    setNewTitle(newTitle);
   };
 
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleNoteContentChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    // for notes only
     const newContent = e.target.value;
     setContent(newContent);
     debouncedSave(title || "", newContent);
+  };
+
+  const handleEditTitle = async () => {
+    // any source
+    if (!newTitle) {
+      setIsEditing(false);
+      return;
+    }
+    try {
+      await editSourceTitle(newTitle);
+      toast({ title: "Changes saved." });
+      refetchSource();
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Failed to update note:", err);
+    }
   };
 
   const mapSourceTypeToComponent = (type: string | undefined) => {
     switch (type) {
       case "website":
         return (
-          <iframe
-            src={source?.url || ""}
-            width="100%"
-            height="450px"
-            className="rounded-lg"
-          />
-        );
-      case "document":
-        console.log("presignedUrl", presignedUrl);
-        return (
-          <object
-            data={presignedUrl}
-            type="application/pdf"
-            width="100%"
-            className="rounded-lg border h-[calc(100vh-210px)]"
-          >
-            <p>Your browser does not support PDFs.</p>
-          </object>
-        );
-      case "youtube":
-        return (
-          <iframe
-            width="100%"
-            height="450px"
-            src={`https://www.youtube.com/embed/${
-              extractVideoId(source?.url) || ""
-            }`}
-            title="YouTube video player"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-            className="rounded-lg"
-          ></iframe>
-        );
-      case "note":
-        return (
-          <ScrollArea className="px-4 h-[calc(100vh-210px)]">
+          <>
             <small className="text-muted-foreground">
               {formatDate(
-                new Date(source ? source.updated_at + "Z" : ""),
+                new Date(source ? source.updated + "Z" : ""),
                 "MMMM dd, yyyy hh:mm a"
               )}
             </small>
-            {isOwner ? (
-              <Textarea
-                value={title}
-                placeholder="Title..."
-                rows={1}
-                className="w-full min-h-[2rem] bg-transparent p-0 text-3xl font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-2xl font-semibold my-2"
-                onInput={(e: any) => {
-                  e.target.style.height = "auto";
-                  e.target.style.height = `${e.target.scrollHeight}px`;
-                }}
-                onChange={handleTitleChange}
-              />
-            ) : (
-              <h3 className="text-2xl font-semibold my-2">{title}</h3>
-            )}
-            {isOwner ? (
-              <Textarea
-                value={content}
-                placeholder="Content..."
-                rows={1}
-                className="w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-muted-foreground"
-                onInput={(e: any) => {
-                  e.target.style.height = "auto";
-                  e.target.style.height = `${e.target.scrollHeight}px`;
-                }}
-                onChange={handleContentChange}
-              />
-            ) : (
-              <p className="text-muted-foreground">{content}</p>
-            )}
-
-            {updateError && <p className="text-red-500">{updateError}</p>}
-          </ScrollArea>
+            <iframe
+              src={source?.url || ""}
+              width="100%"
+              height="450px"
+              className="rounded-lg mt-4"
+            />
+          </>
+        );
+      case "document":
+        return (
+          <>
+            <small className="text-muted-foreground">
+              {formatDate(
+                new Date(source ? source.updated + "Z" : ""),
+                "MMMM dd, yyyy hh:mm a"
+              )}
+            </small>
+            <object
+              data={presignedUrl}
+              type="application/pdf"
+              width="100%"
+              className="rounded-lg border h-[calc(97vh-210px)] mt-4"
+            >
+              <p>Your browser does not support PDFs.</p>
+            </object>
+          </>
+        );
+      case "youtube":
+        return (
+          <>
+            <small className="text-muted-foreground">
+              {formatDate(
+                new Date(source ? source.updated + "Z" : ""),
+                "MMMM dd, yyyy hh:mm a"
+              )}
+            </small>
+            <iframe
+              width="100%"
+              height="450px"
+              src={`https://www.youtube.com/embed/${
+                extractVideoId(source?.url) || ""
+              }`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+              className="rounded-lg mt-4"
+            ></iframe>
+          </>
+        );
+      case "note":
+        return (
+          <NoteComponent
+            bucketId={bucketId}
+            source={source}
+            content={content}
+            isOwner={isOwner}
+            updateError={updateError}
+            handleNoteContentChange={handleNoteContentChange}
+          />
         );
       default:
         return null;
@@ -176,33 +194,71 @@ export default function BucketDataDrawer({
   };
 
   const handleClose = () => {
-    setOpen(false);
     setTitle("");
     setContent("");
     setPresignedUrl("");
     setSource(null);
+    setOpen(false);
+    setIsEditing(false);
+    setNewTitle("");
   };
 
   return (
     <div className="grid grid-cols-2 gap-2">
       <Sheet open={open} onOpenChange={handleClose}>
+        <SheetClose onClick={handleClose} className="absolute right-4 top-10" />
         <SheetContent side={"left"} className="w-full lg:max-w-2xl">
           <SheetHeader className="border-b pb-4">
-            <SheetTitle className="text-left w-[300px] font-bold lg:w-content">
+            <SheetTitle className="text-left w-11/12 font-bold flex items-center justify-between">
               {presignedUrl || source?.url ? (
-                <Link
-                  href={presignedUrl || source?.url || ""}
-                  target="_blank"
-                  className="hover:underline hover:text-blue-500 inline"
-                >
-                  {presignedUrl || source?.url ? <SquareArrowOutUpRight /> : ""}
-                  <span>{source?.name || ""}</span>
-                </Link>
+                isEditing ? (
+                  <Textarea
+                    defaultValue={title}
+                    onChange={(e) => handleNewTitleChange(e)}
+                    placeholder="Title..."
+                  />
+                ) : (
+                  <Link
+                    href={presignedUrl || source?.url || ""}
+                    target="_blank"
+                    className="hover:underline hover:text-blue-500 inline"
+                  >
+                    <span>{source?.name || ""}</span>
+                  </Link>
+                )
+              ) : isEditing ? (
+                <Textarea
+                  defaultValue={title}
+                  onChange={(e) => handleNewTitleChange(e)}
+                  placeholder="Title..."
+                />
               ) : (
                 <span>{title || source?.name || ""}</span>
               )}
             </SheetTitle>
-            <SheetDescription className="text-left pr-4 font-semibold text-blue-500">
+            <SheetDescription className="text-left pr-4 font-semibold text-blue-500 flex flex-col gap-2 justify-start">
+              {isOwner && (
+                <div className="basis-1/3 flex flex-row space-x-2 w-fit">
+                  {!isEditing && (
+                    <Edit
+                      className="cursor-pointer text-foreground hover:text-blue-500"
+                      onClick={() => setIsEditing(!isEditing)}
+                    ></Edit>
+                  )}
+                  {isEditing && (
+                    <>
+                      <X
+                        className="cursor-pointer text-foreground hover:text-blue-500"
+                        onClick={() => setIsEditing(false)}
+                      ></X>
+                      <Check
+                        className="cursor-pointer text-foreground hover:text-blue-500"
+                        onClick={handleEditTitle}
+                      ></Check>
+                    </>
+                  )}
+                </div>
+              )}
               {source?.type}
             </SheetDescription>
           </SheetHeader>

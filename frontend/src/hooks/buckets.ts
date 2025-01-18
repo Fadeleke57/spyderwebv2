@@ -3,7 +3,7 @@ import api from "@/lib/api";
 import { Bucket, UpdateBucket } from "@/types/bucket";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 
-export function useFetchBucketsForUser(criteria?: string) {
+export function useFetchUserBuckets(criteria?: string) {
   return useInfiniteQuery({
     queryKey: ["user", "buckets"],
     queryFn: async ({ pageParam = { page: 1, direction: "forward" } }) => {
@@ -65,6 +65,74 @@ export const useCreateBucket = () => {
   });
 };
 
+export const useFetchSavedBuckets = () => {
+  return useQuery({
+    queryKey: ["buckets", "saved"],
+    queryFn: async () => {
+      const response = await api.get("/buckets/saved/user");
+      return response.data.result;
+    },
+  });
+};
+
+export const useUploadImageToBucket = () => {
+  return useMutation({
+    mutationFn: async ({
+      bucketId,
+      files,
+    }: {
+      bucketId: string;
+      files: File[];
+    }) => {
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      const { data } = await api.post(
+        `/buckets/upload/image/${bucketId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return data.imageUrls;
+    },
+  });
+};
+
+export const useDeleteImageFromBucket = () => {
+  return useMutation({
+    mutationFn: async ({
+      bucketId,
+      imageUrl,
+    }: {
+      bucketId: string;
+      imageUrl: string;
+    }) => {
+      const imageName = imageUrl.split("/").pop();
+      const response = await api.delete(
+        `/buckets/delete/image/${bucketId}/${imageName}`
+      );
+      return response.data.result;
+    },
+  });
+};
+
+export function useGetAllImagesForBucket(bucketId: string) {
+  return useQuery({
+    queryKey: ["images", "bucket", bucketId],
+    queryFn: async () => {
+      const response = await api.get(`/buckets/images/bucket/${bucketId}`);
+      return response.data.result;
+    },
+  });
+}
+
 export function useDeleteBucket() {
   return useMutation({
     mutationFn: async (bucketId: string) => {
@@ -92,11 +160,35 @@ export const useUpdateBucket = (bucketId: string) => {
 };
 
 export function useFetchPublicBuckets() {
-  //will make an infinite query in the future [will need to adjust search endpoint]
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ["buckets", "public"],
+    queryFn: async ({ pageParam = null }) => {
+      const response = await api.get("/buckets/all/public", {
+        params: {
+          cursor: pageParam,
+          limit: 10,
+        },
+      });
+      return response.data;
+    },
+    initialPageParam: null,
+    getNextPageParam: (lastPage, pages) => {
+      console.log("lastPage", lastPage);
+      console.log("pages", pages);
+      return lastPage.nextCursor;
+    },
+  });
+}
+
+export function useFetchPopularBuckets(limit: number) {
+  return useQuery({
+    queryKey: ["buckets", "popular"],
     queryFn: async () => {
-      const response = await api.get("/buckets/all/public");
+      const response = await api.get("/buckets/popular", {
+        params: {
+          limit,
+        },
+      });
       return response.data.result;
     },
   });

@@ -9,6 +9,7 @@ import { Source, SourceAsNode } from "@/types/source";
 import { Trash } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import { useFetchBucketById } from "@/hooks/buckets";
+import { updateTextElements, isSafari, shouldUseTspans } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -75,61 +76,6 @@ function BucketGraph({
     refetchSources();
   };
 
-  const wrapText = useCallback((text: D3Selection, width: number) => {
-    text.each(function () {
-      const textNode = d3.select(this);
-      const originalText = formatText(textNode.text(), 50);
-
-      if (!originalText) return;
-
-      const words = originalText.split(/\s+/).reverse();
-      const y = textNode.attr("y");
-      const x = textNode.attr("x");
-      const dy = parseFloat(textNode.attr("dy")) || 0;
-      const lineHeight = 1.1; // ems
-
-      //clear existing content once
-      textNode.text(null);
-
-      let currentLine: string[] = [];
-      let lineNumber = 0;
-
-      //create initial tspan
-      let tspan = textNode
-        .append("tspan")
-        .attr("x", x)
-        .attr("y", y)
-        .attr("dy", dy + "em");
-
-      //process words
-      while (words.length > 0) {
-        const word = words.pop()!;
-        currentLine.push(word);
-
-        const lineText = currentLine.join(" ");
-        tspan.text(lineText);
-
-        //check if line needs wrapping
-        if (
-          (tspan.node()?.getComputedTextLength() as any) > width &&
-          currentLine.length > 1
-        ) {
-          currentLine.pop();
-          tspan.text(currentLine.join(" "));
-
-          //start new line
-          currentLine = [word];
-          tspan = textNode
-            .append("tspan")
-            .attr("x", x)
-            .attr("y", y)
-            .attr("dy", ++lineNumber * lineHeight + dy + "em")
-            .text(word);
-        }
-      }
-    });
-  }, []);
-
   useEffect(() => {
     setFetchedSources(sources);
     const width = 3200;
@@ -150,7 +96,7 @@ function BucketGraph({
       const transform = d3.zoomIdentity
         .translate(width / 2, height / 2)
         .scale(scale)
-        .translate(-x, -y);
+        .translate(-x + (isMobile ? -260 : 0), -y);
 
       svg
         .transition()
@@ -224,7 +170,6 @@ function BucketGraph({
             ? mapThemetoHoverNodeColor(theme)
             : mapThemeToBaseNodeColor(theme)
         );
-
       g.selectAll("text")
         .filter((node: any) => node.sourceId !== d.sourceId)
         .style("opacity", isHovering ? 0.3 : 1)
@@ -232,14 +177,27 @@ function BucketGraph({
 
       g.selectAll("text")
         .filter((node: any) => node.sourceId === d.sourceId)
-        .style("transform", isHovering ? "translateY(10px)" : "translateY(0)");
+        .style("opacity", 1)
+        .style("transform", isHovering ? "translateY(10px)" : "translateY(0)")
+        .style("transition", "transform 0.3s ease");
+
+      g.selectAll("foreignObject")
+        .filter((node: any) => node.sourceId !== d.sourceId)
+        .style("opacity", isHovering ? 0.3 : 1)
+        .style("transform", "translateY(0)");
+
+      g.selectAll("foreignObject")
+        .filter((node: any) => node.sourceId === d.sourceId)
+        .style("opacity", 1)
+        .style("transform", isHovering ? "translateY(10px)" : "translateY(0)")
+        .style("transition", "transform 0.3s ease");
     };
 
     const simulation = d3
       .forceSimulation(nodes)
       .force("x", d3.forceX(centerX).strength(0.05))
       .force("y", d3.forceY(centerY).strength(0.05))
-      .force("collision", d3.forceCollide(85))
+      .force("collision", d3.forceCollide(95))
       .on("tick", () => {
         const circles = g
           .selectAll("circle")
@@ -269,18 +227,41 @@ function BucketGraph({
               .attr("stroke-width", 2);
           });
 
-        // Usage with your existing code:
-        g.selectAll("text")
-          .data(nodes ? nodes : [])
-          .join("text")
-          .attr("x", (d) => d.x)
-          .attr("y", (d) => d.y + sizeScale(d.size || 4) + 20)
-          .attr("text-anchor", "middle")
-          .attr("fill", mapThemeToTextColor(theme))
-          .attr("font-size", "14px")
-          .attr("font-weight", "bold")
-          .text((d) => d.name || "")
-          .call(wrapText, 300);
+        if (!shouldUseTspans) {
+          g.selectAll("foreignObject")
+            .data(nodes || [])
+            .join("foreignObject")
+            .attr("width", 300)
+            .attr("height", 100)
+            .attr("x", (d) => d.x - 150)
+            .attr("y", (d) => d.y + sizeScale(d.size || 4) + 5)
+            .html(
+              (d) => `
+          <div style="
+            font-size: 14px;
+            color: ${mapThemeToTextColor(theme)};
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            white-space: normal;
+            overflow: hidden;
+            line-height: 1.2em;
+            word-wrap: break-word;
+            font-weight: bold;
+          ">
+            ${formatText(d.name, 60)}
+          </div>
+        `
+            );
+        } else
+          updateTextElements(
+            g,
+            nodes,
+            theme as string,
+            mapThemeToTextColor,
+            (size) => sizeScale(size),
+            formatText
+          );
       });
 
     const drag = d3

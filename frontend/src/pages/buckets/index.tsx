@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { File, MoreHorizontal, PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -28,8 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useFetchUser } from "@/hooks/user";
-import { useDeleteBucket, useFetchBucketsForUser } from "@/hooks/buckets";
+import { useDeleteBucket, useFetchUserBuckets } from "@/hooks/buckets";
 import Link from "next/link";
 import { format } from "date-fns";
 import { formatText } from "@/lib/utils";
@@ -42,9 +41,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Bucket } from "@/types/bucket";
 import { ComboBoxResponsive } from "@/components/utility/ResponsiveComobox";
 import DeleteModal from "@/components/utility/DeleteModal";
+import { useUser } from "@/context/UserContext";
+import { toast } from "@/components/ui/use-toast";
 
 function Index() {
-  const { user, Logout } = useFetchUser();
+  const { user, logout } = useUser();
   const [cursors, setCursors] = useState<{
     prev: number | null;
     next: number | null;
@@ -63,7 +64,7 @@ function Index() {
     isFetchingNextPage,
     isFetchingPreviousPage,
     refetch,
-  } = useFetchBucketsForUser(criteria);
+  } = useFetchUserBuckets(criteria);
   const { mutateAsync: deleteBucket, isPending, isError } = useDeleteBucket();
 
   const [buckets, setBuckets] = useState<Bucket[]>([]);
@@ -73,16 +74,26 @@ function Index() {
   const isMobile = useIsMobile();
 
   const handleLogout = async () => {
-    await Logout();
-    window.location.href = "/explore";
+    logout();
+    router.push("/explore");
   };
 
-  const handleDeleteBucket = async (id: string | undefined) => {
-    if (!id) return;
-    await deleteBucket(id);
-    refetch();
-    setOpen(false);
-  };
+   const handleDeleteBucket = useCallback(async () => {
+     if (!bucketId) return;
+
+     try {
+       await deleteBucket(bucketId);
+       setOpen(false);
+       refetch();
+     } catch (error) {
+       console.error(error);
+       toast({
+         title: "Error deleting bucket",
+         description: "Failed to delete bucket",
+         variant: "destructive",
+       })
+     }
+   }, [bucketId, deleteBucket]);
 
   const tabs = [
     { label: "All", value: "all", filter: () => true },
@@ -389,8 +400,8 @@ function Index() {
       </div>
       {bucketId && open && (
         <DeleteModal
-          bucketId={bucketId}
-          handleDelete={handleDeleteBucket}
+          itemType="bucket"
+          onDelete={handleDeleteBucket}
           isPending={isPending}
           open={open}
           setOpen={setOpen}

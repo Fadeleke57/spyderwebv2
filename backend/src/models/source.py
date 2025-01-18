@@ -11,9 +11,8 @@ class Source(BaseModel):
     content: Optional[str]
     type: str
     size: int
-    created_at: datetime
-    updated_at: datetime
+    created: datetime
+    updated: datetime
 
 class UpdateSource(BaseModel):
-    name: Optional[str]
-    
+    name: Optional[str] = None

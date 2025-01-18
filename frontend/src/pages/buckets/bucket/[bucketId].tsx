@@ -36,7 +36,6 @@ function Index() {
   const [bucket, setBucket] = React.useState<Bucket | null>(bucketData || null);
   const [showIterateModal, setShowIterateModal] = React.useState(false);
   const [authModalOpen, setAuthModalOpen] = React.useState(false);
-  console.log("authModalOpen", authModalOpen);
   useEffect(() => {
     if (bucketData) {
       setBucket(bucketData);
@@ -131,7 +130,9 @@ function Index() {
             )}
           </div>
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
-            {bucket && <MobileBucketForm bucket={bucket} user={user} />}
+            {bucket && (
+              <MobileBucketForm bucket={bucket} user={user ? user : null} />
+            )}
 
             {user && bucket && bucketOwner ? (
               <IterateModal
@@ -180,20 +181,29 @@ function Index() {
               x-chunk="dashboard-03-chunk-0"
             >
               {bucket && isOwner ? (
-                <BucketForm bucket={bucket} user={user} />
+                <BucketForm bucket={bucket} user={user ? user : null} />
               ) : bucket ? (
-                <PublicBucketView bucket={bucket} user={user} />
+                <PublicBucketView bucket={bucket} />
               ) : null}
             </ScrollArea>
           )}
           {loading ? (
             <div className="relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 lg:col-span-2"></div>
           ) : bucket ? (
-            <BucketPlayground bucket={bucket} user={user} refetch={refetch} />
+            <BucketPlayground
+              bucket={bucket}
+              user={user ? user : null}
+              refetch={refetch}
+            />
           ) : null}
         </div>
       </div>
-      <AuthModal referrer={"bucker"} type="login" open={authModalOpen} setOpen={setAuthModalOpen} />
+      <AuthModal
+        referrer={"bucker"}
+        type="login"
+        open={authModalOpen}
+        setOpen={setAuthModalOpen}
+      />
     </div>
   );
 }
