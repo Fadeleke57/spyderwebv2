@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { Bucket, UpdateBucket } from "@/types/bucket";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
@@ -29,29 +28,14 @@ export function useFetchUserBuckets(criteria?: string) {
   });
 }
 
-export function useFetchLikedBuckets() {
-  const [buckets, setBuckets] = useState<Bucket[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const response = await api.get("/buckets/liked/user");
-        setBuckets(response.data.result);
-      } catch (err) {
-        setError("Failed to fetch bucket data");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  return { buckets, loading, error };
+export const useFetchLikedBuckets = () => {
+  return useQuery({
+    queryKey: ["buckets", "liked"],
+    queryFn: async () => {
+      const response = await api.get("/buckets/liked/user");
+      return response.data.result;
+    },
+  });
 }
 
 export const useCreateBucket = () => {
@@ -182,7 +166,7 @@ export function useFetchPublicBuckets() {
 
 export function useFetchPopularBuckets(limit: number) {
   return useQuery({
-    queryKey: ["buckets", "popular"],
+    queryKey: ["buckets", "popular", limit],
     queryFn: async () => {
       const response = await api.get("/buckets/popular", {
         params: {

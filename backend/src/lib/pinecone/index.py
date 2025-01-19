@@ -3,7 +3,7 @@ from src.core.config import settings
 
 PC = Pinecone(api_key=settings.pinecone_api_key)
 
-PCINDEX = PC.Index("article-embeddings2")
+PCINDEX = PC.Index(name=settings.pinecone_index_name)
 
 
 def get_embedding(query: str):

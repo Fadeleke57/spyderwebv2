@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     oauth2_redirect_uri: str
     next_url: str
     pinecone_api_key: str
+    pinecone_index_name: str
     openai_api_key: str
     s3_bucket_name: str
     youtube_api_key: str

@@ -6,11 +6,8 @@ from src.lib.pinecone.index import PC, PCINDEX, get_embedding
 current_dir = os.path.dirname(__file__)
 nltk_data_path = os.path.join(current_dir, "..", "nltk_data")
 nltk.data.path.append(os.path.abspath(nltk_data_path))
-from typing import List
 from nltk.tokenize import sent_tokenize
-from neo4j import Record
 from src.utils.queries import queries
-from typing import Optional
 
 
 def split_into_sentences_nltk(text):
