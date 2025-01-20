@@ -46,7 +46,7 @@ import { PublicUser } from "@/types/user";
 import { ImageModal } from "../utility/ImageModal";
 import { SkeletonCard } from "../utility/SkeletonCard";
 
-export function BucketCard({
+export function SearchResultCard({
   bucket,
   user,
 }: {
@@ -74,52 +74,15 @@ export function BucketCard({
   const [iteratedFrom, setIteratedFrom] = useState<any | null>(null);
   const [showIterateModal, setShowIterateModal] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [imageModalOpen, setImageModalOpen] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>("");
 
   const { mutateAsync: likeBucket } = useLikeBucket(bucket.bucketId);
   const { mutateAsync: unlikeBucket } = useUnlikeBucket(bucket.bucketId);
-  const { mutateAsync: hideBucket } = useHideBucket(bucket.bucketId);
-  const { mutateAsync: saveBucket } = useSaveBucket(bucket.bucketId);
-  const { mutateAsync: unsaveBucket } = useUnsaveBucket(bucket.bucketId);
 
   const handleStopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-  };
-
-  const handleHideBucket = async (e: React.MouseEvent) => {
-    handleStopPropagation(e);
-    if (!user) {
-      setAuthModalOpen(true);
-      return;
-    }
-
-    setBucketHidden(true);
-    await hideBucket();
-  };
-
-  const handleUnhideBucket = async (e: React.MouseEvent) => {
-    handleStopPropagation(e);
-    setBucketHidden(false);
-    await hideBucket();
-  };
-
-  const handleSaveBucket = async (e: React.MouseEvent) => {
-    handleStopPropagation(e);
-    if (!user) {
-      setAuthModalOpen(true);
-      return;
-    }
-
-    if (bucketSaved) {
-      await unsaveBucket();
-      setBucketSaved(false);
-    } else {
-      await saveBucket();
-      setBucketSaved(true);
-    }
   };
 
   const handleLikeBucket = async (e: React.MouseEvent) => {
@@ -191,32 +154,12 @@ export function BucketCard({
     return <SkeletonCard />;
   }
 
-  if (bucketHidden) {
-    return (
-      <Card className="w-full relative mx-auto min-h-[60px] border-none bg-background hover:bg-muted py-2 border-b-2">
-        <div className="flex items-center justify-between px-6">
-          <p className="text-sm text-muted-foreground">
-            Bucket hidden successfully
-          </p>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleUnhideBucket}
-            className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-500"
-          >
-            Undo
-          </Button>
-        </div>
-      </Card>
-    );
-  }
-
   return (
     <Link
       href={`/buckets/bucket/${bucket.bucketId}`}
-      className="flex flex-col hover:cursor-pointer"
+      className="flex flex-col gap-2 hover:cursor-pointer"
     >
-      <Card className="w-full relative mx-auto min-h-[80px] border-none bg-background hover:bg-muted py-6 border-b-2">
+      <Card className="w-full relative mx-auto min-h-[120px] border-none bg-background hover:bg-muted py-6 border-b-2">
         <div className="absolute top-0 left-0 w-full flex justify-between items-center px-4">
           <div className="flex flex-row items-center mt-3">
             <UserAvatar
@@ -239,89 +182,24 @@ export function BucketCard({
                 </p>
                 <p className="ml-2 text-xs text-slate-600 dark:text-foreground font-semibold">
                   {formatDistanceToNow(
-                    new Date(bucket?.updated ? bucket.updated + "Z" : ""),
+                    new Date(bucket?.updated ? bucket.updated : ""),
                     {
                       addSuffix: true,
                     }
                   )}
                 </p>
               </div>
-              <div className="">
-                {iteratedFrom ? (
-                  <p className="text-xs text-muted-foreground font-normal">
-                    Iterated From{" "}
-                    <span className="font-semibold text-blue-500 dark:text-blue-400">
-                      @{iteratedFrom.username}
-                    </span>
-                  </p>
-                ) : bucket.iteratedFrom ? (
-                  <Skeleton className="h-3 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
-                ) : null}
-              </div>
             </div>
           </div>
-          <div>
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger className="rounded-full hover:bg-slate-300 dark:hover:bg-muted p-2 border-none focus:outline-none text-muted-foreground dark:text-foreground">
-                <EllipsisIcon onClick={handleStopPropagation} />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent onClick={handleStopPropagation}>
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={handleSaveBucket}
-                >
-                  <Bookmark
-                    size={16}
-                    className={`mr-2 ${bucketSaved && "fill-foreground"}`}
-                  />
-                  {bucketSaved ? "Unsave" : "Save"}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={handleHideBucket}
-                >
-                  <EyeOff size={16} className="mr-2" />
-                  Hide
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </div>
-        <CardHeader className="overflow-hidden">
-          <CardTitle className="break-words hover:cursor-pointer mt-2 text-lg leading-tight hyphens-auto text-foreground">
+        <CardHeader className="overflow-hidden mt-1">
+          <CardTitle className="break-words hover:cursor-pointer text-md leading-tight hyphens-auto text-foreground">
             {bucket.name}
           </CardTitle>
-          <CardDescription className="hyphens-auto mb-8 max-w-6xl text-muted-foreground">
+          <CardDescription className="hyphens-auto mb-8 max-w-6xl text-sm text-muted-foreground">
             {bucket.description}
           </CardDescription>
         </CardHeader>
-
-        {images.length > 0 && (
-          <>
-            <ScrollArea className="w-full flex flex-row px-4">
-              <div className="flex-1">
-                <Image
-                  height={300}
-                  width={500}
-                  src={images[0]}
-                  alt={bucket.name}
-                  className="rounded-md w-full border h-auto object-cover"
-                  onClick={(e) => handleImageClick(e, images[0])}
-                  style={{ maxHeight: "1000px" }}
-                />
-              </div>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-            <ImageModal
-              isOpen={showImageModal}
-              setIsOpen={setShowImageModal}
-              onClose={() => setShowImageModal(false)}
-              imageUrl={selectedImage}
-              title={bucket.name}
-              description={bucket.description}
-            />
-          </>
-        )}
 
         <CardContent />
         <div className="absolute bottom-4 left-6 flex flex-row space-x-2">
@@ -368,7 +246,7 @@ export function BucketCard({
           </div>
         </div>
         <p className="text-xs text-muted-foreground absolute bottom-4 right-6">
-          {formatDistanceToNow(new Date(bucket.created + "Z"), {
+          {formatDistanceToNow(new Date(bucket.created), {
             addSuffix: true,
           })}
         </p>

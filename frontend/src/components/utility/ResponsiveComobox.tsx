@@ -69,7 +69,6 @@ export function ComboBoxResponsive({
           <Button
             variant="outline"
             className={`w-full justify-start ${className}`}
-            disabled
           >
             {children}
           </Button>

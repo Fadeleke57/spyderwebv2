@@ -1,7 +1,6 @@
 import nltk
 import os
-from src.lib.pinecone.index import PC, PCINDEX, get_embedding
-
+from src.lib.pinecone.index import PC, PCINDEX
 # from src.db.neo4j import driver as Neo4jDriver, run_query
 current_dir = os.path.dirname(__file__)
 nltk_data_path = os.path.join(current_dir, "..", "nltk_data")
@@ -46,7 +45,7 @@ def run_keyword_search(query: str, topic: str, limit: int):
     "
     return run_query(cypher_query, params)
 """
-
+"""
 
 ### execute semantic search
 def run_semantic_search(query: str, limit: int):
@@ -63,7 +62,7 @@ def run_semantic_search(query: str, limit: int):
 
 
 ### execute an exact match search for article ids in neo4j
-"""
+
 def get_articles_by_ids(ids: List[str]) -> List[Record]:
     query = "
     MATCH (a:Article)
