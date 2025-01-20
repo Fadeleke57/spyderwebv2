@@ -185,7 +185,7 @@ def create_bucket(config: BucketConfig, user=Depends(manager)):
     """
     check_user(user)
     try:
-        
+
         bucket = get_collection("buckets") 
         bucketId = str(uuid.uuid4())
         bucket_to_insert = {
@@ -205,7 +205,10 @@ def create_bucket(config: BucketConfig, user=Depends(manager)):
 
         #pinecone pipeline
         vectors = generate_bucket_embeddings(config.name, config.description)
-        embedding_data = [(bucketId, vectors, bucket_to_insert)]
+        pincone_insert = bucket_to_insert
+        pincone_insert["created"] = str(bucket_to_insert["created"])
+        pincone_insert["updated"] = str(bucket_to_insert["updated"])
+        embedding_data = [(bucketId, vectors, pincone_insert)]
         PCINDEX.upsert(
             vectors=embedding_data,
             namespace="buckets",
