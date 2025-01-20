@@ -301,7 +301,7 @@ const SidebarTrigger = React.forwardRef<
       data-sidebar="trigger"
       variant="ghost"
       size="icon"
-      className={cn("h-7 w-7", className, "hover:bg-muted rounded-full p-1")}
+      className={cn("h-fit w-fit", className, "hover:bg-muted rounded-full p-1")}
       onClick={(event) => {
         onClick?.(event);
         toggleSidebar();
@@ -309,9 +309,9 @@ const SidebarTrigger = React.forwardRef<
       {...props}
     >
       {orientation === "left" ? (
-        <ArrowLeftFromLine size={20} />
+        <ArrowLeftFromLine size={16} />
       ) : (
-        <ArrowRightFromLine size={20} />
+        <ArrowRightFromLine size={16} />
       )}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>

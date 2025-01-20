@@ -157,8 +157,6 @@ export function useFetchPublicBuckets() {
     },
     initialPageParam: null,
     getNextPageParam: (lastPage, pages) => {
-      console.log("lastPage", lastPage);
-      console.log("pages", pages);
       return lastPage.nextCursor;
     },
   });
@@ -250,5 +248,39 @@ export function useIterateBucket(bucketId: string) {
     },
     onSuccess: () => {},
     onError: () => {},
+  });
+}
+
+export type SearchFilter = {
+  visibility?: "Public" | "Private";
+  userId?: string;
+  bucketId?: string;
+};
+
+export function useSearchBuckets(query: string, filters?: SearchFilter) {
+  return useQuery({
+    queryKey: ["buckets", "search", query, filters],
+    queryFn: async () => {
+      //convert filters object into URL parameters
+      const params = new URLSearchParams({
+        query,
+      });
+
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (Array.isArray(value)) { //handle array filters
+              value.forEach((v) => params.append(key, v));
+            } else {
+              params.append(key, value.toString());
+            }
+          }
+        });
+      }
+
+      const response = await api.get("/buckets/search", { params });
+      return response.data.result;
+    },
+    enabled: !!query,
   });
 }
