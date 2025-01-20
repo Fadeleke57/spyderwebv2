@@ -185,6 +185,7 @@ def create_bucket(config: BucketConfig, user=Depends(manager)):
     """
     check_user(user)
     try:
+        
         bucket = get_collection("buckets") 
         bucketId = str(uuid.uuid4())
         bucket_to_insert = {
@@ -212,11 +213,11 @@ def create_bucket(config: BucketConfig, user=Depends(manager)):
 
         #mongo insert
         bucket.insert_one(bucket_to_insert)
+        return {"result": bucketId}
+    
     except Exception as e:
         logger.error(f"Error creating bucket: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
-    return {"result": bucketId}
 
 
 @router.post("/upload/image/{bucket_id}")
