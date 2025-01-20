@@ -238,12 +238,11 @@ export function BucketCard({
                   *
                 </p>
                 <p className="ml-2 text-xs text-slate-600 dark:text-foreground font-semibold">
-                  {formatDistanceToNow(
-                    new Date(bucket?.updated ? bucket.updated + "Z" : ""),
-                    {
-                      addSuffix: true,
-                    }
-                  )}
+                  {bucket?.updated
+                    ? formatDistanceToNow(new Date(bucket.updated), {
+                        addSuffix: true,
+                      })
+                    : "Unknown date"}
                 </p>
               </div>
               <div className="">
@@ -368,9 +367,9 @@ export function BucketCard({
           </div>
         </div>
         <p className="text-xs text-muted-foreground absolute bottom-4 right-6">
-          {formatDistanceToNow(new Date(bucket.created + "Z"), {
-            addSuffix: true,
-          })}
+          {bucket?.created
+            ? formatDistanceToNow(new Date(bucket.created), { addSuffix: true })
+            : "Unknown date"}
         </p>
       </Card>
       <IterateModal
