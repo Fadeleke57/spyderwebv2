@@ -45,6 +45,7 @@ import { ScrollBar } from "../ui/scroll-area";
 import { PublicUser } from "@/types/user";
 import { ImageModal } from "../utility/ImageModal";
 import { SkeletonCard } from "../utility/SkeletonCard";
+import { date } from "zod";
 
 export function SearchResultCard({
   bucket,
