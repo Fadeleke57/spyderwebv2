@@ -190,12 +190,12 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
       >
         <DialogClose />
         <div>
-          <DialogTitle className="text-center text-2xl font-bold">
+          <DialogTitle className="text-center text-xl font-semibold">
             {isExistingUser && step !== "email"
               ? "Welcome back"
               : "A New Age of Ideation"}
           </DialogTitle>
-          <DialogDescription className="text-center text-md font-medium">
+          <DialogDescription className="text-center text-sm ">
             {isExistingUser && step === "email"
               ? "Enter your email or continue with Google"
               : step === "auth" && isExistingUser
@@ -248,7 +248,7 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
                     Continue with Email
                   </Button>
                   <div className="text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
-                    By signing up, you agree to our{" "}
+                    By continuing, you agree to our{" "}
                     <Link
                       href="/about/terms-of-service"
                       className="dark:text-blue-500"
