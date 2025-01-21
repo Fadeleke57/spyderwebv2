@@ -25,6 +25,7 @@ import { useCheckEmailExists } from "@/hooks/user";
 import { useToast } from "@/components/ui/use-toast";
 import api from "@/lib/api";
 import { useIsMobile } from "@/hooks/use-mobile";
+import Link from "next/link";
 
 const emailSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -189,9 +190,17 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
       >
         <DialogClose />
         <div>
-          <DialogTitle className="text-center">{isExistingUser && step !== "email" ? "Welcome back" : "Join the community"}</DialogTitle>
-          <DialogDescription className="text-center">
-            {isExistingUser && step === "email" ? "Enter your email or continue with Google" : step === "auth" && isExistingUser ? "Login to continue to your account" : "Create an account"}
+          <DialogTitle className="text-center text-xl font-semibold">
+            {isExistingUser && step !== "email"
+              ? "Welcome back"
+              : "A New Age of Ideation"}
+          </DialogTitle>
+          <DialogDescription className="text-center text-sm ">
+            {isExistingUser && step === "email"
+              ? "Enter your email or continue with Google"
+              : step === "auth" && isExistingUser
+              ? "Login to continue to your account"
+              : "Join the community"}
           </DialogDescription>
         </div>
 
@@ -238,6 +247,23 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
                   <Button variant="secondary" type="submit" className="w-full">
                     Continue with Email
                   </Button>
+                  <div className="text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
+                    By continuing, you agree to our{" "}
+                    <Link
+                      href="/about/terms-of-service"
+                      className="dark:text-blue-500"
+                    >
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                      href="/about/privacy-policy"
+                      className="dark:text-blue-500"
+                    >
+                      Privacy Policy
+                    </Link>
+                    .
+                  </div>
                 </div>
               </div>
             </form>
@@ -263,7 +289,11 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter your password" {...field} type="password" />
+                        <Input
+                          placeholder="Enter your password"
+                          {...field}
+                          type="password"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -333,7 +363,11 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter a password" {...field} type="password" />
+                        <Input
+                          placeholder="Enter a password"
+                          {...field}
+                          type="password"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
