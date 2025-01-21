@@ -23,7 +23,7 @@ export function ImageModal({ isOpen, onClose, imageUrl }: ImageModalProps) {
         secondary
       >
         <DialogTitle hidden></DialogTitle>
-        <div className="relative max-w-full max-h-[100dvh] overflow-hidden rounded-lg lg:border">
+        <div className="relative max-w-full max-h-[95dvh] overflow-hidden rounded-lg lg:border">
           <Image
             src={imageUrl}
             alt="Image Popup"
