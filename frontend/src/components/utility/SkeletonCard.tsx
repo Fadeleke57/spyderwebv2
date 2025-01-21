@@ -24,14 +24,11 @@ export function SkeletonUserCard() {
 export function SkeletonTextCard() {
   return (
     <div className="flex flex-col space-y-3">
-      <Skeleton className="h-8 w-[350px] rounded-xl" />
-      <Skeleton className="h-8 w-[350px] rounded-xl" />
-      <Skeleton className="h-8 w-[350px] rounded-xl" />
-      <Skeleton className="h-8 w-[350px] rounded-xl" />
-      <Skeleton className="h-8 w-[350px] rounded-xl" />
-      <Skeleton className="h-8 w-[350px] rounded-xl" />
-      <Skeleton className="h-8 w-[350px] rounded-xl" />
-      <Skeleton className="h-8 w-[350px] rounded-xl" />
+      <Skeleton className="h-8 w-full rounded-xl" />
+      <Skeleton className="h-8 w-full rounded-xl" />
+      <Skeleton className="h-8 w-full rounded-xl" />
+      <Skeleton className="h-8 w-full rounded-xl" />
+      <Skeleton className="h-8 w-full rounded-xl" />
     </div>
   );
 }

@@ -94,7 +94,7 @@ const SearchBar = ({
           onKeyDown={handleKeyDown}
           onFocus={() => setIsSearchActive(true)}
           placeholder="Search for buckets..."
-          className="w-full py-3 px-6"
+          className="w-full py-3 px-6 caret-violet-500"
         />
       </div>
 
