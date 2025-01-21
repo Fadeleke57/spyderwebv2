@@ -51,43 +51,49 @@ def get_user_buckets(
     """
     check_user(user)
 
-    if criteria:
-        if criteria == "public":
-            visibility = "Public"
-        elif criteria == "private":
-            visibility = "Private"
+    try:
+
+        if criteria:
+            if criteria == "public":
+                visibility = "Public"
+            elif criteria == "private":
+                visibility = "Private"
+            else:
+                visibility = None
         else:
             visibility = None
-    else:
-        visibility = None
 
-    buckets = get_collection("buckets")
-    if visibility:
-        buckets = buckets.find(
-            {"visibility": visibility, "userId": user["id"]}, {"_id": 0}
-        )
-    else:
-        buckets = buckets.find({"userId": user["id"]}, {"_id": 0})
-    buckets = [bucket for bucket in buckets]
-    buckets = sorted(buckets, key=lambda x: x["updated"], reverse=True)
+        buckets = get_collection("buckets")
+        if visibility:
+            buckets = buckets.find(
+                {"visibility": visibility, "userId": user["id"]}, {"_id": 0}
+            )
+        else:
+            buckets = buckets.find({"userId": user["id"]}, {"_id": 0})
+        buckets = [bucket for bucket in buckets]
+        buckets = sorted(buckets, key=lambda x: x["updated"], reverse=True)
 
-    # pagination
-    total_buckets = len(buckets)
-    start_index = (page - 1) * page_size
-    end_index = start_index + page_size
-    paginated_buckets = buckets[start_index:end_index]
+        # pagination
+        total_buckets = len(buckets)
+        start_index = (page - 1) * page_size
+        end_index = start_index + page_size
+        paginated_buckets = buckets[start_index:end_index]
 
-    next_cursor = page + 1 if end_index < total_buckets else None
-    prev_cursor = page - 1 if page > 1 else None
+        next_cursor = page + 1 if end_index < total_buckets else None
+        prev_cursor = page - 1 if page > 1 else None
 
-    return {
-        "items": paginated_buckets,
-        "total": total_buckets,
-        "page": page,
-        "page_size": page_size,
-        "nextCursor": next_cursor,
-        "prevCursor": prev_cursor,
-    }
+        return {
+            "items": paginated_buckets,
+            "total": total_buckets,
+            "page": page,
+            "page_size": page_size,
+            "nextCursor": next_cursor,
+            "prevCursor": prev_cursor,
+        }
+
+    except Exception as e:
+        logger.error(f"Error fetching buckets: {e}")
+        raise HTTPException(status_code=500, detail="Error fetching buckets")
 
 
 @router.get("/all/public")
