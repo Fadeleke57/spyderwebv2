@@ -128,7 +128,7 @@ const PrivacyPolicy = () => {
           </li>
         </ul>
         <p>
-          To exercise any of these rights, please contact fadeleke57@gmail.com.
+          To exercise any of these rights, please contact spydrdev@gmail.com.
         </p>
 
         <h2>6. Children&apos;s Privacy</h2>
@@ -153,7 +153,7 @@ const PrivacyPolicy = () => {
           please contact us at:
         </p>
         <p>
-          <strong>Email:</strong> fadeleke57@gmail.com
+          <strong>Email:</strong> spydrdev@gmail.com
         </p>
       </div>
     </>

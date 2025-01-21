@@ -106,7 +106,7 @@ const TermsOfService = () => {
         us at:
       </p>
       <p>
-        <strong>Email:</strong> fadeleke57@gmail.com
+        <strong>Email:</strong> spydrdev@gmail.com
       </p>
     </div>
   );
