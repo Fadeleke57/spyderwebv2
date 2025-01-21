@@ -198,11 +198,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </span>
                   </div>
                 </div>
-                <div className="flex flex-row gap-2 items-center">
-                  <span className="bg-slate-200 dark:bg-muted-foreground text-md h-[28px]  p-2 rounded-md font-bold flex items-center">
+                <div className="flex flex-row gap-1 items-center">
+                  <span className="foreground text-md rounded-md font-bold flex items-center">
                     ⌘
                   </span>
-                  <span className="bg-slate-200 dark:bg-muted-foreground text-md h-[28px] p-2 rounded-md font-bold flex items-center">
+                  <span className="foreground text-md rounded-md font-bold flex items-center">
                     X
                   </span>
                 </div>

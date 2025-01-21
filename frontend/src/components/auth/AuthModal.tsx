@@ -185,7 +185,7 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
-        className="max-w-[100vw] md:max-w-[80vw] lg:max-w-[60vw] h-dvh md:h-[80vh] lg:h-[80vh] rounded-none flex flex-col justify-center items-center"
+        className="h-dvh max-w-screen rounded-none flex flex-col justify-center items-center"
         onClick={(e) => e.stopPropagation()}
       >
         <DialogClose />

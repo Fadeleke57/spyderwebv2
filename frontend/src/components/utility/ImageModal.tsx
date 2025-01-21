@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import Image from "next/image";
 
 interface ImageModalProps {
@@ -20,6 +20,7 @@ export function ImageModal({ isOpen, onClose, imageUrl }: ImageModalProps) {
       <DialogContent
         className="max-w-full w-full h-[100dvh] p-0 gap-0 border-none flex justify-center items-center bg-black"
         onClick={(e) => handleModalClick(e)}
+        secondary
       >
         <DialogTitle hidden></DialogTitle>
         <div className="relative max-w-full max-h-[100dvh] overflow-hidden rounded-lg lg:border">
