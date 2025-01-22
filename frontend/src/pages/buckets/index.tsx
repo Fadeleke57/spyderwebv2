@@ -43,6 +43,7 @@ import { ComboBoxResponsive } from "@/components/utility/ResponsiveComobox";
 import DeleteModal from "@/components/utility/DeleteModal";
 import { useUser } from "@/context/UserContext";
 import { toast } from "@/components/ui/use-toast";
+import UserBucketSearch from "@/components/buckets/UserBucketSearch";
 
 function Index() {
   const { user, logout } = useUser();
@@ -174,14 +175,9 @@ function Index() {
         />
       </Head>
       <div className="flex flex-col sm:gap-4 sm:py-4">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <div className="relative ml-auto flex-1 md:grow-0">
-            <ComboBoxResponsive
-              className="md:w-[200px] lg:w-[336px] w-flex items-center"
-              searchTarget="buckets"
-            >
-              <span className="text-muted-foreground">Find Buckets..</span>
-            </ComboBoxResponsive>
+            <UserBucketSearch />
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -357,14 +353,15 @@ function Index() {
                     <div className="flex justify-between items-center w-full">
                       <div className="text-xs text-muted-foreground">
                         <strong>
-                          {isFetching ? "..." : (currentPage - 1) * 5 + 1}
+                          {isFetching ? "..." : (currentPage - 1) * 10 + 1}
                         </strong>{" "}
                         to{" "}
                         <strong>
                           {isFetching
                             ? "..."
                             : Math.min(
-                                currentPage * 5,
+                              currentPage * 10,
+                              
                                 data?.pages[0]?.total || 0
                               )}{" "}
                         </strong>{" "}
