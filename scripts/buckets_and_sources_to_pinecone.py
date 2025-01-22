@@ -52,8 +52,8 @@ def generate_embeddings(name: str, description: str, header_weight: int = 3) -> 
     return embeddings
 
 
-if __name__ == "__main__":   
-   
+def add_buckets_to_pinecone():
+       
     for bucket in buckets.find():
         name = bucket['name']
         description = bucket['description']
@@ -72,6 +72,16 @@ if __name__ == "__main__":
         vector_data = [(bucket['bucketId'], embeddings.data[0].values, metadata)]
         pinecone_index.upsert(vector_data, namespace="buckets")
         print("Adding embeddings to Pinecone...")
+
+def check_for_str_dates():
+    for bucket in buckets.find():
+        if "created" in bucket and isinstance(bucket['created'], str):
+            buckets.update_one({"bucketId": bucket['bucketId']}, {"$set": {"created": datetime.fromisoformat(bucket['created'])}})
+        if "updated" in bucket and isinstance(bucket['updated'], str):
+            buckets.update_one({"bucketId": bucket['bucketId']}, {"$set": {"updated": datetime.fromisoformat(bucket['updated'])}})
+
+if __name__ == "__main__":   
+    check_for_str_dates()
    
     """
     for bucket in buckets.find():

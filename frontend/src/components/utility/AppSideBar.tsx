@@ -198,11 +198,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </span>
                   </div>
                 </div>
-                <div className="flex flex-row gap-1 items-center">
-                  <span className="foreground text-md rounded-md font-bold flex items-center">
+                <div className="flex flex-row gap-1 items-center text-muted-foreground dark:text-muted-foreground">
+                  <span className="foreground text-md rounded-md font-bold flex items-center border p-1 px-[7px]">
                     ⌘
                   </span>
-                  <span className="foreground text-md rounded-md font-bold flex items-center">
+                  <span className="foreground text-md rounded-md font-bold flex items-center border p-1 px-[7px]">
                     X
                   </span>
                 </div>
@@ -241,7 +241,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser />
       </SidebarFooter>
       <SidebarRail></SidebarRail>
-      {open && <AuthModal type="login" referrer="sidebar" open={open} setOpen={setOpen} />}
+      {open && (
+        <AuthModal
+          type="login"
+          referrer="sidebar"
+          open={open}
+          setOpen={setOpen}
+        />
+      )}
     </Sidebar>
   );
 }
