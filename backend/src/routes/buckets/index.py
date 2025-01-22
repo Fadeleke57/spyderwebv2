@@ -93,7 +93,7 @@ def get_user_buckets(
 
     except Exception as e:
         logger.error(f"Error fetching buckets: {e}")
-        raise HTTPException(status_code=500, detail="Error fetching buckets")
+        raise HTTPException(status_code=500, detail=f"Error fetching buckets {e}")
 
 
 @router.get("/all/public")
