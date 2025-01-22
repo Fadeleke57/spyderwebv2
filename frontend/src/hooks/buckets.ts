@@ -9,7 +9,7 @@ export function useFetchUserBuckets(criteria?: string) {
       const response = await api.get(`/buckets/all/user`, {
         params: {
           page: pageParam.page,
-          page_size: 5,
+          page_size: 10,
           criteria: criteria,
         },
       });
