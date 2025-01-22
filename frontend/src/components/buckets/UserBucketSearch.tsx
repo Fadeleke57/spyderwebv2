@@ -1,13 +1,35 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { SearchInput } from "../ui/input";
 import { useSearchBuckets } from "@/hooks/buckets";
 import { useUser } from "@/context/UserContext";
-import { Loader2, Search } from "lucide-react";
+import { Loader2} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useOnClickOutside } from "@/hooks/general";
 import { formatText } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+const HighlightedText = ({ text, highlight, className = "" } : { text: string, highlight: string, className?: string }) => {
+  if (!highlight.trim()) {
+    return <span className={className}>{text}</span>;
+  }
+
+  const parts = text.split(new RegExp(`(${highlight})`, "gi"));
+
+  return (
+    <span className={className}>
+      {parts.map((part, index) =>
+        part.toLowerCase() === highlight.toLowerCase() ? (
+          <span key={index} className="text-violet-400 font-medium">
+            {part}
+          </span>
+        ) : (
+          part
+        )
+      )}
+    </span>
+  );
+};
 
 function UserBucketSearch() {
   const { user } = useUser();
@@ -67,12 +89,17 @@ function UserBucketSearch() {
                 >
                   <Button
                     variant="ghost"
-                    className="w-full justify-start text-left items-start text-sm flex flex-col h-fit dark:hover:muted"
+                    className="w-full justify-start text-left items-start text-sm flex flex-col h-fit dark:hover:bg-muted"
                   >
-                    {formatText(bucket.name, isMobile ? 40 : 55)}
-                    <span className="text-muted-foreground">
-                      {formatText(bucket.description, isMobile ? 40 : 55)}
-                    </span>
+                    <HighlightedText
+                      text={formatText(bucket.name, isMobile ? 40 : 55)}
+                      highlight={query}
+                    />
+                    <HighlightedText
+                      text={formatText(bucket.description, isMobile ? 40 : 55)}
+                      highlight={query}
+                      className="text-muted-foreground"
+                    />
                   </Button>
                 </Link>
               ))}
