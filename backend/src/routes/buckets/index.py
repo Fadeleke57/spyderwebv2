@@ -600,7 +600,10 @@ def iterate_bucket(
         }
 
         vectors = generate_bucket_embeddings(iteratePayload.name, iteratePayload.description)
-        embedding_data = [(newBucketId, vectors, bucket_to_insert)]
+        pincone_insert = bucket_to_insert
+        pincone_insert["created"] = str(bucket_to_insert["created"])
+        pincone_insert["updated"] = str(bucket_to_insert["updated"])
+        embedding_data = [(newBucketId, vectors, pincone_insert)]
         PCINDEX.upsert(
             vectors=embedding_data,
             namespace="buckets",
@@ -648,6 +651,7 @@ def search_buckets(
         results = run_semantic_search(query, 10, filter)
         logger.info(f"Semantic search results: {results}")
     except Exception as e:
+        logger.info(f"Error running semantic search: {e}")
         logger.error(f"Error running semantic search: {e}")
         raise HTTPException(status_code=500, detail=f"Error running semantic search: {e}")
 
