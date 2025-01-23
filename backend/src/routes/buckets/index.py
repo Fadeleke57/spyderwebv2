@@ -553,61 +553,66 @@ def iterate_bucket(
 
     if not bucketToIterate or not associatedUser:
         raise HTTPException(status_code=404, detail="Bucket or owner not found")
+    
+    try:
 
-    newBucketId = str(uuid.uuid4())
-    newSourceIds = []
-    bucketToIterateSources = bucketToIterate.get("sourceIds", [])
-    for sourceId in bucketToIterateSources:
+        newBucketId = str(uuid.uuid4())
+        newSourceIds = []
+        bucketToIterateSources = bucketToIterate.get("sourceIds", [])
+        for sourceId in bucketToIterateSources:
 
-        sourceToCopy = sources.find_one({"sourceId": sourceId})
-        if not sourceToCopy:
-            continue
+            sourceToCopy = sources.find_one({"sourceId": sourceId})
+            if not sourceToCopy:
+                continue
 
-        newSourceId = str(uuid.uuid4())
+            newSourceId = str(uuid.uuid4())
 
-        sourceToInsert = {
-            "sourceId": newSourceId,
+            sourceToInsert = {
+                "sourceId": newSourceId,
+                "bucketId": newBucketId,
+                "userId": user["id"],
+                "name": sourceToCopy["name"],
+                "content": (
+                    sourceToCopy["content"] if sourceToCopy["type"] != "document" else None
+                ),
+                "url": sourceToCopy["url"],
+                "type": sourceToCopy["type"],
+                "size": sourceToCopy["size"],
+                "created": datetime.now(UTC),
+                "updated": datetime.now(UTC),
+            }
+            sources.insert_one(sourceToInsert)
+            newSourceIds.append(newSourceId)
+
+        bucket_to_insert = {
             "bucketId": newBucketId,
+            "name": iteratePayload.name,
+            "description": iteratePayload.description,
             "userId": user["id"],
-            "name": sourceToCopy["name"],
-            "content": (
-                sourceToCopy["content"] if sourceToCopy["type"] != "document" else None
-            ),
-            "url": sourceToCopy["url"],
-            "type": sourceToCopy["type"],
-            "size": sourceToCopy["size"],
+            "sourceIds": newSourceIds,
             "created": datetime.now(UTC),
             "updated": datetime.now(UTC),
+            "visibility": "Private",
+            "tags": bucketToIterate["tags"],
+            "iteratedFrom": associatedUser["id"],
+            "likes": [],
+            "iterations": [],
         }
-        sources.insert_one(sourceToInsert)
-        newSourceIds.append(newSourceId)
 
-    bucket_to_insert = {
-        "bucketId": newBucketId,
-        "name": iteratePayload.name,
-        "description": iteratePayload.description,
-        "userId": user["id"],
-        "sourceIds": newSourceIds,
-        "created": datetime.now(UTC),
-        "updated": datetime.now(UTC),
-        "visibility": "Private",
-        "tags": bucketToIterate["tags"],
-        "iteratedFrom": associatedUser["id"],
-        "likes": [],
-        "iterations": [],
-    }
+        vectors = generate_bucket_embeddings(iteratePayload.name, iteratePayload.description)
+        embedding_data = [(newBucketId, vectors, bucket_to_insert)]
+        PCINDEX.upsert(
+            vectors=embedding_data,
+            namespace="buckets",
+        )
 
-    vectors = generate_bucket_embeddings(iteratePayload.name, iteratePayload.description)
-    embedding_data = [(newBucketId, vectors, bucket_to_insert)]
-    PCINDEX.upsert(
-        vectors=embedding_data,
-        namespace="buckets",
-    )
+        buckets.insert_one(bucket_to_insert)
+        buckets.find_one_and_update(
+            {"bucketId": bucketToIterate["bucketId"]}, {"$push": {"iterations": user["id"]}}
+        )
 
-    buckets.insert_one(bucket_to_insert)
-    buckets.find_one_and_update(
-        {"bucketId": bucketToIterate["bucketId"]}, {"$push": {"iterations": user["id"]}}
-    )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error iterating bucket: {str(e)}")
 
     return {"result": newBucketId}
 
