@@ -211,7 +211,7 @@ def create_bucket(config: BucketConfig, user=Depends(manager)):
 
         #pinecone pipeline
         vectors = generate_bucket_embeddings(config.name, config.description)
-        pincone_insert = bucket_to_insert
+        pincone_insert = bucket_to_insert.copy()
         pincone_insert["created"] = str(bucket_to_insert["created"])
         pincone_insert["updated"] = str(bucket_to_insert["updated"])
         embedding_data = [(bucketId, vectors, pincone_insert)]
