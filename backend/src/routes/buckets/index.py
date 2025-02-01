@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, UploadFile, File
-from pydantic import BaseModel, HttpUrl
 from src.routes.auth.oauth2 import manager
 from fastapi import APIRouter, Depends, Query
 from typing import Optional, Literal
