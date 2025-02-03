@@ -1,9 +1,6 @@
-//explore
+//search
 import React, { useState, useEffect } from "react";
-import {
-  useFetchPublicBuckets,
-  useSearchBuckets,
-} from "@/hooks/buckets";
+import { useFetchPublicBuckets, useSearchBuckets } from "@/hooks/buckets";
 import { BucketCard } from "@/components/explore/BucketCard";
 import { Bucket } from "@/types/bucket";
 import { useInView } from "react-intersection-observer";
@@ -28,10 +25,17 @@ function Index() {
     hasNextPage,
     isFetchingNextPage,
   } = useFetchPublicBuckets();
-  const [query, setQuery] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
   const { user } = useUser();
   const router = useRouter();
+  const { query: searchQuery, src } = router.query;
+  const [query, setQuery] = useState<string>((searchQuery as string) || "");
+
+  useEffect(() => {
+    if (searchQuery) {
+      setQuery(searchQuery as string);
+    }
+  }, [searchQuery]);
 
   const { data: searchResults, isLoading: isSearchLoading } = useSearchBuckets(
     query,
@@ -59,7 +63,6 @@ function Index() {
   const handleSearch = (searchQuery: string, results: any) => {
     setQuery(searchQuery);
   };
-  
 
   return (
     <div className="flex flex-1 flex-col gap-4 pb-2 lg:pb-10 mx-auto w-full lg:h-[calc(108.9vh-64px)] overflow-y-auto relative">
@@ -93,11 +96,8 @@ function Index() {
         <SearchBar onSearch={handleSearch} initialQuery={query} />
       </div>
       <div className="w-full lg:px-16 flex flex-row gap-6 relative">
-        {isSearchLoading && <LoaderCircle className="animate-spin" />}
         <div className="w-full flex flex-col gap-1">
-          {error && <p>Error loading buckets</p>}
-          {query && <p className="mb-4 font-semibold ml-2 lg:ml-0">Results for &quot;{query}&quot;</p>}
-          {isLoading ? (
+          {isLoading || isSearchLoading ? (
             <LoaderCircle className="animate-spin mx-auto" />
           ) : (
             displayBuckets.map((bucket: Bucket) => (
@@ -121,7 +121,7 @@ function Index() {
             </div>
           )}
         </div>
-       <PopularBucketsCard />
+        <PopularBucketsCard />
       </div>
       {open && (
         <AuthModal

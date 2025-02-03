@@ -432,7 +432,7 @@ async def upload_file_to_source(
                     object_name,
                 )
 
-                url = f"https://{s3_bucket.bucket_name}.s3.{s3_bucket.region_name}.amazonaws.com/{object_name}"
+                url = f"https://{settings.cloudfront_domain}/{object_name}"
                 if not url:
                     raise HTTPException(status_code=500, detail="Error generating URL")
 

@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     pinecone_index_name: str
     openai_api_key: str
     s3_bucket_name: str
+    cloudfront_domain: str
     youtube_api_key: str
 
     class Config:

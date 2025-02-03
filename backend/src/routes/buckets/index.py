@@ -322,7 +322,7 @@ def get_bucket_images(bucket_id: str):
     urls = []
     try:
         for key in imageKeys:
-            url = f"https://{s3_bucket.bucket_name}.s3.{s3_bucket.region_name}.amazonaws.com/{key}"
+            url = f"https://{settings.cloudfront_domain}/{key}"
             urls.append(url)
     except ClientError as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -26,12 +26,26 @@ Input.displayName = "Input";
 const SearchInput = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, ...props }, ref) => {
     const [active, setActive] = React.useState(false);
+    console.log(active)
     return (
       <div
-        className="rounded-md flex items-center border-2 pl-4 transition-all duration-150 ease-in-out"
+        className={cn(
+          "rounded-md flex items-center border-2 pl-4 transition-all duration-150 ease-in-out",
+          active
+            ? "border-foreground shadow-[0_0_10px_rgba(var(--foreground),0.3)] dark:shadow-[0_0_10px_rgba(var(--foreground),0.2)]"
+            : "border-input"
+        )}
         onClick={() => setActive(true)}
       >
-        <Search size={16} className="text-muted-foreground dark:text-foreground" />
+        <Search
+          size={16}
+          className={cn(
+            "transition-colors duration-300",
+            active
+              ? "text-foreground"
+              : "text-muted-foreground dark:text-foreground"
+          )}
+        />
         <input
           type={type}
           className={cn(
@@ -39,6 +53,8 @@ const SearchInput = React.forwardRef<HTMLInputElement, InputProps>(
             className
           )}
           ref={ref}
+          onFocus={() => setActive(true)}
+          onBlur={() => setActive(false)}
           {...props}
         />
       </div>
