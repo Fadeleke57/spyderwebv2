@@ -261,7 +261,7 @@ export function BucketCard({
           </div>
           <div>
             <DropdownMenu modal={false}>
-              <DropdownMenuTrigger className="rounded-full hover:bg-slate-300 dark:hover:bg-muted p-2 border-none focus:outline-none text-muted-foreground dark:text-foreground">
+              <DropdownMenuTrigger className="rounded-full hover:bg-slate-300 dark:hover:bg-gray-700 p-2 border-none focus:outline-none text-muted-foreground dark:text-foreground">
                 <EllipsisIcon onClick={handleStopPropagation} />
               </DropdownMenuTrigger>
               <DropdownMenuContent onClick={handleStopPropagation}>

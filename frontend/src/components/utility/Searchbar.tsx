@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { formatText } from "@/lib/utils";
 import { debounce } from "lodash";
+import Router from "next/router";
 
 const SearchBar = ({
   onSearch,
@@ -19,6 +20,7 @@ const SearchBar = ({
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const searchRef = useRef<HTMLDivElement>(null);
+  const router = Router;
 
   const { data: searchResults, isLoading } = useSearchBuckets(debouncedQuery, {
     visibility: "Public",
@@ -52,7 +54,7 @@ const SearchBar = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSearch = (searchQuery: string) => {
+  const handleSearch = (searchQuery: string, src: 'query' | 'recent-search-click' = 'query') => {
     if (!searchQuery.trim()) return;
 
     const updatedSearches = [
@@ -64,6 +66,31 @@ const SearchBar = ({
     localStorage.setItem("recentSearches", JSON.stringify(updatedSearches));
 
     onSearch(searchQuery, searchResults);
+
+    if (!router.pathname.includes("/search")) {
+      router.push({
+        pathname: "/search",
+        query: {
+          query: searchQuery,
+          src: src,
+        },
+      });
+    } else {
+      // If we're already on the search page, just update the URL and trigger the search
+      router.replace(
+        {
+          pathname: "/search",
+          query: {
+            query: searchQuery,
+            src: src,
+          },
+        },
+        undefined,
+        { shallow: true }
+      );
+      onSearch?.(searchQuery, searchResults);
+    }
+
     setIsSearchActive(false);
   };
 
@@ -81,7 +108,7 @@ const SearchBar = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && query.trim()) {
-      handleSearch(query);
+      handleSearch(query, 'query');
     }
   };
 
@@ -112,7 +139,7 @@ const SearchBar = ({
                     <span
                       onClick={() => {
                         setQuery(search);
-                        handleSearch(search);
+                        handleSearch(search, 'recent-search-click');
                       }}
                       className="flex-1 text-sm"
                     >
