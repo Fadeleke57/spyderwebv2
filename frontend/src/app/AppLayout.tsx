@@ -15,6 +15,7 @@ import { useState } from "react";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useUser } from "@/context/UserContext";
 import { usePathname } from "next/navigation";
+import NotionStyleSearch from "@/components/utility/Assistant";
 const fontSans = FontSans({
   weight: "400",
   subsets: ["latin"],

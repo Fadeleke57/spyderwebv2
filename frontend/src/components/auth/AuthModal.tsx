@@ -26,6 +26,8 @@ import { useToast } from "@/components/ui/use-toast";
 import api from "@/lib/api";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Link from "next/link";
+import spydrLogo from "@/assets/spydr_icon.svg";
+import Image from "next/image";
 
 const emailSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -189,8 +191,10 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <DialogClose />
-        <div>
+        <div className="flex flex-col items-center justify-center">
+          <Image src={spydrLogo} className="w-16 h-16 mb-4" alt="Spydr Logo"/>
           <DialogTitle className="text-center text-xl font-semibold">
+            
             {isExistingUser && step !== "email"
               ? "Welcome back"
               : "A New Age of Ideation"}

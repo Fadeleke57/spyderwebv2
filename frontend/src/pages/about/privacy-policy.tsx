@@ -4,11 +4,11 @@ import React, { ReactElement } from "react";
 const PrivacyPolicy = () => {
   return (
     <>
-      <div className="p-6 lg:px-10 py-0 lg:py-24">
-        <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl mb-2">
+      <div className="p-6 lg:px-10 py-10 lg:py-24 flex flex-col gap-6">
+        <h1 className="scroll-m-20 text-2xl font-extrabold tracking-tight lg:text-5xl mb-2">
           Privacy Policy
         </h1>
-        <p className="text-xl text-muted-foreground mb-8">
+        <p className="text-xl text-muted-foreground -mt-6">
           <strong>Last updated: 8/18/2024</strong>
         </p>
 

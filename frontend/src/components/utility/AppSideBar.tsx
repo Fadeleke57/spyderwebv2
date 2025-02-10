@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { ChartNoAxesGantt, CirclePlus, Home, LayoutGrid } from "lucide-react";
+import { ChartNoAxesGantt, CirclePlus, Home, LayoutGrid, Waypoints } from "lucide-react";
 import { NewBucketModal } from "../buckets/NewBucketModal";
 import { AuthModal } from "../auth/AuthModal";
 
@@ -159,7 +159,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div
               className={`flex flex-row gap-2 items-center rounded-lg bg-none text-sidebar-primary-foreground`}
             >
-              <ChartNoAxesGantt
+              <Waypoints
                 className={`size-5 ${
                   selectedButton === "buckets"
                     ? "text-muted-foreground dark:text-foreground font-semibold"
