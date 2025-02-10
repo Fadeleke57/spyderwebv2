@@ -24,7 +24,7 @@ import {
   mapThemetoHoverNodeColor,
   mapThemeToTextColor,
 } from "@/lib/utils";
-import { D3Selection } from "@/types/graph";
+import SourceTooltip from "./SourceToolTip";
 
 interface GraphProps {
   setConfig: (value: BucketConfigFormValues) => void;
@@ -53,6 +53,11 @@ function BucketGraph({
   const { theme } = useTheme();
 
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
+  const [hoveredSource, setHoveredSource] = useState<Source | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   const {
     data: bucket,
@@ -157,6 +162,16 @@ function BucketGraph({
       d: SourceAsNode,
       isHovering: boolean
     ) => {
+      if (isHovering && !isMobile) {
+        setHoveredSource(d);
+        setTooltipPosition({
+          x: event.pageX,
+          y: event.pageY,
+        });
+      } else {
+        setHoveredSource(null);
+        setTooltipPosition(null);
+      }
       g.selectAll("circle")
         .filter((node: any) => node.sourceId !== d.sourceId)
         .style("opacity", isHovering ? 0.3 : 1)
@@ -214,6 +229,8 @@ function BucketGraph({
           .on("mouseover", (event, d) => handleNodeInteraction(event, d, true))
           .on("mouseout", (event, d) => handleNodeInteraction(event, d, false))
           .on("click", function (event, d) {
+            setHoveredSource(null);
+            setTooltipPosition(null);
             event.stopPropagation();
             zoomToNode(event, d);
 
@@ -310,7 +327,7 @@ function BucketGraph({
     <>
       {bucket && bucket.userId === user?.id && (
         <div ref={trashRef} className="absolute left-3 top-3 cursor-pointer">
-          <TooltipProvider>
+          <TooltipProvider delayDuration={100}>
             <Tooltip>
               <TooltipTrigger className="p-0 m-0 bg-red-600 dark:bg-muted rounded-full p-2">
                 <Trash size={20} className="text-white dark:text-foreground" />
@@ -322,6 +339,14 @@ function BucketGraph({
           </TooltipProvider>
         </div>
       )}
+      { !isMobile &&
+        <div className="absolute right-8 bottom-28 cursor-pointer">
+        <SourceTooltip source={hoveredSource} position={tooltipPosition}>
+          {" "}
+          <div>Here</div>
+        </SourceTooltip>
+      </div>
+      }
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
       {isDrawerOpen && bucketId && selectedSource && (
         <BucketDataDrawer

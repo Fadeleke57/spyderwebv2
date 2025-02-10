@@ -32,6 +32,16 @@ const nextConfig = {
         hostname: "*.cloudfront.net",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "*.google.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.duckduckgo.com",
+        pathname: "/**",
+      }
     ],
   },
 };
