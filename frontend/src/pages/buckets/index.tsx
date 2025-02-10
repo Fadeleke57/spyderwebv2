@@ -44,6 +44,7 @@ import DeleteModal from "@/components/utility/DeleteModal";
 import { useUser } from "@/context/UserContext";
 import { toast } from "@/components/ui/use-toast";
 import UserBucketSearch from "@/components/buckets/UserBucketSearch";
+import SpydrAI from "@/components/utility/Assistant";
 
 function Index() {
   const { user, logout } = useUser();
@@ -79,22 +80,22 @@ function Index() {
     router.push("/explore");
   };
 
-   const handleDeleteBucket = useCallback(async () => {
-     if (!bucketId) return;
+  const handleDeleteBucket = useCallback(async () => {
+    if (!bucketId) return;
 
-     try {
-       await deleteBucket(bucketId);
-       setOpen(false);
-       refetch();
-     } catch (error) {
-       console.error(error);
-       toast({
-         title: "Error deleting bucket",
-         description: "Failed to delete bucket",
-         variant: "destructive",
-       })
-     }
-   }, [bucketId, deleteBucket]);
+    try {
+      await deleteBucket(bucketId);
+      setOpen(false);
+      refetch();
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error deleting bucket",
+        description: "Failed to delete bucket",
+        variant: "destructive",
+      });
+    }
+  }, [bucketId, deleteBucket]);
 
   const tabs = [
     { label: "All", value: "all", filter: () => true },
@@ -360,8 +361,8 @@ function Index() {
                           {isFetching
                             ? "..."
                             : Math.min(
-                              currentPage * 10,
-                              
+                                currentPage * 10,
+
                                 data?.pages[0]?.total || 0
                               )}{" "}
                         </strong>{" "}
@@ -404,6 +405,7 @@ function Index() {
           setOpen={setOpen}
         ></DeleteModal>
       )}
+      <SpydrAI />
     </div>
   );
 }

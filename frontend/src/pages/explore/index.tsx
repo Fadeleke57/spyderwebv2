@@ -17,6 +17,7 @@ import SearchBar from "@/components/utility/Searchbar";
 import { SearchResultCard } from "@/components/explore/SearchResult";
 import { LoaderCircle } from "lucide-react";
 import PopularBucketsCard from "@/components/explore/PopularBucketsCard";
+import SpydrAI from "@/components/utility/Assistant";
 
 function Index() {
   const { ref, inView } = useInView();
@@ -96,7 +97,11 @@ function Index() {
         {isSearchLoading && <LoaderCircle className="animate-spin" />}
         <div className="w-full flex flex-col gap-1">
           {error && <p>Error loading buckets</p>}
-          {query && <p className="mb-4 font-semibold ml-2 lg:ml-0">Results for &quot;{query}&quot;</p>}
+          {query && (
+            <p className="mb-4 font-semibold ml-2 lg:ml-0">
+              Results for &quot;{query}&quot;
+            </p>
+          )}
           {isLoading ? (
             <LoaderCircle className="animate-spin mx-auto" />
           ) : (
@@ -121,7 +126,7 @@ function Index() {
             </div>
           )}
         </div>
-       <PopularBucketsCard />
+        <PopularBucketsCard />
       </div>
       {open && (
         <AuthModal
@@ -131,6 +136,7 @@ function Index() {
           setOpen={setOpen}
         />
       )}
+      <SpydrAI />
     </div>
   );
 }

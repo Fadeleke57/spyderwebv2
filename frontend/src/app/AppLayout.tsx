@@ -199,7 +199,6 @@ export default function AppLayout({
     >
       <AppSidebar />
       <SidebarInset className="overflow-x-hidden">{children}</SidebarInset>
-      <NotionStyleSearch />
     </SidebarProvider>
   );
 }
