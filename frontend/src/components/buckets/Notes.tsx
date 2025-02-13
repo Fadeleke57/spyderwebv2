@@ -264,7 +264,7 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
 
   return (
     <ScrollArea
-      className={`h-[calc(97vh-210px)] pr-4 ${
+      className={`h-[calc(100vh-210px)] pr-4 ${
         isOwner && editing && isDragging ? "border-4 border-dashed" : ""
       }`}
       onDragOver={handleDragOver}

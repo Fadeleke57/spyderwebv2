@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
+from src.db.mongodb import get_collection
+
+
+Users = get_collection("users")
 
 
 class Search(BaseModel):

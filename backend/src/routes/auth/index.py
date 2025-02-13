@@ -11,8 +11,9 @@ from src.routes.auth.oauth2 import (
     get_user,
 )
 from src.core.config import settings
-from src.models.user import User, CreateUser
-from src.db.mongodb import get_collection
+from src.models.user import Users, User, CreateUser
+from src.models.bucket import Buckets
+from src.models.source import Sources
 from datetime import timedelta
 import logging
 from fastapi import APIRouter
@@ -32,7 +33,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 router = APIRouter()
 
 
-@manager.user_loader(db_session=get_collection("users"))
+@manager.user_loader(db_session=Users)
 def load_user(email: str, db_session):
     """
     User loader callback for FastAPI-Login.
@@ -86,8 +87,6 @@ async def auth_callback(code: str):
     user_data, profile_picture_url = await get_google_user(token_data["access_token"])
     email = user_data["email"]
 
-    Users = get_collection("users")
-    Buckets = get_collection("buckets")
     user = Users.find_one({"email": email})
 
     if not user:
@@ -144,8 +143,8 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
     :param data: The username and password to verify
     :return: A JSONResponse with an access token in the response body
     """
-    collection = get_collection("users")
-    user = collection.find_one({"email": data.username})
+
+    user = Users.find_one({"email": data.username})
     if not user or not verify_password(data.password, user["hashed_password"]):
         raise InvalidCredentialsException
     access_token = manager.create_access_token(
@@ -167,7 +166,6 @@ def register(user: CreateUser):
     :param user: The user to register
     :return: A JSONResponse with a success message
     """
-    Users = get_collection("users")
 
     if Users.find_one({"email": user.email}):
         raise HTTPException(
@@ -196,7 +194,6 @@ def register(user: CreateUser):
     }
     Users.insert_one(user_data)
 
-    Buckets = get_collection("buckets")
     bucketId = str(uuid.uuid4())
     Buckets.insert_one(
         {
@@ -214,7 +211,7 @@ def register(user: CreateUser):
     )
 
     sourceId = str(uuid.uuid4())
-    Sources = get_collection("sources")
+
     Sources.insert_one(
         {
             "sourceId": sourceId,

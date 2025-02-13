@@ -1,6 +1,7 @@
 import nltk
 import os
 from src.lib.pinecone.index import PC, PCINDEX
+
 # from src.db.neo4j import driver as Neo4jDriver, run_query
 current_dir = os.path.dirname(__file__)
 nltk_data_path = os.path.join(current_dir, "..", "nltk_data")

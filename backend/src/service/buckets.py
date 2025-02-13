@@ -22,6 +22,7 @@ from src.core.config import settings
 import boto3
 from src.lib.pinecone.index import PCINDEX, PC, generate_bucket_embeddings
 
+
 class BucketService:
     def __init__(self):
         pass
@@ -49,5 +50,3 @@ class BucketService:
 
     def get_public_buckets():
         pass
-
-    

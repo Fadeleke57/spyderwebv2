@@ -22,7 +22,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import BucketDataDrawer from "./BucketDataDrawer";
+import BucketDataDrawer from "./BucketDataModal";
 
 import { PlusCircle } from "lucide-react";
 
@@ -272,7 +272,7 @@ function BucketPlayground({
               </Button>
             </PopoverTrigger>
 
-            <PopoverContent>
+            <PopoverContent widthAnchor>
               <Command>
                 <CommandInput placeholder="Search sources..." />
                 <CommandList>

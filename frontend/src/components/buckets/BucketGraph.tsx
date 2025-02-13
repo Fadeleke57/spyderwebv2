@@ -3,7 +3,7 @@ import * as d3 from "d3";
 import { BucketConfigFormValues } from "@/types/article";
 import { useState, Dispatch, SetStateAction } from "react";
 import { LoadingPage } from "@/components/utility/Loading";
-import BucketDataDrawer from "./BucketDataDrawer";
+import BucketDataDrawer from "./BucketDataModal";
 import { useDeleteSource, useFetchSourcesForBucket } from "@/hooks/sources";
 import { Source, SourceAsNode } from "@/types/source";
 import { Trash } from "lucide-react";
@@ -91,7 +91,8 @@ function BucketGraph({
 
     const zoomToNode = (event: MouseEvent | null, d: SourceAsNode) => {
       if (event) event.stopPropagation();
-
+      {
+        /*}
       const scale = 3;
       const [x, y] = [
         isMobile ? d.x + centerX + 10 : d.x + centerX - 20,
@@ -107,7 +108,8 @@ function BucketGraph({
         .transition()
         .duration(750)
         .call(zoom.transform as any, transform);
-
+*/
+      }
       setSelectedSource(d);
       setSelectedSourceId(d.sourceId);
       setDrawerOpen(true);
@@ -174,19 +176,24 @@ function BucketGraph({
       }
       g.selectAll("circle")
         .filter((node: any) => node.sourceId !== d.sourceId)
+        .style("transition", "fill 0.7s ease")
+        .style("transition", "opacity 0.7s ease")
         .style("opacity", isHovering ? 0.3 : 1)
         .style("fill", mapThemeToBaseNodeColor(theme));
 
       g.selectAll("circle")
         .filter((node: any) => node.sourceId === d.sourceId)
+        .style("transition", "fill 0.7s ease")
         .style(
           "fill",
           isHovering
             ? mapThemetoHoverNodeColor(theme)
             : mapThemeToBaseNodeColor(theme)
         );
+
       g.selectAll("text")
         .filter((node: any) => node.sourceId !== d.sourceId)
+        .style("transition", "opacity 0.7s ease")
         .style("opacity", isHovering ? 0.3 : 1)
         .style("transform", "translateY(0)");
 
@@ -198,6 +205,7 @@ function BucketGraph({
 
       g.selectAll("foreignObject")
         .filter((node: any) => node.sourceId !== d.sourceId)
+        .style("transition", "opacity 0.7s ease")
         .style("opacity", isHovering ? 0.3 : 1)
         .style("transform", "translateY(0)");
 
@@ -339,14 +347,13 @@ function BucketGraph({
           </TooltipProvider>
         </div>
       )}
-      { !isMobile &&
+      {!isMobile && (
         <div className="absolute right-8 bottom-28 cursor-pointer">
-        <SourceTooltip source={hoveredSource} position={tooltipPosition}>
-          {" "}
-          <div>Here</div>
-        </SourceTooltip>
-      </div>
-      }
+          <SourceTooltip source={hoveredSource} position={tooltipPosition}>
+            <div>Here</div>
+          </SourceTooltip>
+        </div>
+      )}
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
       {isDrawerOpen && bucketId && selectedSource && (
         <BucketDataDrawer

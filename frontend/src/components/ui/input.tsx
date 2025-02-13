@@ -26,7 +26,6 @@ Input.displayName = "Input";
 const SearchInput = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, ...props }, ref) => {
     const [active, setActive] = React.useState(false);
-    console.log(active)
     return (
       <div
         className={cn(

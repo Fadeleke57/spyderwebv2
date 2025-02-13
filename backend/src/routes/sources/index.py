@@ -402,6 +402,7 @@ def edit_source(sourceId: str, info: UpdateSource, user=Depends(manager)):
 
     return {"result", "Source updated"}
 
+
 @router.post("/upload/image/{source_id}")
 async def upload_file_to_source(
     source_id: str,
