@@ -28,11 +28,13 @@ export function ImageModal({ isOpen, onClose, imageUrl }: ImageModalProps) {
         secondary
       >
         <DialogTitle hidden></DialogTitle>
-        <img
+        <Image
           src={imageUrl}
           alt="Image Popup"
+          width={1000}
+          height={1000}
           style={{ objectFit: "contain", width: "100%", height: "100%", borderRadius: "10px", background: "black" }}
-          className="rounded-lg"
+          className="rounded-lg w-full h-full object-contain"
         />
       </DialogContent>
     </Dialog>
