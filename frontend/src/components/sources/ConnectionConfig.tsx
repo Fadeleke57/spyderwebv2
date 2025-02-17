@@ -163,6 +163,7 @@ function ConnectionsConfig({
                       connection={connection}
                       type="out"
                       onDelete={() => refetchOutgoingConnections()}
+                      isOwner={isOwner}
                     />
                   )
                 )}
@@ -196,6 +197,7 @@ function ConnectionsConfig({
                 connection={connection}
                 type="in"
                 onDelete={() => refetchIncomingConnections()}
+                isOwner={isOwner}
               />
             ))
           ) : null}

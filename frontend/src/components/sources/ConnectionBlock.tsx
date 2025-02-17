@@ -2,22 +2,19 @@ import { useFetchSource } from "@/hooks/sources";
 import { Connection } from "@/types/connection";
 import React from "react";
 import { Skeleton } from "../ui/skeleton";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Loader2,
-  Trash,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Trash } from "lucide-react";
 import { useDeleteConnection } from "@/hooks/connections";
 
 function ConnectionBlock({
   connection,
   type,
   onDelete,
+  isOwner,
 }: {
   connection: Connection;
   type: string;
   onDelete?: () => void;
+  isOwner: boolean;
 }) {
   const { data: fromSource, isLoading: fromLoading } = useFetchSource(
     connection.fromSourceId,
@@ -40,11 +37,11 @@ function ConnectionBlock({
 
   return (
     <div className="border relative grid grid-cols-6 gap-4 rounded-lg p-2">
-      <Trash
+      {isOwner && <Trash
         size={16}
         onClick={() => handleDeleteConnection(connection.connectionId)}
         className="absolute top-2 right-2 cursor-pointer text-muted-foreground"
-      />
+      />}
       <div className="col-span-3 h-full flex flex-col items-center justify-center gap-2 relative z-10">
         <div className="w-full ">
           <h4 className="font-medium">Description:</h4>
