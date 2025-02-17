@@ -1,4 +1,4 @@
-export type Source = {
+export interface Source {
   sourceId: string;
   bucketId: string;
   userId?: string;
@@ -11,17 +11,7 @@ export type Source = {
   content?: string;
 };
 
-export type SourceAsNode = {
-  sourceId: string;
-  bucketId: string;
-  userId: string;
-  name: string;
-  url: string;
-  type: string;
-  size?: number;
-  content?: string;
-  created: Date;
-  updated: Date;
+export interface SourceAsNode extends Source {
   x: number;
   y: number;
-};
+}

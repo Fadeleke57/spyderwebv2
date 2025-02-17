@@ -8,6 +8,7 @@ from src.routes.buckets.index import router as buckets_router
 from src.routes.generation.index import router as generation_router
 from src.routes.notes.index import router as notes_router
 from src.routes.sources.index import router as sources_router
+from src.routes.connections.index import router as connections_router
 import logging
 
 logging.basicConfig(level=logging.ERROR)
@@ -41,6 +42,7 @@ app.include_router(buckets_router, prefix="/buckets")
 app.include_router(generation_router, prefix="/generation")
 app.include_router(notes_router, prefix="/notes")
 app.include_router(sources_router, prefix="/sources")
+app.include_router(connections_router, prefix="/connections")
 
 
 @app.get("/")

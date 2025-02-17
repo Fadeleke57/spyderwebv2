@@ -26,19 +26,22 @@ const SourceTooltip = ({ children, source, position }: SourceTooltipProps) => {
     });
   };
 
+  if (!position) return null;
+
   return (
     <div
       style={{
         position: "fixed",
-        left: position?.x ? `${position.x + 20}px` : "0",
-        top: position?.y ? `${position.y - 20}px` : "0",
+        left: `${position.x + 20}px`,
+        top: `${position.y - 20}px`,
         zIndex: 50,
         pointerEvents: position ? "auto" : "none",
       }}
+      className={`${!source || !position ? "opacity-0" : "opacity-100"}`}
     >
       <Card
         className={`
-          max-w-[200px]
+          max-w-[300px]
           transition-all
           duration-300
           ease-in-out
@@ -55,7 +58,7 @@ const SourceTooltip = ({ children, source, position }: SourceTooltipProps) => {
             <span className="capitalize">{source?.type}</span>
           </div>
 
-          <div className="text-sm font-semibold truncate">{source?.name}</div>
+          <div className="text-sm font-semibold">{source?.name}</div>
 
           <div className="flex flex-col gap-1 text-xs text-gray-500 dark:text-gray-400">
             {source?.created && (

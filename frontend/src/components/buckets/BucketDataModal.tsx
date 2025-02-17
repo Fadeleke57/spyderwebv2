@@ -1,26 +1,24 @@
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetOverlay,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { useEditSourceTitle, useFetchSource } from "@/hooks/sources";
 import { useUpdateNote } from "@/hooks/sources";
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { Check, Edit, X } from "lucide-react";
+import { ArrowLeft, Check, Edit, SquareArrowOutUpRight, X } from "lucide-react";
 import { formatDate } from "date-fns";
 import { Textarea } from "../ui/textarea";
-import { debounce} from "lodash";
+import { debounce } from "lodash";
 import { useUser } from "@/context/UserContext";
 import { toast } from "../ui/use-toast";
 import { extractVideoId } from "@/lib/utils";
 import { SourceAsNode } from "@/types/source";
 import NoteComponent from "./Notes";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "../ui/dialog";
+import { DialogClose } from "@radix-ui/react-dialog";
+import ConnectionsConfig from "../sources/ConnectionConfig";
 
 interface BucketDataDrawerProps {
   open: boolean;
@@ -29,24 +27,16 @@ interface BucketDataDrawerProps {
   bucketId: string;
 }
 
-export default function BucketDataDrawer({
+export default function BucketDataModal({
   open,
   setOpen,
   sourceId,
   bucketId,
 }: BucketDataDrawerProps) {
   const { user } = useUser();
-  const {
-    data: sourceData,
-    isLoading: isSourceLoading,
-    error: sourceError,
-    refetch: refetchSource,
-  } = useFetchSource(sourceId);
-  const {
-    mutateAsync: editSourceTitle,
-    isPending: isTitleLoading,
-    error: titleError,
-  } = useEditSourceTitle(sourceId);
+  const { data: sourceData, refetch: refetchSource } = useFetchSource(sourceId);
+  const { mutateAsync: editSourceTitle } = useEditSourceTitle(sourceId);
+
   const [source, setSource] = useState<SourceAsNode | null>(null);
   const [presignedUrl, setPresignedUrl] = useState("");
   const [title, setTitle] = useState(source?.name);
@@ -129,7 +119,7 @@ export default function BucketDataDrawer({
             <iframe
               src={source?.url || ""}
               width="100%"
-              height="450px"
+              height="510px"
               className="rounded-lg mt-4"
             />
           </>
@@ -147,7 +137,7 @@ export default function BucketDataDrawer({
               data={presignedUrl}
               type="application/pdf"
               width="100%"
-              className="rounded-lg border h-[calc(97vh-210px)] mt-4"
+              className="rounded-lg border h-[calc(100vh-200px)] mt-4"
             >
               <p>Your browser does not support PDFs.</p>
             </object>
@@ -164,7 +154,7 @@ export default function BucketDataDrawer({
             </small>
             <iframe
               width="100%"
-              height="450px"
+              height="510px"
               src={`https://www.youtube.com/embed/${
                 extractVideoId(source?.url) || ""
               }`}
@@ -205,11 +195,13 @@ export default function BucketDataDrawer({
 
   return (
     <div className="grid grid-cols-2 gap-2">
-      <Sheet open={open} onOpenChange={handleClose}>
-        <SheetClose onClick={handleClose} className="absolute right-4 top-10" />
-        <SheetContent side={"left"} className="w-full lg:max-w-2xl">
-          <SheetHeader className="border-b pb-4">
-            <SheetTitle className="text-left w-11/12 font-bold flex items-center justify-between">
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogClose onClick={handleClose} className="absolute right-4 top-10">
+          <ArrowLeft></ArrowLeft>
+        </DialogClose>
+        <DialogContent className="max-w-full h-full">
+          <div className="flex flex-col gap-4">
+            <DialogTitle className="text-left w-11/12 font-bold flex items-center justify-between">
               {presignedUrl || source?.url ? (
                 isEditing ? (
                   <Textarea
@@ -223,7 +215,10 @@ export default function BucketDataDrawer({
                     target="_blank"
                     className="hover:underline hover:text-blue-500 inline"
                   >
-                    <span>{source?.name || ""}</span>
+                    <span className="flex flex-row items-center gap-2">
+                      {source?.name || ""}
+                      <SquareArrowOutUpRight size={16}></SquareArrowOutUpRight>
+                    </span>
                   </Link>
                 )
               ) : isEditing ? (
@@ -235,12 +230,13 @@ export default function BucketDataDrawer({
               ) : (
                 <span>{title || source?.name || ""}</span>
               )}
-            </SheetTitle>
-            <SheetDescription className="text-left pr-4 font-semibold text-blue-500 flex flex-col gap-2 justify-start">
+            </DialogTitle>
+            <DialogDescription className="text-left pr-4 font-semibold text-blue-500 flex flex-col gap-2 justify-start border-b border-b-muted">
               {isOwner && (
                 <div className="basis-1/3 flex flex-row space-x-2 w-fit">
                   {!isEditing && (
                     <Edit
+                      size={20}
                       className="cursor-pointer text-foreground hover:text-blue-500"
                       onClick={() => setIsEditing(!isEditing)}
                     ></Edit>
@@ -260,12 +256,19 @@ export default function BucketDataDrawer({
                 </div>
               )}
               {source?.type}
-            </SheetDescription>
-          </SheetHeader>
-          <div className="py-6">{mapSourceTypeToComponent(source?.type)}</div>
-          <SheetFooter></SheetFooter>
-        </SheetContent>
-      </Sheet>
+            </DialogDescription>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-4">
+            <div>{mapSourceTypeToComponent(source?.type)}</div>
+            <ConnectionsConfig
+              bucketId={bucketId}
+              sourceId={sourceId}
+              isOwner={isOwner}
+            ></ConnectionsConfig>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

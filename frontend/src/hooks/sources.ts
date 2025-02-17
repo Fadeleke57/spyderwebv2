@@ -59,7 +59,7 @@ export const useUploadYoutube = (webId: string) => {
 
 export const useRenderFile = (filePath: string) => {
   return useQuery({
-    queryKey: ["render", "file"],
+    queryKey: ["render", "file", filePath],
     queryFn: async () => {
       const response = await api.get(
         `/sources/presigned/url/${encodeURIComponent(filePath)}`
@@ -119,9 +119,11 @@ export const useDeleteSource = () => {
   });
 };
 
-export const useFetchSource = (sourceId: string) => {
+export const useFetchSource = (sourceId: string, contextId?: string) => {
   return useQuery({
-    queryKey: ["source"],
+    queryKey: contextId
+      ? ["source", sourceId, contextId]
+      : ["source", sourceId],
     queryFn: async () => {
       const response = await api.get(`/sources/${sourceId}`);
       const data = await response.data;

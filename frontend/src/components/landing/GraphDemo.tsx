@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
 import { useState } from "react";
 import { LoadingPage } from "@/components/utility/Loading";
-import BucketDataDrawer from "@/components/buckets/BucketDataDrawer";
+import BucketDataModal from "@/components/buckets/BucketDataModal";
 import { useDeleteSource, useFetchSourcesForBucket } from "@/hooks/sources";
 import { Source, SourceAsNode } from "@/types/source";
 import { useFetchBucketById } from "@/hooks/buckets";
@@ -223,7 +223,7 @@ function GraphDemo() {
     <>
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
       {isDrawerOpen && bucketId && selectedSource && (
-        <BucketDataDrawer
+        <BucketDataModal
           sourceId={selectedSource?.sourceId}
           open={isDrawerOpen}
           setOpen={setDrawerOpen}

@@ -7,13 +7,13 @@ from werkzeug.utils import secure_filename
 import uuid
 from src.lib.s3.index import S3Bucket
 from pytz import UTC
-from src.db.mongodb import get_collection, get_items_by_field
 from src.utils.exceptions import check_user
 from src.utils.search import run_semantic_search
-from src.models.user import User
-from src.models.analytics import Search
+from src.models.user import User, Users
+from src.models.analytics import Search, Searches
+from src.models.source import Sources
 from datetime import datetime
-from src.models.bucket import BucketConfig, UpdateBucket, IterateBucket
+from src.models.bucket import Buckets, BucketConfig, UpdateBucket, IterateBucket
 from fastapi.exceptions import HTTPException
 from botocore.exceptions import ClientError
 from src.lib.logger.index import logger
@@ -62,15 +62,16 @@ def get_user_buckets(
         else:
             visibility = None
 
-        buckets = get_collection("buckets")
         if visibility:
-            buckets = buckets.find(
-                {"visibility": visibility, "userId": user["id"]}, {"_id": 0}
+            buckets = list(
+                Buckets.find(
+                    {"visibility": visibility, "userId": user["id"]}, {"_id": 0}
+                )
             )
         else:
-            buckets = buckets.find({"userId": user["id"]}, {"_id": 0})
-        buckets = [bucket for bucket in buckets]
-        buckets = sorted(buckets, key=lambda x: x["updated"], reverse=True)
+            buckets = list(
+                Buckets.find({"userId": user["id"]}, {"_id": 0}, sort=[("updated", -1)])
+            )
 
         # pagination
         total_buckets = len(buckets)
@@ -112,14 +113,13 @@ async def get_public_buckets(limit: int = 20, cursor: str = None):
     dict
         Dictionary containing buckets and next cursor
     """
-    buckets = get_collection("buckets")
     query = {"visibility": "Public"}
 
     if cursor:
         query["updated"] = {"$lt": datetime.fromisoformat(cursor)}
 
     buckets_list = list(
-        buckets.find(query, {"_id": 0}).sort("updated", -1).limit(limit + 1)
+        Buckets.find(query, {"_id": 0}).sort("updated", -1).limit(limit + 1)
     )
 
     has_next_page = len(buckets_list) > limit
@@ -153,8 +153,7 @@ def get_popular_buckets(limit: int = 10):
         {"$limit": limit},
         {"$project": {"_id": 0, "likesCount": 0}},
     ]
-    buckets = get_collection("buckets")
-    top_buckets = list(buckets.aggregate(pipeline))
+    top_buckets = list(Buckets.aggregate(pipeline))
     return {"result": top_buckets}
 
 
@@ -170,10 +169,10 @@ def get_user_liked_buckets(user: User = Depends(manager)):
         dict: A JSON response containing a list of liked buckets sorted by creation date in descending order.
     """
     check_user(user)
-    buckets = get_items_by_field("buckets", "likes", user["id"])
-    buckets = [bucket for bucket in buckets]
-    buckets = sorted(buckets, key=lambda x: x["created"], reverse=True)
-    return {"result": buckets}
+    likedBuckets = Buckets.find(
+        {"likes": user["id"]}, {"_id": 0}, sort=[("created", -1)]
+    )
+    return {"result": likedBuckets}
 
 
 @router.post("/create")
@@ -190,25 +189,23 @@ def create_bucket(config: BucketConfig, user=Depends(manager)):
     """
     check_user(user)
     try:
-
-        bucket = get_collection("buckets") 
         bucketId = str(uuid.uuid4())
         bucket_to_insert = {
-                "bucketId": bucketId,
-                "name": config.name,
-                "description": config.description,
-                "userId": user["id"],
-                "sourceIds": config.sourceIds or [],
-                "created": datetime.now(UTC),
-                "updated": datetime.now(UTC),
-                "visibility": config.visibility,
-                "tags": config.tags or [],
-                "likes": [],
-                "iterations": [],
-                "imageKeys": [],
+            "bucketId": bucketId,
+            "name": config.name,
+            "description": config.description,
+            "userId": user["id"],
+            "sourceIds": config.sourceIds or [],
+            "created": datetime.now(UTC),
+            "updated": datetime.now(UTC),
+            "visibility": config.visibility,
+            "tags": config.tags or [],
+            "likes": [],
+            "iterations": [],
+            "imageKeys": [],
         }
 
-        #pinecone pipeline
+        # pinecone pipeline
         vectors = generate_bucket_embeddings(config.name, config.description)
         pincone_insert = bucket_to_insert.copy()
         pincone_insert["created"] = str(bucket_to_insert["created"])
@@ -219,10 +216,10 @@ def create_bucket(config: BucketConfig, user=Depends(manager)):
             namespace="buckets",
         )
 
-        #mongo insert
-        bucket.insert_one(bucket_to_insert)
+        # mongo insert
+        Buckets.insert_one(bucket_to_insert)
         return {"result": bucketId}
-    
+
     except Exception as e:
         logger.error(f"Error creating bucket: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -262,8 +259,7 @@ async def upload_file(
                 url = f"https://{s3_bucket.bucket_name}.s3.{s3_bucket.region_name}.amazonaws.com/{object_name}"
                 uploaded_image_urls.append(url)
 
-                buckets = get_collection("buckets")
-                result = buckets.update_one(
+                result = Buckets.update_one(
                     {"bucketId": bucket_id, "userId": user["id"]},
                     {
                         "$push": {"imageKeys": object_name},
@@ -295,11 +291,9 @@ async def upload_file(
 def delete_image(bucket_id: str, image_name: str, user=Depends(manager)):
     check_user(user)
 
-    buckets = get_collection("buckets")
-
     filepath = f"files/{user['id']}/{bucket_id}/images/{image_name}"
 
-    result = buckets.update_one(
+    result = Buckets.update_one(
         {"bucketId": bucket_id, "userId": user["id"], "imageKeys": filepath},
         {"$pull": {"imageKeys": filepath}, "$set": {"updated": datetime.now(UTC)}},
     )
@@ -313,7 +307,20 @@ def delete_image(bucket_id: str, image_name: str, user=Depends(manager)):
 
 @router.get("/images/bucket/{bucket_id}")
 def get_bucket_images(bucket_id: str):
-    Buckets = get_collection("buckets")
+    """
+    Retrieve all image URLs associated with a given bucket.
+
+    Args:
+        bucket_id (str): The ID of the bucket to retrieve images for.
+
+    Returns:
+        dict: A JSON response containing a list of image URLs.
+
+    Raises:
+        HTTPException: If the bucket is not found, raises a 404 error.
+        HTTPException: If there is an error while generating URLs, raises a 500 error.
+    """
+
     bucket = Buckets.find_one({"bucketId": bucket_id})
     if not bucket:
         raise HTTPException(status_code=404, detail=f"Bucket not found!")
@@ -347,17 +354,15 @@ def delete_bucket(bucketId: str, user=Depends(manager)):
 
     """
     check_user(user)
-    buckets = get_collection("buckets")
-    buckets.delete_one({"bucketId": bucketId, "userId": user["id"]})
+    Buckets.delete_one({"bucketId": bucketId, "userId": user["id"]})
 
     PCINDEX.delete(ids=[bucketId], namespace="buckets")
 
-    sources = get_collection("sources")
-    sourcesForBucket = sources.find({"bucketId": bucketId})
+    sourcesForBucket = Sources.find({"bucketId": bucketId})
     for source in sourcesForBucket:
         if source["type"] == "document":
             s3.delete_object(Bucket=s3_bucket.bucket_name, Key=source["url"])
-        sources.delete_one({"sourceId": source["sourceId"]})
+        Sources.delete_one({"sourceId": source["sourceId"]})
 
     return {"result": "Bucket deleted"}
 
@@ -376,8 +381,7 @@ def update_bucket(bucketId: str, config: UpdateBucket, user=Depends(manager)):
         dict: A JSON response with a result key.
     """
     check_user(user)
-    buckets = get_collection("buckets")
-    bucket = buckets.find_one({"bucketId": bucketId, "userId": user["id"]})
+    bucket = Buckets.find_one({"bucketId": bucketId, "userId": user["id"]})
     if not bucket:
         raise HTTPException(status_code=404, detail="Bucket not found")
 
@@ -391,7 +395,9 @@ def update_bucket(bucketId: str, config: UpdateBucket, user=Depends(manager)):
         vector_updates["description"] = update_fields["description"]
 
     if vector_updates:
-        vectors = generate_bucket_embeddings(vector_updates["name"], vector_updates["description"])
+        vectors = generate_bucket_embeddings(
+            vector_updates["name"], vector_updates["description"]
+        )
         PCINDEX.update(
             id=bucketId,
             values=vectors,
@@ -399,13 +405,14 @@ def update_bucket(bucketId: str, config: UpdateBucket, user=Depends(manager)):
             namespace="buckets",
         )
 
-    result = buckets.update_one(
-        {"bucketId": bucketId, "userId": user["id"]},
-        {"$set": update_fields}
+    result = Buckets.update_one(
+        {"bucketId": bucketId, "userId": user["id"]}, {"$set": update_fields}
     )
 
     if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Bucket not found or no changes applied")
+        raise HTTPException(
+            status_code=404, detail="Bucket not found or no changes applied"
+        )
 
     return {"result": "Bucket updated"}
 
@@ -427,8 +434,8 @@ def get_bucket_by_id(bucketId: str, user=Depends(manager.optional)):
     """
     if user:
         check_user(user)
-    buckets = get_collection("buckets")
-    bucket = buckets.find_one({"bucketId": bucketId}, {"_id": 0})
+
+    bucket = Buckets.find_one({"bucketId": bucketId}, {"_id": 0})
 
     if not bucket:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -454,8 +461,8 @@ def like_bucket(bucket_id: str, user=Depends(manager)):
         dict: A JSON response with the updated number of likes for the bucket.
     """
     check_user(user)
-    buckets = get_collection("buckets")
-    result = buckets.find_one_and_update(
+
+    result = Buckets.find_one_and_update(
         {"bucketId": bucket_id, "likes": {"$ne": user["id"]}},
         {"$addToSet": {"likes": user["id"]}},
         return_document=ReturnDocument.AFTER,
@@ -481,8 +488,8 @@ def unlike_bucket(bucket_id: str, user=Depends(manager)):
         dict: A JSON response with the updated number of likes for the bucket.
     """
     check_user(user)
-    buckets = get_collection("buckets")
-    result = buckets.find_one_and_update(
+
+    result = Buckets.find_one_and_update(
         {"bucketId": bucket_id, "likes": user["id"]},
         {"$pull": {"likes": user["id"]}},
         return_document=ReturnDocument.AFTER,
@@ -495,17 +502,16 @@ def unlike_bucket(bucket_id: str, user=Depends(manager)):
 @router.get("/saved/user")
 def get_user_saved_buckets(user=Depends(manager)):
     check_user(user)
-    buckets = get_collection("buckets")
-    result = buckets.find_one({"bucketId": {"$in": user["bucketsSaved"]}}, {"_id": 0})
+    result = Buckets.find_one({"bucketId": {"$in": user["bucketsSaved"]}}, {"_id": 0})
     return {"result": result}
 
 
 @router.patch("/add/tag/{bucket_id}/{tag}")
 def add_tag(bucket_id: str, tag: str, user=Depends(manager)):
     check_user(user)
-    buckets = get_collection("buckets")
+
     formatted_tag = tag.lower()
-    buckets.update_one(
+    Buckets.update_one(
         {"bucketId": bucket_id, "userId": user["id"]},
         {"$addToSet": {"tags": formatted_tag}},
     )
@@ -515,9 +521,9 @@ def add_tag(bucket_id: str, tag: str, user=Depends(manager)):
 @router.patch("/remove/tag/{bucket_id}/{tag}")
 def remove_tag(bucket_id: str, tag: str, user=Depends(manager)):
     check_user(user)
-    buckets = get_collection("buckets")
+
     formatted_tag = tag.lower()
-    buckets.update_one(
+    Buckets.update_one(
         {"bucketId": bucket_id, "userId": user["id"]},
         {"$pull": {"tags": formatted_tag}},
     )
@@ -543,16 +549,13 @@ def iterate_bucket(
         HTTPException: If the bucket is not found, raises a 404 error.
     """
     check_user(user)
-    buckets = get_collection("buckets")
-    sources = get_collection("sources")
-    users = get_collection("users")
 
-    bucketToIterate = buckets.find_one({"bucketId": bucket_id})
-    associatedUser = users.find_one({"id": bucketToIterate["userId"]}, {"_id": 0})
+    bucketToIterate = Buckets.find_one({"bucketId": bucket_id})
+    associatedUser = Users.find_one({"id": bucketToIterate["userId"]}, {"_id": 0})
 
     if not bucketToIterate or not associatedUser:
         raise HTTPException(status_code=404, detail="Bucket or owner not found")
-    
+
     try:
 
         newBucketId = str(uuid.uuid4())
@@ -560,7 +563,7 @@ def iterate_bucket(
         bucketToIterateSources = bucketToIterate.get("sourceIds", [])
         for sourceId in bucketToIterateSources:
 
-            sourceToCopy = sources.find_one({"sourceId": sourceId})
+            sourceToCopy = Sources.find_one({"sourceId": sourceId})
             if not sourceToCopy:
                 continue
 
@@ -572,7 +575,9 @@ def iterate_bucket(
                 "userId": user["id"],
                 "name": sourceToCopy["name"],
                 "content": (
-                    sourceToCopy["content"] if sourceToCopy["type"] != "document" else None
+                    sourceToCopy["content"]
+                    if sourceToCopy["type"] != "document"
+                    else None
                 ),
                 "url": sourceToCopy["url"],
                 "type": sourceToCopy["type"],
@@ -580,7 +585,7 @@ def iterate_bucket(
                 "created": datetime.now(UTC),
                 "updated": datetime.now(UTC),
             }
-            sources.insert_one(sourceToInsert)
+            Sources.insert_one(sourceToInsert)
             newSourceIds.append(newSourceId)
 
         bucket_to_insert = {
@@ -600,6 +605,7 @@ def iterate_bucket(
 
         vectors = generate_bucket_embeddings(iteratePayload.name, iteratePayload.description)
         pincone_insert = bucket_to_insert.copy()
+
         pincone_insert["created"] = str(bucket_to_insert["created"])
         pincone_insert["updated"] = str(bucket_to_insert["updated"])
         embedding_data = [(newBucketId, vectors, pincone_insert)]
@@ -608,9 +614,10 @@ def iterate_bucket(
             namespace="buckets",
         )
 
-        buckets.insert_one(bucket_to_insert)
-        buckets.find_one_and_update(
-            {"bucketId": bucketToIterate["bucketId"]}, {"$push": {"iterations": user["id"]}}
+        Buckets.insert_one(bucket_to_insert)
+        Buckets.find_one_and_update(
+            {"bucketId": bucketToIterate["bucketId"]},
+            {"$push": {"iterations": user["id"]}},
         )
 
     except Exception as e:
@@ -618,33 +625,35 @@ def iterate_bucket(
 
     return {"result": newBucketId}
 
+
 @router.get("/search")
 def search_buckets(
     query: str,
-    visibility: Optional[Literal["Public", "Private"]] = Query(None, alias="visibility"),
+    visibility: Optional[Literal["Public", "Private"]] = Query(
+        None, alias="visibility"
+    ),
     userId: Optional[str] = None,
     bucketId: Optional[str] = None,
-    user = Depends(manager.optional),
+    user=Depends(manager.optional),
 ):
     if user:
         check_user(user)
-        
+
     filter = {}
     if visibility:
-        filter["visibility"] = {"$eq": visibility}      
+        filter["visibility"] = {"$eq": visibility}
     if userId:
-        filter["userId"] = {"$eq": userId}    
+        filter["userId"] = {"$eq": userId}
     if bucketId:
         filter["bucketId"] = {"$eq": bucketId}
 
-    searches = get_collection("searches")
     search_info: Search = {
         "query": query,
         "timestamp": datetime.now(UTC),
         "userId": user["id"] if user else None,
-        "filters": filter
+        "filters": filter,
     }
-    searches.insert_one(search_info)
+    Searches.insert_one(search_info)
 
     try:
         results = run_semantic_search(query, 10, filter)
@@ -652,7 +661,8 @@ def search_buckets(
     except Exception as e:
         logger.info(f"Error running semantic search: {e}")
         logger.error(f"Error running semantic search: {e}")
-        raise HTTPException(status_code=500, detail=f"Error running semantic search: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Error running semantic search: {e}"
+        )
 
     return {"result": results}
-    

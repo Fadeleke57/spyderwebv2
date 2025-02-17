@@ -1,6 +1,9 @@
 from pydantic import BaseModel
 from typing import List, Optional, Literal
 from datetime import datetime
+from src.db.mongodb import get_collection
+
+Buckets = get_collection("buckets")
 
 
 class Bucket(BaseModel):
