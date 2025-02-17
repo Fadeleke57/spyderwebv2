@@ -8,11 +8,10 @@ import BucketForm from "@/components/buckets/BucketForm";
 import MobileBucketForm from "@/components/buckets/MobileBucketForm";
 import PublicBucketView from "@/components/buckets/PublicBucketView";
 import { useFetchUserById } from "@/hooks/user";
-import { formatDistanceToNow, isMonday } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import ShareDialog from "@/components/utility/ShareButton";
 import UserAvatar from "@/components/utility/UserAvatar";
 import {
-  SkeletonCard,
   SkeletonTextCard,
   SkeletonUserCard,
 } from "@/components/utility/SkeletonCard";
@@ -188,7 +187,7 @@ function Index() {
             </ScrollArea>
           )}
           {loading ? (
-            <div className="relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 lg:col-span-2"></div>
+            <div className="flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 lg:col-span-2"></div>
           ) : bucket ? (
             <BucketPlayground
               bucket={bucket}
@@ -199,7 +198,7 @@ function Index() {
         </div>
       </div>
       <AuthModal
-        referrer={"bucker"}
+        referrer={"bucket"}
         type="login"
         open={authModalOpen}
         setOpen={setAuthModalOpen}

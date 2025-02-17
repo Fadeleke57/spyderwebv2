@@ -58,7 +58,7 @@ const SourceTooltip = ({ children, source, position }: SourceTooltipProps) => {
             <span className="capitalize">{source?.type}</span>
           </div>
 
-          <div className="text-sm font-semibold truncate">{source?.name}</div>
+          <div className="text-sm font-semibold">{source?.name}</div>
 
           <div className="flex flex-col gap-1 text-xs text-gray-500 dark:text-gray-400">
             {source?.created && (

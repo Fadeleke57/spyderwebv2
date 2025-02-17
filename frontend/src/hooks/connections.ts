@@ -14,7 +14,7 @@ export const useFetchAllConnectionsForBucket = (bucketId: string) => {
 
 export const useFetchOutgoingConnections = (bucketId: string, sourceId: string) => {
     return useQuery({
-        queryKey: ["connections", "outgoing"],
+        queryKey: ["connections", "outgoing", bucketId, sourceId],
         queryFn: async () => {
             const response = await api.get(`/connections/outgoing/${bucketId}/${sourceId}`);
             return response.data.result;
@@ -64,9 +64,9 @@ export const useUpdateConnection = (connectionId: string) => {
     });
 }
 
-export const useDeleteConnection = (connectionId: string) => {
+export const useDeleteConnection = () => {
     return useMutation({
-        mutationFn: async () => {
+        mutationFn: async (connectionId: string) => {
             const response = await api.delete(`/connections/delete/${connectionId}`);
             return response.data.result;
         },

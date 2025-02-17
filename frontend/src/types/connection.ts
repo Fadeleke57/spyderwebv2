@@ -1,5 +1,4 @@
 type ConnectionData = {
-  name: string;
   description: string;
 };
 

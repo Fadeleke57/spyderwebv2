@@ -12,41 +12,43 @@ from src.models.connection import (
     ConnectionType,
 )
 from fastapi.exceptions import HTTPException
+from src.lib.logger.index import logger
 
 router = APIRouter()
 
 
 @router.get("/all/bucket/{bucket_id}")
-def get_all_connections(bucket_id: str, user=Depends(manager)):
-    check_user(user)
+def get_all_connections(bucket_id: str):
 
-    bucketConnections = Connections.find({"bucketId": bucket_id}, {"_id": 0})
+    bucketConnections = list(Connections.find({"bucketId": bucket_id}, {"_id": 0}))
     return {"result": bucketConnections}
 
 
 @router.get("/outgoing/{bucket_id}/{source_id}")
-def get_outgoing_connections(bucket_id: str, source_id: str, user=Depends(manager)):
-    check_user(user)
+def get_outgoing_connections(bucket_id: str, source_id: str):
 
-    connections = Connections.find(
-        {"bucketId": bucket_id, "fromSourceId": source_id}, {"_id": 0}
+    connections = list(
+        Connections.find(
+            {"bucketId": bucket_id, "fromSourceId": source_id},
+            {"_id": 0},
+        ).sort("updated", -1)
     )
     return {"result": connections or []}
 
 
 @router.get("/incoming/{bucket_id}/{source_id}")
-def get_incoming_connections(bucket_id: str, source_id: str, user=Depends(manager)):
-    check_user(user)
+def get_incoming_connections(bucket_id: str, source_id: str):
 
-    connections = Connections.find(
-        {"bucketId": bucket_id, "toSourceId": source_id}, {"_id": 0}
+    connections = list(
+        Connections.find(
+            {"bucketId": bucket_id, "toSourceId": source_id}, {"_id": 0}
+        ).sort("updated", -1)
     )
     return {"result": connections or []}
 
 
 @router.get("/connection/{bucket_id}/{connection_id}")
-def get_connection(bucket_id: str, connection_id: str, user=Depends(manager)):
-    check_user(user)
+def get_connection(bucket_id: str, connection_id: str):
 
     connection = Connections.find_one(
         {"bucketId": bucket_id, "connectionId": connection_id}, {"_id": 0}
@@ -58,22 +60,25 @@ def get_connection(bucket_id: str, connection_id: str, user=Depends(manager)):
         return {"result": connection}
 
 
-@router.post("/create/{bucketId}")
-def create_connection(config: CreateConnection, user=Depends(manager)):
+@router.post("/create")
+def create_connection(connection_data: CreateConnection, user=Depends(manager)):
     check_user(user)
 
     try:
         connection = {
             "connectionId": str(uuid.uuid4()),
-            "fromSourceId": config.fromSourceId,
-            "toSourceId": config.toSourceId,
-            "data": config.data,
+            "fromSourceId": connection_data.fromSourceId,
+            "toSourceId": connection_data.toSourceId,
+            "bucketId": connection_data.bucketId,
+            "data": connection_data.data,
             "created": datetime.now(UTC),
             "updated": datetime.now(UTC),
         }
-        Connections.insert_one(connection)
+        Connections.insert_one(connection.copy())
+
         return {"result": connection}
     except Exception as e:
+        logger.info(str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 

@@ -1,26 +1,15 @@
-import {
-  useEditSourceTitle,
-  useFetchSource,
-  useFetchSourcesForBucket,
-} from "@/hooks/sources";
+import { useEditSourceTitle, useFetchSource } from "@/hooks/sources";
 import { useUpdateNote } from "@/hooks/sources";
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Check,
-  ChevronsUpDown,
-  Edit,
-  SquareArrowOutUpRight,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Check, Edit, SquareArrowOutUpRight, X } from "lucide-react";
 import { formatDate } from "date-fns";
 import { Textarea } from "../ui/textarea";
 import { debounce } from "lodash";
 import { useUser } from "@/context/UserContext";
 import { toast } from "../ui/use-toast";
 import { extractVideoId } from "@/lib/utils";
-import { Source, SourceAsNode } from "@/types/source";
+import { SourceAsNode } from "@/types/source";
 import NoteComponent from "./Notes";
 import {
   Dialog,
@@ -29,23 +18,7 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "../ui/command";
-import { mapSourceToIcon } from "../utility/Icons";
-import { Button } from "../ui/button";
-import { useFetchOutgoingConnections } from "@/hooks/connections";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "../ui/collapsible";
+import ConnectionsConfig from "../sources/ConnectionConfig";
 
 interface BucketDataDrawerProps {
   open: boolean;
@@ -63,22 +36,13 @@ export default function BucketDataModal({
   const { user } = useUser();
   const { data: sourceData, refetch: refetchSource } = useFetchSource(sourceId);
   const { mutateAsync: editSourceTitle } = useEditSourceTitle(sourceId);
-  const { data: sources } = useFetchSourcesForBucket(bucketId);
-  const { mutateAsync: createNote, isPending: createNoteLoading } =
-    useUpdateNote(bucketId, sourceId);
-  const {
-    data: connections,
-    isLoading: isLoadingConnections,
-    refetch: refetchConnections,
-  } = useFetchOutgoingConnections(bucketId, sourceId);
+
   const [source, setSource] = useState<SourceAsNode | null>(null);
   const [presignedUrl, setPresignedUrl] = useState("");
   const [title, setTitle] = useState(source?.name);
   const [content, setContent] = useState(source?.content);
   const [isEditing, setIsEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(source?.name);
-  const [otherSources, setOtherSources] = useState<Source[]>([]);
-  const [connectionsOpen, setConnectionsOpen] = useState(false);
 
   useEffect(() => {
     if (!sourceData) return;
@@ -87,14 +51,6 @@ export default function BucketDataModal({
     setContent(sourceData.result.content);
     setPresignedUrl(sourceData.file_url);
   }, [sourceData]);
-
-  useEffect(() => {
-    if (!sources) return;
-    const filteredSources = sources.filter(
-      (s: Source) => s.sourceId !== sourceId
-    );
-    setOtherSources(filteredSources);
-  }, [sources, sourceId]);
 
   const {
     mutateAsync: updateNote,
@@ -237,8 +193,6 @@ export default function BucketDataModal({
     setNewTitle("");
   };
 
-  const handleSourceClick = (sourceId: string) => {};
-
   return (
     <div className="grid grid-cols-2 gap-2">
       <Dialog open={open} onOpenChange={handleClose}>
@@ -307,75 +261,11 @@ export default function BucketDataModal({
 
           <div className="grid lg:grid-cols-2 gap-4">
             <div>{mapSourceTypeToComponent(source?.type)}</div>
-            <div className="border rounded-lg p-4 flex flex-col hidden lg:block">
-              <Collapsible
-                open={connectionsOpen}
-                onOpenChange={setConnectionsOpen}
-                className="w-full space-y-2"
-              >
-                <div className="flex items-center justify-between space-x-4 px-4">
-                  <h4 className="text-sm font-semibold">
-                    No connections yet.{" "}
-                    <Popover>
-                      {user && (
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="link"
-                            role="combobox"
-                            aria-expanded={open}
-                            className="p-0 w-fit text-blue-500 hover:underline hover:text-blue-600"
-                          >
-                            Create One?
-                          </Button>
-                        </PopoverTrigger>
-                      )}
-
-                      <PopoverContent className="w-[500px]">
-                        <Command>
-                          <CommandInput placeholder="Search sources..." />
-                          <CommandList>
-                            <CommandEmpty>
-                              No sources found. <span>Create one?</span>
-                            </CommandEmpty>
-                            <CommandGroup>
-                              {otherSources?.map(
-                                (source: Source, id: number) => (
-                                  <CommandItem
-                                    key={id}
-                                    className="cursor-pointer items-start wrap"
-                                    onSelect={() => {}}
-                                  >
-                                    {mapSourceToIcon(source.type, 16)}
-                                    {source.name}
-                                  </CommandItem>
-                                )
-                              )}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </h4>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <ChevronsUpDown className="h-4 w-4" />
-                      <span className="sr-only">Toggle</span>
-                    </Button>
-                  </CollapsibleTrigger>
-                </div>
-                <div className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm">
-                  @radix-ui/primitives
-                </div>
-                <CollapsibleContent className="space-y-2">
-                  <div className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm">
-                    @radix-ui/colors
-                  </div>
-                  <div className="rounded-md border px-4 py-2 font-mono text-sm shadow-sm">
-                    @stitches/react
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            </div>
+            <ConnectionsConfig
+              bucketId={bucketId}
+              sourceId={sourceId}
+              isOwner={isOwner}
+            ></ConnectionsConfig>
           </div>
         </DialogContent>
       </Dialog>

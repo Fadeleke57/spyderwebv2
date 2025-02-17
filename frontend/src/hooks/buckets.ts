@@ -4,7 +4,7 @@ import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 
 export function useFetchUserBuckets(criteria?: string) {
   return useInfiniteQuery({
-    queryKey: ["user", "buckets"],
+    queryKey: ["user", "buckets", criteria],
     queryFn: async ({ pageParam = { page: 1, direction: "forward" } }) => {
       const response = await api.get(`/buckets/all/user`, {
         params: {

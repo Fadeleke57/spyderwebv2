@@ -9,7 +9,7 @@ import { Source, SourceAsNode } from "@/types/source";
 import { Trash } from "lucide-react";
 import { useUser } from "@/context/UserContext";
 import { useFetchBucketById } from "@/hooks/buckets";
-import { updateTextElements, isSafari, shouldUseTspans } from "@/lib/utils";
+import { updateTextElements, shouldUseTspans } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -25,6 +25,8 @@ import {
   mapThemeToTextColor,
 } from "@/lib/utils";
 import SourceTooltip from "./SourceToolTip";
+import { useFetchAllConnectionsForBucket } from "@/hooks/connections";
+import { Connection, ConnectionData } from "@/types/connection";
 
 interface GraphProps {
   setConfig: (value: BucketConfigFormValues) => void;
@@ -73,6 +75,9 @@ function BucketGraph({
     refetch: refetchSources,
   } = useFetchSourcesForBucket(bucketId);
 
+  const { data: connections, isLoading: connectionsLoading } =
+    useFetchAllConnectionsForBucket(bucketId);
+
   const { mutateAsync: deleteSource } = useDeleteSource();
 
   const handleDeleteSource = async (sourceId: string) => {
@@ -87,29 +92,12 @@ function BucketGraph({
     const height = 2400;
     const centerX = width / 8 + (isMobile ? -220 : 40);
     const centerY = height / 8 - 70;
-    const circleRadius = Math.min(width, height) / 2 - 50;
+ 
+    const initialCircleRadius = 200; //nodes start closer together
+    const targetCircleRadius = Math.min(width, height) / 2 - 50;
 
     const zoomToNode = (event: MouseEvent | null, d: SourceAsNode) => {
       if (event) event.stopPropagation();
-      {
-        /*}
-      const scale = 3;
-      const [x, y] = [
-        isMobile ? d.x + centerX + 10 : d.x + centerX - 20,
-        d.y + centerY + 40,
-      ];
-
-      const transform = d3.zoomIdentity
-        .translate(width / 2, height / 2)
-        .scale(scale)
-        .translate(-x + (isMobile ? -260 : 0), -y);
-
-      svg
-        .transition()
-        .duration(750)
-        .call(zoom.transform as any, transform);
-*/
-      }
       setSelectedSource(d);
       setSelectedSourceId(d.sourceId);
       setDrawerOpen(true);
@@ -132,23 +120,59 @@ function BucketGraph({
       }
     `);
 
+    const initialScale = isMobile ? 0.4 : 0.6;
+    const initialTransform = d3.zoomIdentity
+      .translate(width / 4, height / 4)
+      .scale(initialScale);
+
     const zoom = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 4])
       .on("zoom", (event) => {
-        g.attr("transform", event.transform);
+        g.transition()
+          .duration(50)
+          .ease(d3.easeLinear)
+          .attr("transform", event.transform);
       });
 
     svg.call(zoom as any);
+
+    const linksGroup = g.append("g").attr("class", "links");
+
+    const links =
+      connections?.map((connection: Connection) => ({
+        source: connection.fromSourceId,
+        target: connection.toSourceId,
+        data: connection.data,
+      })) || [];
 
     const nodes: SourceAsNode[] =
       sources &&
       sources.map((d: Source, i: number) => {
         const angle = (i / sources.length) * 2 * Math.PI;
-        const x = centerX + circleRadius * Math.cos(angle);
-        const y = centerY + circleRadius * Math.sin(angle);
+        const x = centerX + initialCircleRadius * Math.cos(angle);
+        const y = centerY + initialCircleRadius * Math.sin(angle);
         return { ...d, x, y };
       });
+
+    const lines = linksGroup
+      .selectAll("line")
+      .data(links)
+      .join("line")
+      .style("stroke", "#ccc")
+      .style("stroke-width", 2)
+      .style("opacity", 0);
+
+    const linkForce = d3
+      .forceLink(links)
+      .id((d: any) => d.sourceId)
+      .distance(200)
+      .strength(0); //start with no link force
+
+    const collisionForce = d3.forceCollide(120).strength(0); //start with no collision
+
+    const centeringForce = d3.forceCenter(centerX, centerY).strength(0.05);
+
     const fileSizes = nodes && nodes.map((d) => d.size || 4);
     const minSize = nodes && Math.min(...fileSizes);
     const maxSize = nodes && Math.max(...fileSizes);
@@ -174,15 +198,33 @@ function BucketGraph({
         setHoveredSource(null);
         setTooltipPosition(null);
       }
+
+      const neighborIds = new Set<string>();
+      if (isHovering) {
+        links.forEach((link: any) => {
+          if (link.source.sourceId === d.sourceId) {
+            neighborIds.add(link.target.sourceId);
+          } else if (link.target.sourceId === d.sourceId) {
+            neighborIds.add(link.source.sourceId);
+          }
+        });
+      }
+
       g.selectAll("circle")
-        .filter((node: any) => node.sourceId !== d.sourceId)
+        .filter(
+          (node: any) =>
+            node.sourceId !== d.sourceId && !neighborIds.has(node.sourceId)
+        )
         .style("transition", "fill 0.7s ease")
         .style("transition", "opacity 0.7s ease")
         .style("opacity", isHovering ? 0.3 : 1)
         .style("fill", mapThemeToBaseNodeColor(theme));
 
       g.selectAll("circle")
-        .filter((node: any) => node.sourceId === d.sourceId)
+        .filter(
+          (node: any) =>
+            node.sourceId === d.sourceId || neighborIds.has(node.sourceId)
+        )
         .style("transition", "fill 0.7s ease")
         .style(
           "fill",
@@ -192,7 +234,10 @@ function BucketGraph({
         );
 
       g.selectAll("text")
-        .filter((node: any) => node.sourceId !== d.sourceId)
+        .filter(
+          (node: any) =>
+            node.sourceId !== d.sourceId && !neighborIds.has(node.sourceId)
+        )
         .style("transition", "opacity 0.7s ease")
         .style("opacity", isHovering ? 0.3 : 1)
         .style("transform", "translateY(0)");
@@ -204,7 +249,10 @@ function BucketGraph({
         .style("transition", "transform 0.3s ease");
 
       g.selectAll("foreignObject")
-        .filter((node: any) => node.sourceId !== d.sourceId)
+        .filter(
+          (node: any) =>
+            node.sourceId !== d.sourceId && !neighborIds.has(node.sourceId)
+        )
         .style("transition", "opacity 0.7s ease")
         .style("opacity", isHovering ? 0.3 : 1)
         .style("transform", "translateY(0)");
@@ -214,54 +262,135 @@ function BucketGraph({
         .style("opacity", 1)
         .style("transform", isHovering ? "translateY(10px)" : "translateY(0)")
         .style("transition", "transform 0.3s ease");
+
+      linksGroup
+        .selectAll("line")
+        .style(
+          "transition",
+          "opacity 0.7s ease, stroke-width 0.7s ease, stroke 0.7s ease"
+        )
+        .style("opacity", (l: any) => {
+          if (!isHovering) return 0.6;
+          return l.source.sourceId === d.sourceId ||
+            l.target.sourceId === d.sourceId
+            ? 0.8
+            : 0.2;
+        })
+        .style("stroke-width", (l: any) => {
+          if (!isHovering) return 1;
+          return l.source.sourceId === d.sourceId ||
+            l.target.sourceId === d.sourceId
+            ? 3
+            : 1;
+        })
+        .style("stroke", (l: any) => {
+          if (!isHovering) return "#ccc";
+          return l.source.sourceId === d.sourceId ||
+            l.target.sourceId === d.sourceId
+            ? mapThemetoHoverNodeColor(theme)
+            : "#ccc";
+        });
     };
 
     const simulation = d3
       .forceSimulation(nodes)
-      .force("x", d3.forceX(centerX).strength(0.05))
-      .force("y", d3.forceY(centerY).strength(0.05))
-      .force("collision", d3.forceCollide(95))
-      .on("tick", () => {
-        const circles = g
-          .selectAll("circle")
-          .data(nodes ? nodes : [])
-          .join("circle")
-          .attr("cx", (d) => d.x)
-          .attr("cy", (d) => d.y)
-          .attr("r", (d) => {
-            const fileSize = d.size || 4;
-            return sizeScale(fileSize);
-          })
-          .attr("fill", mapThemeToBaseNodeColor(theme))
-          .call(drag as any)
-          .on("mouseover", (event, d) => handleNodeInteraction(event, d, true))
-          .on("mouseout", (event, d) => handleNodeInteraction(event, d, false))
-          .on("click", function (event, d) {
-            setHoveredSource(null);
-            setTooltipPosition(null);
-            event.stopPropagation();
-            zoomToNode(event, d);
+      .force("x", d3.forceX(centerX).strength(0.01)) //start with weak centering
+      .force("y", d3.forceY(centerY).strength(0.01))
+      .force("collision", collisionForce)
+      .force("link", linkForce)
+      .force("center", centeringForce)
+      .alphaDecay(0.01) //slower decay for smoother animation
+      .velocityDecay(0.3); //add some "friction" for smoother movement
 
-            d3.select(svgRef.current)
-              .selectAll("circle")
-              .attr("stroke", "none")
-              .attr("stroke-width", 0);
+    //gradually introduce forces
+    let phase = 0;
+    simulation.on("tick", () => {
+      phase += 1;
 
-            d3.select(this)
-              .attr("stroke", mapThemetoHoverNodeColor(theme))
-              .attr("stroke-width", 2);
-          });
+      //gradually strengthen forces
+      if (phase === 10) {
+        linkForce.strength(0.1);
+        collisionForce.strength(0.2);
+      }
+      if (phase === 30) {
+        linkForce.strength(0.2);
+        collisionForce.strength(0.5);
+      }
+      if (phase === 50) {
+        linkForce.strength(0.3);
+        collisionForce.strength(1);
 
-        if (!shouldUseTspans) {
-          g.selectAll("foreignObject")
-            .data(nodes || [])
-            .join("foreignObject")
-            .attr("width", 300)
-            .attr("height", 100)
-            .attr("x", (d) => d.x - 150)
-            .attr("y", (d) => d.y + sizeScale(d.size || 4) + 5)
-            .html(
-              (d) => `
+        //fade in the lines
+        lines.transition().duration(300).style("opacity", 0.6);
+      }
+
+      //update positions
+      lines
+        .attr("x1", (d: any) => {
+          const sourceNode = nodes.find(
+            (n) => n.sourceId === d.source.sourceId
+          );
+          return sourceNode ? sourceNode.x : 0;
+        })
+        .attr("y1", (d: any) => {
+          const sourceNode = nodes.find(
+            (n) => n.sourceId === d.source.sourceId
+          );
+          return sourceNode ? sourceNode.y : 0;
+        })
+        .attr("x2", (d: any) => {
+          const targetNode = nodes.find(
+            (n) => n.sourceId === d.target.sourceId
+          );
+          return targetNode ? targetNode.x : 0;
+        })
+        .attr("y2", (d: any) => {
+          const targetNode = nodes.find(
+            (n) => n.sourceId === d.target.sourceId
+          );
+          return targetNode ? targetNode.y : 0;
+        });
+
+      const circles = g
+        .selectAll("circle")
+        .data(nodes ? nodes : [])
+        .join("circle")
+        .attr("cx", (d) => d.x)
+        .attr("cy", (d) => d.y)
+        .attr("r", (d) => {
+          const fileSize = d.size || 4;
+          return sizeScale(fileSize);
+        })
+        .attr("fill", mapThemeToBaseNodeColor(theme))
+        .call(drag as any)
+        .on("mouseover", (event, d) => handleNodeInteraction(event, d, true))
+        .on("mouseout", (event, d) => handleNodeInteraction(event, d, false))
+        .on("click", function (event, d) {
+          setHoveredSource(null);
+          setTooltipPosition(null);
+          event.stopPropagation();
+          zoomToNode(event, d);
+
+          d3.select(svgRef.current)
+            .selectAll("circle")
+            .attr("stroke", "none")
+            .attr("stroke-width", 0);
+
+          d3.select(this)
+            .attr("stroke", mapThemetoHoverNodeColor(theme))
+            .attr("stroke-width", 2);
+        });
+
+      if (!shouldUseTspans) {
+        g.selectAll("foreignObject")
+          .data(nodes || [])
+          .join("foreignObject")
+          .attr("width", 300)
+          .attr("height", 100)
+          .attr("x", (d) => d.x - 150)
+          .attr("y", (d) => d.y + sizeScale(d.size || 4) + 5)
+          .html(
+            (d) => `
           <div style="
             font-size: 14px;
             color: ${mapThemeToTextColor(theme)};
@@ -277,17 +406,17 @@ function BucketGraph({
             ${formatText(d.name, 60)}
           </div>
         `
-            );
-        } else
-          updateTextElements(
-            g,
-            nodes,
-            theme as string,
-            mapThemeToTextColor,
-            (size) => sizeScale(size),
-            formatText
           );
-      });
+      } else
+        updateTextElements(
+          g,
+          nodes,
+          theme as string,
+          mapThemeToTextColor,
+          (size) => sizeScale(size),
+          formatText
+        );
+    });
 
     const drag = d3
       .drag<SVGCircleElement, SourceAsNode>()
@@ -337,7 +466,7 @@ function BucketGraph({
         <div ref={trashRef} className="absolute left-3 top-3 cursor-pointer">
           <TooltipProvider delayDuration={100}>
             <Tooltip>
-              <TooltipTrigger className="p-0 m-0 bg-red-600 dark:bg-muted rounded-full p-2">
+              <TooltipTrigger className="p-0 m-0 bg-red-600 dark:bg-violet-500 dark:hover:bg-violet-600 rounded-full p-2">
                 <Trash size={20} className="text-white dark:text-foreground" />
               </TooltipTrigger>
               <TooltipContent>
