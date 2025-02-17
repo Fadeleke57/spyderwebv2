@@ -603,10 +603,9 @@ def iterate_bucket(
             "iterations": [],
         }
 
-        vectors = generate_bucket_embeddings(
-            iteratePayload.name, iteratePayload.description
-        )
-        pincone_insert = bucket_to_insert
+        vectors = generate_bucket_embeddings(iteratePayload.name, iteratePayload.description)
+        pincone_insert = bucket_to_insert.copy()
+
         pincone_insert["created"] = str(bucket_to_insert["created"])
         pincone_insert["updated"] = str(bucket_to_insert["updated"])
         embedding_data = [(newBucketId, vectors, pincone_insert)]
