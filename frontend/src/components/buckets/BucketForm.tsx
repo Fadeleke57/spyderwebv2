@@ -336,7 +336,7 @@ function BucketForm({ bucket, user }: FormProps) {
               rows={1}
               defaultValue={bucket?.name || "Untitled"}
               {...form.register("name")}
-              className="w-full min-h-[2rem] bg-transparent p-0 font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-xl font-semibold"
+              className="w-full min-h-[2rem] bg-transparent p-0 font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-md font-semibold"
               onInput={(e: any) => {
                 e.target.style.height = "auto";
                 e.target.style.height = `${e.target.scrollHeight}px`;
