@@ -31,9 +31,9 @@ function PublicBucketView({ bucket }: { bucket: Bucket }) {
         <div>
           <div className="flex flex-col space-y-2">
             <small className="text-sm font-medium leading-none text-blue-500 dark:text-blue-400">
-              {bucket?.visibility === "Private" ? "Private" : "Public"}
+              {bucket?.visibility === "Private" ? "Private": "Public"}
             </small>
-            <span id="name" className="text-xl font-semibold">
+            <span id="name" className="text-lg font-semibold">
               {bucket?.name || "Untitled"}
             </span>
             <span className="text-sm text-muted-foreground">
