@@ -287,7 +287,7 @@ function Index() {
                           <TableRow key={index}>
                             <TableCell>
                               <Link
-                                href={`/buckets/bucket/${bucket?.bucketId}`}
+                                href={`/bucket/${bucket?.bucketId}`}
                                 className="font-medium hover:underline cursor-pointer hover:text-blue-500"
                               >
                                 {formatText(bucket?.name || "", 30)}
@@ -328,7 +328,7 @@ function Index() {
                                     className="cursor-pointer"
                                     onClick={() =>
                                       router.push(
-                                        `/buckets/bucket/${bucket?.bucketId}`
+                                        `/bucket/${bucket?.bucketId}`
                                       )
                                     }
                                   >

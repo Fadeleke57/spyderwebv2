@@ -21,7 +21,7 @@ function PopularBucketsCard() {
                 <br />
                 <span
                   onClick={() =>
-                    router.push(`/buckets/bucket/${bucket.bucketId}`)
+                    router.push(`/bucket/${bucket.bucketId}`)
                   }
                   className="text-sm font-semibold hover:underline"
                 >

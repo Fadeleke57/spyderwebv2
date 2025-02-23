@@ -131,7 +131,7 @@ export function SearchResultCard({
 
   return (
     <Link
-      href={`/buckets/bucket/${bucket.bucketId}`}
+      href={`/bucket/${bucket.bucketId}`}
       className="flex flex-col gap-2 hover:cursor-pointer"
     >
       <Card className="w-full relative mx-auto min-h-[60px] border-none bg-background hover:bg-muted py-6 border-b-2">

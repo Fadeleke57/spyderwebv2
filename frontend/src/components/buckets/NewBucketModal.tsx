@@ -120,7 +120,7 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
 
         setOpen(false);
         form.reset();
-        window.location.href = `/buckets/bucket/${bucketId}`;
+        window.location.href = `/bucket/${bucketId}`;
       } catch (error: any) {
         toast({
           title: "Error uploading images",

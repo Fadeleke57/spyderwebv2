@@ -70,7 +70,7 @@ function BucketGraph({
 
   const {
     data: sources,
-    isLoading,
+    isLoading: sourcesLoading,
     error: sourcesError,
     refetch: refetchSources,
   } = useFetchSourcesForBucket(bucketId);
@@ -92,7 +92,7 @@ function BucketGraph({
     const height = 2400;
     const centerX = width / 8 + (isMobile ? -220 : 40);
     const centerY = height / 8 - 70;
- 
+
     const initialCircleRadius = 200; //nodes start closer together
     const targetCircleRadius = Math.min(width, height) / 2 - 50;
 
@@ -456,7 +456,7 @@ function BucketGraph({
     };
   }, [sources, deleteSource, refetchSources, trashRef]);
 
-  if (isLoading && hasSources) {
+  if ((sourcesLoading && hasSources) || (connectionsLoading && hasSources)) {
     return <LoadingPage></LoadingPage>;
   }
 

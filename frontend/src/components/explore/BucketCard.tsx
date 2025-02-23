@@ -213,7 +213,7 @@ export function BucketCard({
 
   return (
     <Link
-      href={`/buckets/bucket/${bucket.bucketId}`}
+      href={`/bucket/${bucket.bucketId}`}
       className="flex flex-col hover:cursor-pointer"
     >
       <Card className="w-full relative mx-auto min-h-[80px] border-none bg-background hover:bg-muted py-6 border-b-2">

@@ -110,7 +110,7 @@ export function NavUser() {
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="flex flex-row items-center gap-2 cursor-pointer"
-                onClick={() => router.push("/settings")}
+                onClick={() => router.push("/settings?tab=profile")}
               >
                 <Settings size={16} />
                 Settings
