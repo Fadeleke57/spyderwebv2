@@ -74,7 +74,7 @@ export function ProjectsCarousel() {
                   key={index}
                   className="basis-11/12 lg:basis-1/3"
                   onClick={() =>
-                    router.push(`/buckets/bucket/${bucket.bucketId}`)
+                    router.push(`/bucket/${bucket.bucketId}`)
                   }
                 >
                   <div className="p-1 cursor-pointer">

@@ -1,23 +1,16 @@
 import React from "react";
 import { Bucket } from "@/types/bucket";
 import { formatText } from "@/lib/utils";
-import { BookMarked, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/router";
-import {
-  IterationCcw,
-  ArrowBigUpDash,
-  EllipsisIcon,
-  Album,
-  EyeOff,
-} from "lucide-react";
 function TrendingSearchItem({ bucket }: { bucket: Bucket }) {
   const router = useRouter();
   return (
     <div className="p-1">
       <Card
         className="p-0 relative cursor-pointer hover:opacity-50 duration-00 transition ease-in"
-        onClick={() => router.push(`/buckets/bucket/${bucket.bucketId}`)}
+        onClick={() => router.push(`/bucket/${bucket.bucketId}`)}
       >
         <CardContent className="flex aspect-square items-center justify-center p-6">
           <span className="text-xs lg:text-md font-semibold">

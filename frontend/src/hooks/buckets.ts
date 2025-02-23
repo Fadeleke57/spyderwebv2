@@ -1,6 +1,11 @@
 import api from "@/lib/api";
 import { Bucket, UpdateBucket } from "@/types/bucket";
-import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 export function useFetchUserBuckets(criteria?: string) {
   return useInfiniteQuery({
@@ -36,15 +41,18 @@ export const useFetchLikedBuckets = () => {
       return response.data.result;
     },
   });
-}
+};
 
 export const useCreateBucket = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (config: any) => {
       const response = await api.post("/buckets/create", config);
       return response.data.result;
     },
-    onSuccess: () => {},
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["buckets", "all"] });
+    },
     onError: () => {},
   });
 };
@@ -118,6 +126,7 @@ export function useGetAllImagesForBucket(bucketId: string) {
 }
 
 export function useDeleteBucket() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (bucketId: string) => {
       const response = await api.delete("/buckets/delete", {
@@ -125,12 +134,15 @@ export function useDeleteBucket() {
       });
       return response.data.result;
     },
-    onSuccess: () => {},
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["buckets", "all"] });
+    },
     onError: () => {},
   });
 }
 
 export const useUpdateBucket = (bucketId: string) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (config: UpdateBucket) => {
       const response = await api.patch(`/buckets/update/${bucketId}`, config, {
@@ -138,7 +150,9 @@ export const useUpdateBucket = (bucketId: string) => {
       });
       return response.data.result;
     },
-    onSuccess: () => {},
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["buckets", "all"] });
+    },
     onError: () => {},
   });
 };
@@ -261,7 +275,6 @@ export function useSearchBuckets(query: string, filters?: SearchFilter) {
   return useQuery({
     queryKey: ["buckets", "search", query, filters],
     queryFn: async () => {
-      //convert filters object into URL parameters
       const params = new URLSearchParams({
         query,
       });
@@ -269,7 +282,7 @@ export function useSearchBuckets(query: string, filters?: SearchFilter) {
       if (filters) {
         Object.entries(filters).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
-            if (Array.isArray(value)) { //handle array filters
+            if (Array.isArray(value)) {
               value.forEach((v) => params.append(key, v));
             } else {
               params.append(key, value.toString());

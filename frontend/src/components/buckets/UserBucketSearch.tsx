@@ -84,7 +84,7 @@ function UserBucketSearch() {
               {searchResults.map((bucket: any) => (
                 <Link
                   key={bucket.id}
-                  href={`/buckets/bucket/${bucket.id}`}
+                  href={`/bucket/${bucket.id}`}
                   className="block"
                 >
                   <Button

@@ -167,7 +167,7 @@ function Index() {
             )}
 
             <ShareDialog
-              link={`${window.location.origin}/buckets/bucket/${bucketId}`}
+              link={`${window.location.origin}/bucket/${bucketId}`}
             />
           </div>
         </header>
