@@ -15,7 +15,7 @@ function Index() {
   const { loginSource } = router.query;
 
   return (
-    <div className="flex flex-col gap-12 lg:gap-20 p-6 py-16 min-h-screen overflow-x-hidden max-w-[920px] mx-auto">
+    <div className="flex flex-col gap-12 lg:gap-20 p-6 pt-16 pb-36 lg:py-16 min-h-screen overflow-x-hidden max-w-[920px] mx-auto">
       <Head>
         <title>{"home - spydr"}</title>
         <meta name="description" content={"Welcome to spydr"} />
@@ -30,7 +30,7 @@ function Index() {
       </Head>
       <Settings
         onClick={() => router.push("/settings")}
-        className="absolute top-24 right-4 lg:top-8 lg:right-8 cursor-pointer hover:opacity-50"
+        className="absolute top-6 right-4 lg:top-8 lg:right-8 cursor-pointer hover:opacity-50"
       />
       <h1 className="text-2xl text-center lg:text-4xl font-extrabold tracking-tight">
         Welcome to Spydr, {user?.username}

@@ -15,12 +15,6 @@ import { useState } from "react";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useUser } from "@/context/UserContext";
 import { usePathname } from "next/navigation";
-import NotionStyleSearch from "@/components/utility/Assistant";
-const fontSans = FontSans({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
 
 export default function AppLayout({
   children,
@@ -57,10 +51,10 @@ export default function AppLayout({
     return (
       <div
         className={cn(
-          "min-h-screen bg-background font-sans antialiased flex flex-col relative pt-20"
+          "min-h-screen bg-background font-sans antialiased flex flex-col relative"
         )}
       >
-        <div className="fixed top-0 z-50 h-16 w-[101vw] border-b bg-background dark:bg-background flex flex-row items-center justify-between px-5">
+        <div className="fixed bottom-0 z-50 h-[75px] w-[101vw] border-b bg-background dark:bg-background flex flex-row items-center justify-between px-5 border">
           <Link href="/explore">
             <Image
               src={slogo}

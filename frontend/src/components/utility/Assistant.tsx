@@ -20,7 +20,7 @@ const SpydrAI = () => {
 
   
   return (
-    <div className="fixed bottom-6 right-6 lg:right-16">
+    <div className="fixed bottom-20 lg:bottom-6 right-6 lg:right-16">
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild className="bg-zinc-800">
           <Button
