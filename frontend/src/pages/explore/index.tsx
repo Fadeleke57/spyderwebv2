@@ -63,7 +63,7 @@ function Index() {
   
 
   return (
-    <div className="flex flex-1 flex-col gap-4 pb-2 lg:pb-10 mx-auto w-full lg:h-[calc(108.9vh-64px)] overflow-y-auto relative">
+    <div className="flex flex-1 flex-col gap-4 pb-10 mx-auto w-full lg:h-[calc(108.9vh-64px)] overflow-y-auto relative">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -76,7 +76,10 @@ function Index() {
           }`}
         />
       </Head>
-      <div className="p-4 lg:px-16 border border-2 border-l-[1px] border-r-0 relative lg:sticky lg:top-0 bg-background lg:z-50">
+      <div>
+
+      </div>
+      <div className="p-4 lg:px-16 border-b-2 border-l-[1px] border-r-0 relative lg:sticky lg:top-0 bg-background lg:z-50">
         {!user && isMobile && (
           <Button
             className="w-full mb-2"
