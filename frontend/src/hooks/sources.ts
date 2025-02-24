@@ -1,11 +1,12 @@
 import api from "@/lib/api";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const useFileUpload = (
   userId: string,
   webId: string,
   fileType: string
 ) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (file: File) => {
       const formData = new FormData();
@@ -17,6 +18,9 @@ export const useFileUpload = (
           },
         })
         .then((res) => res.data.key);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sources", webId] });
     },
   });
 };
@@ -34,6 +38,7 @@ export const useFetchSourcesForBucket = (webId: string) => {
 };
 
 export const useUploadWebsite = (webId: string) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (url: string) => {
       const resonse = await api.post(`/sources/website/${webId}`, { url });
@@ -42,10 +47,14 @@ export const useUploadWebsite = (webId: string) => {
     onError: (err: any) => {
       console.error(err);
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sources", webId] });
+    },
   });
 };
 
 export const useUploadYoutube = (webId: string) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (videoId: string) => {
       const resonse = await api.post(`/sources/youtube/${webId}/${videoId}`);
@@ -53,6 +62,9 @@ export const useUploadYoutube = (webId: string) => {
     },
     onError: (err: any) => {
       console.error(err);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sources", webId] });
     },
   });
 };
@@ -72,6 +84,7 @@ export const useRenderFile = (filePath: string) => {
 };
 
 export const useUploadNote = (webId: string) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       title,
@@ -87,10 +100,14 @@ export const useUploadNote = (webId: string) => {
       const data = await response.data.result;
       return data;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sources", webId] });
+    },
   });
 };
 
 export const useUpdateNote = (bucketId: string, sourceId: string) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: { title?: string; content?: string }) => {
       const response = await api.patch(
@@ -103,10 +120,14 @@ export const useUpdateNote = (bucketId: string, sourceId: string) => {
     onError: (err: any) => {
       console.error(err);
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sources", bucketId] });
+    },
   });
 };
 
 export const useDeleteSource = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (sourceId: string) => {
       const response = await api.delete(`/sources/delete/source/${sourceId}`);
@@ -115,6 +136,9 @@ export const useDeleteSource = () => {
     },
     onError: (err: any) => {
       console.error(err);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sources"] });
     },
   });
 };
@@ -133,6 +157,7 @@ export const useFetchSource = (sourceId: string, contextId?: string) => {
 };
 
 export const useEditSourceTitle = (sourceId: string) => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (title: string) => {
       const response = await api.patch(`/sources/edit/source/${sourceId}`, {
@@ -144,10 +169,14 @@ export const useEditSourceTitle = (sourceId: string) => {
     onError: (err: any) => {
       console.error(err);
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sources"] });
+    },
   });
 };
 
 export const useUploadImageToSource = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       sourceId,
@@ -173,6 +202,12 @@ export const useUploadImageToSource = () => {
       );
 
       return data.imageUrls;
+    },
+    onError: (err: any) => {
+      console.error(err);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sources"] });
     },
   });
 };
