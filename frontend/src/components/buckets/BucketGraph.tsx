@@ -454,9 +454,9 @@ function BucketGraph({
     return () => {
       simulation.stop();
     };
-  }, [sources, deleteSource, refetchSources, trashRef]);
+  }, [sources, deleteSource, refetchSources, trashRef, connections, theme]);
 
-  if (hasSources && (sourcesLoading || connectionsLoading)) {
+  if (sourcesLoading && hasSources) {
     return <LoadingPage></LoadingPage>;
   }
 
