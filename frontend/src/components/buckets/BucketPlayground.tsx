@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "../ui/label";
 import {
@@ -67,7 +67,7 @@ function BucketPlayground({
 
   const {
     data: sources,
-    isLoading,
+    isLoading: sourcesLoading,
     error: sourcesError,
     refetch: refetchSources,
   } = useFetchSourcesForBucket(bucket?.bucketId);
@@ -99,6 +99,14 @@ function BucketPlayground({
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
+
+  useEffect(() => {
+    if (sources) {
+      setFetchedSources(sources);
+    }
+  }, [sources]);
+
+  console.log("fetchedSources", fetchedSources);
 
   return (
     <div
@@ -304,11 +312,14 @@ function BucketPlayground({
         )}
         <div className="flex-1" />
         <BucketGraph
+          isOwner={isOwner || false}
           setConfig={setConfig}
           bucketId={bucket?.bucketId}
           hasSources={bucket?.sourceIds?.length ? true : false}
           fetchedSources={fetchedSources}
           setFetchedSources={setFetchedSources}
+          refetchSources={refetchSources}
+          sourcesLoading={sourcesLoading}
           selectedSourceId={selectedSourceId}
           setSelectedSourceId={setSelectedSourceId}
         />

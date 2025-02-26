@@ -35,6 +35,7 @@ export const useFetchSourcesForBucket = (webId: string) => {
       const response = await api.get(`/sources/all/${webId}`);
       return response.data.result;
     },
+    enabled: !!webId,
     staleTime: 60000, //1 minute stale time
     retry: 2,
   });

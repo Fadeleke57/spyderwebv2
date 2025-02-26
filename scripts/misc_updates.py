@@ -56,6 +56,7 @@ db = client[mongoInitdbDatabase]
 users = db['users']
 buckets = db['buckets']
 sources = db['sources']
+connections = db['connections']
 
 def add_uuid_to_users():
     users_without_id = users.find({"id": {"$exists": False}})
@@ -170,5 +171,21 @@ def remove_imageKeys_to_sources():
 
     print(f"Total sources updated: {updated_count}")
 
+def delete_connections_wiith_nonexisting_sources():
+    all_connections = connections.find()
+    updated_count = 0
+
+    for connection in all_connections:
+        source1 = sources.find_one({"sourceId": connection["fromSourceId"]})
+        source2 = sources.find_one({"sourceId": connection["toSourceId"]})
+        if not source1 or not source2:
+            connections.delete_one({"_id": connection["_id"]})
+            updated_count += 1
+            print(f"Deleted connection {connection['_id']} with nonexisting source(s)")
+        else:
+            print(f"Kept connection {connection['_id']} with existing source(s)")
+
+    print(f"Total connections deleted: {updated_count}")
+
 if __name__ == "__main__":
-    remove_imageKeys_to_sources()
+    delete_connections_wiith_nonexisting_sources()
