@@ -22,6 +22,9 @@ export const useFileUpload = (
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sources", webId] });
     },
+    onError: (error: any) => {
+      console.error("File upload failed:", error);
+    },
   });
 };
 
@@ -29,11 +32,11 @@ export const useFetchSourcesForBucket = (webId: string) => {
   return useQuery({
     queryKey: ["sources", webId],
     queryFn: async () => {
-      if (!webId) return null;
       const response = await api.get(`/sources/all/${webId}`);
-      const data = await response.data.result;
-      return data;
+      return response.data.result;
     },
+    staleTime: 60000, //1 minute stale time
+    retry: 2,
   });
 };
 
@@ -41,11 +44,11 @@ export const useUploadWebsite = (webId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (url: string) => {
-      const resonse = await api.post(`/sources/website/${webId}`, { url });
-      return resonse.data.result;
+      const response = await api.post(`/sources/website/${webId}`, { url });
+      return response.data.result;
     },
-    onError: (err: any) => {
-      console.error(err);
+    onError: (error: any) => {
+      console.error("Website upload failed:", error);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sources", webId] });
@@ -57,11 +60,11 @@ export const useUploadYoutube = (webId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (videoId: string) => {
-      const resonse = await api.post(`/sources/youtube/${webId}/${videoId}`);
-      return resonse.data.result;
+      const response = await api.post(`/sources/youtube/${webId}/${videoId}`);
+      return response.data.result;
     },
-    onError: (err: any) => {
-      console.error(err);
+    onError: (error: any) => {
+      console.error("YouTube upload failed:", error);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sources", webId] });
@@ -76,10 +79,10 @@ export const useRenderFile = (filePath: string) => {
       const response = await api.get(
         `/sources/presigned/url/${encodeURIComponent(filePath)}`
       );
-      const data = await response.data.presigned_url;
-      return data;
+      return response.data.presigned_url;
     },
-    enabled: false,
+    enabled: !!filePath,
+    staleTime: 300000, //5 minutes stale time
   });
 };
 
@@ -97,11 +100,17 @@ export const useUploadNote = (webId: string) => {
         title,
         content,
       });
-      const data = await response.data.result;
-      return data;
+      return response.data.result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["sources", webId] });
+      //invalidate this specific source if it exists in cache
+      if (data && data.id) {
+        queryClient.invalidateQueries({ queryKey: ["source", data.id] });
+      }
+    },
+    onError: (error: any) => {
+      console.error("Note upload failed:", error);
     },
   });
 };
@@ -114,14 +123,14 @@ export const useUpdateNote = (bucketId: string, sourceId: string) => {
         `/sources/update/note/${bucketId}/${sourceId}`,
         payload
       );
-      const data = await response.data.result;
-      return data;
+      return response.data.result;
     },
-    onError: (err: any) => {
-      console.error(err);
+    onError: (error: any) => {
+      console.error("Note update failed:", error);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sources", bucketId] });
+      queryClient.invalidateQueries({ queryKey: ["source", sourceId] });
     },
   });
 };
@@ -131,14 +140,14 @@ export const useDeleteSource = () => {
   return useMutation({
     mutationFn: async (sourceId: string) => {
       const response = await api.delete(`/sources/delete/source/${sourceId}`);
-      const data = await response.data.result;
-      return data;
+      return response.data.result;
     },
-    onError: (err: any) => {
-      console.error(err);
+    onError: (error: any) => {
+      console.error("Source deletion failed:", error);
     },
-    onSuccess: () => {
+    onSuccess: (_, sourceId) => {
       queryClient.invalidateQueries({ queryKey: ["sources"] });
+      queryClient.invalidateQueries({ queryKey: ["source", sourceId] });
     },
   });
 };
@@ -150,9 +159,11 @@ export const useFetchSource = (sourceId: string, contextId?: string) => {
       : ["source", sourceId],
     queryFn: async () => {
       const response = await api.get(`/sources/${sourceId}`);
-      const data = await response.data;
-      return data;
+      return response.data;
     },
+    staleTime: 60000, //1 minute stale time
+    retry: 2,
+    enabled: !!sourceId,
   });
 };
 
@@ -163,14 +174,14 @@ export const useEditSourceTitle = (sourceId: string) => {
       const response = await api.patch(`/sources/edit/source/${sourceId}`, {
         name: title,
       });
-      const data = await response.data.result;
-      return data;
+      return response.data.result;
     },
-    onError: (err: any) => {
-      console.error(err);
+    onError: (error: any) => {
+      console.error("Source title edit failed:", error);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sources"] });
+      queryClient.invalidateQueries({ queryKey: ["source", sourceId] });
     },
   });
 };
@@ -203,11 +214,14 @@ export const useUploadImageToSource = () => {
 
       return data.imageUrls;
     },
-    onError: (err: any) => {
-      console.error(err);
+    onError: (error: any) => {
+      console.error("Image upload failed:", error);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["sources"] });
+      queryClient.invalidateQueries({
+        queryKey: ["source", variables.sourceId],
+      });
     },
   });
 };
