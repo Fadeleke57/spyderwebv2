@@ -217,7 +217,7 @@ export default function BucketDataModal({
                   >
                     <span className="flex flex-row items-center gap-2">
                       {source?.name || ""}
-                      <SquareArrowOutUpRight size={16}></SquareArrowOutUpRight>
+                      <SquareArrowOutUpRight className="hidden md:inline" size={16}></SquareArrowOutUpRight>
                     </span>
                   </Link>
                 )
