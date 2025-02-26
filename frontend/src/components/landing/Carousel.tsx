@@ -1,7 +1,5 @@
 import React from "react";
 import Autoplay from "embla-carousel-autoplay";
-
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Carousel,
   CarouselContent,
@@ -13,7 +11,6 @@ import { ChartDemo } from "./ChartDemo";
 import { demoArticles } from "@/types/article";
 import { Button } from "../ui/button";
 import Router from "next/router";
-import useMediaQuery from "@/hooks/general";
 
 export default function LandingCarousel() {
   const plugin = React.useRef(
@@ -49,15 +46,15 @@ export default function LandingCarousel() {
 
       <div className="lg:w-7/12">
         <h1 className="scroll-m-20 text-3xl font-bold tracking-tight lg:text-5xl mb-2 lg:mb-4 text-blue-500">
-          Unbiased, accurate, and easy-to-use. Thousands of news articles all in
-          one place.
+          Accurate, easy-to-use, and most importantly, human. Jump start your 
+          search here.
         </h1>
         <Button
           variant={"link"}
-          onClick={() => router.push("/auth/login")}
+          onClick={() => router.push("/about/howto")}
           className="lg:inline text-xl p-0"
         >
-          Learn how to use
+          learn how to use
         </Button>
       </div>
     </div>

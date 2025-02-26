@@ -2,9 +2,9 @@ from pydantic_settings import BaseSettings
 import os
 from dotenv import load_dotenv
 
-env = os.getenv("ENV", "prod")
-load_dotenv(f".env.{env}")
-print(f"Loading .env.{env}...")
+load_dotenv(f".env")
+print(f"Loading .env")
+
 
 class Settings(BaseSettings):
     mongo_initdb_database: str
@@ -18,9 +18,16 @@ class Settings(BaseSettings):
     oauth2_client_secret: str
     oauth2_redirect_uri: str
     next_url: str
+    pinecone_api_key: str
+    pinecone_index_name: str
+    openai_api_key: str
+    s3_bucket_name: str
+    cloudfront_domain: str
+    youtube_api_key: str
 
     class Config:
-        env_file = f".env.{env}"
+        env_file = f".env"
         extra = "ignore"
+
 
 settings = Settings()

@@ -1,74 +1,31 @@
 import {
   createContext,
   useContext,
-  useState,
   ReactNode,
-  useEffect,
 } from "react";
-import { useRouter } from "next/router";
-import api from "@/lib/api";
-import { toast } from "@/components/ui/use-toast";
-
-type User = {
-  username: string;
-  full_name: string;
-  email: string;
-};
+import { PublicUser } from "@/types/user";
+import { useCheckUserState } from "@/hooks/user";
 
 type UserContextType = {
-  user: User | null;
-  setUser: (user: User | null) => void;
+  user: PublicUser | null | undefined;
   logout: () => void;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          throw new Error("No token found");
-        }
-
-        const response = await api.get("/auth/me");
-
-        setUser(response.data);
-      } catch (error) {
-        console.error("Failed to fetch user", error);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
-  const logout = async () => {
-    setUser(null);
-    await api.post("/auth/logout"); //backend session
-    localStorage.removeItem("token"); //frontend session
-    toast({
-      title: "Logged out",
-      description: "You have been logged out.",
-    })
-    router.push("/auth/login");
-  };
+  const { user, isLoading: loading, error, logout } = useCheckUserState();
 
   if (loading) {
     return null;
   }
 
+  if (error) {
+    console.log("Error fetching user", error);
+  }
+
   return (
-    <UserContext.Provider value={{ user, setUser, logout }}>
+    <UserContext.Provider value={{ user, logout: logout }}>
       {children}
     </UserContext.Provider>
   );

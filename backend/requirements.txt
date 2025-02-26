@@ -10,3 +10,9 @@ aiohttp
 dnspython
 python-multipart
 nltk
+pinecone
+openai
+boto3
+bs4
+requests
+youtube_transcript_api

@@ -37,7 +37,7 @@ const mainLinks = [
     subItems: [
       {
         title: "Walkthrough Video",
-        href: "/",
+        href: "/about/howto",
         label:
           "A quick loom video showing how to get started with the app and its features.",
       },
@@ -59,8 +59,8 @@ const mainLinks = [
     ],
   },
   {
-    title: "Spydr Terminal",
-    href: "/terminal",
+    title: "Explore",
+    href: "/explore",
     subItems: [],
   },
   {

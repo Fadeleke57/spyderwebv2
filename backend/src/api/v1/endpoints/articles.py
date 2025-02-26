@@ -5,7 +5,7 @@ from backend.src.db.neo4j import get_db
 
 router = APIRouter()
 
+
 @router.get("/article", response_model=schemas.Article)
 def get_article():
     pass
-

@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+
+
 class Article(BaseModel):
     id: str
     header: str
@@ -9,3 +11,9 @@ class Article(BaseModel):
     sentiment: float
     subjectivity: float
     reliability_score: float
+    attachments: list[str] = []
+
+
+class GenerateArticlesForBucketPayload(BaseModel):
+    bucketId: str
+    claim: str

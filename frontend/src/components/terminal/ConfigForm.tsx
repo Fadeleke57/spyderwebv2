@@ -1,5 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input, SearchInput } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Calendar } from "@/components/ui/calendar";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -23,6 +26,10 @@ import {
 } from "@/components/ui/form";
 import { ConfigFormValues } from "@/types/article";
 import { topicsWithSubtopics } from "@/types/topics";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { CalendarIcon, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
 
 type ConfigFormProps = {
   setIsOpen?: (value: boolean) => void;
@@ -35,12 +42,17 @@ function ConfigForm({ setIsOpen, setConfig }: ConfigFormProps) {
       z.object({
         query: z.string().optional(),
         topic: z.string().optional(),
+        enableSpydrSearch: z.boolean().optional(),
       })
     ),
   });
 
   const onSubmit: SubmitHandler<ConfigFormValues> = (data) => {
-    setConfig({ query: data.query, topic: data.topic });
+    setConfig({
+      query: data.query,
+      topic: data.topic,
+      enableSpydrSearch: data.enableSpydrSearch,
+    });
 
     if (setIsOpen) {
       setIsOpen(false);
@@ -50,30 +62,24 @@ function ConfigForm({ setIsOpen, setConfig }: ConfigFormProps) {
   return (
     <>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-3">
-          <div className="">
-            <h4 className=" text-xl font-semibold tracking-tight">
-              Sypdr Terminal
-            </h4>
-            <p className="text-sm text-muted-foreground">
-              Query thousands of articles over the Spydr Terminal.
-            </p>
-          </div>
-
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-6 mt-3 w-full"
+        >
           <FormField
             control={form.control}
             name="query"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Search Term</FormLabel>
-
-                <FormControl>
-                  <div className="flex w-full max-w-sm items-center space-x-2">
-                    <Input placeholder="2024 Election" {...field} />
-                  </div>
+              <FormItem className="w-full">
+                <FormLabel className="hidden">Search</FormLabel>
+                <FormControl className="flex w-full items-center space-x-2">
+                  <SearchInput
+                    placeholder="What are you looking for?"
+                    {...field}
+                  ></SearchInput>
                 </FormControl>
                 <FormDescription>
-                  Please provide a relevant search term.
+                  Find similar and exact matches to your query.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -81,6 +87,32 @@ function ConfigForm({ setIsOpen, setConfig }: ConfigFormProps) {
           />
 
           <FormField
+            control={form.control}
+            name="enableSpydrSearch"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-2">
+                <FormLabel></FormLabel>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    aria-readonly
+                    id="ss"
+                    className="m-0 p-0"
+                  />
+                </FormControl>
+                <Label htmlFor="ss" className="">
+                  Enable Spydr Search
+                </Label>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/**
+          * 
+          * 
+          * <FormField
             key={"topic"}
             control={form.control}
             name="topic"
@@ -89,10 +121,12 @@ function ConfigForm({ setIsOpen, setConfig }: ConfigFormProps) {
                 <FormLabel>Topic</FormLabel>
                 <FormControl>
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className="w-[280px]">
-                      <SelectValue placeholder="Select a topic" />
-                    </SelectTrigger>
-                    <SelectContent>
+                    <div className="flex w-full max-w-md items-center space-x-2">
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a topic" />
+                      </SelectTrigger>
+                    </div>
+                    <SelectContent className="max-h-[300px]">
                       <SelectItem value="None" className="px-4">
                         None
                       </SelectItem>
@@ -120,6 +154,8 @@ function ConfigForm({ setIsOpen, setConfig }: ConfigFormProps) {
               </FormItem>
             )}
           />
+          * 
+          */}
 
           <FormMessage>
             <Button type="submit">Search</Button>
