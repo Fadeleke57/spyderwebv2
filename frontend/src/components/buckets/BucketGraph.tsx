@@ -8,7 +8,6 @@ import { useDeleteSource, useFetchSourcesForBucket } from "@/hooks/sources";
 import { Source, SourceAsNode } from "@/types/source";
 import { Trash } from "lucide-react";
 import { useUser } from "@/context/UserContext";
-import { useFetchBucketById } from "@/hooks/buckets";
 import { updateTextElements, shouldUseTspans } from "@/lib/utils";
 import {
   Tooltip,
@@ -29,20 +28,26 @@ import { useFetchAllConnectionsForBucket } from "@/hooks/connections";
 import { Connection, ConnectionData } from "@/types/connection";
 
 interface GraphProps {
+  isOwner: boolean;
   setConfig: (value: BucketConfigFormValues) => void;
   bucketId: string;
   hasSources: boolean;
+  refetchSources: () => void;
   fetchedSources: Source[];
   setFetchedSources: Dispatch<SetStateAction<Source[]>>;
+  sourcesLoading: boolean;
   selectedSourceId: string | null;
   setSelectedSourceId: Dispatch<SetStateAction<string>>;
 }
 
 function BucketGraph({
+  isOwner,
   bucketId,
   hasSources,
   fetchedSources,
+  refetchSources,
   setFetchedSources,
+  sourcesLoading,
   selectedSourceId,
   setSelectedSourceId,
 }: GraphProps) {
@@ -61,33 +66,25 @@ function BucketGraph({
     y: number;
   } | null>(null);
 
-  const {
-    data: bucket,
-    isLoading: bucketLoading,
-    refetch: refetchBucket,
-  } = useFetchBucketById(bucketId);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
 
   const {
-    data: sources,
-    isLoading: sourcesLoading,
-    error: sourcesError,
-    refetch: refetchSources,
-  } = useFetchSourcesForBucket(bucketId);
-
-  const { data: connections, isLoading: connectionsLoading } =
-    useFetchAllConnectionsForBucket(bucketId);
+    data: connections,
+    isLoading: connectionsLoading,
+    refetch: refetchConnections,
+  } = useFetchAllConnectionsForBucket(bucketId);
 
   const { mutateAsync: deleteSource } = useDeleteSource();
 
   const handleDeleteSource = async (sourceId: string) => {
     await deleteSource(sourceId);
-    refetchBucket();
+    refetchConnections();
     refetchSources();
   };
 
   useEffect(() => {
-    setFetchedSources(sources);
+    if (!svgRef.current) return;
+    if (!fetchedSources) return;
     const width = 3200;
     const height = 2400;
     const centerX = width / 8 + (isMobile ? -220 : 40);
@@ -147,9 +144,9 @@ function BucketGraph({
       })) || [];
 
     const nodes: SourceAsNode[] =
-      sources &&
-      sources.map((d: Source, i: number) => {
-        const angle = (i / sources.length) * 2 * Math.PI;
+      fetchedSources &&
+      fetchedSources.map((d: Source, i: number) => {
+        const angle = (i / fetchedSources.length) * 2 * Math.PI;
         const x = centerX + initialCircleRadius * Math.cos(angle);
         const y = centerY + initialCircleRadius * Math.sin(angle);
         return { ...d, x, y };
@@ -454,15 +451,22 @@ function BucketGraph({
     return () => {
       simulation.stop();
     };
-  }, [sources, deleteSource, refetchSources, trashRef, connections, theme]);
+  }, [
+    fetchedSources,
+    deleteSource,
+    refetchSources,
+    trashRef,
+    connections,
+    theme,
+  ]);
 
-  if (sourcesLoading && hasSources) {
+  if ((connectionsLoading || sourcesLoading) && hasSources) {
     return <LoadingPage></LoadingPage>;
   }
 
   return (
     <>
-      {bucket && bucket.userId === user?.id && (
+      {isOwner && (
         <div ref={trashRef} className="absolute left-3 top-3 cursor-pointer">
           <TooltipProvider delayDuration={100}>
             <Tooltip>

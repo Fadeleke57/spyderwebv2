@@ -4,6 +4,7 @@ from src.routes.auth.oauth2 import manager
 from src.utils.exceptions import check_user
 from src.lib.s3.index import S3Bucket
 from src.db.mongodb import get_collection, insert_item
+from src.models.connection import Connections
 from uuid import uuid4
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -345,6 +346,8 @@ def delete_source(source_id: str, user=Depends(manager)):
 
     if not bucket:
         raise HTTPException(status_code=404, detail="Item not found")
+    
+    Connections.delete_many({"$or": [{"fromSourceId": source_id}, {"toSourceId": source_id}]}) #delete connections connected to this source
 
     return {"result": "Source deleted"}
 
