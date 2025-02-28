@@ -83,7 +83,7 @@ export function IterateModal({
         title: "Bucket iterated successfully",
         description: "A new bucket has been created.",
       });
-      router.push("/buckets/bucket/" + bucketId);
+      router.push("/bucket/" + bucketId);
       setFormData({
         name: "",
         description: "",
