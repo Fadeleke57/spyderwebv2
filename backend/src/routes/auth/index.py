@@ -12,8 +12,8 @@ from src.routes.auth.oauth2 import (
 )
 from src.core.config import settings
 from src.models.user import Users, User, CreateUser
-from src.models.bucket import Buckets
-from src.models.source import Sources
+from src.models.bucket import Buckets, Bucket
+from src.models.source import Sources, Source
 from datetime import timedelta
 import logging
 from fastapi import APIRouter
@@ -90,6 +90,9 @@ async def auth_callback(code: str):
     user = Users.find_one({"email": email})
 
     if not user:
+        userId = str(uuid.uuid4())
+        bucketId = str(uuid.uuid4())
+        sourceId = str(uuid.uuid4())
         Users.insert_one(
             {
                 "id": str(uuid.uuid4()),
@@ -106,22 +109,33 @@ async def auth_callback(code: str):
                 "bucketsSaved": [],
             }
         )
-        Buckets.insert_one(
-            {
-                "bucketId": str(uuid.uuid4()),
+        sourceToInsert : Source = {
+                "sourceId": sourceId,
+                "bucketId": bucketId,
+                "userId": userId,
+                "name": "How to use Spydr (click me!)",
+                "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new bucket or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your bucket.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your bucket with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other buckets and start from there.\n### Have fun!",
+                "url": None,
+                "type": "note",
+                "size": None,
+                "created": datetime.now(UTC),
+                "updated": datetime.now(UTC),
+            }
+        Sources.insert_one(sourceToInsert)
+        bucketToInsert : Bucket = {
+                "bucketId": bucketId,
                 "name": "Welcome to Spydr!",
                 "description": "This is your first bucket! Create a new bucket to get started.",
-                "userId": Users.find_one({"email": email})["id"],
-                "articleIds": [],
-                "created": datetime.now(),
-                "updated": datetime.now(),
+                "userId": userId,
+                "sourceIds": [sourceId],
+                "created": datetime.now(UTC),
+                "updated": datetime.now(UTC),
                 "visibility": "Private",
                 "tags": [],
                 "likes": [],
                 "iterations": [],
-            }
-        )
-        user = Users.find_one({"email": email})
+        }
+        Buckets.insert_one(bucketToInsert)
 
     access_token = manager.create_access_token(
         data={"sub": email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -157,7 +171,7 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.post("/register")
-def register(user: CreateUser):
+def register(createUserPayload: CreateUser):
     """
     Register a new user.
 
@@ -167,23 +181,27 @@ def register(user: CreateUser):
     :return: A JSONResponse with a success message
     """
 
-    if Users.find_one({"email": user.email}):
+    if Users.find_one({"email": createUserPayload.email}):
         raise HTTPException(
             status_code=400, detail="There is already an account with this email."
         )
-    if Users.find_one({"username": user.username}):
+    if Users.find_one({"username": createUserPayload.username}):
         raise HTTPException(
             status_code=400, detail="There is already an account with this username."
         )
 
-    hashed_password = get_password_hash(user.password)
+    hashedPassword = get_password_hash(createUserPayload.password)
+
     userId = str(uuid.uuid4())
-    user_data = {
+    sourceId = str(uuid.uuid4())
+    bucketId = str(uuid.uuid4())
+
+    userToInsert = {
         "id": userId,
-        "username": user.username,
-        "full_name": user.username,
-        "email": user.email,
-        "hashed_password": hashed_password,
+        "username": createUserPayload.username,
+        "full_name": createUserPayload.username,
+        "email": createUserPayload.email,
+        "hashed_password": hashedPassword,
         "disabled": False,
         "profile_picture_url": None,
         "analytics": {"searches": []},
@@ -192,28 +210,8 @@ def register(user: CreateUser):
         "bucketsHidden": [],
         "bucketsSaved": [],
     }
-    Users.insert_one(user_data)
-
-    bucketId = str(uuid.uuid4())
-    Buckets.insert_one(
-        {
-            "bucketId": bucketId,
-            "name": "Welcome to Spydr!",
-            "description": "This is your first bucket! Create a new bucket to get started.",
-            "userId": userId,
-            "created": datetime.now(UTC),
-            "updated": datetime.now(UTC),
-            "visibility": "Private",
-            "tags": [],
-            "likes": [],
-            "iterations": [],
-        }
-    )
-
-    sourceId = str(uuid.uuid4())
-
-    Sources.insert_one(
-        {
+    Users.insert_one(userToInsert)
+    sourceToInsert : Source = {
             "sourceId": sourceId,
             "bucketId": bucketId,
             "userId": userId,
@@ -225,15 +223,24 @@ def register(user: CreateUser):
             "created": datetime.now(UTC),
             "updated": datetime.now(UTC),
         }
-    )
-
-    Buckets.update_one(
-        {"bucketId": bucketId, "userId": userId},
-        {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
-    )
+    Sources.insert_one(sourceToInsert)
+    bucketToInsert : Bucket = {
+            "bucketId": bucketId,
+            "name": "Welcome to Spydr!",
+            "description": "This is your first bucket! Create a new bucket to get started.",
+            "userId": userId,
+            "sourceIds": [sourceId],
+            "created": datetime.now(UTC),
+            "updated": datetime.now(UTC),
+            "visibility": "Private",
+            "tags": [],
+            "likes": [],
+            "iterations": [],
+    }
+    Buckets.insert_one(bucketToInsert)
 
     access_token = manager.create_access_token(
-        data={"sub": user.email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        data={"sub": createUserPayload.email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
 
     response = JSONResponse(

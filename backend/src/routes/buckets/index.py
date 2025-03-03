@@ -11,9 +11,10 @@ from src.utils.exceptions import check_user
 from src.utils.search import run_semantic_search
 from src.models.user import User, Users
 from src.models.analytics import Search, Searches
-from src.models.source import Sources
+from src.models.source import Sources, Source
+from src.models.connection import Connections, ConnectionType, ConnectionData
 from datetime import datetime
-from src.models.bucket import Buckets, BucketConfig, UpdateBucket, IterateBucket
+from src.models.bucket import Buckets, BucketConfig, UpdateBucket, IterateBucket, Bucket
 from fastapi.exceptions import HTTPException
 from botocore.exceptions import ClientError
 from src.lib.logger.index import logger
@@ -547,82 +548,278 @@ def iterate_bucket(
 
     Raises:
         HTTPException: If the bucket is not found, raises a 404 error.
+        HTTPException: If user validation fails, raises a 401 error.
+        HTTPException: If database operations fail, raises a 500 error with detailed message.
+        HTTPException: If embedding generation fails, raises a 500 error.
     """
     check_user(user)
 
     bucketToIterate = Buckets.find_one({"bucketId": bucket_id})
+    if not bucketToIterate:
+        logger.warning(f"Bucket not found: {bucket_id}")
+        raise HTTPException(status_code=404, detail=f"Bucket with ID {bucket_id} not found")
+    
     associatedUser = Users.find_one({"id": bucketToIterate["userId"]}, {"_id": 0})
-
-    if not bucketToIterate or not associatedUser:
-        raise HTTPException(status_code=404, detail="Bucket or owner not found")
+    if not associatedUser:
+        logger.warning(f"User not found for bucket: {bucket_id}")
+        raise HTTPException(status_code=404, detail="Owner of the bucket not found")
 
     try:
-
         newBucketId = str(uuid.uuid4())
-        newSourceIds = []
         bucketToIterateSources = bucketToIterate.get("sourceIds", [])
-        for sourceId in bucketToIterateSources:
+        newSourceIds = set()
+        proccessedSourceIds = set()
+        
+        # Process connections if included
+        if iteratePayload.includeConnections:
+            try:
+                sources_to_insert = []
+                connections_to_insert = []
 
-            sourceToCopy = Sources.find_one({"sourceId": sourceId})
-            if not sourceToCopy:
-                continue
+                bucketToIterateConnections = list(Connections.find({"bucketId": bucket_id})) or []
+                if not bucketToIterateConnections:
+                    logger.info(f"No connections found for bucket {bucket_id}")
+                
+                for connectionToCopy in bucketToIterateConnections:
+                    fromSourceIdToCopy, toSourceIdToCopy = connectionToCopy["fromSourceId"], connectionToCopy["toSourceId"]
+                    proccessedSourceIds.add(fromSourceIdToCopy)
+                    proccessedSourceIds.add(toSourceIdToCopy)
+                 
+                    fromSourceToCopy = Sources.find_one({"sourceId": fromSourceIdToCopy})
+                    toSourceToCopy = Sources.find_one({"sourceId": toSourceIdToCopy})
 
-            newSourceId = str(uuid.uuid4())
+                    if not fromSourceToCopy or not toSourceToCopy:
+                        logger.warning(f"Warning: Connection {connectionToCopy.get('connectionId', 'unknown')} references nonexistent source(s). fromSource: {bool(fromSourceToCopy)}, toSource: {bool(toSourceToCopy)}")
+                        continue
 
-            sourceToInsert = {
-                "sourceId": newSourceId,
-                "bucketId": newBucketId,
-                "userId": user["id"],
-                "name": sourceToCopy["name"],
-                "content": (
-                    sourceToCopy["content"]
-                    if sourceToCopy["type"] != "document"
-                    else None
-                ),
-                "url": sourceToCopy["url"],
-                "type": sourceToCopy["type"],
-                "size": sourceToCopy["size"],
-                "created": datetime.now(UTC),
-                "updated": datetime.now(UTC),
-            }
-            Sources.insert_one(sourceToInsert)
-            newSourceIds.append(newSourceId)
+                    # Create new source IDs
+                    newFromSourceId, newToSourceId = str(uuid.uuid4()), str(uuid.uuid4())
+                    newSourceIds.add(newFromSourceId)
+                    newSourceIds.add(newToSourceId)
 
-        bucket_to_insert = {
+                    # Prepare new from source
+                    newFromSource : Source = {
+                        "sourceId": newFromSourceId,
+                        "bucketId": newBucketId,
+                        "userId": user["id"],
+                        "name": fromSourceToCopy["name"],
+                        "content": (
+                            fromSourceToCopy["content"]
+                            if fromSourceToCopy["type"] != "document"
+                            else None
+                        ),
+                        "url": fromSourceToCopy["url"],
+                        "type": fromSourceToCopy["type"],
+                        "size": fromSourceToCopy["size"],
+                        "created": datetime.now(UTC),
+                        "updated": datetime.now(UTC),
+                    }
+
+                    # Prepare new to source
+                    newToSource : Source = {
+                        "sourceId": newToSourceId,
+                        "bucketId": newBucketId,
+                        "userId": user["id"],
+                        "name": toSourceToCopy["name"],
+                        "content": (
+                            toSourceToCopy["content"]
+                            if toSourceToCopy["type"] != "document"
+                            else None
+                        ),
+                        "url": toSourceToCopy["url"],
+                        "type": toSourceToCopy["type"],
+                        "size": toSourceToCopy["size"],
+                        "created": datetime.now(UTC),
+                        "updated": datetime.now(UTC),
+                    }
+
+                    # Prepare new connection
+                    newConnectionId = str(uuid.uuid4())
+                    newConnection : ConnectionType = {
+                        "connectionId": newConnectionId,
+                        "bucketId": newBucketId,
+                        "data" : {
+                            "description" : connectionToCopy.get("description", "")
+                        },
+                        "fromSourceId": newFromSourceId,
+                        "toSourceId": newToSourceId,
+                        "created": datetime.now(UTC),
+                        "updated": datetime.now(UTC), 
+                    }
+                    sources_to_insert.extend([newFromSource, newToSource])
+                    connections_to_insert.append(newConnection)
+
+                # Insert new sources and connections
+                if sources_to_insert:
+                    try:
+                        Sources.insert_many(sources_to_insert)
+                        logger.debug(f"Inserted {len(sources_to_insert)} connected sources")
+                    except Exception as e:
+                        logger.error(f"Failed to insert connected sources: {str(e)}")
+                        raise HTTPException(status_code=500, detail=f"Failed to insert connected sources: {str(e)}")
+                
+                if connections_to_insert:
+                    try:
+                        Connections.insert_many(connections_to_insert)
+                        logger.debug(f"Inserted {len(connections_to_insert)} connections")
+                    except Exception as e:
+                        logger.error(f"Failed to insert connections: {str(e)}")
+                        raise HTTPException(status_code=500, detail=f"Failed to insert connections: {str(e)}")
+
+                # Process standalone sources
+                standAloneSourceIds = set(bucketToIterateSources) - proccessedSourceIds
+                if standAloneSourceIds:
+                    logger.debug(f"Processing {len(standAloneSourceIds)} standalone sources")
+                    standAloneSourcesToInsert = []
+                    for standAloneSourceId in standAloneSourceIds:
+                        sourceToCopy = Sources.find_one({"sourceId": sourceId})
+                        if not sourceToCopy:
+                            logger.warning(f"Standalone source {sourceId} not found, skipping")
+                            continue
+
+                        newSourceId = str(uuid.uuid4())
+                        newSourceIds.add(newSourceId)
+                        sourceToInsert : Source = {
+                            "sourceId": newSourceId,
+                            "bucketId": newBucketId,
+                            "userId": user["id"],
+                            "name": sourceToCopy["name"],
+                            "content": (
+                                sourceToCopy["content"]
+                                if sourceToCopy["type"] != "document"
+                                else None
+                            ),
+                            "url": sourceToCopy["url"],
+                            "type": sourceToCopy["type"],
+                            "size": sourceToCopy["size"],
+                            "created": datetime.now(UTC),
+                            "updated": datetime.now(UTC),
+                        }
+                        standAloneSourcesToInsert.append(sourceToInsert)
+
+                    if standAloneSourcesToInsert:
+                        try:
+                            Sources.insert_many(standAloneSourcesToInsert)
+                            logger.debug(f"Inserted {len(standAloneSourcesToInsert)} standalone sources")
+                        except Exception as e:
+                            logger.error(f"Failed to insert standalone sources: {str(e)}")
+                            raise HTTPException(status_code=500, detail=f"Failed to insert standalone sources: {str(e)}")
+            except Exception as e:
+                if isinstance(e, HTTPException):
+                    raise e
+                logger.error(f"Error processing connections: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Error processing connections: {str(e)}")
+        else:
+            # Process without connections
+            try:
+                logger.debug(f"Processing sources without connections")
+                newSources = []
+                for sourceId in bucketToIterateSources:
+                    sourceToCopy = Sources.find_one({"sourceId": sourceId})
+                    if not sourceToCopy:
+                        logger.warning(f"Source {sourceId} not found, skipping")
+                        continue
+
+                    newSourceId = str(uuid.uuid4())
+                    sourceToInsert : Source = {
+                        "sourceId": newSourceId,
+                        "bucketId": newBucketId,
+                        "userId": user["id"],
+                        "name": sourceToCopy["name"],
+                        "content": (
+                            sourceToCopy["content"]
+                            if sourceToCopy["type"] != "document"
+                            else None
+                        ),
+                        "url": sourceToCopy["url"],
+                        "type": sourceToCopy["type"],
+                        "size": sourceToCopy["size"],
+                        "created": datetime.now(UTC),
+                        "updated": datetime.now(UTC),
+                    }
+                    newSources.append(sourceToInsert)
+                    newSourceIds.add(newSourceId)
+
+                if newSources:
+                    try:
+                        Sources.insert_many(newSources)
+                        logger.debug(f"Inserted {len(newSources)} sources (no connections)")
+                    except Exception as e:
+                        logger.error(f"Failed to insert sources (no connections): {str(e)}")
+                        raise HTTPException(status_code=500, detail=f"Failed to insert sources: {str(e)}")
+            except Exception as e:
+                if isinstance(e, HTTPException):
+                    raise e
+                logger.error(f"Error processing sources without connections: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Error processing sources: {str(e)}")
+
+        # Create the new bucket
+        bucket_to_insert : Bucket = {
             "bucketId": newBucketId,
             "name": iteratePayload.name,
-            "description": iteratePayload.description,
+            "description": iteratePayload.description if hasattr(iteratePayload, 'description') else "",
             "userId": user["id"],
-            "sourceIds": newSourceIds,
+            "sourceIds": list(newSourceIds),
             "created": datetime.now(UTC),
             "updated": datetime.now(UTC),
             "visibility": "Private",
-            "tags": bucketToIterate["tags"],
+            "tags": bucketToIterate.get("tags", []),
             "iteratedFrom": associatedUser["id"],
             "likes": [],
             "iterations": [],
         }
 
-        vectors = generate_bucket_embeddings(iteratePayload.name, iteratePayload.description)
-        pincone_insert = bucket_to_insert.copy()
+        # Generate embeddings for Pinecone
+        try:
+            vectors = generate_bucket_embeddings(iteratePayload.name, bucket_to_insert["description"])
+            logger.debug(f"Generated bucket embeddings successfully")
+            
+            # Insert into Pinecone
+            pincone_insert = bucket_to_insert.copy()
+            pincone_insert["created"] = str(bucket_to_insert["created"])
+            pincone_insert["updated"] = str(bucket_to_insert["updated"])
+            embedding_data = [(newBucketId, vectors, pincone_insert)]
+            
+            try:
+                PCINDEX.upsert(
+                    vectors=embedding_data,
+                    namespace="buckets",
+                )
+                logger.debug(f"Upserted bucket data to Pinecone")
+            except Exception as e:
+                logger.error(f"Pinecone upsert error: {str(e)}")
+                raise HTTPException(status_code=500, detail=f"Failed to store vector embeddings: {str(e)}")
+        except Exception as e:
+            logger.error(f"Embedding generation error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to generate embeddings: {str(e)}")
 
-        pincone_insert["created"] = str(bucket_to_insert["created"])
-        pincone_insert["updated"] = str(bucket_to_insert["updated"])
-        embedding_data = [(newBucketId, vectors, pincone_insert)]
-        PCINDEX.upsert(
-            vectors=embedding_data,
-            namespace="buckets",
-        )
+        # Insert the new bucket into the database
+        try:
+            Buckets.insert_one(bucket_to_insert)
+            logger.debug(f"Inserted new bucket {newBucketId}")
+        except Exception as e:
+            logger.error(f"Failed to insert new bucket: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to insert new bucket: {str(e)}")
 
-        Buckets.insert_one(bucket_to_insert)
-        Buckets.find_one_and_update(
-            {"bucketId": bucketToIterate["bucketId"]},
-            {"$push": {"iterations": user["id"]}},
-        )
+        # Update the original bucket's iterations
+        try:
+            update_result = Buckets.find_one_and_update(
+                {"bucketId": bucketToIterate["bucketId"]},
+                {"$push": {"iterations": user["id"]}},
+            )
+            if not update_result:
+                logger.warning(f"Failed to update iterations for original bucket {bucket_id}")
+        except Exception as e:
+            logger.error(f"Failed to update original bucket iterations: {str(e)}")
+            # Don't raise exception here as the main operation succeeded
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error iterating bucket: {str(e)}")
+        if isinstance(e, HTTPException):
+            raise e
+        logger.error(f"Unexpected error in bucket iteration: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Bucket iteration failed: {str(e)}")
 
+    logger.info(f"Successfully iterated bucket {bucket_id} to new bucket {newBucketId}")
     return {"result": newBucketId}
 
 

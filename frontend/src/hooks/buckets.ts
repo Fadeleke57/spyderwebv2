@@ -252,6 +252,7 @@ export function useRemoveTagFromBucket(bucketId: string) {
 export type IterateBucketPayload = {
   name: string;
   description: string;
+  includeConnections: boolean;
 };
 
 export function useIterateBucket(bucketId: string) {
@@ -261,7 +262,8 @@ export function useIterateBucket(bucketId: string) {
       return response.data.result;
     },
     onSuccess: () => {},
-    onError: () => {},
+    onError: () => {
+    },
   });
 }
 

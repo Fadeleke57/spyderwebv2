@@ -9,7 +9,7 @@ Buckets = get_collection("buckets")
 class Bucket(BaseModel):
     bucketId: str
     name: str
-    description: str
+    description: Optional[str] = None
     tags: list[str]
     userId: str
     articleIds: list[str]  # list of article ids to fetch from neo4j
@@ -42,6 +42,7 @@ class UpdateBucket(BaseModel):
 class IterateBucket(BaseModel):
     name: str
     description: str
+    includeConnections: bool
 
 
 class LikeBucket(BaseModel):
