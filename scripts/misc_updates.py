@@ -187,5 +187,33 @@ def delete_connections_wiith_nonexisting_sources():
 
     print(f"Total connections deleted: {updated_count}")
 
+def attach_userids_to_sources():
+    all_sources = sources.find()
+    updated_count = 0
+
+    for source in all_sources:
+        belongs_to_bucket = buckets.find_one({"bucketId": source["bucketId"]})
+
+        if not belongs_to_bucket:
+            print(f"Source {source['_id']} does not belong to a bucket, deleting...skipping")
+            sources.delete_one({"_id": source["_id"]})
+            continue
+
+        belongs_to_user = users.find_one({"id": belongs_to_bucket["userId"]})
+
+        if not belongs_to_user:
+            print(f"Source {source['_id']} does not belong to a user, deleting...skipping")
+            sources.delete_one({"_id": source["_id"]})
+            continue
+
+        sources.update_one(
+            {"sourceId": source["sourceId"]},
+            {"$set": {"userId": belongs_to_user["id"]}}
+        )
+        updated_count += 1
+        print(f"Updated source {source['_id']} with new userId: {belongs_to_user['id']}")
+
+    print(f"Total sources updated: {updated_count}")
+
 if __name__ == "__main__":
-    delete_connections_wiith_nonexisting_sources()
+    attach_userids_to_sources()

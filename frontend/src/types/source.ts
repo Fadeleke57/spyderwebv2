@@ -1,7 +1,7 @@
 export interface Source {
   sourceId: string;
   bucketId: string;
-  userId?: string;
+  userId: string;
   name: string;
   url: string;
   type: string;
