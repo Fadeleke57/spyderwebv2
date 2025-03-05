@@ -8,11 +8,10 @@ Buckets = get_collection("buckets")
 
 class Bucket(BaseModel):
     bucketId: str
+    userId: str
     name: str
     description: str
     tags: list[str]
-    userId: str
-    articleIds: list[str]  # list of article ids to fetch from neo4j
     sourceIds: list[str]
     imageKeys: list[str]
     created: datetime

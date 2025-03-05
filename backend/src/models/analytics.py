@@ -1,11 +1,12 @@
 from typing import Optional, List
+from typing_extensions import TypedDict
 from pydantic import BaseModel
 from src.db.mongodb import get_collection
 
 Searches = get_collection("searches")
 
 
-class SearchFilter(BaseModel):
+class SearchFilter(TypedDict):
     visibility: Optional[str] = None
     userId: Optional[str] = None
     bucketId: Optional[List[str]] = None

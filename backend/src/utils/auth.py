@@ -3,6 +3,16 @@ import string
 
 
 def generate_username():
+    """
+    Generate a random username by combining an adjective, a noun, and a 4-digit number.
+
+    The function selects a random adjective and noun from predefined lists and appends
+    a randomly generated 4-digit number to create a unique username.
+
+    Returns:
+        str: A randomly generated username.
+    """
+
     adjectives = [
         "swift",
         "silent",
@@ -185,11 +195,9 @@ def generate_username():
         "albatross",
     ]
 
-    # Generate a random combination
     adjective = random.choice(adjectives)
     noun = random.choice(nouns)
     number = "".join(random.choices(string.digits, k=4))
 
-    # Combine them to form a username
     username = f"{adjective}{noun}{number}"
     return username
