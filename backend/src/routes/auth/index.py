@@ -90,9 +90,10 @@ async def auth_callback(code: str):
     user = Users.find_one({"email": email})
 
     if not user:
+        userId = str(uuid.uuid4())
         Users.insert_one(
             {
-                "id": str(uuid.uuid4()),
+                "id": userId,
                 "username": generate_username(),
                 "full_name": user_data["name"],
                 "email": user_data["email"],
@@ -106,12 +107,13 @@ async def auth_callback(code: str):
                 "bucketsSaved": [],
             }
         )
+        bucketId = str(uuid.uuid4())
         Buckets.insert_one(
             {
                 "bucketId": str(uuid.uuid4()),
                 "name": "Welcome to Spydr!",
                 "description": "This is your first bucket! Create a new bucket to get started.",
-                "userId": Users.find_one({"email": email})["id"],
+                "userId": userId,
                 "articleIds": [],
                 "created": datetime.now(),
                 "updated": datetime.now(),
@@ -121,7 +123,21 @@ async def auth_callback(code: str):
                 "iterations": [],
             }
         )
-        user = Users.find_one({"email": email})
+        sourceId = str(uuid.uuid4())
+        Sources.insert_one(
+            {
+                "sourceId": sourceId,
+                "bucketId": bucketId,
+                "userId": userId,
+                "name": "Welcome to Spydr!",
+                "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new bucket or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your bucket.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your bucket with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other buckets and start from there.\n### Have fun!",
+                "url": None,
+                "type": "note",
+                "size": None,
+                "created": datetime.now(UTC),
+                "updated": datetime.now(UTC),
+            }
+        )
 
     access_token = manager.create_access_token(
         data={"sub": email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
