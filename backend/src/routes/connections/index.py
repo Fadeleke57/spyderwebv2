@@ -20,30 +20,47 @@ router = APIRouter()
 
 @router.get("/all/bucket/{bucket_id}")
 def get_all_connections(bucket_id: str):
-    bucketConnections = neo4jClient.get_all_connections_for_web("connection", bucket_id)
+    try:
+        bucketConnections = neo4jClient.get_all_connections_for_web("connection", bucket_id)
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+    
     return {"result": bucketConnections}
 
 
 @router.get("/outgoing/{bucket_id}/{source_id}")
 def get_outgoing_connections(bucket_id: str, source_id: str):
-    outgoing_connections = neo4jClient.get_outgoing_connections_for_source(
-        "connection", source_id
-    )
+    try:
+        outgoing_connections = neo4jClient.get_outgoing_connections_for_source(
+            "connection", source_id
+        )
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+    
     return {"result": outgoing_connections}
 
 
 @router.get("/incoming/{bucket_id}/{source_id}")
 def get_incoming_connections(bucket_id: str, source_id: str):
-    incomingConnections = neo4jClient.get_incoming_connections_for_source(
-        "connection", source_id
-    )
+    try:
+        incomingConnections = neo4jClient.get_incoming_connections_for_source(
+            "connection", source_id
+        )
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
     return {"result": incomingConnections}
 
 
 @router.get("/connection/{bucket_id}/{connection_id}")
 def get_connection(bucket_id: str, connection_id: str):
-
-    connection = neo4jClient.get_connection_by_id("connection", connection_id)
+    try:
+        connection = neo4jClient.get_connection_by_id("connection", connection_id)
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
     if not connection:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -65,10 +82,13 @@ def create_connection(connection_data: CreateConnection, user=Depends(manager)):
             "created": datetime.now(UTC),
             "updated": datetime.now(UTC),
         }
-        Connections.insert_one(connection.copy())
-        neo4jClient.create_connection_between_sources(
-            connection_data.fromSourceId, connection_data.toSourceId, connection
-        )
+        try:
+            neo4jClient.create_connection_between_sources(
+                connection_data.fromSourceId, connection_data.toSourceId, connection
+            )
+        except Exception as e:
+            logger.error(str(e))
+            raise HTTPException(status_code=500, detail=str(e))
 
         return {"result": connection}
     except Exception as e:

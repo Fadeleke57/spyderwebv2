@@ -175,7 +175,11 @@ def get_all_sources(web_id: str):
         dict: A JSON response containing a list of sources associated with the given web ID.
     """
     # sourcesForWeb = sources.find({"bucketId": web_id}, {"_id": 0})
-    sources = neo4jClient.get_all_sources_for_web("source", web_id)
+    try:
+        sources = neo4jClient.get_all_sources_for_web("source", web_id)
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
     return {"result": sources}
 
 
@@ -225,7 +229,13 @@ def upload_note(bucket_id: str, note: CreateNote, user=Depends(manager)):
         "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
     }
-    neo4jClient.create_node("source", sourceToInsert)
+
+    try:
+        neo4jClient.create_node("source", sourceToInsert)
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+    
     buckets = get_collection("buckets")
     buckets.update_one(
         {"bucketId": bucket_id, "userId": user["id"]},
@@ -256,7 +266,12 @@ def add_youtube(web_id: str, video_id: str, user=Depends(manager)):
         "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
     }
-    neo4jClient.create_node("source", sourceToInsert)
+    try:
+        neo4jClient.create_node("source", sourceToInsert)
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+    
     buckets = get_collection("buckets")
     buckets.update_one(
         {"bucketId": web_id, "userId": user["id"]},
@@ -377,7 +392,11 @@ def edit_source(sourceId: str, info: UpdateSource, user=Depends(manager)):
     update_data = info.model_dump(exclude_none=True)
     update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
-    neo4jClient.update_source(source_id=sourceId, properties=update_data)
+    try:
+        neo4jClient.update_source(source_id=sourceId, properties=update_data)
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
     return {"result", "Source updated"}
 
