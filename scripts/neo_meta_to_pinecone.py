@@ -2,6 +2,7 @@ from neo4j import GraphDatabase
 from pinecone import Pinecone, ServerlessSpec
 import os
 from dotenv import load_dotenv
+from pymongo import MongoClient
 
 load_dotenv()
 # this script is for adding metadata from neo4j to pinecone
@@ -11,6 +12,16 @@ password = os.getenv("NEO4J_PASSWORD")
 
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_ENVIRONMENT = os.getenv("PINECONE_ENVIRONMENT", "us-east-1")
+
+mongoUrl = os.getenv('MONGO_URL')
+mongoInitdbDatabase = os.getenv('MONGO_INITDB_DATABASE')
+
+client = MongoClient(mongoUrl)
+db = client[mongoInitdbDatabase]
+users = db['users']
+buckets = db['buckets']
+sources = db['sources']
+connections = db['connections']
 
 class Neo4jToPinecone:
     
@@ -85,13 +96,36 @@ class Neo4jToPinecone:
                 pinecone_index.upsert(vector_data)
             else:
                 print(f"No vector found for article {article_id}, skipping upsert...")
+    
+    def migrateSourcesToNeo(self):
+        allSources = sources.find({})
+        for source_doc in allSources:
+            source_data = dict(source_doc)
+            
+            if '_id' in source_data:
+                del source_data['_id']
+            
+            sourceId = source_data["sourceId"]
+            print(f"Adding source {sourceId} to neo4j")
+            try:
+                with self.driver.session() as session:
+   
+                    properties = ", ".join([f"s.{key} = ${key}" for key in source_data.keys()])
+            
+                    query = f"""
+                    CREATE (s:Source {{id: $sourceId}})
+                    SET {properties}
+                    RETURN s
+                    """
+                    
+                    session.run(query, **source_data)
+    
+            except Exception as e:
+                print(f"Failed to create source: {sourceId}. Error: {str(e)}")
 
 if __name__ == "__main__":
-    neo4j_to_pinecone = Neo4jToPinecone(uri, user, password, PINECONE_API_KEY, PINECONE_ENVIRONMENT)
-    
+    client = Neo4jToPinecone(uri=uri, user=user, password=password, pinecone_api_key=PINECONE_API_KEY, pinecone_env=PINECONE_ENVIRONMENT)
     try:
-        print("Processing article metadata and adding to Pinecone...")
-        neo4j_to_pinecone.process_articles()
-        print("Metadata successfully added to Pinecone without overwriting vectors.")
-    finally:
-        neo4j_to_pinecone.close()
+        client.migrateSourcesToNeo()
+    except Exception as e:
+        print("Something went wrong!")

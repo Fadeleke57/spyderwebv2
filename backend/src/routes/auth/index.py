@@ -21,6 +21,7 @@ import uuid
 from datetime import datetime
 from pytz import UTC
 from src.utils.auth import generate_username
+from src.db.neo4j import client as neo4jClient
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -124,20 +125,19 @@ async def auth_callback(code: str):
             }
         )
         sourceId = str(uuid.uuid4())
-        Sources.insert_one(
-            {
-                "sourceId": sourceId,
-                "bucketId": bucketId,
-                "userId": userId,
-                "name": "Welcome to Spydr!",
-                "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new bucket or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your bucket.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your bucket with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other buckets and start from there.\n### Have fun!",
-                "url": None,
-                "type": "note",
-                "size": None,
-                "created": datetime.now(UTC),
-                "updated": datetime.now(UTC),
-            }
-        )
+        sourceToInsert = {
+            "sourceId": sourceId,
+            "bucketId": bucketId,
+            "userId": userId,
+            "name": "Welcome to Spydr!",
+            "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new bucket or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your bucket.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your bucket with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other buckets and start from there.\n### Have fun!",
+            "url": None,
+            "type": "note",
+            "size": None,
+            "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        }
+        neo4jClient.create_node("source", sourceToInsert)
 
     access_token = manager.create_access_token(
         data={"sub": email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -227,21 +227,20 @@ def register(user: CreateUser):
     )
 
     sourceId = str(uuid.uuid4())
+    sourceToInsert = {
+        "sourceId": sourceId,
+        "bucketId": bucketId,
+        "userId": userId,
+        "name": "How to use Spydr (click me!)",
+        "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new bucket or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your bucket.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your bucket with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other buckets and start from there.\n### Have fun!",
+        "url": None,
+        "type": "note",
+        "size": None,
+        "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+    }
 
-    Sources.insert_one(
-        {
-            "sourceId": sourceId,
-            "bucketId": bucketId,
-            "userId": userId,
-            "name": "How to use Spydr (click me!)",
-            "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new bucket or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your bucket.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your bucket with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other buckets and start from there.\n### Have fun!",
-            "url": None,
-            "type": "note",
-            "size": None,
-            "created": datetime.now(UTC),
-            "updated": datetime.now(UTC),
-        }
-    )
+    neo4jClient.create_node("source", sourceToInsert)
 
     Buckets.update_one(
         {"bucketId": bucketId, "userId": userId},

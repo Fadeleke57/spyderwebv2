@@ -11,6 +11,7 @@ from src.models.connection import (
     UpdateConnection,
     ConnectionType,
 )
+from src.db.neo4j import client as neo4jClient
 from fastapi.exceptions import HTTPException
 from src.lib.logger.index import logger
 
@@ -19,40 +20,30 @@ router = APIRouter()
 
 @router.get("/all/bucket/{bucket_id}")
 def get_all_connections(bucket_id: str):
-
-    bucketConnections = list(Connections.find({"bucketId": bucket_id}, {"_id": 0}))
+    bucketConnections = neo4jClient.get_all_connections_for_web("connection", bucket_id)
     return {"result": bucketConnections}
 
 
 @router.get("/outgoing/{bucket_id}/{source_id}")
 def get_outgoing_connections(bucket_id: str, source_id: str):
-
-    connections = list(
-        Connections.find(
-            {"bucketId": bucket_id, "fromSourceId": source_id},
-            {"_id": 0},
-        ).sort("updated", -1)
+    outgoing_connections = neo4jClient.get_outgoing_connections_for_source(
+        "connection", source_id
     )
-    return {"result": connections or []}
+    return {"result": outgoing_connections}
 
 
 @router.get("/incoming/{bucket_id}/{source_id}")
 def get_incoming_connections(bucket_id: str, source_id: str):
-
-    connections = list(
-        Connections.find(
-            {"bucketId": bucket_id, "toSourceId": source_id}, {"_id": 0}
-        ).sort("updated", -1)
+    incomingConnections = neo4jClient.get_incoming_connections_for_source(
+        "connection", source_id
     )
-    return {"result": connections or []}
+    return {"result": incomingConnections}
 
 
 @router.get("/connection/{bucket_id}/{connection_id}")
 def get_connection(bucket_id: str, connection_id: str):
 
-    connection = Connections.find_one(
-        {"bucketId": bucket_id, "connectionId": connection_id}, {"_id": 0}
-    )
+    connection = neo4jClient.get_connection_by_id("connection", connection_id)
 
     if not connection:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -70,11 +61,14 @@ def create_connection(connection_data: CreateConnection, user=Depends(manager)):
             "fromSourceId": connection_data.fromSourceId,
             "toSourceId": connection_data.toSourceId,
             "bucketId": connection_data.bucketId,
-            "data": connection_data.data,
+            "data.description": connection_data.data.get("description"),
             "created": datetime.now(UTC),
             "updated": datetime.now(UTC),
         }
         Connections.insert_one(connection.copy())
+        neo4jClient.create_connection_between_sources(
+            connection_data.fromSourceId, connection_data.toSourceId, connection
+        )
 
         return {"result": connection}
     except Exception as e:
@@ -87,17 +81,7 @@ def update_connection(
     connection_id: str, config: UpdateConnection, user=Depends(manager)
 ):
     check_user(user)
-
-    updates = config.model_dump(exclude=None)
-    updates["updated"] = datetime.now(UTC)
-
-    try:
-        connection = Connections.update_one(
-            {"connectionId": connection_id}, {"$set": updates}, return_document=True
-        )
-        return {"result": connection}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    pass
 
 
 @router.delete("/delete/{connection_id}")
@@ -105,7 +89,8 @@ def delete_connection(connection_id: str, user=Depends(manager)):
     check_user(user)
 
     try:
-        Connections.delete_one({"connectionId": connection_id})
+        neo4jClient.delete_connection(connection_id, "connection")
         return {"result": "Connection deleted"}
     except Exception as e:
+        logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))

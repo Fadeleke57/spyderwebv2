@@ -1,17 +1,22 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from src.db.mongodb import get_item_by_id, client as mongo_client
-
-# from src.db.neo4j import driver as neo4j_driver, run_query
+from src.db.mongodb import client as mongoClient
+from src.db.neo4j import client as neo4jClient
 from contextlib import asynccontextmanager
 import logging
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    mongo_client.server_info()  # Connect to both
-    logging.info("Successfully connected to MongoDB")
+    """
+    Lifespan context manager for FastAPI.
+
+    Connects to MongoDB and Neo4j on startup, verifies that they are connected,
+    and disconnects from both when the application is shut down.
+    """
+    mongoClient.server_info()  # Connect to both
+    neo4jClient.verify_connectivity()
+    logging.info("Successfully connected to MongoDB and Neo4j")
     yield  # Disconnect from both
-    mongo_client.close()
-    # neo4j_driver.close()
+    mongoClient.close()
+    neo4jClient.close()
     logging.info("Disconnected from MongoDB")
