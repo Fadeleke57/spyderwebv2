@@ -2,7 +2,7 @@ import React, { useEffect, ChangeEvent, useCallback, DragEvent } from "react";
 import ReactMarkdown, { Components } from "react-markdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { formatDate } from "date-fns";
+import { formatDate } from "@/lib/utils";
 import { SourceAsNode } from "@/types/source";
 import { useUploadImageToSource } from "@/hooks/sources";
 import { Loader2 } from "lucide-react";
@@ -272,10 +272,7 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
       onDrop={handleDrop}
     >
       <small className="text-muted-foreground">
-        {formatDate(
-          new Date(source ? source.updated + "Z" : ""),
-          "MMMM dd, yyyy hh:mm a"
-        )}
+        {formatDate(source?.updated.toString())}
       </small>
       {renderContent()}
       {updateError && <p className="text-red-500">{updateError}</p>}

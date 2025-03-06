@@ -3,7 +3,7 @@ import { useUpdateNote } from "@/hooks/sources";
 import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, Edit, SquareArrowOutUpRight, X } from "lucide-react";
-import { formatDate } from "date-fns";
+import { formatDate } from "@/lib/utils";
 import { Textarea } from "../ui/textarea";
 import { debounce } from "lodash";
 import { useUser } from "@/context/UserContext";
@@ -111,10 +111,7 @@ export default function BucketDataModal({
         return (
           <>
             <small className="text-muted-foreground">
-              {formatDate(
-                new Date(source ? source.updated + "Z" : ""),
-                "MMMM dd, yyyy hh:mm a"
-              )}
+              {formatDate(source?.updated.toString())}
             </small>
             <iframe
               src={source?.url || ""}
@@ -128,10 +125,7 @@ export default function BucketDataModal({
         return (
           <>
             <small className="text-muted-foreground">
-              {formatDate(
-                new Date(source ? source.updated + "Z" : ""),
-                "MMMM dd, yyyy hh:mm a"
-              )}
+              {formatDate(source?.updated.toString())}
             </small>
             <object
               data={presignedUrl}
@@ -147,10 +141,7 @@ export default function BucketDataModal({
         return (
           <>
             <small className="text-muted-foreground">
-              {formatDate(
-                new Date(source ? source.updated + "Z" : ""),
-                "MMMM dd, yyyy hh:mm a"
-              )}
+              {formatDate(source?.updated.toString())}
             </small>
             <iframe
               width="100%"

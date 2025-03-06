@@ -4,7 +4,7 @@ import { BucketConfigFormValues } from "@/types/article";
 import { useState, Dispatch, SetStateAction } from "react";
 import { LoadingPage } from "@/components/utility/Loading";
 import BucketDataDrawer from "./BucketDataModal";
-import { useDeleteSource, useFetchSourcesForBucket } from "@/hooks/sources";
+import { useDeleteSource } from "@/hooks/sources";
 import { Source, SourceAsNode } from "@/types/source";
 import { Trash } from "lucide-react";
 import { useUser } from "@/context/UserContext";
@@ -148,7 +148,6 @@ function BucketGraph({
       connections?.map((connection: Connection) => ({
         source: connection.fromSourceId,
         target: connection.toSourceId,
-        data: connection.data,
       })) || [];
 
     const nodes: SourceAsNode[] =

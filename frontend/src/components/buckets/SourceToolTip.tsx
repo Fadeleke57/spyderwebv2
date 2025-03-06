@@ -62,7 +62,7 @@ const SourceTooltip = ({ children, source, position }: SourceTooltipProps) => {
 
           <div className="flex flex-col gap-1 text-xs text-gray-500 dark:text-gray-400">
             {source?.created && (
-              <div>Added {formatDate(source.created + "Z")}</div>
+              <div>Added {formatDate(source.created.toString())}</div>
             )}
             {source?.url && source?.type === "website" && (
               <div className="truncate">{source.url}</div>

@@ -9,7 +9,7 @@ Sources = get_collection("sources")
 class Source(BaseModel):
     sourceId: str
     bucketId: str
-    userId: Optional[str]
+    userId: str
     name: Optional[str]
     url: Optional[str]
     content: Optional[str]

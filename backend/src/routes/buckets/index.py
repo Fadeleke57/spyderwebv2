@@ -207,8 +207,12 @@ def create_bucket(config: BucketConfig, user=Depends(manager)):
 
         # pinecone pipeline
         vectors = generate_bucket_embeddings(config.name, config.description)
-        pincone_insert = bucket_to_insert.copy() #create copy so we don't modify the original
-        pincone_insert["created"] = str(bucket_to_insert["created"]) #data object not allowed in pinecone
+        pincone_insert = (
+            bucket_to_insert.copy()
+        )  # create copy so we don't modify the original
+        pincone_insert["created"] = str(
+            bucket_to_insert["created"]
+        )  # data object not allowed in pinecone
         pincone_insert["updated"] = str(bucket_to_insert["updated"])
         embedding_data = [(bucketId, vectors, pincone_insert)]
         PCINDEX.upsert(
@@ -603,7 +607,9 @@ def iterate_bucket(
             "iterations": [],
         }
 
-        vectors = generate_bucket_embeddings(iteratePayload.name, iteratePayload.description)
+        vectors = generate_bucket_embeddings(
+            iteratePayload.name, iteratePayload.description
+        )
         pincone_insert = bucket_to_insert.copy()
 
         pincone_insert["created"] = str(bucket_to_insert["created"])

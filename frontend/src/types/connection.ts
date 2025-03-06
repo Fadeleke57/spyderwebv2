@@ -5,7 +5,7 @@ type ConnectionData = {
 type Connection = {
   connectionId: string;
   bucketId: string;
-  data: ConnectionData;
+  "data.description": string;
   fromSourceId: string;
   toSourceId: string;
   created: Date;

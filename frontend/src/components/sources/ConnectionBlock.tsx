@@ -46,7 +46,7 @@ function ConnectionBlock({
         <div className="w-full ">
           <h4 className="font-medium">Description:</h4>
           <p className="text-sm text-muted-foreground wrap">
-            {connection.data.description}
+            {connection["data.description"]}
           </p>
         </div>
       </div>

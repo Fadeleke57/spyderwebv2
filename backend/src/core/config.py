@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     mongo_initdb_database: str
     mongo_url: str
     neo4j_uri: str
-    neo4j_user: str
+    neo4j_username: str
     neo4j_password: str
     fastapi_env: str
     fastapi_secret_key: str

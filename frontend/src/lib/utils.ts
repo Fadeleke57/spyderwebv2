@@ -198,6 +198,14 @@ export const updateTextElements = (
 
   return textElements;
 };
+export const formatDate = (dateString?: string) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
