@@ -21,11 +21,13 @@ router = APIRouter()
 @router.get("/all/bucket/{bucket_id}")
 def get_all_connections(bucket_id: str):
     try:
-        bucketConnections = neo4jClient.get_all_connections_for_web("connection", bucket_id)
+        bucketConnections = neo4jClient.get_all_connections_for_web(
+            "connection", bucket_id
+        )
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
-    
+
     return {"result": bucketConnections}
 
 
@@ -38,7 +40,7 @@ def get_outgoing_connections(bucket_id: str, source_id: str):
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
-    
+
     return {"result": outgoing_connections}
 
 

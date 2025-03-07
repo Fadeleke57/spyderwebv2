@@ -25,6 +25,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "../ui/drawer";
+import { Switch } from "../ui/switch";
 export function IterateModal({
   bucket,
   open,
@@ -45,10 +46,8 @@ export function IterateModal({
   const [formData, setFormData] = useState({
     name: bucket.name,
     description: bucket.description || "",
+    withConnections: false,
   });
-  const { data: bucketOwner, isLoading: bucketOwnerLoading } = useFetchUserById(
-    bucket.userId as string
-  );
   const handleStopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -87,6 +86,7 @@ export function IterateModal({
       setFormData({
         name: "",
         description: "",
+        withConnections: false,
       });
     } catch (error) {
       toast({
@@ -147,6 +147,26 @@ export function IterateModal({
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="with-connections"
+                className="text-sm font-medium"
+              >
+                Include connections?
+              </label>
+              <Switch
+                id="with-connections"
+                name="withConnections"
+                checked={formData.withConnections}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    withConnections: checked,
+                  }))
+                }
               />
             </div>
 
@@ -218,6 +238,27 @@ export function IterateModal({
               name="description"
               value={formData.description}
               onChange={handleInputChange}
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="with-connections"
+              className="text-sm font-medium"
+            >
+              Include connections?
+            </label>{/* TODO: implement this */}
+            <Switch
+              disabled 
+              id="with-connections"
+              name="withConnections"
+              checked={formData.withConnections}
+              onCheckedChange={(checked) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  withConnections: checked,
+                }))
+              }
             />
           </div>
 

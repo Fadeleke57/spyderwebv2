@@ -1,13 +1,14 @@
 from neo4j import GraphDatabase
 from src.core.config import settings
 from neo4j import Record, Session
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 from src.models.source import Source
 from datetime import datetime
 from pytz import UTC
 from uuid import uuid4
 from typing import Optional
 from src.lib.logger.index import logger
+from uuid import uuid4
 
 
 class Neo4jDBService:
@@ -229,7 +230,7 @@ class Neo4jDBService:
         return result[0]["r"] if result else None
 
     # spydr specific methods
-    def get_all_sources_for_web(self, label: str, web_id: str) -> Dict[str, Any]:
+    def get_all_sources_for_web(self, label: str, web_id: str) -> List[Dict[str, Any]]:
         if label not in self.supported_labels:
             raise ValueError(f"Unsupported label: {label}")
 
@@ -244,7 +245,9 @@ class Neo4jDBService:
         sources = [source["s"] for source in sources_result]
         return sources
 
-    def get_all_connections_for_web(self, label: str, web_id: str) -> Dict[str, Any]:
+    def get_all_connections_for_web(
+        self, label: str, web_id: str
+    ) -> List[Dict[str, Any]]:
         if label not in self.supported_labels:
             raise ValueError(f"Unsupported label: {label}")
 
@@ -261,7 +264,7 @@ class Neo4jDBService:
 
     def get_outgoing_connections_for_source(
         self, label: str, source_id: str
-    ) -> Dict[str, Any]:
+    ) -> List[Dict[str, Any]]:
         if label not in self.supported_labels:
             raise ValueError(f"Unsupported label: {label}")
 
@@ -280,7 +283,7 @@ class Neo4jDBService:
 
     def get_incoming_connections_for_source(
         self, label: str, source_id: str
-    ) -> Dict[str, Any]:
+    ) -> List[Dict[str, Any]]:
         if label not in self.supported_labels:
             raise ValueError(f"Unsupported label: {label}")
 
@@ -395,6 +398,70 @@ class Neo4jDBService:
         query = "MATCH (n) WHERE n.sourceId = $source_id DETACH DELETE n"
         self.execute_query(query, {"source_id": source_id})
         return True
+    
+    def _create_connections_for_copied_sources(self, original_bucket_id: str, new_bucket_id: str, id_mapping: dict) -> None:
+        query = """
+            MATCH (originalSource:source)-[c:connection]->(originalTarget:source)
+            WHERE originalSource.bucketId = $originalBucketId 
+            AND originalTarget.bucketId = $originalBucketId
+            AND originalSource.sourceId IN $originalSourceIds
+            AND originalTarget.sourceId IN $originalSourceIds
+            
+            WITH originalSource.sourceId AS origSourceId, 
+                originalTarget.sourceId AS origTargetId,
+                c,
+                $idMapping AS idMapping
+            
+            MATCH (newSource:source), (newTarget:source)
+            WHERE newSource.sourceId = idMapping[origSourceId]
+            AND newTarget.sourceId = idMapping[origTargetId]
+            AND newSource.bucketId = $newBucketId
+            AND newTarget.bucketId = $newBucketId
+            
+            CREATE (newSource)-[newC:connection]->(newTarget)
+            SET newC = c {.*, connectionId: randomUUID()}
+        """
+        
+        self.execute_query(
+            query,
+            {
+                "originalBucketId": original_bucket_id,
+                "newBucketId": new_bucket_id,
+                "idMapping": id_mapping,
+                "originalSourceIds": list(id_mapping.keys())
+            },
+        )
+
+    def copy_sources_to_new_web(self, original_bucket_id: str, new_bucket_id: str, new_user_id: str, with_connections: bool = False) -> Tuple[str, List[str]]:
+        #copy all source nodes and create a mapping
+        query = """
+        MATCH (originalSource:source)
+        WHERE originalSource.bucketId = $originalBucketId
+        WITH originalSource, $newBucketId AS newBucketId, $newUserId AS newUserId
+
+        CREATE (newSource:source)
+        SET newSource = originalSource {.*, sourceId: randomUUID(), bucketId: newBucketId, userId: newUserId}
+        RETURN originalSource.sourceId AS originalSourceId, newSource.sourceId AS newSourceId;
+        """
+
+        result = self.execute_query(
+            query,
+            {
+                "originalBucketId": original_bucket_id,
+                "newBucketId": new_bucket_id,
+                "newUserId": new_user_id,
+            },
+        )
+        
+        #create mapping and collect new source IDs
+        id_mapping = {record["originalSourceId"]: record["newSourceId"] for record in result}
+        new_source_ids = list(id_mapping.values())
+        
+        #if with_connections is True, create the connections between new sources
+        if with_connections and id_mapping:
+            self._create_connections_for_copied_sources(original_bucket_id, new_bucket_id, id_mapping)
+        
+        return new_bucket_id, new_source_ids
 
 
 client = Neo4jDBService()

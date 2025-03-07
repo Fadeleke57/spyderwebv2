@@ -41,6 +41,7 @@ class UpdateBucket(BaseModel):
 class IterateBucket(BaseModel):
     name: str
     description: str
+    withConnections: bool
 
 
 class LikeBucket(BaseModel):

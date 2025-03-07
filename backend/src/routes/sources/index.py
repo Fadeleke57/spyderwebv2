@@ -235,7 +235,7 @@ def upload_note(bucket_id: str, note: CreateNote, user=Depends(manager)):
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
-    
+
     buckets = get_collection("buckets")
     buckets.update_one(
         {"bucketId": bucket_id, "userId": user["id"]},
@@ -271,7 +271,7 @@ def add_youtube(web_id: str, video_id: str, user=Depends(manager)):
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
-    
+
     buckets = get_collection("buckets")
     buckets.update_one(
         {"bucketId": web_id, "userId": user["id"]},
