@@ -10,14 +10,16 @@ from pytz import UTC
 from src.utils.exceptions import check_user
 from src.utils.search import run_semantic_search
 from src.models.user import User, Users
+from src.db.neo4j import client as neo4jClient
 from src.models.analytics import Search, Searches
-from src.models.source import Sources
+from src.models.source import Sources, Source
 from datetime import datetime
 from src.models.bucket import Buckets, BucketConfig, UpdateBucket, IterateBucket
 from fastapi.exceptions import HTTPException
 from botocore.exceptions import ClientError
 from src.lib.logger.index import logger
 from pymongo import ReturnDocument
+from typing import List
 from src.core.config import settings
 import boto3
 from src.lib.pinecone.index import PCINDEX, PC, generate_bucket_embeddings
@@ -366,7 +368,7 @@ def delete_bucket(bucketId: str, user=Depends(manager)):
     for source in sourcesForBucket:
         if source["type"] == "document":
             s3.delete_object(Bucket=s3_bucket.bucket_name, Key=source["url"])
-        Sources.delete_one({"sourceId": source["sourceId"]})
+        neo4jClient.delete_source(source["sourceId"])
 
     return {"result": "Bucket deleted"}
 
@@ -563,35 +565,13 @@ def iterate_bucket(
     try:
 
         newBucketId = str(uuid.uuid4())
-        newSourceIds = []
-        bucketToIterateSources = bucketToIterate.get("sourceIds", [])
-        for sourceId in bucketToIterateSources:
 
-            sourceToCopy = Sources.find_one({"sourceId": sourceId})
-            if not sourceToCopy:
-                continue
-
-            newSourceId = str(uuid.uuid4())
-
-            sourceToInsert = {
-                "sourceId": newSourceId,
-                "bucketId": newBucketId,
-                "userId": user["id"],
-                "name": sourceToCopy["name"],
-                "content": (
-                    sourceToCopy["content"]
-                    if sourceToCopy["type"] != "document"
-                    else None
-                ),
-                "url": sourceToCopy["url"],
-                "type": sourceToCopy["type"],
-                "size": sourceToCopy["size"],
-                "created": datetime.now(UTC),
-                "updated": datetime.now(UTC),
-            }
-            Sources.insert_one(sourceToInsert)
-            newSourceIds.append(newSourceId)
-
+        try:
+            newBucketId, newSourceIds = neo4jClient.copy_sources_to_new_web(original_bucket_id=bucket_id, new_bucket_id=newBucketId, new_user_id=user["id"], with_connections=iteratePayload.withConnections)
+        except Exception as e:
+            logger.error(str(e))
+            raise HTTPException(status_code=500, detail=str(e))
+        
         bucket_to_insert = {
             "bucketId": newBucketId,
             "name": iteratePayload.name,
