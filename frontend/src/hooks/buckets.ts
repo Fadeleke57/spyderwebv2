@@ -298,3 +298,15 @@ export function useSearchBuckets(query: string, filters?: SearchFilter) {
     enabled: !!query,
   });
 }
+
+export function useFetchContributers(bucketId: string) {
+  return useQuery({
+    queryKey: ["buckets", "contributers", bucketId],
+    queryFn: async () => {
+      const response = await api.get(`/buckets/contributers/${bucketId}`);
+      return response.data.result;
+    },
+  });
+}
+
+

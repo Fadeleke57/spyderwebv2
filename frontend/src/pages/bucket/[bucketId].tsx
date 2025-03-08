@@ -21,6 +21,8 @@ import { IterationCcw } from "lucide-react";
 import { IterateModal } from "@/components/utility/IterateModal";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { Separator } from "@/components/ui/separator";
+import ContributersBlock from "@/components/buckets/ContributersBlock";
 
 function Index() {
   const router = useRouter();
@@ -183,7 +185,9 @@ function Index() {
                 <BucketForm bucket={bucket} user={user ? user : null} />
               ) : bucket ? (
                 <PublicBucketView bucket={bucket} />
-              ) : null}
+                ) : null}
+                <Separator className="my-4" />
+                {bucketId && <ContributersBlock bucketId={bucketId as string} />}
             </ScrollArea>
           )}
           {loading ? (
