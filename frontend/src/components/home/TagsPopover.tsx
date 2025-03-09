@@ -1,51 +1,53 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, Hash } from "lucide-react";
-import { Bucket, BucketTag } from "@/types/bucket";
-import { useAddTagToBucket } from "@/hooks/buckets";
-import { useRemoveTagFromBucket } from "@/hooks/buckets";
+import { Web, WebTag, tagsList } from "@/types/web";
+import { useAddTagToWeb } from "@/hooks/webs";
+import { useRemoveTagFromWeb } from "@/hooks/webs";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useUser } from "@/context/UserContext";
-import { tagsList } from "@/types/bucket";
 
-export function TagsPopover({ bucket }: { bucket: Bucket }) {
+export function TagsPopover({ web }: { web: Web }) {
   const { user } = useUser();
   const {
-    mutateAsync: addTagToBucket,
+    mutateAsync: addTagToWeb,
     isPending: tagLoading,
     error,
-  } = useAddTagToBucket(bucket?.bucketId);
+  } = useAddTagToWeb(web?.webId);
   const {
-    mutateAsync: removeTagFromBucket,
+    mutateAsync: removeTagFromWeb,
     isPending: removeTagLoading,
     error: removeTagError,
-  } = useRemoveTagFromBucket(bucket?.bucketId);
+  } = useRemoveTagFromWeb(web?.webId);
 
   const [selectedTags, setSelectedTags] = useState<string[]>(
-    bucket?.tags || []
+    web?.tags || []
   );
 
   const toggleTag = (tag: string) => {
-    if (bucket.userId !== user?.id) {
+    if (web.userId !== user?.id) {
       return;
     }
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter((t) => t !== tag));
-      removeTagFromBucket(tag);
+      removeTagFromWeb(tag);
     } else {
       setSelectedTags([...selectedTags, tag]);
-      addTagToBucket(tag);
+      addTagToWeb(tag);
     }
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={"link"} className="rounded-full w-fit -ml-2 px-0 m-0 h-fit bg-transparent">
+        <Button
+          variant={"link"}
+          className="rounded-full w-fit -ml-2 px-0 m-0 h-fit bg-transparent"
+        >
           <Hash size={16} className="mr-1" />
           Tags
         </Button>
@@ -53,11 +55,11 @@ export function TagsPopover({ bucket }: { bucket: Bucket }) {
       <DropdownMenuContent
         side="right"
         sideOffset={4}
-        className={`${bucket?.userId !== user?.id ? "w-40" : "w-80"} p-4`}
+        className={`${web?.userId !== user?.id ? "w-40" : "w-80"} p-4`}
       >
         <div className="w-full h-fit rounded-md inline-flex justify-start flex-wrap gap-2">
-          {bucket?.userId === user?.id ? (
-            tagsList.map((tag: BucketTag) => {
+          {web?.userId === user?.id ? (
+            tagsList.map((tag: WebTag) => {
               const isSelected = selectedTags.includes(tag.label);
               return (
                 <div
@@ -74,8 +76,8 @@ export function TagsPopover({ bucket }: { bucket: Bucket }) {
                 </div>
               );
             })
-          ) : bucket?.tags.length ? (
-            bucket?.tags?.map((tag: string) => (
+          ) : web?.tags.length ? (
+            web?.tags?.map((tag: string) => (
               <div
                 key={tag}
                 className="cursor-pointer px-2 py-1 rounded-xl bg-blue-500  text-white flex items-center space-x-2"

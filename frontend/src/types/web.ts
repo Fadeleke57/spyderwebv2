@@ -1,5 +1,5 @@
-export interface Bucket {
-  bucketId: string;
+export interface Web {
+  webId: string;
   name: string;
   description: string;
   tags: string[];
@@ -14,19 +14,19 @@ export interface Bucket {
   iteratedFrom?: string;
 }
 
-export interface UpdateBucket {
+export interface UpdateWeb {
   name: string;
   description: string;
   visibility: "Private" | "Public" | "Invite";
   tags?: string[];
 }
 
-export type BucketTag = {
+export type WebTag = {
   value: string;
   label: string;
 };
 
-export const tagsList: BucketTag[] = [
+export const tagsList: WebTag[] = [
   {
     value: "Research",
     label: "research",

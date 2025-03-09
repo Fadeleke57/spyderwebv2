@@ -10,13 +10,13 @@ import {
   Minimize2,
   Maximize2,
 } from "lucide-react";
-import { Bucket } from "@/types/bucket";
+import { Web } from "@/types/web";
 import { PublicUser } from "@/types/user";
-import BucketSearchModal from "./BucketSearchModal";
-import BucketGraph from "./BucketGraph";
-import { BucketConfigFormValues } from "@/types/article";
+import WebSearchModal from "./AddSourceModal";
+import WebGraph from "./WebGraph";
+import { WebConfigFormValues } from "@/types/article";
 import { Source } from "@/types/source";
-import { useFetchSourcesForBucket } from "@/hooks/sources";
+import { useFetchSourcesForWeb } from "@/hooks/sources";
 import {
   Command,
   CommandEmpty,
@@ -30,7 +30,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import BucketDataDrawer from "./BucketDataModal";
+import WebDataDrawer from "./WebDataModal";
 
 import { PlusCircle } from "lucide-react";
 
@@ -51,18 +51,18 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 
-function BucketPlayground({
-  bucket,
+function WebPlayground({
+  web,
   user,
   refetch,
 }: {
-  bucket: Bucket;
+  web: Web;
   user: PublicUser | null;
   refetch: () => void;
 }) {
-  const [config, setConfig] = useState<BucketConfigFormValues>({
-    title: bucket?.name || "",
-    description: bucket?.description || "",
+  const [config, setConfig] = useState<WebConfigFormValues>({
+    title: web?.name || "",
+    description: web?.description || "",
   });
 
   const {
@@ -70,30 +70,30 @@ function BucketPlayground({
     isLoading: sourcesLoading,
     error: sourcesError,
     refetch: refetchSources,
-  } = useFetchSourcesForBucket(bucket?.bucketId);
+  } = useFetchSourcesForWeb(web?.webId);
 
-  const isOwner = user && user?.id === bucket?.userId;
+  const isOwner = user && user?.id === web?.userId;
   const [selectedSourceId, setSelectedSourceId] = useState<string>("");
   const [fetchedSources, setFetchedSources] = useState<Source[]>([]);
   const [open, setOpen] = React.useState(false);
-  const [isBucketDataDrawerOpen, setIsBucketDataDrawerOpen] = useState(false);
-  const [isBucketSearchModalOpen, setIsBucketSearchModalOpen] = useState(false);
+  const [isWebDataDrawerOpen, setIsWebDataDrawerOpen] = useState(false);
+  const [isWebSearchModalOpen, setIsWebSearchModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [bucketSearchModalView, setBucketSearchModalView] = useState<
+  const [webSearchModalView, setWebSearchModalView] = useState<
     "youtube" | "website" | "default" | "note"
   >("default");
 
   const handleSourceClick = (sourceId: string) => {
     setSelectedSourceId(sourceId);
-    setIsBucketDataDrawerOpen(true);
+    setIsWebDataDrawerOpen(true);
     setOpen(false);
   };
 
   const handleDropdownButtonClick = (
     view: "youtube" | "website" | "default" | "note"
   ) => {
-    setBucketSearchModalView(view);
-    setIsBucketSearchModalOpen(true);
+    setWebSearchModalView(view);
+    setIsWebSearchModalOpen(true);
   };
 
   const toggleExpand = () => {
@@ -121,7 +121,7 @@ function BucketPlayground({
             isExpanded ? "right-6" : "right-3"
           }  top-3`}
         >
-          {bucket?.sourceIds?.length || 0} sources added
+          {web?.sourceIds?.length || 0} sources added
         </Badge>
         <div
           className={`absolute bottom-28 ${
@@ -153,21 +153,21 @@ function BucketPlayground({
           </TooltipProvider>
         </div>
         {isOwner &&
-        (bucket?.sourceIds?.length === undefined ||
-          bucket?.sourceIds?.length === null ||
-          bucket?.sourceIds?.length > 0) ? (
+        (web?.sourceIds?.length === undefined ||
+          web?.sourceIds?.length === null ||
+          web?.sourceIds?.length > 0) ? (
           <div
             className={`absolute ${isExpanded ? "right-6" : "right-3"} top-10`}
           >
-            <BucketSearchModal
-              open={isBucketSearchModalOpen}
-              setOpen={setIsBucketSearchModalOpen}
-              bucket={bucket}
+            <WebSearchModal
+              open={isWebSearchModalOpen}
+              setOpen={setIsWebSearchModalOpen}
+              web={web}
               config={config}
               setConfig={setConfig}
               refreshSources={refetchSources}
-              refreshBucket={refetch}
-              view={bucketSearchModalView}
+              refreshWeb={refetch}
+              view={webSearchModalView}
             >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -225,10 +225,10 @@ function BucketPlayground({
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </BucketSearchModal>
+            </WebSearchModal>
           </div>
         ) : null}
-        {isOwner && bucket?.sourceIds?.length === 0 && (
+        {isOwner && web?.sourceIds?.length === 0 && (
           <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/4 flex flex-col items-center gap-1 text-center min-w-[300px]">
             <h3 className="text-2xl font-bold tracking-tight">
               Add your first source
@@ -238,15 +238,15 @@ function BucketPlayground({
             </p>
             <div className="flex flex-wrap gap-2 whitespace-nowrap mt-2 justify-center">
               {" "}
-              <BucketSearchModal
-                open={isBucketSearchModalOpen}
-                setOpen={setIsBucketSearchModalOpen}
-                bucket={bucket}
+              <WebSearchModal
+                open={isWebSearchModalOpen}
+                setOpen={setIsWebSearchModalOpen}
+                web={web}
                 config={config}
                 setConfig={setConfig}
                 refreshSources={refetchSources}
-                refreshBucket={refetch}
-                view={bucketSearchModalView}
+                refreshWeb={refetch}
+                view={webSearchModalView}
               >
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -304,16 +304,16 @@ function BucketPlayground({
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </BucketSearchModal>
+              </WebSearchModal>
             </div>
           </div>
         )}
         <div className="flex-1" />
-        <BucketGraph
+        <WebGraph
           isOwner={isOwner || false}
           setConfig={setConfig}
-          bucketId={bucket?.bucketId}
-          hasSources={bucket?.sourceIds?.length ? true : false}
+          webId={web?.webId}
+          hasSources={web?.sourceIds?.length ? true : false}
           fetchedSources={fetchedSources}
           setFetchedSources={setFetchedSources}
           refetchSources={refetchSources}
@@ -368,12 +368,12 @@ function BucketPlayground({
             </Popover>
           </div>
         </div>
-        {isBucketDataDrawerOpen && selectedSourceId && bucket?.bucketId && (
-          <BucketDataDrawer
-            open={isBucketDataDrawerOpen}
-            setOpen={setIsBucketDataDrawerOpen}
+        {isWebDataDrawerOpen && selectedSourceId && web?.webId && (
+          <WebDataDrawer
+            open={isWebDataDrawerOpen}
+            setOpen={setIsWebDataDrawerOpen}
             sourceId={selectedSourceId}
-            bucketId={bucket.bucketId}
+            webId={web.webId}
           />
         )}
       </div>
@@ -381,4 +381,4 @@ function BucketPlayground({
   );
 }
 
-export default BucketPlayground;
+export default WebPlayground;

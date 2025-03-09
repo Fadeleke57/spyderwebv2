@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bucket } from "@/types/bucket";
+import { Web } from "@/types/web";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -19,16 +19,16 @@ import {
   Star,
 } from "lucide-react";
 import {
-  useGetAllImagesForBucket,
-  useLikeBucket,
-  useUnlikeBucket,
-} from "@/hooks/buckets";
+  useGetAllImagesForWeb,
+  useLikeWeb,
+  useUnlikeWeb,
+} from "@/hooks/webs";
 import UserAvatar from "../utility/UserAvatar";
 import {
   useFetchUserById,
-  useHideBucket,
-  useSaveBucket,
-  useUnsaveBucket,
+  useHideWeb,
+  useSaveWeb,
+  useUnsaveWeb,
 } from "@/hooks/user";
 import { IterateModal } from "../utility/IterateModal";
 import {
@@ -46,28 +46,28 @@ import { PublicUser } from "@/types/user";
 import { ImageModal } from "../utility/ImageModal";
 import { SkeletonCard } from "../utility/SkeletonCard";
 
-export function BucketCard({
-  bucket,
+export function WebCard({
+  web,
   user,
 }: {
-  bucket: Bucket;
+  web: Web;
   user: PublicUser | null;
 }) {
-  const [bucketLikedCount, setBucketLikedCount] = useState(bucket.likes.length);
-  const [bucketSaved, setBucketSaved] = useState(false);
-  const [bucketHidden, setBucketHidden] = useState(false);
-  const [bucketLiked, setBucketLiked] = useState(false);
-  const [bucketIterated, _] = useState(false);
+  const [webLikedCount, setWebLikedCount] = useState(web.likes.length);
+  const [webSaved, setWebSaved] = useState(false);
+  const [webHidden, setWebHidden] = useState(false);
+  const [webLiked, setWebLiked] = useState(false);
+  const [webIterated, _] = useState(false);
 
-  const { data: bucketOwner, isLoading: bucketOwnerLoading } = useFetchUserById(
-    bucket.userId
+  const { data: webOwner, isLoading: webOwnerLoading } = useFetchUserById(
+    web.userId
   );
   const { data: imageUrls, isLoading: imagesLoading } =
-    useGetAllImagesForBucket(bucket.bucketId);
+    useGetAllImagesForWeb(web.webId);
   const { data: iteratedFromUser, isLoading: iteratedFromLoading } =
-    useFetchUserById(bucket.iteratedFrom || "");
-  const [bucketIterationsCount, setBucketIterationsCount] = useState(
-    bucket.iterations.length
+    useFetchUserById(web.iteratedFrom || "");
+  const [webIterationsCount, setWebIterationsCount] = useState(
+    web.iterations.length
   );
 
   const [images, setImages] = useState<string[]>([]);
@@ -78,80 +78,80 @@ export function BucketCard({
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>("");
 
-  const { mutateAsync: likeBucket } = useLikeBucket(bucket.bucketId);
-  const { mutateAsync: unlikeBucket } = useUnlikeBucket(bucket.bucketId);
-  const { mutateAsync: hideBucket } = useHideBucket(bucket.bucketId);
-  const { mutateAsync: saveBucket } = useSaveBucket(bucket.bucketId);
-  const { mutateAsync: unsaveBucket } = useUnsaveBucket(bucket.bucketId);
+  const { mutateAsync: likeWeb } = useLikeWeb(web.webId);
+  const { mutateAsync: unlikeWeb } = useUnlikeWeb(web.webId);
+  const { mutateAsync: hideWeb } = useHideWeb(web.webId);
+  const { mutateAsync: saveWeb } = useSaveWeb(web.webId);
+  const { mutateAsync: unsaveWeb } = useUnsaveWeb(web.webId);
 
   const handleStopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
   };
 
-  const handleHideBucket = async (e: React.MouseEvent) => {
+  const handleHideWeb = async (e: React.MouseEvent) => {
     handleStopPropagation(e);
     if (!user) {
       setAuthModalOpen(true);
       return;
     }
 
-    setBucketHidden(true);
-    await hideBucket();
+    setWebHidden(true);
+    await hideWeb();
   };
 
-  const handleUnhideBucket = async (e: React.MouseEvent) => {
+  const handleUnhideWeb = async (e: React.MouseEvent) => {
     handleStopPropagation(e);
-    setBucketHidden(false);
-    await hideBucket();
+    setWebHidden(false);
+    await hideWeb();
   };
 
-  const handleSaveBucket = async (e: React.MouseEvent) => {
+  const handleSaveWeb = async (e: React.MouseEvent) => {
     handleStopPropagation(e);
     if (!user) {
       setAuthModalOpen(true);
       return;
     }
 
-    if (bucketSaved) {
-      await unsaveBucket();
-      setBucketSaved(false);
+    if (webSaved) {
+      await unsaveWeb();
+      setWebSaved(false);
     } else {
-      await saveBucket();
-      setBucketSaved(true);
+      await saveWeb();
+      setWebSaved(true);
     }
   };
 
-  const handleLikeBucket = async (e: React.MouseEvent) => {
+  const handleLikeWeb = async (e: React.MouseEvent) => {
     handleStopPropagation(e);
     if (!user) {
       setAuthModalOpen(true);
       return;
     }
 
-    if (bucketLiked) {
-      const numLikes = await unlikeBucket();
+    if (webLiked) {
+      const numLikes = await unlikeWeb();
       if (numLikes !== undefined && numLikes !== null) {
-        setBucketLikedCount(numLikes);
+        setWebLikedCount(numLikes);
       }
-      setBucketLiked(false);
+      setWebLiked(false);
     } else {
-      const numLikes = await likeBucket();
+      const numLikes = await likeWeb();
       if (numLikes !== undefined && numLikes !== null) {
-        setBucketLikedCount(numLikes);
+        setWebLikedCount(numLikes);
       }
-      setBucketLiked(true);
+      setWebLiked(true);
     }
   };
 
-  const handleIterateBucket = (e: React.MouseEvent) => {
+  const handleIterateWeb = (e: React.MouseEvent) => {
     handleStopPropagation(e);
     if (!user) {
       setAuthModalOpen(true);
       return;
     }
 
-    if (bucketIterated || bucket.iterations.includes(user?.id || "")) {
+    if (webIterated || web.iterations.includes(user?.id || "")) {
       return;
     }
     setShowIterateModal(true);
@@ -165,13 +165,13 @@ export function BucketCard({
   };
 
   useEffect(() => {
-    setBucketLiked(bucket.likes.includes(user?.id as string));
-    setBucketLikedCount(bucket.likes.length);
-    setBucketIterationsCount(bucket.iterations.length);
+    setWebLiked(web.likes.includes(user?.id as string));
+    setWebLikedCount(web.likes.length);
+    setWebIterationsCount(web.iterations.length);
 
     if (user) {
-      setBucketSaved(user.bucketsSaved?.includes(bucket.bucketId) || false);
-      setBucketHidden(user.bucketsHidden?.includes(bucket.bucketId) || false);
+      setWebSaved(user.websSaved?.includes(web.webId) || false);
+      setWebHidden(user.websHidden?.includes(web.webId) || false);
     }
 
     if (iteratedFromUser) {
@@ -181,27 +181,27 @@ export function BucketCard({
     if (imageUrls) {
       setImages(imageUrls);
     }
-  }, [bucket, user, iteratedFromUser, imageUrls]);
+  }, [web, user, iteratedFromUser, imageUrls]);
 
-  if (user && user.bucketsHidden.includes(bucket.bucketId)) {
+  if (user && user.websHidden.includes(web.webId)) {
     return null;
   }
 
-  if (imagesLoading || bucketOwnerLoading || iteratedFromLoading) {
+  if (imagesLoading || webOwnerLoading || iteratedFromLoading) {
     return <SkeletonCard />;
   }
 
-  if (bucketHidden) {
+  if (webHidden) {
     return (
       <Card className="w-full relative mx-auto min-h-[60px] border-none bg-background hover:bg-muted py-2 border-b-2">
         <div className="flex items-center justify-between px-6">
           <p className="text-sm text-muted-foreground">
-            Bucket hidden successfully
+            Web hidden successfully
           </p>
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleUnhideBucket}
+            onClick={handleUnhideWeb}
             className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-500"
           >
             Undo
@@ -213,33 +213,33 @@ export function BucketCard({
 
   return (
     <Link
-      href={`/bucket/${bucket.bucketId}`}
+      href={`/web/${web.webId}`}
       className="flex flex-col hover:cursor-pointer"
     >
       <Card className="w-full relative mx-auto min-h-[80px] border-none bg-background hover:bg-muted py-6 border-b-2">
         <div className="absolute top-0 left-0 w-full flex justify-between items-center px-4">
           <div className="flex flex-row items-center mt-3">
             <UserAvatar
-              userId={bucket?.userId}
+              userId={web?.userId}
               width={20}
               height={20}
               className="w-[25px] h-[25px]"
             />
             <div className="ml-2 text-slate-500 flex flex-col align-center">
               <div className="flex flex-row items-center">
-                {bucketOwnerLoading ? (
+                {webOwnerLoading ? (
                   <Skeleton className="h-3 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
                 ) : (
                   <p className="text-xs text-slate-600 dark:text-foreground font-semibold">
-                    {bucketOwner?.username}
+                    {webOwner?.username}
                   </p>
                 )}
                 <p className="ml-2 text-xs text-slate-600 dark:text-foreground font-semibold">
                   *
                 </p>
                 <p className="ml-2 text-xs text-slate-600 dark:text-foreground font-semibold">
-                  {bucket?.updated
-                    ? formatDistanceToNow(new Date(bucket.updated), {
+                  {web?.updated
+                    ? formatDistanceToNow(new Date(web.updated), {
                         addSuffix: true,
                       })
                     : "Unknown date"}
@@ -253,7 +253,7 @@ export function BucketCard({
                       @{iteratedFrom.username}
                     </span>
                   </p>
-                ) : bucket.iteratedFrom ? (
+                ) : web.iteratedFrom ? (
                   <Skeleton className="h-3 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
                 ) : null}
               </div>
@@ -267,17 +267,17 @@ export function BucketCard({
               <DropdownMenuContent onClick={handleStopPropagation}>
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={handleSaveBucket}
+                  onClick={handleSaveWeb}
                 >
                   <Bookmark
                     size={16}
-                    className={`mr-2 ${bucketSaved && "fill-foreground"}`}
+                    className={`mr-2 ${webSaved && "fill-foreground"}`}
                   />
-                  {bucketSaved ? "Unsave" : "Save"}
+                  {webSaved ? "Unsave" : "Save"}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={handleHideBucket}
+                  onClick={handleHideWeb}
                 >
                   <EyeOff size={16} className="mr-2" />
                   Hide
@@ -288,10 +288,10 @@ export function BucketCard({
         </div>
         <CardHeader className="overflow-hidden">
           <CardTitle className="break-words hover:cursor-pointer mt-2 text-lg leading-tight hyphens-auto text-foreground">
-            {bucket.name}
+            {web.name}
           </CardTitle>
           <CardDescription className="hyphens-auto mb-8 max-w-6xl text-muted-foreground">
-            {bucket.description}
+            {web.description}
           </CardDescription>
         </CardHeader>
 
@@ -303,7 +303,7 @@ export function BucketCard({
                   height={300}
                   width={500}
                   src={images[0]}
-                  alt={bucket.name}
+                  alt={web.name}
                   className="rounded-md w-full border h-auto object-cover"
                   onClick={(e) => handleImageClick(e, images[0])}
                   style={{ maxHeight: "1000px" }}
@@ -316,8 +316,8 @@ export function BucketCard({
               setIsOpen={setShowImageModal}
               onClose={() => setShowImageModal(false)}
               imageUrl={selectedImage}
-              title={bucket.name}
-              description={bucket.description}
+              title={web.name}
+              description={web.description}
             />
           </>
         )}
@@ -327,58 +327,58 @@ export function BucketCard({
           <div className="flex flex-row items-center space-x-1">
             <p
               className={`text-sm ${
-                bucketLiked
+                webLiked
                   ? "text-blue-500 dark:text-blue-400"
                   : "text-muted-foreground"
               }`}
             >
-              {bucketLikedCount}
+              {webLikedCount}
             </p>
             <Star
               size={16}
               className={`${
-                bucketLiked
+                webLiked
                   ? "text-blue-500 dark:text-blue-400"
                   : "text-muted-foreground hover:text-blue-500 dark:hover:text-blue-400"
-              } ${bucketLiked ? "fill-blue-500 dark:fill-blue-400" : "none"}`}
-              onClick={handleLikeBucket}
+              } ${webLiked ? "fill-blue-500 dark:fill-blue-400" : "none"}`}
+              onClick={handleLikeWeb}
               strokeWidth={1.4}
             />
           </div>
           <div className="flex flex-row items-center space-x-1">
             <p
               className={`text-sm ${
-                bucketIterated
+                webIterated
                   ? "text-blue-500 dark:text-blue-400"
                   : "text-muted-foreground"
               }`}
             >
-              {bucketIterationsCount}
+              {webIterationsCount}
             </p>
             <IterationCcw
               className={`${
-                bucketIterated
+                webIterated
                   ? "text-blue-500 dark:text-blue-400"
                   : "text-muted-foreground hover:text-blue-500 dark:hover:text-blue-400"
               }`}
               size={14}
-              onClick={handleIterateBucket}
+              onClick={handleIterateWeb}
             />
           </div>
         </div>
         <p className="text-xs text-muted-foreground absolute bottom-4 right-6">
-          {bucket?.created
-            ? formatDistanceToNow(new Date(bucket.created), { addSuffix: true })
+          {web?.created
+            ? formatDistanceToNow(new Date(web.created), { addSuffix: true })
             : "Unknown date"}
         </p>
       </Card>
       <IterateModal
-        bucket={bucket}
+        web={web}
         open={showIterateModal}
         setIsOpen={setShowIterateModal}
       />
       <AuthModal
-        referrer="bucket"
+        referrer="web"
         type="login"
         open={authModalOpen}
         setOpen={setAuthModalOpen}

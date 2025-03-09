@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import { Bucket, UpdateBucket } from "@/types/bucket";
+import { Web, UpdateWeb } from "@/types/web";
 import {
   useInfiniteQuery,
   useMutation,
@@ -7,11 +7,11 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-export function useFetchUserBuckets(criteria?: string) {
+export function useFetchUserWebs(criteria?: string) {
   return useInfiniteQuery({
-    queryKey: ["user", "buckets", criteria],
+    queryKey: ["user", "webs", criteria],
     queryFn: async ({ pageParam = { page: 1, direction: "forward" } }) => {
-      const response = await api.get(`/buckets/all/user`, {
+      const response = await api.get(`/webs/all/user`, {
         params: {
           page: pageParam.page,
           page_size: 10,
@@ -33,47 +33,47 @@ export function useFetchUserBuckets(criteria?: string) {
   });
 }
 
-export const useFetchLikedBuckets = () => {
+export const useFetchLikedWebs = () => {
   return useQuery({
-    queryKey: ["buckets", "liked"],
+    queryKey: ["webs", "liked"],
     queryFn: async () => {
-      const response = await api.get("/buckets/liked/user");
+      const response = await api.get("/webs/liked/user");
       return response.data.result;
     },
   });
 };
 
-export const useCreateBucket = () => {
+export const useCreateWeb = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (config: any) => {
-      const response = await api.post("/buckets/create", config);
+      const response = await api.post("/webs/create", config);
       return response.data.result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["buckets", "all"] });
+      queryClient.invalidateQueries({ queryKey: ["webs", "all"] });
     },
     onError: () => {},
   });
 };
 
-export const useFetchSavedBuckets = () => {
+export const useFetchSavedWebs = () => {
   return useQuery({
-    queryKey: ["buckets", "saved"],
+    queryKey: ["webs", "saved"],
     queryFn: async () => {
-      const response = await api.get("/buckets/saved/user");
+      const response = await api.get("/webs/saved/user");
       return response.data.result;
     },
   });
 };
 
-export const useUploadImageToBucket = () => {
+export const useUploadImageToWeb = () => {
   return useMutation({
     mutationFn: async ({
-      bucketId,
+      webId,
       files,
     }: {
-      bucketId: string;
+      webId: string;
       files: File[];
     }) => {
       const formData = new FormData();
@@ -83,7 +83,7 @@ export const useUploadImageToBucket = () => {
       });
 
       const { data } = await api.post(
-        `/buckets/upload/image/${bucketId}`,
+        `/webs/upload/image/${webId}`,
         formData,
         {
           headers: {
@@ -97,71 +97,71 @@ export const useUploadImageToBucket = () => {
   });
 };
 
-export const useDeleteImageFromBucket = () => {
+export const useDeleteImageFromWeb = () => {
   return useMutation({
     mutationFn: async ({
-      bucketId,
+      webId,
       imageUrl,
     }: {
-      bucketId: string;
+      webId: string;
       imageUrl: string;
     }) => {
       const imageName = imageUrl.split("/").pop();
       const response = await api.delete(
-        `/buckets/delete/image/${bucketId}/${imageName}`
+        `/webs/delete/image/${webId}/${imageName}`
       );
       return response.data.result;
     },
   });
 };
 
-export function useGetAllImagesForBucket(bucketId: string) {
+export function useGetAllImagesForWeb(webId: string) {
   return useQuery({
-    queryKey: ["images", "bucket", bucketId],
+    queryKey: ["images", "web", webId],
     queryFn: async () => {
-      const response = await api.get(`/buckets/images/bucket/${bucketId}`);
+      const response = await api.get(`/webs/images/web/${webId}`);
       return response.data.result;
     },
   });
 }
 
-export function useDeleteBucket() {
+export function useDeleteWeb() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (bucketId: string) => {
-      const response = await api.delete("/buckets/delete", {
-        params: { bucketId },
+    mutationFn: async (webId: string) => {
+      const response = await api.delete("/webs/delete", {
+        params: { webId },
       });
       return response.data.result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["buckets", "all"] });
+      queryClient.invalidateQueries({ queryKey: ["webs", "all"] });
     },
     onError: () => {},
   });
 }
 
-export const useUpdateBucket = (bucketId: string) => {
+export const useUpdateWeb = (webId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (config: UpdateBucket) => {
-      const response = await api.patch(`/buckets/update/${bucketId}`, config, {
+    mutationFn: async (config: UpdateWeb) => {
+      const response = await api.patch(`/webs/update/${webId}`, config, {
         headers: { "Content-Type": "application/json" },
       });
       return response.data.result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["buckets", "all"] });
+      queryClient.invalidateQueries({ queryKey: ["webs", "all"] });
     },
     onError: () => {},
   });
 };
 
-export function useFetchPublicBuckets() {
+export function useFetchPublicWebs() {
   return useInfiniteQuery({
-    queryKey: ["buckets", "public"],
+    queryKey: ["webs", "public"],
     queryFn: async ({ pageParam = null }) => {
-      const response = await api.get("/buckets/all/public", {
+      const response = await api.get("/webs/all/public", {
         params: {
           cursor: pageParam,
           limit: 10,
@@ -176,11 +176,11 @@ export function useFetchPublicBuckets() {
   });
 }
 
-export function useFetchPopularBuckets(limit: number) {
+export function useFetchPopularWebs(limit: number) {
   return useQuery({
-    queryKey: ["buckets", "popular", limit],
+    queryKey: ["webs", "popular", limit],
     queryFn: async () => {
-      const response = await api.get("/buckets/popular", {
+      const response = await api.get("/webs/popular", {
         params: {
           limit,
         },
@@ -190,23 +190,23 @@ export function useFetchPopularBuckets(limit: number) {
   });
 }
 
-export const useFetchBucketById = (bucketId: string) => {
+export const useFetchWebById = (webId: string) => {
   return useQuery({
-    queryKey: ["bucket", bucketId],
+    queryKey: ["web", webId],
     queryFn: async () => {
-      if (!bucketId) return null;
-      const response = await api.get(`/buckets/id`, {
-        params: { bucketId },
+      if (!webId) return null;
+      const response = await api.get(`/webs/id`, {
+        params: { webId },
       });
       return response.data.result;
     },
   });
 };
 
-export function useLikeBucket(bucketId: string) {
+export function useLikeWeb(webId: string) {
   return useMutation({
     mutationFn: async () => {
-      const response = await api.post(`/buckets/like/${bucketId}`);
+      const response = await api.post(`/webs/like/${webId}`);
       return response.data.result;
     },
     onSuccess: () => {},
@@ -214,10 +214,10 @@ export function useLikeBucket(bucketId: string) {
   });
 }
 
-export function useUnlikeBucket(bucketId: string) {
+export function useUnlikeWeb(webId: string) {
   return useMutation({
     mutationFn: async () => {
-      const response = await api.post(`/buckets/unlike/${bucketId}`);
+      const response = await api.post(`/webs/unlike/${webId}`);
       return response.data.result;
     },
     onSuccess: () => {},
@@ -225,10 +225,10 @@ export function useUnlikeBucket(bucketId: string) {
   });
 }
 
-export function useAddTagToBucket(bucketId: string) {
+export function useAddTagToWeb(webId: string) {
   return useMutation({
     mutationFn: async (tag: string) => {
-      const response = await api.patch(`/buckets/add/tag/${bucketId}/${tag}`);
+      const response = await api.patch(`/webs/add/tag/${webId}/${tag}`);
       return response.data.result;
     },
     onSuccess: () => {},
@@ -236,11 +236,11 @@ export function useAddTagToBucket(bucketId: string) {
   });
 }
 
-export function useRemoveTagFromBucket(bucketId: string) {
+export function useRemoveTagFromWeb(webId: string) {
   return useMutation({
     mutationFn: async (tag: string) => {
       const response = await api.patch(
-        `/buckets/remove/tag/${bucketId}/${tag}`
+        `/webs/remove/tag/${webId}/${tag}`
       );
       return response.data.result;
     },
@@ -249,16 +249,16 @@ export function useRemoveTagFromBucket(bucketId: string) {
   });
 }
 
-export type IterateBucketPayload = {
+export type IterateWebPayload = {
   name: string;
   description: string;
   withConnections: boolean;
 };
 
-export function useIterateBucket(bucketId: string) {
+export function useIterateWeb(webId: string) {
   return useMutation({
-    mutationFn: async (config: IterateBucketPayload) => {
-      const response = await api.post(`/buckets/iterate/${bucketId}`, config);
+    mutationFn: async (config: IterateWebPayload) => {
+      const response = await api.post(`/webs/iterate/${webId}`, config);
       return response.data.result;
     },
     onSuccess: () => {},
@@ -269,12 +269,12 @@ export function useIterateBucket(bucketId: string) {
 export type SearchFilter = {
   visibility?: "Public" | "Private";
   userId?: string;
-  bucketId?: string;
+  webId?: string;
 };
 
-export function useSearchBuckets(query: string, filters?: SearchFilter) {
+export function useSearchWebs(query: string, filters?: SearchFilter) {
   return useQuery({
-    queryKey: ["buckets", "search", query, filters],
+    queryKey: ["webs", "search", query, filters],
     queryFn: async () => {
       const params = new URLSearchParams({
         query,
@@ -292,18 +292,18 @@ export function useSearchBuckets(query: string, filters?: SearchFilter) {
         });
       }
 
-      const response = await api.get("/buckets/search", { params });
+      const response = await api.get("/webs/search", { params });
       return response.data.result;
     },
     enabled: !!query,
   });
 }
 
-export function useFetchContributers(bucketId: string) {
+export function useFetchContributers(webId: string) {
   return useQuery({
-    queryKey: ["buckets", "contributers", bucketId],
+    queryKey: ["webs", "contributers", webId],
     queryFn: async () => {
-      const response = await api.get(`/buckets/contributers/${bucketId}`);
+      const response = await api.get(`/webs/contributers/${webId}`);
       return response.data.result;
     },
   });

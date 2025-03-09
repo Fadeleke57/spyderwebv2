@@ -4,7 +4,7 @@ type ConnectionData = {
 
 type Connection = {
   connectionId: string;
-  bucketId: string;
+  webId: string;
   "data.description": string;
   fromSourceId: string;
   toSourceId: string;
@@ -13,7 +13,7 @@ type Connection = {
 };
 
 type CreateConnection = {
-  bucketId: string;
+  webId: string;
   fromSourceId: string;
   toSourceId: string;
   data: ConnectionData;

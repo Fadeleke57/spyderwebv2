@@ -73,7 +73,7 @@ export default function Sidebar() {
           <Tooltip>
             <TooltipTrigger asChild onClick={() => setActive(3)}>
               <Link
-                href="/buckets"
+                href="/webs"
                 className={`group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full text-lg font-semibold ${
                   active === 3
                     ? "bg-primary text-white"
@@ -82,10 +82,10 @@ export default function Sidebar() {
                 
               >
                 <PaintBucket className="h-5 w-5 transition-all group-hover:scale-110" />
-                <span className="sr-only">Buckets</span>
+                <span className="sr-only">webs</span>
               </Link>
             </TooltipTrigger>
-            <TooltipContent side="right">Buckets</TooltipContent>
+            <TooltipContent side="right">webs</TooltipContent>
           </Tooltip>
         </TooltipProvider>
 

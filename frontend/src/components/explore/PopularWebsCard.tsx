@@ -1,31 +1,29 @@
 import React from "react";
-import { useFetchPopularBuckets } from "@/hooks/buckets";
-import { Bucket } from "@/types/bucket";
+import { useFetchPopularWebs } from "@/hooks/webs";
+import { Web } from "@/types/web";
 import router from "next/router";
 import { formatText } from "@/lib/utils";
 import { Skeleton } from "../ui/skeleton";
 
-function PopularBucketsCard() {
-  const { data: popularBuckets} = useFetchPopularBuckets(3);
+function PopularWebsCard() {
+  const { data: popularWebs } = useFetchPopularWebs(3);
   return (
     <div className="hidden lg:flex flex-col basis-1/2 gap-2 border rounded-lg h-[calc(64vh-68px)] overflow-y-auto sticky top-[88px] p-4">
       <div className="rounded-md">
         <h1 className="text-xl font-bold mb-2">Popular</h1>
         <div className="flex flex-col gap-2">
-          {popularBuckets ? (
-            popularBuckets.map((bucket: Bucket) => (
-              <div key={bucket.bucketId} className="cursor-pointer">
+          {popularWebs ? (
+            popularWebs.map((web: Web) => (
+              <div key={web.webId} className="cursor-pointer">
                 <span className="text-xs text-muted-foreground">
-                  {bucket.likes.length} stars
+                  {web.likes.length} stars
                 </span>
                 <br />
                 <span
-                  onClick={() =>
-                    router.push(`/bucket/${bucket.bucketId}`)
-                  }
+                  onClick={() => router.push(`/web/${web.webId}`)}
                   className="text-sm font-semibold hover:underline"
                 >
-                  {formatText(bucket.name, 90)}
+                  {formatText(web.name, 90)}
                 </span>
               </div>
             ))
@@ -43,4 +41,4 @@ function PopularBucketsCard() {
   );
 }
 
-export default PopularBucketsCard;
+export default PopularWebsCard;

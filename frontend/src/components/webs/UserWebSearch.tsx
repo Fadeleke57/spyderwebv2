@@ -1,15 +1,23 @@
 import React, { useRef, useState, useEffect } from "react";
 import { SearchInput } from "../ui/input";
-import { useSearchBuckets } from "@/hooks/buckets";
+import { useSearchWebs } from "@/hooks/webs";
 import { useUser } from "@/context/UserContext";
-import { Loader2} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useOnClickOutside } from "@/hooks/general";
 import { formatText } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const HighlightedText = ({ text, highlight, className = "" } : { text: string, highlight: string, className?: string }) => {
+const HighlightedText = ({
+  text,
+  highlight,
+  className = "",
+}: {
+  text: string;
+  highlight: string;
+  className?: string;
+}) => {
   if (!highlight.trim()) {
     return <span className={className}>{text}</span>;
   }
@@ -31,7 +39,7 @@ const HighlightedText = ({ text, highlight, className = "" } : { text: string, h
   );
 };
 
-function UserBucketSearch() {
+function UserWebSearch() {
   const { user } = useUser();
   const [query, setQuery] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -41,7 +49,7 @@ function UserBucketSearch() {
 
   useOnClickOutside(searchRef, () => setIsSearchActive(false));
 
-  const { data: searchResults, isLoading } = useSearchBuckets(debouncedQuery, {
+  const { data: searchResults, isLoading } = useSearchWebs(debouncedQuery, {
     userId: user?.id,
   });
 
@@ -67,7 +75,7 @@ function UserBucketSearch() {
           value={query}
           onChange={handleInputChange}
           onFocus={() => setIsSearchActive(true)}
-          placeholder="Search for buckets..."
+          placeholder="Search for webs..."
           className="w-full py-3 px-6 caret-violet-500"
         />
         {isLoading && (
@@ -81,10 +89,10 @@ function UserBucketSearch() {
         <div className="absolute top-full z-50 mt-2 w-fit rounded-lg border bg-background p-2 shadow-lg min-w-full">
           {searchResults && searchResults.length > 0 ? (
             <div className="space-y-1">
-              {searchResults.map((bucket: any) => (
+              {searchResults.map((web: any) => (
                 <Link
-                  key={bucket.id}
-                  href={`/bucket/${bucket.id}`}
+                  key={web.id}
+                  href={`/web/${web.id}`}
                   className="block"
                 >
                   <Button
@@ -92,11 +100,11 @@ function UserBucketSearch() {
                     className="w-full justify-start text-left items-start text-sm flex flex-col h-fit dark:hover:bg-muted"
                   >
                     <HighlightedText
-                      text={formatText(bucket.name, isMobile ? 40 : 55)}
+                      text={formatText(web.name, isMobile ? 40 : 55)}
                       highlight={query}
                     />
                     <HighlightedText
-                      text={formatText(bucket.description, isMobile ? 40 : 55)}
+                      text={formatText(web.description, isMobile ? 40 : 55)}
                       highlight={query}
                       className="text-muted-foreground"
                     />
@@ -108,7 +116,7 @@ function UserBucketSearch() {
             query &&
             !isLoading && (
               <p className="p-2 text-sm text-muted-foreground">
-                No buckets found
+                No webs found
               </p>
             )
           )}
@@ -118,4 +126,4 @@ function UserBucketSearch() {
   );
 }
 
-export default UserBucketSearch;
+export default UserWebSearch;

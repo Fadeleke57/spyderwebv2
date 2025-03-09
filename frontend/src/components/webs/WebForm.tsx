@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Bucket } from "@/types/bucket";
+import { Web } from "@/types/web";
 import { PublicUser } from "@/types/user";
 import {
-  useDeleteImageFromBucket,
-  useGetAllImagesForBucket,
-  useUpdateBucket,
-  useUploadImageToBucket,
-} from "@/hooks/buckets";
+  useDeleteImageFromWeb,
+  useGetAllImagesForWeb,
+  useUpdateWeb,
+  useUploadImageToWeb,
+} from "@/hooks/webs";
 import { useToast } from "../ui/use-toast";
 import { useRouter } from "next/router";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,34 +30,34 @@ import ConfirmImageModal from "../utility/ConfirmImageModal";
 import { ImageModal } from "../utility/ImageModal";
 
 type FormProps = {
-  bucket: Bucket;
+  web: Web;
   user: PublicUser | null;
 };
 
-const bucketSchema = z.object({
+const webSchema = z.object({
   name: z.string().min(1, { message: "Claim is required" }),
   description: z.string().min(1, { message: "Description is required" }),
   visibility: z.enum(["Private", "Public", "Invite"], {}).default("Private"),
 });
 
-type BucketFormValues = z.infer<typeof bucketSchema>;
+type WebFormValues = z.infer<typeof webSchema>;
 
-type BucketConfig = {
+type WebConfig = {
   name: string;
   description: string;
   visibility: "Private" | "Public" | "Invite";
 };
 
-function BucketForm({ bucket, user }: FormProps) {
+function WebForm({ web, user }: FormProps) {
   const {
     data: imageUrls,
     isLoading: imagesLoading,
     refetch: refetchImages,
-  } = useGetAllImagesForBucket(bucket.bucketId);
+  } = useGetAllImagesForWeb(web.webId);
 
-  const { mutateAsync: deleteImage } = useDeleteImageFromBucket();
+  const { mutateAsync: deleteImage } = useDeleteImageFromWeb();
   const { mutateAsync: uploadImages, isPending: addingImages } =
-    useUploadImageToBucket();
+    useUploadImageToWeb();
   const [images, setImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -73,31 +73,31 @@ function BucketForm({ bucket, user }: FormProps) {
     if (imageUrls) {
       setImages(imageUrls);
     }
-  }, [bucket, imageUrls, images]);
+  }, [web, imageUrls, images]);
 
-  const isOwner = user?.id === bucket?.userId;
+  const isOwner = user?.id === web?.userId;
 
-  const { mutateAsync: updateBucket, isPending } = useUpdateBucket(
-    bucket?.bucketId
+  const { mutateAsync: updateWeb, isPending } = useUpdateWeb(
+    web?.webId
   );
   const { toast } = useToast();
   const router = useRouter();
 
-  const [bucketConfig, setBucketConfig] = useState<BucketConfig>({
-    name: bucket?.name,
-    description: bucket?.description,
-    visibility: bucket?.visibility,
+  const [webConfig, setWebConfig] = useState<WebConfig>({
+    name: web?.name,
+    description: web?.description,
+    visibility: web?.visibility,
   });
 
-  const form = useForm<BucketFormValues>({
-    resolver: zodResolver(bucketSchema),
+  const form = useForm<WebFormValues>({
+    resolver: zodResolver(webSchema),
   });
 
   // debounce the submit function to reduce frequency of autosaves
   const debouncedSave = useCallback(
     debounce(async (config) => {
       try {
-        await updateBucket({
+        await updateWeb({
           name: config.name,
           description: config.description,
           visibility: config.visibility,
@@ -105,7 +105,7 @@ function BucketForm({ bucket, user }: FormProps) {
         toast({ title: "Changes saved." });
       } catch (error: any) {
         toast({
-          title: "Error updating bucket",
+          title: "Error updating web",
           description: error.message,
           variant: "destructive",
         });
@@ -114,14 +114,14 @@ function BucketForm({ bucket, user }: FormProps) {
     []
   );
 
-  const onConfigChange = (newConfig: BucketConfig) => {
-    setBucketConfig(newConfig);
+  const onConfigChange = (newConfig: WebConfig) => {
+    setWebConfig(newConfig);
     debouncedSave(newConfig);
   };
 
   const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     onConfigChange({
-      ...bucketConfig,
+      ...webConfig,
       name: event.target.value || "Untitled",
     });
   };
@@ -130,28 +130,28 @@ function BucketForm({ bucket, user }: FormProps) {
     event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     onConfigChange({
-      ...bucketConfig,
+      ...webConfig,
       description: event.target.value,
     });
   };
 
   const handleToggleVisibility = async (visibility: "Private" | "Public") => {
     try {
-      await updateBucket({
-        name: bucketConfig.name,
-        description: bucketConfig.description,
+      await updateWeb({
+        name: webConfig.name,
+        description: webConfig.description,
         visibility: visibility,
       });
-      setBucketConfig({
-        ...bucketConfig,
+      setWebConfig({
+        ...webConfig,
         visibility,
       });
       toast({
-        title: `Bucket visibility updated to ${visibility.toLowerCase()}.`,
+        title: `Web visibility updated to ${visibility.toLowerCase()}.`,
       });
     } catch (error: any) {
       toast({
-        title: "Error updating bucket",
+        title: "Error updating web",
         description: error.message,
         variant: "destructive",
       });
@@ -163,7 +163,7 @@ function BucketForm({ bucket, user }: FormProps) {
       return;
     }
     try {
-      await deleteImage({ bucketId: bucket.bucketId, imageUrl: selectedImage });
+      await deleteImage({ webId: web.webId, imageUrl: selectedImage });
       refetchImages();
       setDeleteModalOpen(false);
     } catch (error: any) {
@@ -217,7 +217,7 @@ function BucketForm({ bucket, user }: FormProps) {
 
     try {
       await uploadImages({
-        bucketId: bucket.bucketId,
+        webId: web.webId,
         files: imageConfig.stagedImages,
       });
 
@@ -273,24 +273,24 @@ function BucketForm({ bucket, user }: FormProps) {
           <div className="flex flex-col">
             <div className="flex flex-col">
               <small className="text-sm font-medium leading-none text-blue-500 dark:text-blue-400">
-                {bucketConfig.visibility}
+                {webConfig.visibility}
                 {isOwner && (
                   <ConfirmModal
                     action={() =>
                       handleToggleVisibility(
-                        bucketConfig.visibility === "Private"
+                        webConfig.visibility === "Private"
                           ? "Public"
                           : "Private"
                       )
                     }
                     actionButtonStr={
-                      bucketConfig.visibility === "Private"
+                      webConfig.visibility === "Private"
                         ? "Make Public"
                         : "Make Private"
                     }
                     actionStr={
-                      "Are you sure you want to switch this bucket to " +
-                      (bucketConfig.visibility === "Private"
+                      "Are you sure you want to switch this web to " +
+                      (webConfig.visibility === "Private"
                         ? "public"
                         : "private") +
                       "?"
@@ -299,7 +299,7 @@ function BucketForm({ bucket, user }: FormProps) {
                     <span className="text-red-500 dark:text-foreground cursor-pointer">
                       {" "}
                       (
-                      {bucketConfig.visibility === "Private"
+                      {webConfig.visibility === "Private"
                         ? "Switch to Public"
                         : "Switch to Private"}
                       )
@@ -334,7 +334,7 @@ function BucketForm({ bucket, user }: FormProps) {
               id="name"
               placeholder="Give it a title..."
               rows={1}
-              defaultValue={bucket?.name || "Untitled"}
+              defaultValue={web?.name || "Untitled"}
               {...form.register("name")}
               className="w-full min-h-[2rem] bg-transparent p-0 font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-md font-semibold"
               onInput={(e: any) => {
@@ -348,7 +348,7 @@ function BucketForm({ bucket, user }: FormProps) {
               id="description"
               placeholder="Add a description..."
               rows={1}
-              defaultValue={bucket?.description || ""}
+              defaultValue={web?.description || ""}
               {...form.register("description")}
               className="w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-muted-foreground"
               onInput={(e: any) => {
@@ -369,7 +369,7 @@ function BucketForm({ bucket, user }: FormProps) {
                   height={300}
                   width={500}
                   src={image}
-                  alt={bucket.name}
+                  alt={web.name}
                   className="rounded-md w-full border h-auto object-cover"
                   style={{ maxHeight: "400px" }}
                   onClick={(e) => handleImageClick(e, image)}
@@ -415,4 +415,4 @@ function BucketForm({ bucket, user }: FormProps) {
   );
 }
 
-export default BucketForm;
+export default WebForm;

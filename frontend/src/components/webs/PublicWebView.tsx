@@ -1,13 +1,13 @@
 import React from "react";
-import { Bucket } from "@/types/bucket";
-import { useGetAllImagesForBucket } from "@/hooks/buckets";
+import { Web } from "@/types/web";
+import { useGetAllImagesForWeb } from "@/hooks/webs";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import Image from "next/image";
 import { ImageModal } from "../utility/ImageModal";
 
-function PublicBucketView({ bucket }: { bucket: Bucket }) {
+function PublicWebView({ web }: { web: Web }) {
   const { data: imageUrls, isLoading: imagesLoading } =
-    useGetAllImagesForBucket(bucket.bucketId);
+    useGetAllImagesForWeb(web.webId);
   const [images, setImages] = React.useState<string[]>([]);
   const [imageModalOpen, setImageModalOpen] = React.useState(false);
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
@@ -16,7 +16,7 @@ function PublicBucketView({ bucket }: { bucket: Bucket }) {
     if (imageUrls) {
       setImages(imageUrls);
     }
-  }, [bucket, imageUrls, images]);
+  }, [web, imageUrls, images]);
 
   const handleImageClick = (e: React.MouseEvent, imageUrl: string) => {
     e.preventDefault();
@@ -31,13 +31,13 @@ function PublicBucketView({ bucket }: { bucket: Bucket }) {
         <div>
           <div className="flex flex-col space-y-2">
             <small className="text-sm font-medium leading-none text-blue-500 dark:text-blue-400">
-              {bucket?.visibility === "Private" ? "Private": "Public"}
+              {web?.visibility === "Private" ? "Private" : "Public"}
             </small>
             <span id="name" className="text-md font-semibold">
-              {bucket?.name || "Untitled"}
+              {web?.name || "Untitled"}
             </span>
             <span className="text-sm text-muted-foreground">
-              {bucket?.description || "No description"}
+              {web?.description || "No description"}
             </span>
           </div>
         </div>
@@ -51,7 +51,7 @@ function PublicBucketView({ bucket }: { bucket: Bucket }) {
                   height={300}
                   width={500}
                   src={image}
-                  alt={bucket.name}
+                  alt={web.name}
                   className="rounded-md w-full border h-auto object-cover"
                   style={{ maxHeight: "400px" }}
                   onClick={(e) => handleImageClick(e, image)}
@@ -72,4 +72,4 @@ function PublicBucketView({ bucket }: { bucket: Bucket }) {
   );
 }
 
-export default PublicBucketView;
+export default PublicWebView;

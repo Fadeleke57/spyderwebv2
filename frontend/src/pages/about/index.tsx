@@ -137,18 +137,18 @@ function index() {
           looking for reputable informtion for a research project or just
           looking for your newest sofa. Instead of working in isolation, you can
           reuse and expand on the work of others. Spydr allows you to start with
-          a private mind map, called a &apos;bucket&apos; of what you are
+          a private mind map, called a &apos;web&apos; of what you are
           looking for. As you traverse either Spydr or the web, you can collect
           and add information such as notes, youtube videos, documents, and
-          websites to your bucket. You can then share your bucket with others,
+          websites to your web. You can then share your web with others,
           and even publish it for others to explore and build upon.
         </p>
         <p>
           Outside of Spydr, through the use of an extension, you can anonymously
           highlight and tag content from any site you visit or add it to a
-          bucket. Other people can then view your highlights and see what you
+          web. Other people can then view your highlights and see what you
           were looking for and if you were successful. In Spydr, you can also
-          find a published bucket and use it as a jumping off point for whatever
+          find a published web and use it as a jumping off point for whatever
           you&apos;d like to explore.
         </p>
 
@@ -160,7 +160,7 @@ function index() {
           <li>
             <strong>In-House Discussion and Search Platform: </strong> Spydr
             fosters a community-driven approach to search by allowing users to
-            create and publish “buckets,” or mind maps, for their research or
+            create and publish “webs,” or mind maps, for their research or
             exploration.
           </li>
           <li>

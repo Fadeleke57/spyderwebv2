@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useFetchContributers } from "@/hooks/buckets";
+import { useFetchContributers } from "@/hooks/webs";
 import Image from "next/image";
 import {
   Tooltip,
@@ -11,12 +11,12 @@ import { PublicUser } from "@/types/user";
 import { Skeleton } from "../ui/skeleton";
 import { Badge } from "../ui/badge";
 
-function ContributorsBlock({ bucketId }: { bucketId: string }) {
+function ContributorsBlock({ webId }: { webId: string }) {
   const {
     data: contributors,
     isLoading: isContributorsLoading,
     isError: isContributorsError,
-  } = useFetchContributers(bucketId);
+  } = useFetchContributers(webId);
 
   if (isContributorsLoading) {
     return (
@@ -24,10 +24,7 @@ function ContributorsBlock({ bucketId }: { bucketId: string }) {
         <h2 className="text-md mb-4">Contributors</h2>
         <div className="flex flex-wrap gap-2">
           {[...Array(3)].map((_, i) => (
-            <Skeleton
-              key={i}
-              className="w-12 h-12 rounded-full"
-            />
+            <Skeleton key={i} className="w-12 h-12 rounded-full" />
           ))}
         </div>
       </div>
@@ -63,10 +60,7 @@ function ContributorsBlock({ bucketId }: { bucketId: string }) {
                   />
                 </div>
               </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                className=" p-0"
-              >
+              <TooltipContent side="bottom" className=" p-0">
                 <div className="p-4 max-w-xs">
                   <div className="flex items-center mb-2">
                     <Image
@@ -99,7 +93,7 @@ function ContributorsBlock({ bucketId }: { bucketId: string }) {
                         d="M13 10V3L4 14h7v7l9-11h-7z"
                       />
                     </svg>
-                    Iterated this bucket
+                    Iterated this web
                   </div>
                 </div>
               </TooltipContent>

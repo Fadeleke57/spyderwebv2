@@ -1,7 +1,6 @@
 import React from "react";
 import { Button } from "../ui/button";
 import Image from "next/image";
-import { PublicUser } from "@/types/user";
 import { Skeleton } from "../ui/skeleton";
 import { cn } from "@/lib/utils";
 

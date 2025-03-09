@@ -20,19 +20,19 @@ import {
 import { DialogClose } from "@radix-ui/react-dialog";
 import ConnectionsConfig from "../sources/ConnectionConfig";
 
-interface BucketDataDrawerProps {
+interface WebDataDrawerProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   sourceId: string;
-  bucketId: string;
+  webId: string;
 }
 
-export default function BucketDataModal({
+export default function WebDataModal({
   open,
   setOpen,
   sourceId,
-  bucketId,
-}: BucketDataDrawerProps) {
+  webId,
+}: WebDataDrawerProps) {
   const { user } = useUser();
   const { data: sourceData, refetch: refetchSource } = useFetchSource(sourceId);
   const { mutateAsync: editSourceTitle } = useEditSourceTitle(sourceId);
@@ -56,7 +56,7 @@ export default function BucketDataModal({
     mutateAsync: updateNote,
     isPending: isUploading,
     error: updateError,
-  } = useUpdateNote(bucketId, sourceId);
+  } = useUpdateNote(webId, sourceId);
 
   const isOwner = (source?.userId && user?.id) === source?.userId;
 
@@ -161,7 +161,7 @@ export default function BucketDataModal({
       case "note":
         return (
           <NoteComponent
-            bucketId={bucketId}
+            webId={webId}
             source={source}
             content={content}
             isOwner={isOwner}
@@ -253,7 +253,7 @@ export default function BucketDataModal({
           <div className="grid lg:grid-cols-2 gap-4">
             <div>{mapSourceTypeToComponent(source?.type)}</div>
             <ConnectionsConfig
-              bucketId={bucketId}
+              webId={webId}
               sourceId={sourceId}
               isOwner={isOwner}
             ></ConnectionsConfig>

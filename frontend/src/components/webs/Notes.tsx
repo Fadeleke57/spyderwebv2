@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 
 interface NoteComponentProps {
   content?: string;
-  bucketId: string;
+  webId: string;
   isOwner?: boolean;
   source: SourceAsNode | null;
   handleNoteContentChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
@@ -27,7 +27,7 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
   source,
   handleNoteContentChange,
   updateError,
-  bucketId,
+  webId,
 }) => {
   const [editing, setEditing] = React.useState<boolean>(false);
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
@@ -85,7 +85,7 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
 
     try {
       const uploadedUrls = await uploadImages({
-        sourceId: bucketId,
+        sourceId: webId,
         files: imageFiles,
       });
 

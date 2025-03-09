@@ -1,6 +1,6 @@
 export interface Source {
   sourceId: string;
-  bucketId: string;
+  webId: string;
   userId?: string;
   name: string;
   url: string;

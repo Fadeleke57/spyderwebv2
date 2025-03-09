@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,8 +8,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { X } from "lucide-react";
-import { BucketConfigFormValues } from "@/types/article";
-import { Bucket } from "@/types/bucket";
+import { WebConfigFormValues } from "@/types/article";
+import { Web } from "@/types/web";
 import {
   useFileUpload,
   useUploadNote,
@@ -19,12 +18,9 @@ import {
 } from "@/hooks/sources";
 import { toast } from "../ui/use-toast";
 import gsap from "gsap";
-import { Input } from "../ui/input";
-import { Textarea } from "../ui/textarea";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ScrollArea } from "../ui/scroll-area";
 import { Uploading } from "../utility/Loading";
 import { extractVideoId } from "@/lib/utils";
 import { DialogTitle } from "@radix-ui/react-dialog";
@@ -33,30 +29,30 @@ import {
   UploadNote,
   UploadWebsite,
   UploadYoutube,
-} from "./BucketSearchViews";
+} from "./AddSourceViews";
 import { Drawer, DrawerContent, DrawerHeader } from "../ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 type ConfigGraphModalProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
-  config: BucketConfigFormValues;
-  setConfig: (value: BucketConfigFormValues) => void;
-  bucket: Bucket;
+  config: WebConfigFormValues;
+  setConfig: (value: WebConfigFormValues) => void;
+  web: Web;
   refreshSources: () => void;
-  refreshBucket: () => void;
+  refreshweb: () => void;
   view?: string;
   children: React.ReactNode;
 };
 
-export default function BucketSearchModal({
-  bucket,
+export default function WebSearchModal({
+  web,
   open,
   setOpen,
   view = "default",
   children,
   refreshSources,
-  refreshBucket,
+  refreshweb,
 }: ConfigGraphModalProps) {
   const noteSchema = z.object({
     title: z.string().min(1, { message: "Title is required" }),
@@ -77,25 +73,25 @@ export default function BucketSearchModal({
     mutateAsync: uploadFile,
     error,
     isPending: isFileUploading,
-  } = useFileUpload(bucket.userId, bucket.bucketId, "document");
+  } = useFileUpload(web.userId, web.webId, "document");
 
   const {
     mutateAsync: uploadWebsite,
     error: websiteUploadError,
     isPending: isWebsiteUploading,
-  } = useUploadWebsite(bucket.bucketId);
+  } = useUploadWebsite(web.webId);
 
   const {
     mutateAsync: uploadNote,
     error: noteError,
     isPending: isNoteUploading,
-  } = useUploadNote(bucket.bucketId);
+  } = useUploadNote(web.webId);
 
   const {
     mutateAsync: uploadYoutube,
     error: youtubeError,
     isPending: isYoutubeUploading,
-  } = useUploadYoutube(bucket.bucketId);
+  } = useUploadYoutube(web.webId);
 
   const contentRef = useRef(null);
 
@@ -131,10 +127,10 @@ export default function BucketSearchModal({
       form.reset();
       handleClose();
       refreshSources();
-      refreshBucket();
+      refreshweb();
     } catch (error: any) {
       toast({
-        title: "Error creating bucket",
+        title: "Error creating web",
         description: error.message,
         variant: "destructive",
       });
@@ -158,7 +154,7 @@ export default function BucketSearchModal({
       });
       handleClose();
       refreshSources();
-      refreshBucket();
+      refreshweb();
     } catch (err) {
       console.error(err);
       toast({
@@ -178,7 +174,7 @@ export default function BucketSearchModal({
       });
       handleClose();
       refreshSources();
-      refreshBucket();
+      refreshweb();
     } catch (err: any) {
       console.error(err);
       toast({
@@ -203,7 +199,7 @@ export default function BucketSearchModal({
       });
       handleClose();
       refreshSources();
-      refreshBucket();
+      refreshweb();
     } catch (err: any) {
       console.error(err);
       toast({

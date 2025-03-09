@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/router";
-import { useFetchBucketById } from "@/hooks/buckets";
+import { useFetchWebById } from "@/hooks/webs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUser } from "@/context/UserContext";
-import BucketPlayground from "@/components/buckets/BucketPlayground";
-import BucketForm from "@/components/buckets/BucketForm";
-import MobileBucketForm from "@/components/buckets/MobileBucketForm";
-import PublicBucketView from "@/components/buckets/PublicBucketView";
+import WebPlayground from "@/components/webs/WebPlayground";
+import WebForm from "@/components/webs/WebForm";
+import MobileWebForm from "@/components/webs/MobileWebForm";
+import PublicWebView from "@/components/webs/PublicWebView";
 import { useFetchUserById } from "@/hooks/user";
 import { formatDistanceToNow } from "date-fns";
 import ShareDialog from "@/components/utility/ShareButton";
@@ -16,47 +16,47 @@ import {
   SkeletonUserCard,
 } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
-import { Bucket } from "@/types/bucket";
+import { Web } from "@/types/web";
 import { IterationCcw } from "lucide-react";
 import { IterateModal } from "@/components/utility/IterateModal";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Separator } from "@/components/ui/separator";
-import ContributersBlock from "@/components/buckets/ContributersBlock";
+import ContributersBlock from "@/components/webs/ContributersBlock";
 
 function Index() {
   const router = useRouter();
-  const { bucketId } = router.query;
+  const { webId } = router.query;
   const {
-    data: bucketData,
+    data: webData,
     isLoading: loading,
     error,
     refetch,
-  } = useFetchBucketById(bucketId as string);
+  } = useFetchWebById(webId as string);
 
-  const [bucket, setBucket] = React.useState<Bucket | null>(bucketData || null);
+  const [web, setWeb] = React.useState<Web | null>(webData || null);
   const [showIterateModal, setShowIterateModal] = React.useState(false);
   const [authModalOpen, setAuthModalOpen] = React.useState(false);
   useEffect(() => {
-    if (bucketData) {
-      setBucket(bucketData);
+    if (webData) {
+      setWeb(webData);
     }
   });
 
-  const { data: bucketOwner, isLoading: bucketOwnerLoading } = useFetchUserById(
-    bucket?.userId as string
+  const { data: webOwner, isLoading: webOwnerLoading } = useFetchUserById(
+    web?.userId as string
   );
 
   const { data: iteratedFromUser, isLoading: iteratedFromLoading } =
-    useFetchUserById(bucket?.iteratedFrom ? bucket?.iteratedFrom : "");
+    useFetchUserById(web?.iteratedFrom ? web?.iteratedFrom : "");
 
   const { user } = useUser();
-  const isOwner = user?.id === bucketOwner?.id;
+  const isOwner = user?.id === webOwner?.id;
 
-  const title = loading ? "Loading..." : bucket?.name || "Bucket Details";
+  const title = loading ? "Loading..." : web?.name || "Web Details";
   const description = loading
-    ? "Fetching bucket details..."
-    : bucket?.description || "View and explore bucket details.";
+    ? "Fetching web details..."
+    : web?.description || "View and explore web details.";
 
   if (error) {
     return (
@@ -74,9 +74,9 @@ function Index() {
           />
         </Head>
         <div className="flex h-full w-full flex-col items-center justify-center">
-          <h1 className="text-2xl font-semibold">Bucket not found</h1>
+          <h1 className="text-2xl font-semibold">Web not found</h1>
           <p className="text-muted-foreground">
-            The bucket you are looking for does not exist.
+            The web you are looking for does not exist.
           </p>
         </div>
       </div>
@@ -100,16 +100,16 @@ function Index() {
       <div className="flex flex-col">
         <header className="sticky top-0 z-10 flex h-[80px] lg:h[55px] items-center justify-between gap-1 border-b bg-background px-4">
           <div className="flex z-40 items-center gap-2 mb-3 lg:mb-0  max-w-[210px] lg:max-w-2xl">
-            {loading || bucketOwnerLoading ? (
+            {loading || webOwnerLoading ? (
               <SkeletonUserCard />
             ) : (
               <>
-                <UserAvatar userId={bucket?.userId} />{" "}
+                <UserAvatar userId={web?.userId} />{" "}
                 <div className="flex flex-col gap-0">
                   <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
-                    {bucketOwner?.username || ""}{" "}
+                    {webOwner?.username || ""}{" "}
                   </h1>
-                  {bucket?.iteratedFrom ? (
+                  {web?.iteratedFrom ? (
                     <p className="text-xs font-normal text-muted-foreground">
                       Iterated From{" "}
                       <span className="font-semibold text-blue-500 dark:text-blue-400">
@@ -121,8 +121,8 @@ function Index() {
                   )}
 
                   <span className="text-xs text-muted-foreground font-normal m-0">
-                    {bucket?.updated &&
-                      formatDistanceToNow(new Date(bucket.updated + "Z"), {
+                    {web?.updated &&
+                      formatDistanceToNow(new Date(web.updated + "Z"), {
                         addSuffix: true,
                       })}
                   </span>
@@ -131,20 +131,20 @@ function Index() {
             )}
           </div>
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
-            {bucket && (
-              <MobileBucketForm bucket={bucket} user={user ? user : null} />
+            {web && (
+              <MobileWebForm web={web} user={user ? user : null} />
             )}
 
-            {user && bucket && bucketOwner ? (
+            {user && web && webOwner ? (
               <IterateModal
                 open={showIterateModal}
                 setIsOpen={setShowIterateModal}
-                bucket={bucket}
+                web={web}
               >
                 <Button
                   disabled={
-                    bucket.iterations.includes(user?.id || "") ||
-                    bucketOwner.id === user?.id
+                    web.iterations.includes(user?.id || "") ||
+                    webOwner.id === user?.id
                   }
                   size="sm"
                   variant={"outline"}
@@ -169,7 +169,7 @@ function Index() {
             )}
 
             <ShareDialog
-              link={`${window.location.origin}/bucket/${bucketId}`}
+              link={`${window.location.origin}/web/${webId}`}
             />
           </div>
         </header>
@@ -181,20 +181,20 @@ function Index() {
               className="relative h-[calc(90vh-18px)] hidden flex-col items-start gap-8 md:flex"
               x-chunk="dashboard-03-chunk-0"
             >
-              {bucket && isOwner ? (
-                <BucketForm bucket={bucket} user={user ? user : null} />
-              ) : bucket ? (
-                <PublicBucketView bucket={bucket} />
-                ) : null}
-                <Separator className="my-4" />
-                {bucketId && <ContributersBlock bucketId={bucketId as string} />}
+              {web && isOwner ? (
+                <WebForm web={web} user={user ? user : null} />
+              ) : web ? (
+                <PublicWebView web={web} />
+              ) : null}
+              <Separator className="my-4" />
+              {webId && <ContributersBlock webId={webId as string} />}
             </ScrollArea>
           )}
           {loading ? (
             <div className="flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 lg:col-span-2"></div>
-          ) : bucket ? (
-            <BucketPlayground
-              bucket={bucket}
+          ) : web ? (
+            <WebPlayground
+              web={web}
               user={user ? user : null}
               refetch={refetch}
             />
@@ -202,7 +202,7 @@ function Index() {
         </div>
       </div>
       <AuthModal
-        referrer={"bucket"}
+        referrer={"web"}
         type="login"
         open={authModalOpen}
         setOpen={setAuthModalOpen}

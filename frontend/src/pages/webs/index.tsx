@@ -28,22 +28,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useDeleteBucket, useFetchUserBuckets } from "@/hooks/buckets";
+import { useDeleteWeb, useFetchUserWebs } from "@/hooks/webs";
 import Link from "next/link";
 import { format } from "date-fns";
 import { formatText } from "@/lib/utils";
 import { useRouter } from "next/router";
 import withAuth from "@/hoc/withAuth";
 import { Skeleton } from "@/components/ui/skeleton";
-import { NewBucketModal } from "@/components/buckets/NewBucketModal";
+import { NewWebModal } from "@/components/webs/NewWebModal";
 import Head from "next/head";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Bucket } from "@/types/bucket";
+import { Web } from "@/types/web";
 import { ComboBoxResponsive } from "@/components/utility/ResponsiveComobox";
 import DeleteModal from "@/components/utility/DeleteModal";
 import { useUser } from "@/context/UserContext";
 import { toast } from "@/components/ui/use-toast";
-import UserBucketSearch from "@/components/buckets/UserBucketSearch";
+import UserWebSearch from "@/components/webs/UserWebSearch";
 import SpydrAI from "@/components/utility/Assistant";
 
 function Index() {
@@ -66,13 +66,13 @@ function Index() {
     isFetchingNextPage,
     isFetchingPreviousPage,
     refetch,
-  } = useFetchUserBuckets(criteria);
-  const { mutateAsync: deleteBucket, isPending, isError } = useDeleteBucket();
+  } = useFetchUserWebs(criteria);
+  const { mutateAsync: deleteWeb, isPending, isError } = useDeleteWeb();
 
-  const [buckets, setBuckets] = useState<Bucket[]>([]);
+  const [webs, setWebs] = useState<Web[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [open, setOpen] = useState(false);
-  const [bucketId, setBucketId] = useState<string | null>(null);
+  const [webId, setWebId] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   const handleLogout = async () => {
@@ -80,22 +80,22 @@ function Index() {
     router.push("/explore");
   };
 
-  const handleDeleteBucket = useCallback(async () => {
-    if (!bucketId) return;
+  const handleDeleteWeb = useCallback(async () => {
+    if (!webId) return;
 
     try {
-      await deleteBucket(bucketId);
+      await deleteWeb(webId);
       setOpen(false);
       refetch();
     } catch (error) {
       console.error(error);
       toast({
-        title: "Error deleting bucket",
-        description: "Failed to delete bucket",
+        title: "Error deleting web",
+        description: "Failed to delete web",
         variant: "destructive",
       });
     }
-  }, [bucketId, deleteBucket]);
+  }, [webId, deleteWeb]);
 
   const tabs = [
     { label: "All", value: "all", filter: () => true },
@@ -120,7 +120,7 @@ function Index() {
           next: pageData.nextCursor,
         });
       }
-      setBuckets(pageData?.items || []);
+      setWebs(pageData?.items || []);
     }
   }, [data, currentPage]);
 
@@ -141,7 +141,7 @@ function Index() {
   const handleTabSwitch = (tab: string) => {
     router.push(
       {
-        pathname: "/buckets",
+        pathname: "/webs",
         query: { tab },
       },
       undefined,
@@ -157,14 +157,14 @@ function Index() {
   }, [criteria, refetch]);
 
   const handleOpenDeleteModal = (id: string) => {
-    setBucketId(id);
+    setWebId(id);
     setOpen(true);
   };
 
   return (
     <div className="flex lg:min-h-screen justify-center flex-col max-w-[960px] mx-auto">
       <Head>
-        <title>{"all buckets"}</title>
+        <title>{"all webs"}</title>
         <meta name="description" content={"Welcome to spydr"} />
         <meta property="og:title" content={user?.full_name} />
         <meta property="og:description" content={"Welcome to spydr"} />
@@ -178,7 +178,7 @@ function Index() {
       <div className="flex flex-col gap-4 py-4 pb-16">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <div className="relative ml-auto flex-1 md:grow-0">
-            <UserBucketSearch />
+            <UserWebSearch />
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -245,23 +245,23 @@ function Index() {
                     Export
                   </span>
                 </Button>
-                <NewBucketModal>
+                <NewWebModal>
                   <Button size="sm" className="h-8 gap-1">
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span className="whitespace-nowrap hidden lg:block">
-                      Create Bucket
+                      Create Web
                     </span>
                   </Button>
-                </NewBucketModal>
+                </NewWebModal>
               </div>
             </div>
             {tabs.map((tab) => (
               <TabsContent value={tab.value} key={tab.value}>
                 <Card>
                   <CardHeader>
-                    <CardTitle>Buckets</CardTitle>
+                    <CardTitle>Webs</CardTitle>
                     <CardDescription>
-                      Manage your buckets and view their data.
+                      Manage your webs and view their data.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="min-h-[400px]">
@@ -283,33 +283,33 @@ function Index() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {buckets.filter(tab.filter).map((bucket, index) => (
+                        {webs.filter(tab.filter).map((web, index) => (
                           <TableRow key={index}>
                             <TableCell>
                               <Link
-                                href={`/bucket/${bucket?.bucketId}`}
+                                href={`/web/${web?.webId}`}
                                 className="font-medium hover:underline cursor-pointer hover:text-blue-500"
                               >
-                                {formatText(bucket?.name || "", 30)}
+                                {formatText(web?.name || "", 30)}
                               </Link>
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline">
-                                {bucket?.visibility === "Private"
+                                {web?.visibility === "Private"
                                   ? "private"
                                   : "public"}
                               </Badge>
                             </TableCell>
                             {!isMobile && (
                               <>
-                                <TableCell>{bucket?.likes?.length}</TableCell>
+                                <TableCell>{web?.likes?.length}</TableCell>
                                 <TableCell>
-                                  {bucket?.iterations?.length}
+                                  {web?.iterations?.length}
                                 </TableCell>
                                 <TableCell>
-                                  {bucket?.created &&
+                                  {web?.created &&
                                     format(
-                                      new Date(bucket?.created || ""),
+                                      new Date(web?.created || ""),
                                       "MMM dd, yyyy hh:mm a"
                                     )}
                                 </TableCell>
@@ -327,16 +327,14 @@ function Index() {
                                   <DropdownMenuItem
                                     className="cursor-pointer"
                                     onClick={() =>
-                                      router.push(
-                                        `/bucket/${bucket?.bucketId}`
-                                      )
+                                      router.push(`/web/${web?.webId}`)
                                     }
                                   >
                                     Edit
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() =>
-                                      handleOpenDeleteModal(bucket?.bucketId)
+                                      handleOpenDeleteModal(web?.webId)
                                     }
                                     className="text-red-400 hover:text-destructive cursor-pointer"
                                   >
@@ -370,7 +368,7 @@ function Index() {
                         <strong>
                           {isFetching ? "..." : data?.pages[0]?.total || 0}
                         </strong>{" "}
-                        buckets
+                        webs
                       </div>
                       <div className="flex gap-2">
                         <Button
@@ -396,10 +394,10 @@ function Index() {
           </Tabs>
         </div>
       </div>
-      {bucketId && open && (
+      {webId && open && (
         <DeleteModal
-          itemType="bucket"
-          onDelete={handleDeleteBucket}
+          itemType="web"
+          onDelete={handleDeleteWeb}
           isPending={isPending}
           open={open}
           setOpen={setOpen}

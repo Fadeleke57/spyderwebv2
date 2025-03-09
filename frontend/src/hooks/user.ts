@@ -159,10 +159,10 @@ export function useCheckEmailExists() {
   });
 }
 
-export function useHideBucket(bucketId: string) {
+export function useHideWeb(webId: string) {
   return useMutation({
     mutationFn: async () => {
-      const response = await api.patch(`/users/hide/bucket/${bucketId}`);
+      const response = await api.patch(`/users/hide/web/${webId}`);
       const data = await response.data.result;
       return data;
     },
@@ -172,10 +172,10 @@ export function useHideBucket(bucketId: string) {
   });
 }
 
-export function useUnhideBucket(bucketId: string) {
+export function useUnhideWeb(webId: string) {
   return useMutation({
     mutationFn: async () => {
-      const response = await api.patch(`/users/unhide/bucket/${bucketId}`);
+      const response = await api.patch(`/users/unhide/web/${webId}`);
       const data = await response.data.result;
       return data;
     },
@@ -185,10 +185,10 @@ export function useUnhideBucket(bucketId: string) {
   });
 }
 
-export function useSaveBucket(bucketId: string) {
+export function useSaveWeb(webId: string) {
   return useMutation({
     mutationFn: async () => {
-      const response = await api.patch(`/users/save/bucket/${bucketId}`);
+      const response = await api.patch(`/users/save/web/${webId}`);
       const data = await response.data.result;
       return data;
     },
@@ -198,10 +198,10 @@ export function useSaveBucket(bucketId: string) {
   });
 }
 
-export function useUnsaveBucket(bucketId: string) {
+export function useUnsaveWeb(webId: string) {
   return useMutation({
     mutationFn: async () => {
-      const response = await api.patch(`/users/unsave/bucket/${bucketId}`);
+      const response = await api.patch(`/users/unsave/web/${webId}`);
       const data = await response.data.result;
       return data;
     },

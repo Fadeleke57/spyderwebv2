@@ -28,7 +28,7 @@ export const useFileUpload = (
   });
 };
 
-export const useFetchSourcesForBucket = (webId: string) => {
+export const useFetchSourcesForWeb = (webId: string) => {
   return useQuery({
     queryKey: ["sources", webId],
     queryFn: async () => {
@@ -116,12 +116,12 @@ export const useUploadNote = (webId: string) => {
   });
 };
 
-export const useUpdateNote = (bucketId: string, sourceId: string) => {
+export const useUpdateNote = (webId: string, sourceId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: { title?: string; content?: string }) => {
       const response = await api.patch(
-        `/sources/update/note/${bucketId}/${sourceId}`,
+        `/sources/update/note/${webId}/${sourceId}`,
         payload
       );
       return response.data.result;
@@ -130,7 +130,7 @@ export const useUpdateNote = (bucketId: string, sourceId: string) => {
       console.error("Note update failed:", error);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sources", bucketId] });
+      queryClient.invalidateQueries({ queryKey: ["sources", webId] });
       queryClient.invalidateQueries({ queryKey: ["source", sourceId] });
     },
   });

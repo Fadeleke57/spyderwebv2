@@ -2,11 +2,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { CreateConnection, UpdateConnection } from "@/types/connection";
 
-export const useFetchAllConnectionsForBucket = (bucketId: string) => {
+export const useFetchAllConnectionsForWeb = (webId: string) => {
   return useQuery({
-    queryKey: ["connections", "all", "bucket", bucketId],
+    queryKey: ["connections", "all", "web", webId],
     queryFn: async () => {
-      const response = await api.get(`/connections/all/bucket/${bucketId}`);
+      const response = await api.get(`/connections/all/web/${webId}`);
       return response.data.result;
     },
     staleTime: 1000 * 60,
@@ -14,14 +14,14 @@ export const useFetchAllConnectionsForBucket = (bucketId: string) => {
 };
 
 export const useFetchOutgoingConnections = (
-  bucketId: string,
+  webId: string,
   sourceId: string
 ) => {
   return useQuery({
-    queryKey: ["connections", "outgoing", bucketId, sourceId],
+    queryKey: ["connections", "outgoing", webId, sourceId],
     queryFn: async () => {
       const response = await api.get(
-        `/connections/outgoing/${bucketId}/${sourceId}`
+        `/connections/outgoing/${webId}/${sourceId}`
       );
       return response.data.result;
     },
@@ -29,26 +29,26 @@ export const useFetchOutgoingConnections = (
 };
 
 export const useFetchIncomingConnections = (
-  bucketId: string,
+  webId: string,
   sourceId: string
 ) => {
   return useQuery({
     queryKey: ["connections", "incoming"],
     queryFn: async () => {
       const response = await api.get(
-        `/connections/incoming/${bucketId}/${sourceId}`
+        `/connections/incoming/${webId}/${sourceId}`
       );
       return response.data.result;
     },
   });
 };
 
-export const useGetConnection = (bucketId: string, connectionId: string) => {
+export const useGetConnection = (webId: string, connectionId: string) => {
   return useQuery({
-    queryKey: ["connections", "connection", bucketId, connectionId],
+    queryKey: ["connections", "connection", webId, connectionId],
     queryFn: async () => {
       const response = await api.get(
-        `/connections/connection/${bucketId}/${connectionId}`
+        `/connections/connection/${webId}/${connectionId}`
       );
       return response.data.result;
     },
@@ -64,13 +64,13 @@ export const useCreateConnection = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["connections", "all", "bucket", variables.bucketId],
+        queryKey: ["connections", "all", "web", variables.webId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["connections", "outgoing", variables.bucketId],
+        queryKey: ["connections", "outgoing", variables.webId],
       });
       queryClient.invalidateQueries({
-        queryKey: ["connections", "incoming", variables.bucketId],
+        queryKey: ["connections", "incoming", variables.webId],
       });
     },
     onError: () => {},

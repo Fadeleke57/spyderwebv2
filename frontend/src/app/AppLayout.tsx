@@ -1,4 +1,3 @@
-import { Inter as FontSans } from "next/font/google";
 import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 import { AppSidebar } from "@/components/utility/AppSideBar";
@@ -6,7 +5,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SIDEBAR_COOKIE_NAME } from "@/components/ui/sidebar";
 import useMediaQuery from "@/hooks/general";
 import { ChartNoAxesGantt, CirclePlus, Home, LayoutGrid } from "lucide-react";
-import { NewBucketModal } from "@/components/buckets/NewBucketModal";
+import { NewWebModal } from "@/components/webs/NewWebModal";
 import { useRouter } from "next/router";
 import slogo from "@/assets/s_logo.jpg";
 import Image from "next/image";
@@ -38,8 +37,8 @@ export default function AppLayout({
     if (path === "/explore") {
       return pathname === "/explore";
     }
-    if (path === "/buckets") {
-      return pathname?.startsWith("/buckets") && pathname !== "/buckets/new";
+    if (path === "/webs") {
+      return pathname?.startsWith("/webs") && pathname !== "/webs/new";
     }
     if (path === "/home") {
       return pathname === "/home";
@@ -95,12 +94,12 @@ export default function AppLayout({
               </div>
             </div>
 
-            <div onClick={() => handleButtonClick("/buckets")}>
+            <div onClick={() => handleButtonClick("/webs")}>
               <div className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none">
                 <ChartNoAxesGantt
                   className={cn(
                     "size-5",
-                    isActivePage("/buckets")
+                    isActivePage("/webs")
                       ? "text-primary"
                       : "text-slate-500 dark:text-foreground"
                   )}
@@ -108,17 +107,17 @@ export default function AppLayout({
                 <span
                   className={cn(
                     "text-xs font-semibold",
-                    isActivePage("/buckets")
+                    isActivePage("/webs")
                       ? "text-primary"
                       : "text-slate-500 dark:text-foreground"
                   )}
                 >
-                  Buckets
+                  Webs
                 </span>
                 <div
                   className={cn(
                     "h-1 w-6 rounded-full transition-all duration-200",
-                    isActivePage("/buckets") ? "bg-primary" : "bg-transparent"
+                    isActivePage("/webs") ? "bg-primary" : "bg-transparent"
                   )}
                 />
               </div>
@@ -153,16 +152,16 @@ export default function AppLayout({
             </div>
             <div>
               {user ? (
-                <NewBucketModal>
+                <NewWebModal>
                   <div className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none text-slate-500 dark:text-foreground">
                     <CirclePlus className="size-5" />
                     <span className="text-xs font-semibold">Create</span>
                     <div className={cn("h-1 w-6")} />
                   </div>
-                </NewBucketModal>
+                </NewWebModal>
               ) : (
                 <div
-                  onClick={() => handleButtonClick("/buckets/new")}
+                  onClick={() => handleButtonClick("/webs/new")}
                   className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none text-slate-500 dark:text-foreground"
                 >
                   <CirclePlus className="size-5" />

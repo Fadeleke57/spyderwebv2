@@ -1,5 +1,5 @@
 import React from "react";
-import { Bucket } from "@/types/bucket";
+import { Web } from "@/types/web";
 import {
   Drawer,
   DrawerContent,
@@ -9,17 +9,17 @@ import {
 import { Button } from "../ui/button";
 import { Info, Scroll } from "lucide-react";
 import { PublicUser } from "@/types/user";
-import BucketForm from "./BucketForm";
-import PublicBucketView from "./PublicBucketView";
+import WebForm from "./WebForm";
+import PublicWebView from "./PublicWebView";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { ScrollBar } from "../ui/scroll-area";
 
 type FormProps = {
-  bucket: Bucket;
+  web: Web;
   user: PublicUser | null;
 };
 
-function MobileBucketForm({ bucket, user }: FormProps) {
+function MobileWebForm({ web, user }: FormProps) {
   return (
     <Drawer>
       <DrawerTrigger asChild>
@@ -28,17 +28,14 @@ function MobileBucketForm({ bucket, user }: FormProps) {
           <span className="sr-only">Settings</span>
         </Button>
       </DrawerTrigger>
-      <DrawerContent
-        className="max-h-[95dvh] p-4"
-        aria-describedby={undefined}
-      >
+      <DrawerContent className="max-h-[95dvh] p-4" aria-describedby={undefined}>
         <DrawerTitle hidden>Title</DrawerTitle>
         <ScrollArea className="h-[60vh]">
           <ScrollBar orientation="horizontal" />
-          {bucket?.userId === user?.id ? (
-            <BucketForm bucket={bucket} user={user} />
+          {web?.userId === user?.id ? (
+            <WebForm web={web} user={user} />
           ) : (
-            <PublicBucketView bucket={bucket} />
+            <PublicWebView web={web} />
           )}
         </ScrollArea>
       </DrawerContent>
@@ -46,4 +43,4 @@ function MobileBucketForm({ bucket, user }: FormProps) {
   );
 }
 
-export default MobileBucketForm;
+export default MobileWebForm;

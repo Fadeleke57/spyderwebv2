@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useCallback } from "react";
 import * as d3 from "d3";
-import { BucketConfigFormValues } from "@/types/article";
+import { WebConfigFormValues } from "@/types/article";
 import { useState, Dispatch, SetStateAction } from "react";
 import { LoadingPage } from "@/components/utility/Loading";
-import BucketDataDrawer from "./BucketDataModal";
+import WebDataDrawer from "./WebDataModal";
 import { useDeleteSource } from "@/hooks/sources";
 import { Source, SourceAsNode } from "@/types/source";
 import { Trash } from "lucide-react";
@@ -24,13 +24,13 @@ import {
   mapThemeToTextColor,
 } from "@/lib/utils";
 import SourceTooltip from "./SourceToolTip";
-import { useFetchAllConnectionsForBucket } from "@/hooks/connections";
+import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
 import { Connection, ConnectionData } from "@/types/connection";
 
 interface GraphProps {
   isOwner: boolean;
-  setConfig: (value: BucketConfigFormValues) => void;
-  bucketId: string;
+  setConfig: (value: WebConfigFormValues) => void;
+  webId: string;
   hasSources: boolean;
   refetchSources: () => void;
   fetchedSources: Source[];
@@ -40,9 +40,9 @@ interface GraphProps {
   setSelectedSourceId: Dispatch<SetStateAction<string>>;
 }
 
-function BucketGraph({
+function WebGraph({
   isOwner,
-  bucketId,
+  webId,
   hasSources,
   fetchedSources,
   refetchSources,
@@ -72,7 +72,7 @@ function BucketGraph({
     data: connections,
     isLoading: connectionsLoading,
     refetch: refetchConnections,
-  } = useFetchAllConnectionsForBucket(bucketId);
+  } = useFetchAllConnectionsForWeb(webId);
 
   const { mutateAsync: deleteSource } = useDeleteSource();
 
@@ -329,11 +329,11 @@ function BucketGraph({
       }
 
       //update positions
-        lines
-          .attr("x1", (d: any) => d.source.x)
-          .attr("y1", (d: any) => d.source.y)
-          .attr("x2", (d: any) => d.target.x)
-          .attr("y2", (d: any) => d.target.y);
+      lines
+        .attr("x1", (d: any) => d.source.x)
+        .attr("y1", (d: any) => d.source.y)
+        .attr("x2", (d: any) => d.target.x)
+        .attr("y2", (d: any) => d.target.y);
 
       const circles = g
         .selectAll("circle")
@@ -478,16 +478,16 @@ function BucketGraph({
         </div>
       )}
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
-      {isDrawerOpen && bucketId && selectedSource && (
-        <BucketDataDrawer
+      {isDrawerOpen && webId && selectedSource && (
+        <WebDataDrawer
           sourceId={selectedSource?.sourceId}
           open={isDrawerOpen}
           setOpen={setDrawerOpen}
-          bucketId={bucketId}
+          webId={webId}
         />
       )}
     </>
   );
 }
 
-export default BucketGraph;
+export default WebGraph;

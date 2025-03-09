@@ -12,7 +12,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
-import { useCreateBucket, useUploadImageToBucket } from "@/hooks/buckets";
+import { useCreateWeb, useUploadImageToWeb } from "@/hooks/webs";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { Textarea } from "../ui/textarea";
@@ -20,17 +20,21 @@ import { ImageIcon, LoaderCircle, X } from "lucide-react";
 import Image from "next/image";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MAX_IMAGE_SIZE, ALLOWED_IMAGE_TYPES, ALLOWED_GIF_TYPES } from "@/lib/utils";
+import {
+  MAX_IMAGE_SIZE,
+  ALLOWED_IMAGE_TYPES,
+  ALLOWED_GIF_TYPES,
+} from "@/lib/utils";
 
-const bucketSchema = z.object({
+const webSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
   description: z.string().min(0, { message: "Description is required" }),
   visibility: z.enum(["Private", "Public", "Invite"]).default("Private"),
 });
 
-type BucketFormValues = z.infer<typeof bucketSchema>;
+type WebFormValues = z.infer<typeof webSchema>;
 
-type BucketConfig = {
+type WebConfig = {
   name: string;
   description: string;
   visibility: "Private" | "Public" | "Invite";
@@ -38,15 +42,15 @@ type BucketConfig = {
 
 const TOGGLE_MODAL_KEYBOARD_SHORTCUT = "x";
 
-export function NewBucketModal({ children }: { children: React.ReactNode }) {
+export function NewWebModal({ children }: { children: React.ReactNode }) {
   //make the button more flexible
   const router = useRouter();
   const { toast } = useToast();
-  const { mutateAsync: createBucket, isPending: creatingBucket } =
-    useCreateBucket();
+  const { mutateAsync: createWeb, isPending: creatingWeb } =
+    useCreateWeb();
   const { mutateAsync: uploadImages, isPending: addingImages } =
-    useUploadImageToBucket();
-  const [bucketConfig, setBucketConfig] = useState<BucketConfig>({
+    useUploadImageToWeb();
+  const [webConfig, setWebConfig] = useState<WebConfig>({
     name: "Untitled",
     description: "",
     visibility: "Private",
@@ -61,8 +65,8 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
 
   const isMobile = useIsMobile();
 
-  const form = useForm<BucketFormValues>({
-    resolver: zodResolver(bucketSchema),
+  const form = useForm<WebFormValues>({
+    resolver: zodResolver(webSchema),
   });
   const [open, setOpen] = useState(false);
 
@@ -86,29 +90,29 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [toggleModal]);
 
-  const onSubmit: SubmitHandler<BucketFormValues> = async (data) => {
+  const onSubmit: SubmitHandler<WebFormValues> = async (data) => {
     try {
-      const bucketId = await createBucket({
-        name: bucketConfig.name,
-        description: bucketConfig.description,
-        visibility: bucketConfig.visibility,
+      const webId = await createWeb({
+        name: webConfig.name,
+        description: webConfig.description,
+        visibility: webConfig.visibility,
       });
 
-      setBucketConfig({
+      setWebConfig({
         name: "Untitled",
         description: "",
         visibility: "Private",
       });
 
       toast({
-        title: "Bucket created",
-        description: `Successfully created bucket.`,
+        title: "Web created",
+        description: `Successfully created web.`,
       });
 
       try {
         if (imageConfig.stagedImages.length || imageConfig.stagedGifs.length) {
           const imageKeys = await uploadImages({
-            bucketId: bucketId,
+            webId: webId,
             files: [...imageConfig.stagedImages, ...imageConfig.stagedGifs],
           });
         }
@@ -120,7 +124,7 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
 
         setOpen(false);
         form.reset();
-        window.location.href = `/bucket/${bucketId}`;
+        window.location.href = `/web/${webId}`;
       } catch (error: any) {
         toast({
           title: "Error uploading images",
@@ -130,7 +134,7 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
       }
     } catch (error: any) {
       toast({
-        title: "Error creating bucket",
+        title: "Error creating web",
         description: error.message,
         variant: "destructive",
       });
@@ -173,7 +177,7 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
       });
       return;
     }
- 
+
     const validFiles = Array.from(files).filter((file) => validateFile(file));
     if (validFiles.length > 0) {
       setImageConfig((prev) => ({
@@ -208,14 +212,14 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
 
   const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.value === "") {
-      setBucketConfig({
-        ...bucketConfig,
+      setWebConfig({
+        ...webConfig,
         name: "Untitled",
       });
       return;
     }
-    setBucketConfig({
-      ...bucketConfig,
+    setWebConfig({
+      ...webConfig,
       name: event.target.value,
     });
   };
@@ -223,8 +227,8 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
   const onDescriptionChange = (
     event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
-    setBucketConfig({
-      ...bucketConfig,
+    setWebConfig({
+      ...webConfig,
       description: event.target.value,
     });
   };
@@ -232,9 +236,9 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      {addingImages || creatingBucket ? (
+      {addingImages || creatingWeb ? (
         <DialogContent className="max-w-[350px] h-[60dvh] px-8 rounded-md lg:max-w-[600px] lg:h-[90dvh] flex flex-col gap-2 items-center justify-center">
-          <span>Setting up your bucket...</span>
+          <span>Setting up your web...</span>
           <LoaderCircle className="animate-spin" />
         </DialogContent>
       ) : (
@@ -267,7 +271,7 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
                 <Textarea
                   id="description"
                   rows={1}
-                  placeholder="Enter a brief description of your bucket..."
+                  placeholder="Enter a brief description of your web..."
                   {...form.register("description")}
                   className="w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-muted-foreground"
                   onInput={(e: any) => {
@@ -346,12 +350,12 @@ export function NewBucketModal({ children }: { children: React.ReactNode }) {
           </form>
           <DialogFooter className="flex flex-row items-end justify-between">
             <Button
-              disabled={creatingBucket}
+              disabled={creatingWeb}
               onClick={form.handleSubmit(onSubmit)}
               type="submit"
               className="w-[100px]"
             >
-              {creatingBucket ? "Saving..." : "Save Draft"}
+              {creatingWeb ? "Saving..." : "Save Draft"}
             </Button>
 
             <div className="flex flex-row items-center">
