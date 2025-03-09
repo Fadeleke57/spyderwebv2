@@ -8,6 +8,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { PublicUser } from "@/types/user";
+import { Skeleton } from "../ui/skeleton";
+import { Badge } from "../ui/badge";
 
 function ContributorsBlock({ bucketId }: { bucketId: string }) {
   const {
@@ -22,10 +24,10 @@ function ContributorsBlock({ bucketId }: { bucketId: string }) {
       <div className="px-4 py-2">
         <h2 className="text-md mb-4">Contributors</h2>
         <div className="flex flex-wrap gap-2">
-          {[...Array(6)].map((_, i) => (
-            <div
+          {[...Array(3)].map((_, i) => (
+            <Skeleton
               key={i}
-              className="w-12 h-12 rounded-full bg-gray-700 animate-pulse"
+              className="w-12 h-12 rounded-full"
             />
           ))}
         </div>
@@ -43,9 +45,9 @@ function ContributorsBlock({ bucketId }: { bucketId: string }) {
     <div className="px-4 py-2">
       <div className="flex items-center mb-4">
         <h2 className="text-md font-semibold text-white">Contributors</h2>
-        <div className="ml-2 px-2 py-1 bg-gray-800 rounded-full text-sm text-gray-300">
+        <Badge className="ml-2 w-6 h-6 flex items-center justify-center px-2 text-sm">
           {contributors.length}
-        </div>
+        </Badge>
       </div>
 
       <TooltipProvider>
@@ -64,7 +66,7 @@ function ContributorsBlock({ bucketId }: { bucketId: string }) {
               </TooltipTrigger>
               <TooltipContent
                 side="bottom"
-                className="bg-gray-800 border-gray-700 p-0"
+                className=" p-0"
               >
                 <div className="p-4 max-w-xs">
                   <div className="flex items-center mb-2">
