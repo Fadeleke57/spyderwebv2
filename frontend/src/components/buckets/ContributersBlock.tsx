@@ -17,7 +17,6 @@ function ContributorsBlock({ bucketId }: { bucketId: string }) {
     isLoading: isContributorsLoading,
     isError: isContributorsError,
   } = useFetchContributers(bucketId);
-  console.log("contributors", contributors);
 
   if (isContributorsLoading) {
     return (
@@ -52,7 +51,7 @@ function ContributorsBlock({ bucketId }: { bucketId: string }) {
 
       <TooltipProvider>
         <div className="flex flex-wrap gap-2 mb-4">
-          {contributors.map((contributor: PublicUser) => (
+          {contributors.slice(0, 6).map((contributor: PublicUser) => (
             <Tooltip key={contributor.id}>
               <TooltipTrigger>
                 <div className="relative w-12 h-12 rounded-full overflow-hidden cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all">
