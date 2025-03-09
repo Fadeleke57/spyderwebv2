@@ -652,3 +652,17 @@ def search_buckets(
         )
 
     return {"result": results}
+
+@router.get("/contributers/{bucket_id}")
+def get_bucket_contributors(bucket_id: str):
+    bucket = Buckets.find_one({"bucketId": bucket_id})
+    if not bucket:
+        raise HTTPException(status_code=404, detail=f"Bucket not found!")
+    
+    contributers = []
+    for iteration in bucket["iterations"]:
+        user = Users.find_one({"id": iteration}, {"_id": 0})
+        if user:
+            contributers.append(user)
+
+    return {"result": contributers}

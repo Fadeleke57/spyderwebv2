@@ -106,8 +106,6 @@ function BucketPlayground({
     }
   }, [sources]);
 
-  console.log("fetchedSources", fetchedSources);
-
   return (
     <div
       className={`${
