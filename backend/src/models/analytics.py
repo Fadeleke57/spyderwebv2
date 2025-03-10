@@ -9,7 +9,7 @@ Searches = get_collection("searches")
 class SearchFilter(TypedDict):
     visibility: Optional[str] = None
     userId: Optional[str] = None
-    bucketId: Optional[List[str]] = None
+    webId: Optional[List[str]] = None
 
 
 class Search(BaseModel):

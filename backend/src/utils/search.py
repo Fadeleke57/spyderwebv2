@@ -8,7 +8,7 @@ def run_semantic_search(query: str, limit: int, filter):
         vector=query_embedding,
         top_k=limit,
         include_metadata=True,
-        namespace="buckets",
+        namespace="webs",
         filter=filter,
     )
     results = []

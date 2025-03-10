@@ -29,7 +29,7 @@ class Neo4jToPinecone:
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
         
         pinecone = Pinecone(api_key=pinecone_api_key)
-        self.index_name = "article-embeddings2"
+        self.index_name = "bucket-space"
         
         if self.index_name not in pinecone.list_indexes().names():
             pinecone.create_index(
@@ -122,10 +122,50 @@ class Neo4jToPinecone:
     
             except Exception as e:
                 print(f"Failed to create source: {sourceId}. Error: {str(e)}")
+    
+
+    def update_pinecone_metadata_to_webid(self):
+        """
+        Updates Pinecone metadata to use webId instead of bucketId for all vectors.
+        Simply copies the bucketId value to webId and removes bucketId.
+        """
+        try:
+            allBuckets = buckets.find({})
+            count = 0
+            for bucket in allBuckets:
+                webIdToPlace = bucket['webId']
+                
+                vector_data = self.pinecone_index.fetch([webIdToPlace], namespace="buckets").vectors.get(webIdToPlace, None)
+                
+                if vector_data and 'metadata' in vector_data:
+                    metadata = vector_data['metadata']
+                    print(metadata)
+                    
+                    if 'bucketId' in metadata:
+                        metadata['webId'] = metadata['bucketId']
+                        print("removing bucketId")
+                        del metadata['bucketId']
+                    
+                    self.pinecone_index.upsert(
+                        [(webIdToPlace, vector_data['values'], metadata)],
+                        namespace="buckets"  
+                    )
+                    
+                    count += 1
+                    if count % 10 == 0:
+                        print(f"Updated {count} buckets to use webId")
+                else:
+                    print(f"No vector found for bucketId: {webIdToPlace}")
+                        
+                print(f"Completed updating {count} buckets from bucketId to webId")
+
+        except Exception as e:
+            print(f"Error updating Pinecone metadata: {str(e)}")
+            raise e
 
 if __name__ == "__main__":
     client = Neo4jToPinecone(uri=uri, user=user, password=password, pinecone_api_key=PINECONE_API_KEY, pinecone_env=PINECONE_ENVIRONMENT)
     try:
-        client.migrateSourcesToNeo()
+        client.update_pinecone_metadata_to_webid()
     except Exception as e:
         print("Something went wrong!")

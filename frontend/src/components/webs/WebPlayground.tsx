@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Web } from "@/types/web";
 import { PublicUser } from "@/types/user";
-import WebSearchModal from "./AddSourceModal";
+import AddSourceModal from "./AddSourceModal";
 import WebGraph from "./WebGraph";
 import { WebConfigFormValues } from "@/types/article";
 import { Source } from "@/types/source";
@@ -77,9 +77,9 @@ function WebPlayground({
   const [fetchedSources, setFetchedSources] = useState<Source[]>([]);
   const [open, setOpen] = React.useState(false);
   const [isWebDataDrawerOpen, setIsWebDataDrawerOpen] = useState(false);
-  const [isWebSearchModalOpen, setIsWebSearchModalOpen] = useState(false);
+  const [isAddSourceModalOpen, setIsAddSourceModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [webSearchModalView, setWebSearchModalView] = useState<
+  const [webSearchModalView, setAddSourceModalView] = useState<
     "youtube" | "website" | "default" | "note"
   >("default");
 
@@ -92,8 +92,8 @@ function WebPlayground({
   const handleDropdownButtonClick = (
     view: "youtube" | "website" | "default" | "note"
   ) => {
-    setWebSearchModalView(view);
-    setIsWebSearchModalOpen(true);
+    setAddSourceModalView(view);
+    setIsAddSourceModalOpen(true);
   };
 
   const toggleExpand = () => {
@@ -159,9 +159,9 @@ function WebPlayground({
           <div
             className={`absolute ${isExpanded ? "right-6" : "right-3"} top-10`}
           >
-            <WebSearchModal
-              open={isWebSearchModalOpen}
-              setOpen={setIsWebSearchModalOpen}
+            <AddSourceModal
+              open={isAddSourceModalOpen}
+              setOpen={setIsAddSourceModalOpen}
               web={web}
               config={config}
               setConfig={setConfig}
@@ -225,7 +225,7 @@ function WebPlayground({
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </WebSearchModal>
+            </AddSourceModal>
           </div>
         ) : null}
         {isOwner && web?.sourceIds?.length === 0 && (
@@ -238,9 +238,9 @@ function WebPlayground({
             </p>
             <div className="flex flex-wrap gap-2 whitespace-nowrap mt-2 justify-center">
               {" "}
-              <WebSearchModal
-                open={isWebSearchModalOpen}
-                setOpen={setIsWebSearchModalOpen}
+              <AddSourceModal
+                open={isAddSourceModalOpen}
+                setOpen={setIsAddSourceModalOpen}
                 web={web}
                 config={config}
                 setConfig={setConfig}
@@ -304,7 +304,7 @@ function WebPlayground({
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </WebSearchModal>
+              </AddSourceModal>
             </div>
           </div>
         )}

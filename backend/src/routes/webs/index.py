@@ -14,7 +14,7 @@ from src.db.neo4j import client as neo4jClient
 from src.models.analytics import Search, Searches
 from src.models.source import Sources, Source
 from datetime import datetime
-from src.models.bucket import Buckets, BucketConfig, UpdateBucket, IterateBucket
+from src.models.web import Webs, WebConfig, UpdateWeb, IterateWeb
 from fastapi.exceptions import HTTPException
 from botocore.exceptions import ClientError
 from src.lib.logger.index import logger
@@ -22,7 +22,7 @@ from pymongo import ReturnDocument
 from typing import List
 from src.core.config import settings
 import boto3
-from src.lib.pinecone.index import PCINDEX, PC, generate_bucket_embeddings
+from src.lib.pinecone.index import PCINDEX, PC, generate_web_embeddings
 
 router = APIRouter()
 
@@ -31,24 +31,24 @@ s3 = boto3.client("s3")
 
 
 @router.get("/all/user")
-def get_user_buckets(
+def get_user_webs(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
     criteria: Optional[str] = None,
     user: User = Depends(manager),
 ):
     """
-    Retrieve paginated buckets belonging to a user, sorted by creation date in descending order,
-    with an optional limit on the total number of buckets.
+    Retrieve paginated webs belonging to a user, sorted by creation date in descending order,
+    with an optional limit on the total number of webs.
 
     Args:
         page (int): The current page number.
         page_size (int): The number of items per page.
-        limit (int, optional): Maximum number of buckets to fetch.
-        user (User): The user whose buckets are to be retrieved.
+        limit (int, optional): Maximum number of webs to fetch.
+        user (User): The user whose webs are to be retrieved.
 
     Returns:
-        dict: A JSON response containing the paginated list of buckets and pagination metadata.
+        dict: A JSON response containing the paginated list of webs and pagination metadata.
     """
     check_user(user)
 
@@ -65,28 +65,26 @@ def get_user_buckets(
             visibility = None
 
         if visibility:
-            buckets = list(
-                Buckets.find(
-                    {"visibility": visibility, "userId": user["id"]}, {"_id": 0}
-                )
+            webs = list(
+                Webs.find({"visibility": visibility, "userId": user["id"]}, {"_id": 0})
             )
         else:
-            buckets = list(
-                Buckets.find({"userId": user["id"]}, {"_id": 0}, sort=[("updated", -1)])
+            webs = list(
+                Webs.find({"userId": user["id"]}, {"_id": 0}, sort=[("updated", -1)])
             )
 
         # pagination
-        total_buckets = len(buckets)
+        total_webs = len(webs)
         start_index = (page - 1) * page_size
         end_index = start_index + page_size
-        paginated_buckets = buckets[start_index:end_index]
+        paginated_webs = webs[start_index:end_index]
 
-        next_cursor = page + 1 if end_index < total_buckets else None
+        next_cursor = page + 1 if end_index < total_webs else None
         prev_cursor = page - 1 if page > 1 else None
 
         return {
-            "items": paginated_buckets,
-            "total": total_buckets,
+            "items": paginated_webs,
+            "total": total_webs,
             "page": page,
             "page_size": page_size,
             "nextCursor": next_cursor,
@@ -94,60 +92,58 @@ def get_user_buckets(
         }
 
     except Exception as e:
-        logger.error(f"Error fetching buckets: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching buckets {e}")
+        logger.error(f"Error fetching webs: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching webs {e}")
 
 
 @router.get("/all/public")
-async def get_public_buckets(limit: int = 20, cursor: str = None):
+async def get_public_webs(limit: int = 20, cursor: str = None):
     """
-    Retrieve public buckets with cursor-based pagination.
+    Retrieve public webs with cursor-based pagination.
 
     Parameters
     ----------
     limit : int
-        Number of buckets to return per page
+        Number of webs to return per page
     cursor : str
         Timestamp-based cursor for pagination
 
     Returns
     -------
     dict
-        Dictionary containing buckets and next cursor
+        Dictionary containing webs and next cursor
     """
     query = {"visibility": "Public"}
 
     if cursor:
         query["updated"] = {"$lt": datetime.fromisoformat(cursor)}
 
-    buckets_list = list(
-        Buckets.find(query, {"_id": 0}).sort("updated", -1).limit(limit + 1)
-    )
+    webs_list = list(Webs.find(query, {"_id": 0}).sort("updated", -1).limit(limit + 1))
 
-    has_next_page = len(buckets_list) > limit
+    has_next_page = len(webs_list) > limit
     next_cursor = None
 
     if has_next_page:
-        buckets_list = buckets_list[:-1]
-        next_cursor = buckets_list[-1]["updated"]
+        webs_list = webs_list[:-1]
+        next_cursor = webs_list[-1]["updated"]
 
-    return {"result": buckets_list, "nextCursor": next_cursor}
+    return {"result": webs_list, "nextCursor": next_cursor}
 
 
 @router.get("/popular")
-def get_popular_buckets(limit: int = 10):
+def get_popular_webs(limit: int = 10):
     """
-    Retrieve popular buckets with cursor-based pagination.
+    Retrieve popular webs with cursor-based pagination.
 
     Parameters
     ----------
     limit : int
-        Number of buckets to return per page
+        Number of webs to return per page
 
     Returns
     -------
     dict
-        Dictionary containing buckets and next cursor
+        Dictionary containing webs and next cursor
     """
     pipeline = [
         {"$addFields": {"likesCount": {"$size": "$likes"}}},
@@ -155,45 +151,43 @@ def get_popular_buckets(limit: int = 10):
         {"$limit": limit},
         {"$project": {"_id": 0, "likesCount": 0}},
     ]
-    top_buckets = list(Buckets.aggregate(pipeline))
-    return {"result": top_buckets}
+    top_webs = list(Webs.aggregate(pipeline))
+    return {"result": top_webs}
 
 
-@router.get("/liked/user")  # get all liked buckets belonging to a user
-def get_user_liked_buckets(user: User = Depends(manager)):
+@router.get("/liked/user")  # get all liked webs belonging to a user
+def get_user_liked_webs(user: User = Depends(manager)):
     """
-    Retrieve all buckets liked by a user.
+    Retrieve all webs liked by a user.
 
     Args:
-        user (User): The user whose liked buckets are to be retrieved.
+        user (User): The user whose liked webs are to be retrieved.
 
     Returns:
-        dict: A JSON response containing a list of liked buckets sorted by creation date in descending order.
+        dict: A JSON response containing a list of liked webs sorted by creation date in descending order.
     """
     check_user(user)
-    likedBuckets = Buckets.find(
-        {"likes": user["id"]}, {"_id": 0}, sort=[("created", -1)]
-    )
-    return {"result": likedBuckets}
+    likedWebs = Webs.find({"likes": user["id"]}, {"_id": 0}, sort=[("created", -1)])
+    return {"result": likedWebs}
 
 
 @router.post("/create")
-def create_bucket(config: BucketConfig, user=Depends(manager)):
+def create_web(config: WebConfig, user=Depends(manager)):
     """
-    Create a new bucket.
+    Create a new web.
 
     Args:
-        config (BucketConfig): The configuration for the new bucket.
-        user (User): The user creating the bucket.
+        config (WebConfig): The configuration for the new web.
+        user (User): The user creating the web.
 
     Returns:
-        dict: A JSON response with a result key containing the ID of the new bucket.
+        dict: A JSON response with a result key containing the ID of the new web.
     """
     check_user(user)
     try:
-        bucketId = str(uuid.uuid4())
-        bucket_to_insert = {
-            "bucketId": bucketId,
+        webId = str(uuid.uuid4())
+        web_to_insert = {
+            "webId": webId,
             "name": config.name,
             "description": config.description,
             "userId": user["id"],
@@ -208,32 +202,32 @@ def create_bucket(config: BucketConfig, user=Depends(manager)):
         }
 
         # pinecone pipeline
-        vectors = generate_bucket_embeddings(config.name, config.description)
+        vectors = generate_web_embeddings(config.name, config.description)
         pincone_insert = (
-            bucket_to_insert.copy()
+            web_to_insert.copy()
         )  # create copy so we don't modify the original
         pincone_insert["created"] = str(
-            bucket_to_insert["created"]
+            web_to_insert["created"]
         )  # data object not allowed in pinecone
-        pincone_insert["updated"] = str(bucket_to_insert["updated"])
-        embedding_data = [(bucketId, vectors, pincone_insert)]
+        pincone_insert["updated"] = str(web_to_insert["updated"])
+        embedding_data = [(webId, vectors, pincone_insert)]
         PCINDEX.upsert(
             vectors=embedding_data,
-            namespace="buckets",
+            namespace="webs",
         )
 
         # mongo insert
-        Buckets.insert_one(bucket_to_insert)
-        return {"result": bucketId}
+        Webs.insert_one(web_to_insert)
+        return {"result": webId}
 
     except Exception as e:
-        logger.error(f"Error creating bucket: {str(e)}")
+        logger.error(f"Error creating web: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/upload/image/{bucket_id}")
+@router.post("/upload/image/{web_id}")
 async def upload_file(
-    bucket_id: str,
+    web_id: str,
     files: list[UploadFile] = File(..., description="Multiple files as UploadFile"),
     user=Depends(manager),
 ):
@@ -245,9 +239,9 @@ async def upload_file(
         for file in files:
             # sanitize filename
             safe_filename = secure_filename(file.filename)
-            object_name = f"files/{user['id']}/{bucket_id}/images/{safe_filename}"
+            object_name = f"files/{user['id']}/{web_id}/images/{safe_filename}"
 
-            temp_dir = "/tmp/bucket_uploads"
+            temp_dir = "/tmp/web_uploads"
             os.makedirs(temp_dir, exist_ok=True)
 
             temp_path = os.path.join(temp_dir, f"{uuid.uuid4()}_{safe_filename}")
@@ -265,8 +259,8 @@ async def upload_file(
                 url = f"https://{s3_bucket.bucket_name}.s3.{s3_bucket.region_name}.amazonaws.com/{object_name}"
                 uploaded_image_urls.append(url)
 
-                result = Buckets.update_one(
-                    {"bucketId": bucket_id, "userId": user["id"]},
+                result = Webs.update_one(
+                    {"webId": web_id, "userId": user["id"]},
                     {
                         "$push": {"imageKeys": object_name},
                         "$set": {"updated": datetime.now(UTC)},
@@ -274,7 +268,7 @@ async def upload_file(
                 )
 
                 if result.modified_count == 0:
-                    raise HTTPException(status_code=404, detail="Bucket not found")
+                    raise HTTPException(status_code=404, detail="Web not found")
 
             except Exception as e:
                 logger.error(f"Error uploading file {safe_filename}: {str(e)}")
@@ -293,45 +287,45 @@ async def upload_file(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/delete/image/{bucket_id}/{image_name}")
-def delete_image(bucket_id: str, image_name: str, user=Depends(manager)):
+@router.delete("/delete/image/{web_id}/{image_name}")
+def delete_image(web_id: str, image_name: str, user=Depends(manager)):
     check_user(user)
 
-    filepath = f"files/{user['id']}/{bucket_id}/images/{image_name}"
+    filepath = f"files/{user['id']}/{web_id}/images/{image_name}"
 
-    result = Buckets.update_one(
-        {"bucketId": bucket_id, "userId": user["id"], "imageKeys": filepath},
+    result = Webs.update_one(
+        {"webId": web_id, "userId": user["id"], "imageKeys": filepath},
         {"$pull": {"imageKeys": filepath}, "$set": {"updated": datetime.now(UTC)}},
     )
 
     if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Bucket not found")
+        raise HTTPException(status_code=404, detail="Web not found")
 
-    s3.delete_object(Bucket=s3_bucket.bucket_name, Key=filepath)
+    s3.delete_object(Web=s3_bucket.bucket_name, Key=filepath)
     return {"result": "Image deleted"}
 
 
-@router.get("/images/bucket/{bucket_id}")
-def get_bucket_images(bucket_id: str):
+@router.get("/images/web/{web_id}")
+def get_web_images(web_id: str):
     """
-    Retrieve all image URLs associated with a given bucket.
+    Retrieve all image URLs associated with a given web.
 
     Args:
-        bucket_id (str): The ID of the bucket to retrieve images for.
+        web_id (str): The ID of the web to retrieve images for.
 
     Returns:
         dict: A JSON response containing a list of image URLs.
 
     Raises:
-        HTTPException: If the bucket is not found, raises a 404 error.
+        HTTPException: If the web is not found, raises a 404 error.
         HTTPException: If there is an error while generating URLs, raises a 500 error.
     """
 
-    bucket = Buckets.find_one({"bucketId": bucket_id})
-    if not bucket:
-        raise HTTPException(status_code=404, detail=f"Bucket not found!")
+    web = Webs.find_one({"webId": web_id})
+    if not web:
+        raise HTTPException(status_code=404, detail=f"Web not found!")
 
-    imageKeys = bucket.get("imageKeys", [])
+    imageKeys = web.get("imageKeys", [])
     urls = []
     try:
         for key in imageKeys:
@@ -344,52 +338,52 @@ def get_bucket_images(bucket_id: str):
 
 
 @router.delete("/delete")
-def delete_bucket(bucketId: str, user=Depends(manager)):
+def delete_web(webId: str, user=Depends(manager)):
     """
-    Delete a bucket.
+    Delete a web.
 
     Args:
-        bucketId (str): The ID of the bucket to delete.
+        webId (str): The ID of the web to delete.
         user (User): The user making the request.
 
     Returns:
         dict: A JSON response with a result key.
 
     Raises:
-        HTTPException: If the bucket is not found or the user is not the owner of the bucket.
+        HTTPException: If the web is not found or the user is not the owner of the web.
 
     """
     check_user(user)
-    Buckets.delete_one({"bucketId": bucketId, "userId": user["id"]})
+    Webs.delete_one({"webId": webId, "userId": user["id"]})
 
-    PCINDEX.delete(ids=[bucketId], namespace="buckets")
+    PCINDEX.delete(ids=[webId], namespace="webs")
 
-    sourcesForBucket = Sources.find({"bucketId": bucketId})
-    for source in sourcesForBucket:
+    sourcesForWeb = Sources.find({"webId": webId})
+    for source in sourcesForWeb:
         if source["type"] == "document":
-            s3.delete_object(Bucket=s3_bucket.bucket_name, Key=source["url"])
+            s3.delete_object(Web=s3_bucket.bucket_name, Key=source["url"])
         neo4jClient.delete_source(source["sourceId"])
 
-    return {"result": "Bucket deleted"}
+    return {"result": "Web deleted"}
 
 
-@router.patch("/update/{bucketId}")
-def update_bucket(bucketId: str, config: UpdateBucket, user=Depends(manager)):
+@router.patch("/update/{webId}")
+def update_web(webId: str, config: UpdateWeb, user=Depends(manager)):
     """
-    Update a bucket.
+    Update a web.
 
     Args:
-        bucketId (str): The ID of the bucket to update.
-        config (UpdateBucket): The new configuration for the bucket.
+        webId (str): The ID of the web to update.
+        config (UpdateWeb): The new configuration for the web.
         user (User): The user making the request.
 
     Returns:
         dict: A JSON response with a result key.
     """
     check_user(user)
-    bucket = Buckets.find_one({"bucketId": bucketId, "userId": user["id"]})
-    if not bucket:
-        raise HTTPException(status_code=404, detail="Bucket not found")
+    web = Webs.find_one({"webId": webId, "userId": user["id"]})
+    if not web:
+        raise HTTPException(status_code=404, detail="Web not found")
 
     update_fields = config.model_dump()
     update_fields["updated"] = datetime.now(UTC)
@@ -401,179 +395,182 @@ def update_bucket(bucketId: str, config: UpdateBucket, user=Depends(manager)):
         vector_updates["description"] = update_fields["description"]
 
     if vector_updates:
-        vectors = generate_bucket_embeddings(
+        vectors = generate_web_embeddings(
             vector_updates["name"], vector_updates["description"]
         )
         PCINDEX.update(
-            id=bucketId,
+            id=webId,
             values=vectors,
             set_metadata=update_fields,
-            namespace="buckets",
+            namespace="webs",
         )
 
-    result = Buckets.update_one(
-        {"bucketId": bucketId, "userId": user["id"]}, {"$set": update_fields}
+    result = Webs.update_one(
+        {"webId": webId, "userId": user["id"]}, {"$set": update_fields}
     )
 
     if result.modified_count == 0:
         raise HTTPException(
-            status_code=404, detail="Bucket not found or no changes applied"
+            status_code=404, detail="Web not found or no changes applied"
         )
 
-    return {"result": "Bucket updated"}
+    return {"result": "Web updated"}
 
 
 @router.get("/id")
-def get_bucket_by_id(bucketId: str, user=Depends(manager.optional)):
+def get_web_by_id(webId: str, user=Depends(manager.optional)):
     """
-    Retrieve a bucket by its ID.
+    Retrieve a web by its ID.
 
     Args:
-        bucketId (str): The ID of the bucket to retrieve.
+        webId (str): The ID of the web to retrieve.
         user (Optional[User]): The user making the request. Defaults to None.
 
     Returns:
-        dict: A JSON response containing the bucket data if found.
+        dict: A JSON response containing the web data if found.
 
     Raises:
-        HTTPException: If the bucket is not found, raises a 404 error.
+        HTTPException: If the web is not found, raises a 404 error.
     """
     if user:
         check_user(user)
 
-    bucket = Buckets.find_one({"bucketId": bucketId}, {"_id": 0})
+    web = Webs.find_one({"webId": webId}, {"_id": 0})
 
-    if not bucket:
+    if not web:
         raise HTTPException(status_code=404, detail="Item not found")
-    elif bucket["visibility"] == "Private" and user.get("id", "") != bucket["userId"]:
+    elif web["visibility"] == "Private" and user.get("id", "") != web["userId"]:
         raise HTTPException(status_code=404, detail="Item not found")
     else:
-        return {"result": bucket}
+        return {"result": web}
 
 
-@router.post("/like/{bucket_id}")
-def like_bucket(bucket_id: str, user=Depends(manager)):
+@router.post("/like/{web_id}")
+def like_web(web_id: str, user=Depends(manager)):
     """
-    Like a bucket for a user.
+    Like a web for a user.
 
     Args:
-        bucket_id (str): The ID of the bucket to like.
+        web_id (str): The ID of the web to like.
         user (User): The user making the request.
 
     Raises:
-        HTTPException: If the bucket is already liked or not found.
+        HTTPException: If the web is already liked or not found.
 
     Returns:
-        dict: A JSON response with the updated number of likes for the bucket.
+        dict: A JSON response with the updated number of likes for the web.
     """
     check_user(user)
 
-    result = Buckets.find_one_and_update(
-        {"bucketId": bucket_id, "likes": {"$ne": user["id"]}},
+    result = Webs.find_one_and_update(
+        {"webId": web_id, "likes": {"$ne": user["id"]}},
         {"$addToSet": {"likes": user["id"]}},
         return_document=ReturnDocument.AFTER,
     )
     if not result:
-        raise HTTPException(status_code=400, detail="Already liked or bucket not found")
+        raise HTTPException(status_code=400, detail="Already liked or web not found")
     return {"result": len(result["likes"])}
 
 
-@router.post("/unlike/{bucket_id}")
-def unlike_bucket(bucket_id: str, user=Depends(manager)):
+@router.post("/unlike/{web_id}")
+def unlike_web(web_id: str, user=Depends(manager)):
     """
-    Unlike a bucket for a user.
+    Unlike a web for a user.
 
     Args:
-        bucket_id (str): The ID of the bucket to unlike.
+        web_id (str): The ID of the web to unlike.
         user (User): The user making the request.
 
     Raises:
-        HTTPException: If the bucket is not liked yet or not found.
+        HTTPException: If the web is not liked yet or not found.
 
     Returns:
-        dict: A JSON response with the updated number of likes for the bucket.
+        dict: A JSON response with the updated number of likes for the web.
     """
     check_user(user)
 
-    result = Buckets.find_one_and_update(
-        {"bucketId": bucket_id, "likes": user["id"]},
+    result = Webs.find_one_and_update(
+        {"webId": web_id, "likes": user["id"]},
         {"$pull": {"likes": user["id"]}},
         return_document=ReturnDocument.AFTER,
     )
     if not result:
-        raise HTTPException(status_code=400, detail="Not liked yet or bucket not found")
+        raise HTTPException(status_code=400, detail="Not liked yet or web not found")
     return {"result": len(result["likes"])}
 
 
 @router.get("/saved/user")
-def get_user_saved_buckets(user=Depends(manager)):
+def get_user_saved_webs(user=Depends(manager)):
     check_user(user)
-    result = Buckets.find_one({"bucketId": {"$in": user["bucketsSaved"]}}, {"_id": 0})
+    result = Webs.find_one({"webId": {"$in": user["websSaved"]}}, {"_id": 0})
     return {"result": result}
 
 
-@router.patch("/add/tag/{bucket_id}/{tag}")
-def add_tag(bucket_id: str, tag: str, user=Depends(manager)):
+@router.patch("/add/tag/{web_id}/{tag}")
+def add_tag(web_id: str, tag: str, user=Depends(manager)):
     check_user(user)
 
     formatted_tag = tag.lower()
-    Buckets.update_one(
-        {"bucketId": bucket_id, "userId": user["id"]},
+    Webs.update_one(
+        {"webId": web_id, "userId": user["id"]},
         {"$addToSet": {"tags": formatted_tag}},
     )
     return {"result": "Tag added"}
 
 
-@router.patch("/remove/tag/{bucket_id}/{tag}")
-def remove_tag(bucket_id: str, tag: str, user=Depends(manager)):
+@router.patch("/remove/tag/{web_id}/{tag}")
+def remove_tag(web_id: str, tag: str, user=Depends(manager)):
     check_user(user)
 
     formatted_tag = tag.lower()
-    Buckets.update_one(
-        {"bucketId": bucket_id, "userId": user["id"]},
+    Webs.update_one(
+        {"webId": web_id, "userId": user["id"]},
         {"$pull": {"tags": formatted_tag}},
     )
     return {"result": "Tag added"}
 
 
-@router.post("/iterate/{bucket_id}")
-def iterate_bucket(
-    bucket_id: str, iteratePayload: IterateBucket, user=Depends(manager)
-):
+@router.post("/iterate/{web_id}")
+def iterate_web(web_id: str, iteratePayload: IterateWeb, user=Depends(manager)):
     """
-    Iterate over a given bucket and create a new bucket with the same sources but with a new name and description.
+    Iterate over a given web and create a new web with the same sources but with a new name and description.
 
     Args:
-        bucket_id (str): The ID of the bucket to iterate over.
-        iteratePayload (IterateBucket): The payload containing the new name and description for the new bucket.
+        web_id (str): The ID of the web to iterate over.
+        iteratePayload (IterateWeb): The payload containing the new name and description for the new web.
         user (User): The user making the request.
 
     Returns:
-        dict: A JSON response containing the ID of the newly created bucket.
+        dict: A JSON response containing the ID of the newly created web.
 
     Raises:
-        HTTPException: If the bucket is not found, raises a 404 error.
+        HTTPException: If the web is not found, raises a 404 error.
     """
     check_user(user)
 
-    bucketToIterate = Buckets.find_one({"bucketId": bucket_id})
-    associatedUser = Users.find_one({"id": bucketToIterate["userId"]}, {"_id": 0})
+    webToIterate = Webs.find_one({"webId": web_id})
+    associatedUser = Users.find_one({"id": webToIterate["userId"]}, {"_id": 0})
 
-    if not bucketToIterate or not associatedUser:
-        raise HTTPException(status_code=404, detail="Bucket or owner not found")
+    if not webToIterate or not associatedUser:
+        raise HTTPException(status_code=404, detail="Web or owner not found")
 
     try:
 
-        newBucketId = str(uuid.uuid4())
+        newWebId = str(uuid.uuid4())
 
         try:
-            newBucketId, newSourceIds = neo4jClient.copy_sources_to_new_web(original_bucket_id=bucket_id, new_bucket_id=newBucketId, new_user_id=user["id"], with_connections=iteratePayload.withConnections)
+            newWebId, newSourceIds = neo4jClient.copy_sources_to_new_web(
+                original_web_id=web_id,
+                new_web_id=newWebId,
+                new_user_id=user["id"],
+                with_connections=iteratePayload.withConnections,
+            )
         except Exception as e:
             logger.error(str(e))
             raise HTTPException(status_code=500, detail=str(e))
-        
-        bucket_to_insert = {
-            "bucketId": newBucketId,
+
+        web_to_insert = {
+            "webId": newWebId,
             "name": iteratePayload.name,
             "description": iteratePayload.description,
             "userId": user["id"],
@@ -581,45 +578,45 @@ def iterate_bucket(
             "created": datetime.now(UTC),
             "updated": datetime.now(UTC),
             "visibility": "Private",
-            "tags": bucketToIterate["tags"],
+            "tags": webToIterate["tags"],
             "iteratedFrom": associatedUser["id"],
             "likes": [],
             "iterations": [],
         }
 
-        vectors = generate_bucket_embeddings(
+        vectors = generate_web_embeddings(
             iteratePayload.name, iteratePayload.description
         )
-        pincone_insert = bucket_to_insert.copy()
+        pincone_insert = web_to_insert.copy()
 
-        pincone_insert["created"] = str(bucket_to_insert["created"])
-        pincone_insert["updated"] = str(bucket_to_insert["updated"])
-        embedding_data = [(newBucketId, vectors, pincone_insert)]
+        pincone_insert["created"] = str(web_to_insert["created"])
+        pincone_insert["updated"] = str(web_to_insert["updated"])
+        embedding_data = [(newWebId, vectors, pincone_insert)]
         PCINDEX.upsert(
             vectors=embedding_data,
-            namespace="buckets",
+            namespace="webs",
         )
 
-        Buckets.insert_one(bucket_to_insert)
-        Buckets.find_one_and_update(
-            {"bucketId": bucketToIterate["bucketId"]},
+        Webs.insert_one(web_to_insert)
+        Webs.find_one_and_update(
+            {"webId": webToIterate["webId"]},
             {"$push": {"iterations": user["id"]}},
         )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error iterating bucket: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error iterating web: {str(e)}")
 
-    return {"result": newBucketId}
+    return {"result": newWebId}
 
 
 @router.get("/search")
-def search_buckets(
+def search_webs(
     query: str,
     visibility: Optional[Literal["Public", "Private"]] = Query(
         None, alias="visibility"
     ),
     userId: Optional[str] = None,
-    bucketId: Optional[str] = None,
+    webId: Optional[str] = None,
     user=Depends(manager.optional),
 ):
     if user:
@@ -630,8 +627,8 @@ def search_buckets(
         filter["visibility"] = {"$eq": visibility}
     if userId:
         filter["userId"] = {"$eq": userId}
-    if bucketId:
-        filter["bucketId"] = {"$eq": bucketId}
+    if webId:
+        filter["webId"] = {"$eq": webId}
 
     search_info: Search = {
         "query": query,
@@ -653,14 +650,15 @@ def search_buckets(
 
     return {"result": results}
 
-@router.get("/contributers/{bucket_id}")
-def get_bucket_contributors(bucket_id: str):
-    bucket = Buckets.find_one({"bucketId": bucket_id})
-    if not bucket:
-        raise HTTPException(status_code=404, detail=f"Bucket not found!")
-    
+
+@router.get("/contributers/{web_id}")
+def get_web_contributors(web_id: str):
+    web = Webs.find_one({"webId": web_id})
+    if not web:
+        raise HTTPException(status_code=404, detail=f"Web not found!")
+
     contributers = []
-    for iteration in bucket["iterations"]:
+    for iteration in web["iterations"]:
         user = Users.find_one({"id": iteration}, {"_id": 0})
         if user:
             contributers.append(user)

@@ -40,19 +40,19 @@ type ConfigGraphModalProps = {
   setConfig: (value: WebConfigFormValues) => void;
   web: Web;
   refreshSources: () => void;
-  refreshweb: () => void;
+  refreshWeb: () => void;
   view?: string;
   children: React.ReactNode;
 };
 
-export default function WebSearchModal({
+export default function AddSourceModal({
   web,
   open,
   setOpen,
   view = "default",
   children,
   refreshSources,
-  refreshweb,
+  refreshWeb,
 }: ConfigGraphModalProps) {
   const noteSchema = z.object({
     title: z.string().min(1, { message: "Title is required" }),
@@ -127,7 +127,7 @@ export default function WebSearchModal({
       form.reset();
       handleClose();
       refreshSources();
-      refreshweb();
+      refreshWeb();
     } catch (error: any) {
       toast({
         title: "Error creating web",
@@ -154,7 +154,7 @@ export default function WebSearchModal({
       });
       handleClose();
       refreshSources();
-      refreshweb();
+      refreshWeb();
     } catch (err) {
       console.error(err);
       toast({
@@ -174,7 +174,7 @@ export default function WebSearchModal({
       });
       handleClose();
       refreshSources();
-      refreshweb();
+      refreshWeb();
     } catch (err: any) {
       console.error(err);
       toast({
@@ -199,7 +199,7 @@ export default function WebSearchModal({
       });
       handleClose();
       refreshSources();
-      refreshweb();
+      refreshWeb();
     } catch (err: any) {
       console.error(err);
       toast({

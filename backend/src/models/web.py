@@ -3,11 +3,11 @@ from typing import List, Optional, Literal
 from datetime import datetime
 from src.db.mongodb import get_collection
 
-Buckets = get_collection("buckets")
+Webs = get_collection("webs")
 
 
-class Bucket(BaseModel):
-    bucketId: str
+class Web(BaseModel):
+    webId: str
     userId: str
     name: str
     description: str
@@ -23,7 +23,7 @@ class Bucket(BaseModel):
     imageKeys: Optional[list[str]]
 
 
-class BucketConfig(BaseModel):
+class WebConfig(BaseModel):
     name: str
     description: str
     visibility: Literal["Private", "Public", "Invite"]
@@ -32,21 +32,21 @@ class BucketConfig(BaseModel):
     imageKeys: list[str] = []
 
 
-class UpdateBucket(BaseModel):
+class UpdateWeb(BaseModel):
     name: Optional[str]
     description: Optional[str]
     visibility: Literal["Private", "Public", "Invite"]
 
 
-class IterateBucket(BaseModel):
+class IterateWeb(BaseModel):
     name: str
     description: str
     withConnections: bool
 
 
-class LikeBucket(BaseModel):
-    bucketId: str
+class LikeWeb(BaseModel):
+    webId: str
 
 
-class UnLikeBucket(BaseModel):
-    bucketId: str
+class UnLikeWeb(BaseModel):
+    webId: str

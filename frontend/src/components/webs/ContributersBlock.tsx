@@ -41,17 +41,17 @@ function ContributorsBlock({ webId }: { webId: string }) {
     <div className="px-4 py-2">
       <div className="flex items-center mb-4">
         <h2 className="text-md font-semibold text-white">Contributors</h2>
-        <Badge className="ml-2 w-6 h-6 flex items-center justify-center px-2 text-sm">
+        <Badge className="ml-2 w-6 h-6 flex items-center justify-center p-2 text-sm">
           {contributors.length}
         </Badge>
       </div>
 
       <TooltipProvider>
         <div className="flex flex-wrap gap-2 mb-4">
-          {contributors.slice(0, 6).map((contributor: PublicUser) => (
+          {contributors.map((contributor: PublicUser) => (
             <Tooltip key={contributor.id}>
               <TooltipTrigger>
-                <div className="relative w-12 h-12 rounded-full overflow-hidden cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all">
+                <div className="relative w-10 h-10 rounded-full overflow-hidden cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all">
                   <Image
                     src={`https://robohash.org/${contributor.id}?size=300x300`}
                     alt={contributor.username || "Contributor"}

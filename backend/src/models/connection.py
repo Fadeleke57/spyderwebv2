@@ -13,7 +13,7 @@ class ConnectionData(TypedDict):
 
 class ConnectionType(BaseModel):
     connectionId: str
-    bucketId: str
+    webId: str
     data: ConnectionData
     fromSourceId: str
     toSourceId: str
@@ -25,7 +25,7 @@ class CreateConnection(BaseModel):
     data: ConnectionData
     fromSourceId: str
     toSourceId: str
-    bucketId: str
+    webId: str
 
 
 class UpdateConnection(BaseModel):
@@ -34,4 +34,4 @@ class UpdateConnection(BaseModel):
 
 
 class DeleteConnection(BaseModel):
-    bucketId: str
+    webId: str
