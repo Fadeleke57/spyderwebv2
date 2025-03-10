@@ -21,9 +21,7 @@ router = APIRouter()
 @router.get("/all/web/{web_id}")
 def get_all_connections(web_id: str):
     try:
-        webConnections = neo4jClient.get_all_connections_for_web(
-            "connection", web_id
-        )
+        webConnections = neo4jClient.get_all_connections_for_web("connection", web_id)
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))

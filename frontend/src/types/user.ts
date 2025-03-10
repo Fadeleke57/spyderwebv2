@@ -11,6 +11,14 @@ export interface PublicUser {
   websSaved: string[];
 }
 
+export type UpdateUser = {
+  full_name?: string;
+  username?: string;
+  email?: string;
+  password?: string;
+  bio?: string;
+};
+
 export interface Search {
   query: string;
   timestamp: string;

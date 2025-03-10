@@ -21,6 +21,7 @@ class Web(BaseModel):
     iteratedFrom: Optional[str]  # userId
     iterations: list[str]
     imageKeys: Optional[list[str]]
+    enableAIConnections: Optional[bool]
 
 
 class WebConfig(BaseModel):
@@ -33,9 +34,10 @@ class WebConfig(BaseModel):
 
 
 class UpdateWeb(BaseModel):
-    name: Optional[str]
-    description: Optional[str]
-    visibility: Literal["Private", "Public", "Invite"]
+    name: Optional[str] = None
+    description: Optional[str] = None
+    visibility: Optional[Literal["Private", "Public", "Invite"]] = None
+    enableAIConnections: Optional[bool] = None
 
 
 class IterateWeb(BaseModel):

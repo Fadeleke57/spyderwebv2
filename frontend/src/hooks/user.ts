@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
-import { PublicUser, Search } from "@/types/user";
+import { PublicUser, Search, UpdateUser } from "@/types/user";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -119,14 +119,6 @@ export function useFetchUserById(userId: string) {
     },
   });
 }
-
-type UpdateUser = {
-  full_name?: string;
-  username?: string;
-  email?: string;
-  password?: string;
-  bio?: string;
-};
 
 export function useEditUser() {
   return useMutation({

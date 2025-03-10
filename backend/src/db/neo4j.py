@@ -5,11 +5,8 @@ from typing import Dict, Any, List, Tuple
 from src.models.source import Source
 from datetime import datetime
 from pytz import UTC
-from uuid import uuid4
 from typing import Optional
 from src.lib.logger.index import logger
-from uuid import uuid4
-
 
 class Neo4jDBService:
     def __init__(self) -> None:
@@ -20,9 +17,12 @@ class Neo4jDBService:
         database at the specified URI with the given credentials.
         """
         self.driver = GraphDatabase.driver(
-            settings.neo4j_uri, auth=(settings.neo4j_username, settings.neo4j_password)
+            settings.neo4j_uri,
+            auth=(settings.neo4j_username, settings.neo4j_password),
+            max_connection_lifetime=300, #close stale connection after 5 minutes and reefresh
+            keep_alive=True, #keep connection alive
         )
-        self.supported_labels = set(["source", "connection"])
+        self.supported_labels = {"source", "connection"}
 
     def close(self) -> None:
         """

@@ -282,7 +282,7 @@ def add_youtube(web_id: str, video_id: str, user=Depends(manager)):
 
 @router.patch("/update/note/{web_id}/{source_id}")
 def update_note(
-    web_id: str, source_id: str, note: UpdateNote, user=Depends(manager)
+    web_id: str, source_id: str, updateNotePayload: UpdateNote, user=Depends(manager)
 ):
     """
     Update a note.
@@ -299,7 +299,8 @@ def update_note(
     check_user(user)
 
     update_data = {
-        key: value for key, value in note.model_dump().items() if value is not None
+        key: value
+        for key, value in updateNotePayload.model_dump(exclude_none=True).items()
     }
     update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
     result = neo4jClient.update_source(source_id=source_id, properties=update_data)
