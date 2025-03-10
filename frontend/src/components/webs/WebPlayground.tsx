@@ -50,6 +50,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import WebSettingsModal from "./WebSettingsModal";
 
 function WebPlayground({
   web,
@@ -115,14 +116,17 @@ function WebPlayground({
       }`}
     >
       <div className="relative h-full w-full">
-        <Badge
-          variant="outline"
-          className={`absolute border dark:border-violet-400 ${
+        <div
+          className={`absolute flex flex-row items-center ${
             isExpanded ? "right-6" : "right-3"
           }  top-3`}
         >
-          {web?.sourceIds?.length || 0} sources added
-        </Badge>
+          {isOwner && <WebSettingsModal web={web} />}
+          <Badge variant="outline" className={`border dark:border-violet-400`}>
+            {web?.sourceIds?.length || 0} sources added
+          </Badge>
+        </div>
+
         <div
           className={`absolute bottom-28 ${
             isExpanded ? "right-6" : "right-6"
@@ -157,7 +161,7 @@ function WebPlayground({
           web?.sourceIds?.length === null ||
           web?.sourceIds?.length > 0) ? (
           <div
-            className={`absolute ${isExpanded ? "right-6" : "right-3"} top-10`}
+            className={`absolute ${isExpanded ? "right-6" : "right-3"} top-12`}
           >
             <AddSourceModal
               open={isAddSourceModalOpen}

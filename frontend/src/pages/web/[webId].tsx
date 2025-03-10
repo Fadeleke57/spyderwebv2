@@ -41,7 +41,7 @@ function Index() {
     if (webData) {
       setWeb(webData);
     }
-  });
+  }, [webData]);
 
   const { data: webOwner, isLoading: webOwnerLoading } = useFetchUserById(
     web?.userId as string
