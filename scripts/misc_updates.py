@@ -218,7 +218,7 @@ def migrate_bucketid_to_webid():
 
     print(f"Total connections updated to webId: {updated_count}")
 
-    users_without_attr = users.find({})
+    users_without_attr = users.find({ "websHidden": {"$exists": False}, "websSaved": {"$exists": False}, "bucketsHidden": {"$exists": True}, "bucketsSaved": {"$exists": True} })
     updated_count = 0
     for user in users_without_attr:
         users.update_one(

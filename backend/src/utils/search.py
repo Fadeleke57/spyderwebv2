@@ -8,7 +8,6 @@ def run_semantic_search(query: str, limit: int, filter):
         vector=query_embedding,
         top_k=limit,
         include_metadata=True,
-        namespace="webs",
         filter=filter,
     )
     results = []
@@ -17,7 +16,3 @@ def run_semantic_search(query: str, limit: int, filter):
         result["id"] = match["id"]
         results.append(result)
     return results
-
-
-results = run_semantic_search("Test", 10, {"visibility": "Public"})
-print(results)

@@ -12,6 +12,7 @@ password = os.getenv("NEO4J_PASSWORD")
 
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 PINECONE_ENVIRONMENT = os.getenv("PINECONE_ENVIRONMENT", "us-east-1")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
 
 mongoUrl = os.getenv('MONGO_URL')
 mongoInitdbDatabase = os.getenv('MONGO_INITDB_DATABASE')
@@ -19,7 +20,7 @@ mongoInitdbDatabase = os.getenv('MONGO_INITDB_DATABASE')
 client = MongoClient(mongoUrl)
 db = client[mongoInitdbDatabase]
 users = db['users']
-buckets = db['buckets']
+buckets = db['webs']
 sources = db['sources']
 connections = db['connections']
 
@@ -29,7 +30,7 @@ class Neo4jToPinecone:
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
         
         pinecone = Pinecone(api_key=pinecone_api_key)
-        self.index_name = "bucket-space"
+        self.index_name = PINECONE_INDEX_NAME
         
         if self.index_name not in pinecone.list_indexes().names():
             pinecone.create_index(
@@ -157,15 +158,77 @@ class Neo4jToPinecone:
                 else:
                     print(f"No vector found for bucketId: {webIdToPlace}")
                         
-                print(f"Completed updating {count} buckets from bucketId to webId")
+            print(f"Completed updating {count} buckets from bucketId to webId")
 
         except Exception as e:
             print(f"Error updating Pinecone metadata: {str(e)}")
+            raise e
+        
+    def migrate_to_webs_namespace(self):
+        """
+        Migrates all embeddings and their metadata from 'buckets' namespace to 'webs' namespace,
+        while also updating bucketId to webId in the metadata.
+        """
+        try:
+            allBuckets = buckets.find({})
+            count = 0
+            success_count = 0
+            
+            # Get a list of all buckets to process
+            bucket_list = list(allBuckets)
+            total_buckets = len(bucket_list)
+            print(f"Found {total_buckets} buckets to migrate")
+            
+            for bucket in bucket_list:
+                count += 1
+                webIdToPlace = bucket['webId']
+                
+                # Fetch the vector from the old namespace
+                vector_data = self.pinecone_index.fetch([webIdToPlace], namespace="buckets").vectors.get(webIdToPlace, None)
+                
+                if vector_data and 'values' in vector_data:
+                    # Get metadata and vector values
+                    metadata = vector_data.get('metadata', {})
+                    vector_values = vector_data['values']
+                    
+                    # Update metadata: replace bucketId with webId
+                    if 'bucketId' in metadata:
+                        metadata['webId'] = metadata['bucketId']
+                        del metadata['bucketId']
+                    else:
+                        # Ensure webId exists in metadata
+                        metadata['webId'] = webIdToPlace
+                    
+                    # Insert into the new namespace
+                    self.pinecone_index.upsert(
+                        [(webIdToPlace, vector_values, metadata)],
+                        namespace="webs"  
+                    )
+                    
+                    success_count += 1
+                    
+                    # Log progress
+                    if count % 10 == 0 or count == total_buckets:
+                        print(f"Migrated {count}/{total_buckets} vectors to 'webs' namespace")
+                else:
+                    print(f"No vector found for ID: {webIdToPlace} in 'buckets' namespace, skipping")
+                
+            print(f"Migration complete: {success_count}/{total_buckets} vectors successfully migrated to 'webs' namespace")
+            
+            # Optional: Verify the migration
+            buckets_stats = self.pinecone_index.describe_index_stats()
+            if 'namespaces' in buckets_stats:
+                buckets_count = buckets_stats['namespaces'].get('buckets', {}).get('vector_count', 0)
+                webs_count = buckets_stats['namespaces'].get('webs', {}).get('vector_count', 0)
+                print(f"Verification - 'buckets' namespace: {buckets_count} vectors, 'webs' namespace: {webs_count} vectors")
+
+        except Exception as e:
+            print(f"Error migrating to 'webs' namespace: {str(e)}")
             raise e
 
 if __name__ == "__main__":
     client = Neo4jToPinecone(uri=uri, user=user, password=password, pinecone_api_key=PINECONE_API_KEY, pinecone_env=PINECONE_ENVIRONMENT)
     try:
-        client.update_pinecone_metadata_to_webid()
+        client.migrate_to_webs_namespace()
     except Exception as e:
         print("Something went wrong!")
