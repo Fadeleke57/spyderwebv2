@@ -187,5 +187,63 @@ def delete_connections_wiith_nonexisting_sources():
 
     print(f"Total connections deleted: {updated_count}")
 
+def migrate_bucketid_to_webid():
+    """
+    Updates all sources, connections, users, and buckets to replace "bucketId" with "webId".
+    """
+    sources_without_attr = sources.find({"webId": {"$exists": False}})
+    updated_count = 0
+
+    for source in sources_without_attr:
+        sources.update_one(
+            {"_id": source["_id"]},
+            {"$set": {"webId": source["bucketId"]}, "$unset": {"bucketId": ""}}
+        )
+
+        updated_count += 1
+        print(f"Updated source {source['_id']} with new webId: {source['bucketId']}")
+
+    print(f"Total sources updated to webId: {updated_count}")
+
+    connections_without_attr = connections.find({"webId": {"$exists": False}})
+    updated_count = 0
+    for connection in connections_without_attr:
+        connections.update_one(
+            {"_id": connection["_id"]},
+            {"$set": {"webId": connection["bucketId"]}, "$unset": {"bucketId": ""}}
+        )
+
+        updated_count += 1
+        print(f"Updated connection {connection['_id']} with new webId: {connection['bucketId']}")
+
+    print(f"Total connections updated to webId: {updated_count}")
+
+    users_without_attr = users.find({ "websHidden": {"$exists": False}, "websSaved": {"$exists": False}, "bucketsHidden": {"$exists": True}, "bucketsSaved": {"$exists": True} })
+    updated_count = 0
+    for user in users_without_attr:
+        users.update_one(
+            {"_id": user["_id"]},
+            {"$set": {"websHidden": user["bucketsHidden"], "websSaved": user["bucketsSaved"]}, "$unset": {"bucketsHidden": "", "bucketsSaved": ""}}
+        )
+
+        updated_count += 1
+        print(f"Updated user {user['_id']} with new websHidden and websSaved: {user['bucketsHidden']}, {user['bucketsSaved']}")
+
+    print(f"Total users updated to websHidden and websSaved: {updated_count}")
+
+    buckets_without_attr = buckets.find({"webId": {"$exists": False}})
+    updated_count = 0
+
+    for bucket in buckets_without_attr:
+        buckets.update_one(
+            {"_id": bucket["_id"]},
+            {"$set": {"webId": bucket["bucketId"]}, "$unset": {"bucketId": ""}}
+        )
+
+        updated_count += 1
+        print(f"Updated bucket {bucket['_id']} with new webId: {bucket['bucketId']}")
+
+    print(f"Total buckets updated to webId: {updated_count}")
+
 if __name__ == "__main__":
-    delete_connections_wiith_nonexisting_sources()
+    migrate_bucketid_to_webid()

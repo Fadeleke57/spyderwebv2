@@ -28,8 +28,8 @@ class User(BaseModel):  # user
     created: datetime
     updated: datetime
     profile_picture_url: str
-    bucketsHidden: Optional[list[str]]
-    bucketsSaved: Optional[list[str]]
+    websHidden: Optional[list[str]]
+    websSaved: Optional[list[str]]
 
 
 class CreateUser(BaseModel):  # creating user

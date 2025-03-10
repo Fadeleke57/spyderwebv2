@@ -1,0 +1,312 @@
+import api from "@/lib/api";
+import { Web, UpdateWeb } from "@/types/web";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+
+export function useFetchUserWebs(criteria?: string) {
+  return useInfiniteQuery({
+    queryKey: ["user", "webs", criteria],
+    queryFn: async ({ pageParam = { page: 1, direction: "forward" } }) => {
+      const response = await api.get(`/webs/all/user`, {
+        params: {
+          page: pageParam.page,
+          page_size: 10,
+          criteria: criteria,
+        },
+      });
+      return {
+        ...response.data,
+      };
+    },
+    initialPageParam: { page: 1, direction: "forward" },
+    getPreviousPageParam: (lastPage, allPages) => {
+      return lastPage.prevCursor;
+    },
+    getNextPageParam: (lastPage) => {
+      if (!lastPage.nextCursor) return undefined;
+      return { page: lastPage.nextCursor, direction: "forward" };
+    },
+  });
+}
+
+export const useFetchLikedWebs = () => {
+  return useQuery({
+    queryKey: ["webs", "liked"],
+    queryFn: async () => {
+      const response = await api.get("/webs/liked/user");
+      return response.data.result;
+    },
+  });
+};
+
+export const useCreateWeb = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (config: any) => {
+      const response = await api.post("/webs/create", config);
+      return response.data.result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["webs", "all"] });
+    },
+    onError: () => {},
+  });
+};
+
+export const useFetchSavedWebs = () => {
+  return useQuery({
+    queryKey: ["webs", "saved"],
+    queryFn: async () => {
+      const response = await api.get("/webs/saved/user");
+      return response.data.result;
+    },
+  });
+};
+
+export const useUploadImageToWeb = () => {
+  return useMutation({
+    mutationFn: async ({
+      webId,
+      files,
+    }: {
+      webId: string;
+      files: File[];
+    }) => {
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      const { data } = await api.post(
+        `/webs/upload/image/${webId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return data.imageUrls;
+    },
+  });
+};
+
+export const useDeleteImageFromWeb = () => {
+  return useMutation({
+    mutationFn: async ({
+      webId,
+      imageUrl,
+    }: {
+      webId: string;
+      imageUrl: string;
+    }) => {
+      const imageName = imageUrl.split("/").pop();
+      const response = await api.delete(
+        `/webs/delete/image/${webId}/${imageName}`
+      );
+      return response.data.result;
+    },
+  });
+};
+
+export function useGetAllImagesForWeb(webId: string) {
+  return useQuery({
+    queryKey: ["images", "web", webId],
+    queryFn: async () => {
+      const response = await api.get(`/webs/images/web/${webId}`);
+      return response.data.result;
+    },
+  });
+}
+
+export function useDeleteWeb() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (webId: string) => {
+      const response = await api.delete("/webs/delete", {
+        params: { webId },
+      });
+      return response.data.result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["webs", "all"] });
+    },
+    onError: () => {},
+  });
+}
+
+export const useUpdateWeb = (webId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (config: UpdateWeb) => {
+      const response = await api.patch(`/webs/update/${webId}`, config, {
+        headers: { "Content-Type": "application/json" },
+      });
+      return response.data.result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["webs", "all"] });
+    },
+    onError: () => {},
+  });
+};
+
+export function useFetchPublicWebs() {
+  return useInfiniteQuery({
+    queryKey: ["webs", "public"],
+    queryFn: async ({ pageParam = null }) => {
+      const response = await api.get("/webs/all/public", {
+        params: {
+          cursor: pageParam,
+          limit: 10,
+        },
+      });
+      return response.data;
+    },
+    initialPageParam: null,
+    getNextPageParam: (lastPage, pages) => {
+      return lastPage.nextCursor;
+    },
+  });
+}
+
+export function useFetchPopularWebs(limit: number) {
+  return useQuery({
+    queryKey: ["webs", "popular", limit],
+    queryFn: async () => {
+      const response = await api.get("/webs/popular", {
+        params: {
+          limit,
+        },
+      });
+      return response.data.result;
+    },
+  });
+}
+
+export const useFetchWebById = (webId: string) => {
+  return useQuery({
+    queryKey: ["web", webId],
+    queryFn: async () => {
+      if (!webId) return null;
+      const response = await api.get(`/webs/id`, {
+        params: { webId },
+      });
+      return response.data.result;
+    },
+  });
+};
+
+export function useLikeWeb(webId: string) {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.post(`/webs/like/${webId}`);
+      return response.data.result;
+    },
+    onSuccess: () => {},
+    onError: () => {},
+  });
+}
+
+export function useUnlikeWeb(webId: string) {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.post(`/webs/unlike/${webId}`);
+      return response.data.result;
+    },
+    onSuccess: () => {},
+    onError: () => {},
+  });
+}
+
+export function useAddTagToWeb(webId: string) {
+  return useMutation({
+    mutationFn: async (tag: string) => {
+      const response = await api.patch(`/webs/add/tag/${webId}/${tag}`);
+      return response.data.result;
+    },
+    onSuccess: () => {},
+    onError: () => {},
+  });
+}
+
+export function useRemoveTagFromWeb(webId: string) {
+  return useMutation({
+    mutationFn: async (tag: string) => {
+      const response = await api.patch(
+        `/webs/remove/tag/${webId}/${tag}`
+      );
+      return response.data.result;
+    },
+    onSuccess: () => {},
+    onError: () => {},
+  });
+}
+
+export type IterateWebPayload = {
+  name: string;
+  description: string;
+  withConnections: boolean;
+};
+
+export function useIterateWeb(webId: string) {
+  return useMutation({
+    mutationFn: async (config: IterateWebPayload) => {
+      const response = await api.post(`/webs/iterate/${webId}`, config);
+      return response.data.result;
+    },
+    onSuccess: () => {},
+    onError: () => {},
+  });
+}
+
+export type SearchFilter = {
+  visibility?: "Public" | "Private";
+  userId?: string;
+  webId?: string;
+};
+
+export function useSearchWebs(query: string, filters?: SearchFilter) {
+  return useQuery({
+    queryKey: ["webs", "search", query, filters],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        query,
+      });
+
+      if (filters) {
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            if (Array.isArray(value)) {
+              value.forEach((v) => params.append(key, v));
+            } else {
+              params.append(key, value.toString());
+            }
+          }
+        });
+      }
+
+      const response = await api.get("/webs/search", { params });
+      return response.data.result;
+    },
+    enabled: !!query,
+  });
+}
+
+export function useFetchContributers(webId: string) {
+  return useQuery({
+    queryKey: ["webs", "contributers", webId],
+    queryFn: async () => {
+      const response = await api.get(`/webs/contributers/${webId}`);
+      return response.data.result;
+    },
+  });
+}
+
+

@@ -30,7 +30,7 @@ export interface ConfigFormValues {
   enableSpydrSearch: boolean;
 }
 
-export interface BucketConfigFormValues {
+export interface WebConfigFormValues {
   title: string;
   description: string;
 }

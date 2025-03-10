@@ -48,7 +48,7 @@ async def upload_file(
 
     Args:
         user_id (str): The ID of the user making the request.
-        web_id (str): The ID of the web (bucket) to upload to.
+        web_id (str): The ID of the web (web) to upload to.
         file_type (str): The type of file being uploaded (e.g. image, document).
         file (UploadFile): The file to upload.
 
@@ -75,7 +75,7 @@ async def upload_file(
         sourceId = str(uuid4())
         sourceToInsert = {
             "sourceId": sourceId,
-            "bucketId": web_id,
+            "webId": web_id,
             "userId": user_id,
             "name": file.filename,
             "content": None,
@@ -86,9 +86,9 @@ async def upload_file(
             "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         }
         neo4jClient.create_node("source", sourceToInsert)
-        buckets = get_collection("buckets")
-        buckets.update_one(
-            {"bucketId": web_id, "userId": user_id},
+        webs = get_collection("webs")
+        webs.update_one(
+            {"webId": web_id, "userId": user_id},
             {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
         )
 
@@ -107,13 +107,13 @@ class UrlRequest(BaseModel):
 @router.post("/website/{web_id}")
 def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
     """
-    Add a website source to a specified web (bucket).
+    Add a website source to a specified web (web).
 
     This function retrieves the content of a webpage from the provided URL, processes the HTML to extract structured data,
-    and stores it as a Source document in the database. The source is then added to the specified web (bucket).
+    and stores it as a Source document in the database. The source is then added to the specified web (web).
 
     Args:
-        web_id (str): The ID of the web (bucket) to add the source to.
+        web_id (str): The ID of the web (web) to add the source to.
         url (str): The URL of the website to add.
         user (User): The user making the request.
 
@@ -144,7 +144,7 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
     sourceId = str(uuid4())
     sourceToInsert = {
         "sourceId": sourceId,
-        "bucketId": web_id,
+        "webId": web_id,
         "userId": user["id"],
         "name": title,
         "url": str(url.url),
@@ -155,9 +155,9 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
         "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
     }
     neo4jClient.create_node("source", sourceToInsert)
-    buckets = get_collection("buckets")
-    buckets.update_one(
-        {"bucketId": web_id, "userId": user["id"]},
+    webs = get_collection("webs")
+    webs.update_one(
+        {"webId": web_id, "userId": user["id"]},
         {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
     )
     return {"result": sourceId}
@@ -169,12 +169,12 @@ def get_all_sources(web_id: str):
     Retrieve all sources associated with a given web ID.
 
     Args:
-        web_id (str): The ID of the web (bucket) to retrieve sources from.
+        web_id (str): The ID of the web (web) to retrieve sources from.
 
     Returns:
         dict: A JSON response containing a list of sources associated with the given web ID.
     """
-    # sourcesForWeb = sources.find({"bucketId": web_id}, {"_id": 0})
+    # sourcesForWeb = sources.find({"webId": web_id}, {"_id": 0})
     try:
         sources = neo4jClient.get_all_sources_for_web("source", web_id)
     except Exception as e:
@@ -202,13 +202,13 @@ async def get_presigned_url(file_path: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/upload/note/{bucket_id}/")
-def upload_note(bucket_id: str, note: CreateNote, user=Depends(manager)):
+@router.post("/upload/note/{web_id}/")
+def upload_note(web_id: str, note: CreateNote, user=Depends(manager)):
     """
-    Upload a note to a given bucket.
+    Upload a note to a given web.
 
     Args:
-        bucket_id (str): The ID of the bucket to upload the note to.
+        web_id (str): The ID of the web to upload the note to.
         note (CreateNote): The content of the note.
         user (User): The user making the request.
 
@@ -219,7 +219,7 @@ def upload_note(bucket_id: str, note: CreateNote, user=Depends(manager)):
     sourceId = str(uuid4())
     sourceToInsert = {
         "sourceId": sourceId,
-        "bucketId": bucket_id,
+        "webId": web_id,
         "userId": user["id"],
         "name": note.title,
         "content": note.content,
@@ -236,9 +236,9 @@ def upload_note(bucket_id: str, note: CreateNote, user=Depends(manager)):
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
-    buckets = get_collection("buckets")
-    buckets.update_one(
-        {"bucketId": bucket_id, "userId": user["id"]},
+    webs = get_collection("webs")
+    webs.update_one(
+        {"webId": web_id, "userId": user["id"]},
         {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
     )
     return {"result": sourceId}
@@ -256,7 +256,7 @@ def add_youtube(web_id: str, video_id: str, user=Depends(manager)):
     sourceId = str(uuid4())
     sourceToInsert = {
         "sourceId": sourceId,
-        "bucketId": web_id,
+        "webId": web_id,
         "userId": user["id"],
         "name": title,
         "content": description,
@@ -272,23 +272,23 @@ def add_youtube(web_id: str, video_id: str, user=Depends(manager)):
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
-    buckets = get_collection("buckets")
-    buckets.update_one(
-        {"bucketId": web_id, "userId": user["id"]},
+    webs = get_collection("webs")
+    webs.update_one(
+        {"webId": web_id, "userId": user["id"]},
         {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
     )
     return {"result": sourceId}
 
 
-@router.patch("/update/note/{bucket_id}/{source_id}")
+@router.patch("/update/note/{web_id}/{source_id}")
 def update_note(
-    bucket_id: str, source_id: str, note: UpdateNote, user=Depends(manager)
+    web_id: str, source_id: str, note: UpdateNote, user=Depends(manager)
 ):
     """
     Update a note.
 
     Args:
-        bucket_id (str): The ID of the bucket the note belongs to.
+        web_id (str): The ID of the web the note belongs to.
         source_id (str): The ID of the note to update.
         note (UpdateNote): The new content for the note.
         user (User): The user making the request.
@@ -333,15 +333,15 @@ def delete_source(source_id: str, user=Depends(manager)):
     # if source["type"] == "document":
     #    s3.delete_object(Bucket=s3_bucket.bucket_name, Key=source["url"])
 
-    # clean up bucket
-    buckets = get_collection("buckets")
-    bucket = buckets.find_one_and_update(
+    # clean up web
+    webs = get_collection("webs")
+    web = webs.find_one_and_update(
         {"sourceIds": source_id},
         {"$pull": {"sourceIds": source_id}, "$set": {"updated": datetime.now(UTC)}},
         return_document=True,
     )
 
-    if not bucket:
+    if not web:
         raise HTTPException(status_code=404, detail="Item not found")
 
     return {"result": "Source deleted"}

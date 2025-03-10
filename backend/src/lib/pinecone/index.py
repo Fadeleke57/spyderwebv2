@@ -24,9 +24,7 @@ def get_query_embedding(query: str):
     return embedding[0].values
 
 
-def generate_bucket_embeddings(
-    name: str, description: str, header_weight: int = 3
-) -> any:
+def generate_web_embeddings(name: str, description: str, header_weight: int = 3) -> any:
     """
     Generate vector embeddings by giving more weight to the header.
     """

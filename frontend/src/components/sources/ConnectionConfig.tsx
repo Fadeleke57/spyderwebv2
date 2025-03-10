@@ -2,7 +2,7 @@ import {
   useFetchIncomingConnections,
   useFetchOutgoingConnections,
 } from "@/hooks/connections";
-import { useFetchSourcesForBucket } from "@/hooks/sources";
+import { useFetchSourcesForWeb } from "@/hooks/sources";
 import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import {
@@ -28,11 +28,11 @@ import { Connection } from "@/types/connection";
 import { ScrollArea } from "../ui/scroll-area";
 
 function ConnectionsConfig({
-  bucketId,
+  webId,
   sourceId,
   isOwner,
 }: {
-  bucketId: string;
+  webId: string;
   sourceId: string;
   isOwner: boolean;
 }) {
@@ -40,17 +40,17 @@ function ConnectionsConfig({
     data: outgoingConnections,
     isLoading: isLoadingOutgoingConnections,
     refetch: refetchOutgoingConnections,
-  } = useFetchOutgoingConnections(bucketId, sourceId);
+  } = useFetchOutgoingConnections(webId, sourceId);
   const {
     data: incomingConnections,
     isLoading: isLoadingIncomingConnections,
     refetch: refetchIncomingConnections,
-  } = useFetchIncomingConnections(bucketId, sourceId);
+  } = useFetchIncomingConnections(webId, sourceId);
   const {
     data: allSources,
     isLoading: isLoadingAllSources,
     refetch: refetchOtherSources,
-  } = useFetchSourcesForBucket(bucketId);
+  } = useFetchSourcesForWeb(webId);
 
   const [outgoingConnectionsOpen, setOutgoingConnectionsOpen] = useState(true);
   const [incomingConnectionsOpen, setIncomingConnectionsOpen] = useState(true);
@@ -150,7 +150,7 @@ function ConnectionsConfig({
                 <CreateConnectionBlock
                   fromSourceId={sourceId}
                   toSourceId={selectedToSourceId}
-                  bucketId={bucketId}
+                  webId={webId}
                   setCreateConnectionVisible={setConnectionPlaceHolderVisible}
                   onConnectionCreated={refetchOutgoingConnections}
                 />

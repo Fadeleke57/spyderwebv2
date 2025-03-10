@@ -13,7 +13,7 @@ const GoogleCallback = () => {
     if (token && email && name) {
       localStorage.setItem("token", token as string);
       window.location.href = isMobile
-        ? "/buckets"
+        ? "/webs"
         : "/home?login-source=welcome";
     }
   }, [router.query, router, isMobile]);

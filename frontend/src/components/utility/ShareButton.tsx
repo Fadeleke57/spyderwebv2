@@ -48,7 +48,7 @@ const ShareDialog = ({ link }: { link: string }) => {
           <DrawerHeader className="p-6">
             <DrawerTitle className="text-left">Share link</DrawerTitle>
             <DrawerDescription className="text-left">
-              If this is a public bucket, you can share it with anyone.
+              If this is a public web, you can share it with anyone.
               Private sharing is not supported yet.
             </DrawerDescription>
           </DrawerHeader>
@@ -103,7 +103,7 @@ const ShareDialog = ({ link }: { link: string }) => {
         <DialogHeader>
           <DialogTitle>Share link</DialogTitle>
           <DialogDescription>
-            If this is a public bucket, you can share it with anyone.
+            If this is a public web, you can share it with anyone.
           </DialogDescription>
         </DialogHeader>
         <div className="flex items-center space-x-2">

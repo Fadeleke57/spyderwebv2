@@ -41,9 +41,9 @@ function Index() {
       </div>
       <div>
         <div className="flex flex-col">
-          <span className="text-lg font-semibold ml-2">Recent Buckets</span>{" "}
+          <span className="text-lg font-semibold ml-2">Recent Webs</span>{" "}
           <Link
-            href={"/buckets"}
+            href={"/webs"}
             className="ml-2 text-blue-500 hover:underline"
           >
             View All

@@ -1,11 +1,8 @@
 //explore
 import React, { useState, useEffect } from "react";
-import {
-  useFetchPublicBuckets,
-  useSearchBuckets,
-} from "@/hooks/buckets";
-import { BucketCard } from "@/components/explore/BucketCard";
-import { Bucket } from "@/types/bucket";
+import { useFetchPublicWebs, useSearchWebs } from "@/hooks/webs";
+import { WebCard } from "@/components/explore/WebCard";
+import { Web } from "@/types/web";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
@@ -16,7 +13,7 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import SearchBar from "@/components/utility/Searchbar";
 import { SearchResultCard } from "@/components/explore/SearchResult";
 import { LoaderCircle } from "lucide-react";
-import PopularBucketsCard from "@/components/explore/PopularBucketsCard";
+import PopularWebsCard from "@/components/explore/PopularWebsCard";
 import SpydrAI from "@/components/utility/Assistant";
 
 function Index() {
@@ -28,13 +25,13 @@ function Index() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useFetchPublicBuckets();
+  } = useFetchPublicWebs();
   const [query, setQuery] = useState<string>("");
   const [open, setOpen] = useState<boolean>(false);
   const { user } = useUser();
   const router = useRouter();
 
-  const { data: searchResults, isLoading: isSearchLoading } = useSearchBuckets(
+  const { data: searchResults, isLoading: isSearchLoading } = useSearchWebs(
     query,
     { visibility: "Public" }
   );
@@ -45,8 +42,8 @@ function Index() {
     }
   }, [inView, hasNextPage, fetchNextPage, query]);
 
-  const allBuckets = data?.pages.flatMap((page) => page.result) || [];
-  const displayBuckets = query ? searchResults || [] : allBuckets;
+  const allWebs = data?.pages.flatMap((page) => page.result) || [];
+  const displayWebs = query ? searchResults || [] : allWebs;
 
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -54,13 +51,12 @@ function Index() {
     ? `Search Results for "${query}" - spydr`
     : "explore - spydr";
   const description = query
-    ? `Discover buckets matching your query "${query}".`
-    : "Explore public buckets on Spydr. Find shared research and projects.";
+    ? `Discover webs matching your query "${query}".`
+    : "Explore public webs on Spydr. Find shared research and projects.";
 
   const handleSearch = (searchQuery: string, results: any) => {
     setQuery(searchQuery);
   };
-  
 
   return (
     <div className="flex flex-1 flex-col gap-4 pb-10 mx-auto w-full lg:h-[calc(108.9vh-64px)] overflow-y-auto relative">
@@ -76,9 +72,7 @@ function Index() {
           }`}
         />
       </Head>
-      <div>
-
-      </div>
+      <div></div>
       <div className="p-4 lg:px-16 border-b-2 border-l-[1px] border-r-0 relative lg:sticky lg:top-0 bg-background lg:z-50">
         {!user && isMobile && (
           <Button
@@ -99,7 +93,7 @@ function Index() {
       <div className="w-full lg:px-16 flex flex-row gap-6 relative">
         {isSearchLoading && <LoaderCircle className="animate-spin" />}
         <div className="w-full flex flex-col gap-1">
-          {error && <p>Error loading buckets</p>}
+          {error && <p>Error loading webs</p>}
           {query && (
             <p className="mb-4 font-semibold ml-2 lg:ml-0">
               Results for &quot;{query}&quot;
@@ -108,12 +102,12 @@ function Index() {
           {isLoading ? (
             <LoaderCircle className="animate-spin mx-auto" />
           ) : (
-            displayBuckets.map((bucket: Bucket) => (
-              <div key={bucket.bucketId} className="cursor-pointer">
+            displayWebs.map((web: Web) => (
+              <div key={web.webId} className="cursor-pointer">
                 {query ? (
-                  <SearchResultCard user={user || null} bucket={bucket} />
+                  <SearchResultCard user={user || null} web={web} />
                 ) : (
-                  <BucketCard user={user || null} bucket={bucket} />
+                  <WebCard user={user || null} web={web} />
                 )}
               </div>
             ))
@@ -129,7 +123,7 @@ function Index() {
             </div>
           )}
         </div>
-        <PopularBucketsCard />
+        <PopularWebsCard />
       </div>
       {open && (
         <AuthModal

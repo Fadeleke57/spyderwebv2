@@ -68,35 +68,35 @@ def edit_user(updates: UpdateUser, user: User = Depends(manager)):
     return {"result": "success"}
 
 
-@router.patch("/hide/bucket/{bucketId}")
-def hide_bucket(bucketId: str, user: User = Depends(manager)):
+@router.patch("/hide/web/{webId}")
+def hide_web(webId: str, user: User = Depends(manager)):
     check_user(user)
     Users = get_collection("users")
-    Users.update_one({"id": user["id"]}, {"$addToSet": {"bucketsHidden": bucketId}})
+    Users.update_one({"id": user["id"]}, {"$addToSet": {"websHidden": webId}})
     return {"result": True}
 
 
-@router.patch("/unhide/bucket/{bucketId}")
-def unhide_bucket(bucketId: str, user: User = Depends(manager)):
+@router.patch("/unhide/web/{webId}")
+def unhide_web(webId: str, user: User = Depends(manager)):
     check_user(user)
     Users = get_collection("users")
-    Users.update_one({"id": user["id"]}, {"$pull": {"bucketsHidden": bucketId}})
+    Users.update_one({"id": user["id"]}, {"$pull": {"websHidden": webId}})
     return {"result": True}
 
 
-@router.patch("/save/bucket/{bucketId}")
-def save_bucket(bucketId: str, user: User = Depends(manager)):
+@router.patch("/save/web/{webId}")
+def save_web(webId: str, user: User = Depends(manager)):
     check_user(user)
     Users = get_collection("users")
-    Users.update_one({"id": user["id"]}, {"$addToSet": {"bucketsSaved": bucketId}})
+    Users.update_one({"id": user["id"]}, {"$addToSet": {"websSaved": webId}})
     return {"result": True}
 
 
-@router.patch("/unsave/bucket/{bucketId}")
-def unsave_bucket(bucketId: str, user: User = Depends(manager)):
+@router.patch("/unsave/web/{webId}")
+def unsave_web(webId: str, user: User = Depends(manager)):
     check_user(user)
     Users = get_collection("users")
-    Users.update_one({"id": user["id"]}, {"$pull": {"bucketsSaved": bucketId}})
+    Users.update_one({"id": user["id"]}, {"$pull": {"websSaved": webId}})
     return {"result": True}
 
 

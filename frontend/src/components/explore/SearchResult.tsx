@@ -6,18 +6,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Bucket } from "@/types/bucket";
+import { Web } from "@/types/web";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import {
-  useGetAllImagesForBucket,
-  useLikeBucket,
-  useUnlikeBucket,
-} from "@/hooks/buckets";
+  useGetAllImagesForWeb,
+  useLikeWeb,
+  useUnlikeWeb,
+} from "@/hooks/webs";
 import UserAvatar from "../utility/UserAvatar";
-import {
-  useFetchUserById,
-} from "@/hooks/user";
+import { useFetchUserById } from "@/hooks/user";
 import { IterateModal } from "../utility/IterateModal";
 import { Skeleton } from "../ui/skeleton";
 import { AuthModal } from "../auth/AuthModal";
@@ -25,27 +23,27 @@ import { PublicUser } from "@/types/user";
 import { SkeletonCard } from "../utility/SkeletonCard";
 
 export function SearchResultCard({
-  bucket,
+  web,
   user,
 }: {
-  bucket: Bucket;
+  web: Web;
   user: PublicUser | null;
 }) {
-  const [bucketLikedCount, setBucketLikedCount] = useState(bucket.likes.length);
-  const [bucketSaved, setBucketSaved] = useState(false);
-  const [bucketHidden, setBucketHidden] = useState(false);
-  const [bucketLiked, setBucketLiked] = useState(false);
-  const [bucketIterated, _] = useState(false);
+  const [webLikedCount, setWebLikedCount] = useState(web.likes.length);
+  const [webSaved, setWebSaved] = useState(false);
+  const [webHidden, setWebHidden] = useState(false);
+  const [webLiked, setWebLiked] = useState(false);
+  const [webIterated, _] = useState(false);
 
-  const { data: bucketOwner, isLoading: bucketOwnerLoading } = useFetchUserById(
-    bucket.userId
+  const { data: webOwner, isLoading: webOwnerLoading } = useFetchUserById(
+    web.userId
   );
   const { data: imageUrls, isLoading: imagesLoading } =
-    useGetAllImagesForBucket(bucket.bucketId);
+    useGetAllImagesForWeb(web.webId);
   const { data: iteratedFromUser, isLoading: iteratedFromLoading } =
-    useFetchUserById(bucket.iteratedFrom || "");
-  const [bucketIterationsCount, setBucketIterationsCount] = useState(
-    bucket.iterations.length
+    useFetchUserById(web.iteratedFrom || "");
+  const [webIterationsCount, setWebIterationsCount] = useState(
+    web.iterations.length
   );
 
   const [images, setImages] = useState<string[]>([]);
@@ -53,45 +51,44 @@ export function SearchResultCard({
   const [showIterateModal, setShowIterateModal] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
-
-  const { mutateAsync: likeBucket } = useLikeBucket(bucket.bucketId);
-  const { mutateAsync: unlikeBucket } = useUnlikeBucket(bucket.bucketId);
+  const { mutateAsync: likeWeb } = useLikeWeb(web.webId);
+  const { mutateAsync: unlikeWeb } = useUnlikeWeb(web.webId);
 
   const handleStopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
   };
 
-  const handleLikeBucket = async (e: React.MouseEvent) => {
+  const handleLikeWeb = async (e: React.MouseEvent) => {
     handleStopPropagation(e);
     if (!user) {
       setAuthModalOpen(true);
       return;
     }
 
-    if (bucketLiked) {
-      const numLikes = await unlikeBucket();
+    if (webLiked) {
+      const numLikes = await unlikeWeb();
       if (numLikes !== undefined && numLikes !== null) {
-        setBucketLikedCount(numLikes);
+        setWebLikedCount(numLikes);
       }
-      setBucketLiked(false);
+      setWebLiked(false);
     } else {
-      const numLikes = await likeBucket();
+      const numLikes = await likeWeb();
       if (numLikes !== undefined && numLikes !== null) {
-        setBucketLikedCount(numLikes);
+        setWebLikedCount(numLikes);
       }
-      setBucketLiked(true);
+      setWebLiked(true);
     }
   };
 
-  const handleIterateBucket = (e: React.MouseEvent) => {
+  const handleIterateWeb = (e: React.MouseEvent) => {
     handleStopPropagation(e);
     if (!user) {
       setAuthModalOpen(true);
       return;
     }
 
-    if (bucketIterated || bucket.iterations.includes(user?.id || "")) {
+    if (webIterated || web.iterations.includes(user?.id || "")) {
       return;
     }
     setShowIterateModal(true);
@@ -103,13 +100,13 @@ export function SearchResultCard({
   };
 
   useEffect(() => {
-    setBucketLiked(bucket.likes.includes(user?.id as string));
-    setBucketLikedCount(bucket.likes.length);
-    setBucketIterationsCount(bucket.iterations.length);
+    setWebLiked(web.likes.includes(user?.id as string));
+    setWebLikedCount(web.likes.length);
+    setWebIterationsCount(web.iterations.length);
 
     if (user) {
-      setBucketSaved(user.bucketsSaved?.includes(bucket.bucketId) || false);
-      setBucketHidden(user.bucketsHidden?.includes(bucket.bucketId) || false);
+      setWebSaved(user.websSaved?.includes(web.webId) || false);
+      setWebHidden(user.websHidden?.includes(web.webId) || false);
     }
 
     if (iteratedFromUser) {
@@ -119,37 +116,37 @@ export function SearchResultCard({
     if (imageUrls) {
       setImages(imageUrls);
     }
-  }, [bucket, user, iteratedFromUser, imageUrls]);
+  }, [web, user, iteratedFromUser, imageUrls]);
 
-  if (user && user.bucketsHidden.includes(bucket.bucketId)) {
+  if (user && user.websHidden.includes(web.webId)) {
     return null;
   }
 
-  if (imagesLoading || bucketOwnerLoading || iteratedFromLoading) {
+  if (imagesLoading || webOwnerLoading || iteratedFromLoading) {
     return <SkeletonCard />;
   }
 
   return (
     <Link
-      href={`/bucket/${bucket.bucketId}`}
+      href={`/web/${web.webId}`}
       className="flex flex-col gap-2 hover:cursor-pointer"
     >
       <Card className="w-full relative mx-auto min-h-[60px] border-none bg-background hover:bg-muted py-6 border-b-2">
         <div className="absolute top-0 left-0 w-full flex justify-between items-center px-4">
           <div className="flex flex-row items-center mt-3">
             <UserAvatar
-              userId={bucket?.userId}
+              userId={web?.userId}
               width={20}
               height={20}
               className="w-[25px] h-[25px]"
             />
             <div className="ml-2 text-slate-500 flex flex-col align-center">
               <div className="flex flex-row items-center">
-                {bucketOwnerLoading ? (
+                {webOwnerLoading ? (
                   <Skeleton className="h-3 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
                 ) : (
                   <p className="text-xs text-slate-600 dark:text-foreground font-semibold">
-                    {bucketOwner?.username}
+                    {webOwner?.username}
                   </p>
                 )}
                 <p className="ml-2 text-xs text-slate-600 dark:text-foreground font-semibold">
@@ -157,7 +154,7 @@ export function SearchResultCard({
                 </p>
                 <p className="ml-2 text-xs text-slate-600 dark:text-foreground font-semibold">
                   {formatDistanceToNow(
-                    new Date(bucket?.updated ? bucket.updated : ""),
+                    new Date(web?.updated ? web.updated : ""),
                     {
                       addSuffix: true,
                     }
@@ -169,27 +166,27 @@ export function SearchResultCard({
         </div>
         <CardHeader className="overflow-hidden mt-1">
           <CardTitle className="break-words hover:cursor-pointer text-md leading-tight hyphens-auto text-foreground">
-            {bucket.name}
+            {web.name}
           </CardTitle>
           <CardDescription className="hyphens-auto mb-8 max-w-6xl text-sm text-muted-foreground">
-            {bucket.description}
+            {web.description}
           </CardDescription>
         </CardHeader>
 
         <CardContent />
         <p className="text-xs text-muted-foreground absolute bottom-4 right-6">
-          {formatDistanceToNow(new Date(bucket.created), {
+          {formatDistanceToNow(new Date(web.created), {
             addSuffix: true,
           })}
         </p>
       </Card>
       <IterateModal
-        bucket={bucket}
+        web={web}
         open={showIterateModal}
         setIsOpen={setShowIterateModal}
       />
       <AuthModal
-        referrer="bucket"
+        referrer="web"
         type="login"
         open={authModalOpen}
         setOpen={setAuthModalOpen}

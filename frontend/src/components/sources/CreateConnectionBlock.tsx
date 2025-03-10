@@ -10,7 +10,7 @@ import { Button } from "../ui/button";
 interface CreateConnectionBlockProps {
   fromSourceId: string;
   toSourceId: string;
-  bucketId: string;
+  webId: string;
   setCreateConnectionVisible: (arg: boolean) => void;
   onConnectionCreated?: () => void;
 }
@@ -18,7 +18,7 @@ interface CreateConnectionBlockProps {
 function CreateConnectionBlock({
   fromSourceId,
   toSourceId,
-  bucketId,
+  webId,
   setCreateConnectionVisible,
   onConnectionCreated,
 }: CreateConnectionBlockProps) {
@@ -35,7 +35,7 @@ function CreateConnectionBlock({
 
   const [toSourceData, setToSourceData] = useState<any>(null);
   const [config, setConfig] = useState<CreateConnection>({
-    bucketId,
+    webId,
     fromSourceId,
     toSourceId,
     data: {

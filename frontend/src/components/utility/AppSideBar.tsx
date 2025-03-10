@@ -16,8 +16,14 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { ChartNoAxesGantt, CirclePlus, Home, LayoutGrid, Waypoints } from "lucide-react";
-import { NewBucketModal } from "../buckets/NewBucketModal";
+import {
+  ChartNoAxesGantt,
+  CirclePlus,
+  Home,
+  LayoutGrid,
+  Waypoints,
+} from "lucide-react";
+import { NewWebModal } from "../webs/NewWebModal";
 import { AuthModal } from "../auth/AuthModal";
 
 const SidebarIndicator = ({ show }: { show: boolean }) => {
@@ -40,8 +46,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       setSelectedButton("home");
     } else if (router.pathname.startsWith("/explore")) {
       setSelectedButton("explore");
-    } else if (router.pathname.startsWith("/buckets")) {
-      setSelectedButton("buckets");
+    } else if (router.pathname.startsWith("/webs")) {
+      setSelectedButton("webs");
     } else {
       setSelectedButton(null);
     }
@@ -154,14 +160,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuButton
             size="sm"
             className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none  py-4 rounded-md`}
-            onClick={() => handleButtonClick("/buckets")}
+            onClick={() => handleButtonClick("/webs")}
           >
             <div
               className={`flex flex-row gap-2 items-center rounded-lg bg-none text-sidebar-primary-foreground`}
             >
               <Waypoints
                 className={`size-5 ${
-                  selectedButton === "buckets"
+                  selectedButton === "webs"
                     ? "text-muted-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
                 }`}
@@ -170,19 +176,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span
                 className={`truncate text-lg ${
-                  selectedButton === "buckets"
+                  selectedButton === "webs"
                     ? "text-muted-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
                 }`}
               >
-                Buckets
+                Webs
               </span>
             </div>
           </SidebarMenuButton>
-          <SidebarIndicator show={selectedButton === "buckets"} />
+          <SidebarIndicator show={selectedButton === "webs"} />
         </div>
         {user ? (
-          <NewBucketModal>
+          <NewWebModal>
             <div className="px-2">
               <SidebarMenuButton
                 size="sm"
@@ -208,7 +214,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
               </SidebarMenuButton>
             </div>
-          </NewBucketModal>
+          </NewWebModal>
         ) : (
           <div className="px-2">
             <SidebarMenuButton

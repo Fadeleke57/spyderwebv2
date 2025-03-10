@@ -1,8 +1,8 @@
 //search
 import React, { useState, useEffect } from "react";
-import { useFetchPublicBuckets, useSearchBuckets } from "@/hooks/buckets";
-import { BucketCard } from "@/components/explore/BucketCard";
-import { Bucket } from "@/types/bucket";
+import { useFetchPublicWebs, useSearchWebs } from "@/hooks/webs";
+import { WebCard } from "@/components/explore/WebCard";
+import { Web } from "@/types/web";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/router";
@@ -13,7 +13,7 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import SearchBar from "@/components/utility/Searchbar";
 import { SearchResultCard } from "@/components/explore/SearchResult";
 import { LoaderCircle } from "lucide-react";
-import PopularBucketsCard from "@/components/explore/PopularBucketsCard";
+import PopularWebsCard from "@/components/explore/PopularWebsCard";
 
 function Index() {
   const { ref, inView } = useInView();
@@ -24,7 +24,7 @@ function Index() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useFetchPublicBuckets();
+  } = useFetchPublicWebs();
   const [open, setOpen] = useState<boolean>(false);
   const { user } = useUser();
   const router = useRouter();
@@ -37,7 +37,7 @@ function Index() {
     }
   }, [searchQuery]);
 
-  const { data: searchResults, isLoading: isSearchLoading } = useSearchBuckets(
+  const { data: searchResults, isLoading: isSearchLoading } = useSearchWebs(
     query,
     { visibility: "Public" }
   );
@@ -48,8 +48,8 @@ function Index() {
     }
   }, [inView, hasNextPage, fetchNextPage, query]);
 
-  const allBuckets = data?.pages.flatMap((page) => page.result) || [];
-  const displayBuckets = query ? searchResults || [] : allBuckets;
+  const allWebs = data?.pages.flatMap((page) => page.result) || [];
+  const displayWebs = query ? searchResults || [] : allWebs;
 
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -57,8 +57,8 @@ function Index() {
     ? `Search Results for "${query}" - spydr`
     : "explore - spydr";
   const description = query
-    ? `Discover buckets matching your query "${query}".`
-    : "Explore public buckets on Spydr. Find shared research and projects.";
+    ? `Discover webs matching your query "${query}".`
+    : "Explore public webs on Spydr. Find shared research and projects.";
 
   const handleSearch = (searchQuery: string, results: any) => {
     setQuery(searchQuery);
@@ -100,12 +100,12 @@ function Index() {
           {isLoading || isSearchLoading ? (
             <LoaderCircle className="animate-spin mx-auto" />
           ) : (
-            displayBuckets.map((bucket: Bucket) => (
-              <div key={bucket.bucketId} className="cursor-pointer">
+            displayWebs.map((web: Web) => (
+              <div key={web.webId} className="cursor-pointer">
                 {query ? (
-                  <SearchResultCard user={user || null} bucket={bucket} />
+                  <SearchResultCard user={user || null} web={web} />
                 ) : (
-                  <BucketCard user={user || null} bucket={bucket} />
+                  <WebCard user={user || null} web={web} />
                 )}
               </div>
             ))
@@ -121,7 +121,7 @@ function Index() {
             </div>
           )}
         </div>
-        <PopularBucketsCard />
+        <PopularWebsCard />
       </div>
       {open && (
         <AuthModal

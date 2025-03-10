@@ -1,5 +1,5 @@
 import * as React from "react";
-import { BucketTag, tagsList } from "@/types/bucket";
+import { WebTag, tagsList } from "@/types/web";
 import { Button } from "../ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
@@ -114,7 +114,7 @@ export function TagsScroll({
           >
             All
           </Button>
-          {tagsList.map((tag: BucketTag) => (
+          {tagsList.map((tag: WebTag) => (
             <Button
               key={tag.label}
               variant="secondary"

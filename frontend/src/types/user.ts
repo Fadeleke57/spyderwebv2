@@ -7,8 +7,8 @@ export interface PublicUser {
   bio: string;
   disabled: boolean;
   analytics: {};
-  bucketsHidden: string[];
-  bucketsSaved: string[];
+  websHidden: string[];
+  websSaved: string[];
 }
 
 export interface Search {

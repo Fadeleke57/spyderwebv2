@@ -8,30 +8,30 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { CopyPlus } from "lucide-react";
-import { useFetchUserBuckets } from "@/hooks/buckets";
+import { useFetchUserWebs } from "@/hooks/webs";
 import { formatText } from "@/lib/utils";
 import { useRouter } from "next/router";
 import { Skeleton } from "@/components/ui/skeleton";
-import { NewBucketModal } from "../buckets/NewBucketModal";
+import { NewWebModal } from "../webs/NewWebModal";
 
 export function ProjectsCarousel() {
   const {
-    data : bucketData,
+    data: webData,
     fetchNextPage,
     fetchPreviousPage,
     isFetching,
     isFetchingNextPage,
     isFetchingPreviousPage,
-  } = useFetchUserBuckets();
-  const [buckets, setBuckets] = React.useState<any[]>([]);
+  } = useFetchUserWebs();
+  const [webs, setWebs] = React.useState<any[]>([]);
   const router = useRouter();
 
   React.useEffect(() => {
-    if (bucketData) {
-      const pageData = bucketData.pages[0];
-      setBuckets(pageData?.items || []);
+    if (webData) {
+      const pageData = webData.pages[0];
+      setWebs(pageData?.items || []);
     }
-  }, [bucketData]);
+  }, [webData]);
 
   return (
     <div className="group pl-6 mt-4">
@@ -42,7 +42,7 @@ export function ProjectsCarousel() {
         className="w-full"
       >
         <CarouselContent>
-          <NewBucketModal>
+          <NewWebModal>
             <CarouselItem className="basis-11/12 lg:basis-1/3">
               <div className="p-1 cursor-pointer">
                 <Card className="bg-muted dark:bg-card opacity-35 hover:opacity-75 duration-200 transition ease-in border-none">
@@ -56,7 +56,7 @@ export function ProjectsCarousel() {
                 </Card>
               </div>
             </CarouselItem>
-          </NewBucketModal>
+          </NewWebModal>
 
           {isFetching
             ? Array.from({ length: 9 }).map((_, index) => (
@@ -69,23 +69,21 @@ export function ProjectsCarousel() {
                   </Card>
                 </CarouselItem>
               ))
-            : buckets?.map((bucket, index) => (
+            : webs?.map((web, index) => (
                 <CarouselItem
                   key={index}
                   className="basis-11/12 lg:basis-1/3"
-                  onClick={() =>
-                    router.push(`/bucket/${bucket.bucketId}`)
-                  }
+                  onClick={() => router.push(`/web/${web.webId}`)}
                 >
                   <div className="p-1 cursor-pointer">
                     <Card className="">
                       <CardContent className="flex aspect-square items-center justify-center p-10">
                         <div className="w-full flex flex-col overflow-hidden hyphens-auto break-words">
                           <h1 className="text-xl font-semibold hyphens-auto">
-                            {formatText(bucket.name, 50)}
+                            {formatText(web.name, 50)}
                           </h1>
                           <p className="text-muted-foreground">
-                            {formatText(bucket.description, 30)}
+                            {formatText(web.description, 30)}
                           </p>
                         </div>
                       </CardContent>

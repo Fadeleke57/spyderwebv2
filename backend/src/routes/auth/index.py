@@ -12,7 +12,7 @@ from src.routes.auth.oauth2 import (
 )
 from src.core.config import settings
 from src.models.user import Users, User, CreateUser
-from src.models.bucket import Buckets
+from src.models.web import Webs
 from src.models.source import Sources
 from datetime import timedelta
 import logging
@@ -104,16 +104,16 @@ async def auth_callback(code: str):
                 "analytics": {"searches": []},
                 "created": datetime.now(UTC),
                 "updated": datetime.now(UTC),
-                "bucketsHidden": [],
-                "bucketsSaved": [],
+                "websHidden": [],
+                "websSaved": [],
             }
         )
-        bucketId = str(uuid.uuid4())
-        Buckets.insert_one(
+        webId = str(uuid.uuid4())
+        Webs.insert_one(
             {
-                "bucketId": str(uuid.uuid4()),
+                "webId": str(uuid.uuid4()),
                 "name": "Welcome to Spydr!",
-                "description": "This is your first bucket! Create a new bucket to get started.",
+                "description": "This is your first web! Create a new web to get started.",
                 "userId": userId,
                 "articleIds": [],
                 "created": datetime.now(),
@@ -127,10 +127,10 @@ async def auth_callback(code: str):
         sourceId = str(uuid.uuid4())
         sourceToInsert = {
             "sourceId": sourceId,
-            "bucketId": bucketId,
+            "webId": webId,
             "userId": userId,
             "name": "Welcome to Spydr!",
-            "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new bucket or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your bucket.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your bucket with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other buckets and start from there.\n### Have fun!",
+            "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new web or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your web.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your web with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other webs and start from there.\n### Have fun!",
             "url": None,
             "type": "note",
             "size": None,
@@ -177,7 +177,7 @@ def register(user: CreateUser):
     """
     Register a new user.
 
-    This endpoint is used to register a new user. It takes a `CreateUser` object in the request body and verifies the email and password. If the email is not already registered, a new user is created and a new bucket is created for the user. The user is then returned in the response body.
+    This endpoint is used to register a new user. It takes a `CreateUser` object in the request body and verifies the email and password. If the email is not already registered, a new user is created and a new web is created for the user. The user is then returned in the response body.
 
     :param user: The user to register
     :return: A JSONResponse with a success message
@@ -205,17 +205,17 @@ def register(user: CreateUser):
         "analytics": {"searches": []},
         "created": datetime.now(UTC),
         "updated": datetime.now(UTC),
-        "bucketsHidden": [],
-        "bucketsSaved": [],
+        "websHidden": [],
+        "websSaved": [],
     }
     Users.insert_one(user_data)
 
-    bucketId = str(uuid.uuid4())
-    Buckets.insert_one(
+    webId = str(uuid.uuid4())
+    Webs.insert_one(
         {
-            "bucketId": bucketId,
+            "webId": webId,
             "name": "Welcome to Spydr!",
-            "description": "This is your first bucket! Create a new bucket to get started.",
+            "description": "This is your first web! Create a new web to get started.",
             "userId": userId,
             "created": datetime.now(UTC),
             "updated": datetime.now(UTC),
@@ -229,10 +229,10 @@ def register(user: CreateUser):
     sourceId = str(uuid.uuid4())
     sourceToInsert = {
         "sourceId": sourceId,
-        "bucketId": bucketId,
+        "webId": webId,
         "userId": userId,
         "name": "How to use Spydr (click me!)",
-        "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new bucket or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your bucket.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your bucket with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other buckets and start from there.\n### Have fun!",
+        "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new web or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your web.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your web with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other webs and start from there.\n### Have fun!",
         "url": None,
         "type": "note",
         "size": None,
@@ -242,8 +242,8 @@ def register(user: CreateUser):
 
     neo4jClient.create_node("source", sourceToInsert)
 
-    Buckets.update_one(
-        {"bucketId": bucketId, "userId": userId},
+    Webs.update_one(
+        {"webId": webId, "userId": userId},
         {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
     )
 

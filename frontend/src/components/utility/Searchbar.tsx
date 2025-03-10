@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useSearchBuckets } from "@/hooks/buckets";
-import { Bucket } from "@/types/bucket";
+import { useSearchWebs } from "@/hooks/webs";
+import { Web } from "@/types/web";
 import { SearchInput } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
@@ -22,7 +22,7 @@ const SearchBar = ({
   const searchRef = useRef<HTMLDivElement>(null);
   const router = Router;
 
-  const { data: searchResults, isLoading } = useSearchBuckets(debouncedQuery, {
+  const { data: searchResults, isLoading } = useSearchWebs(debouncedQuery, {
     visibility: "Public",
   });
 
@@ -54,7 +54,10 @@ const SearchBar = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSearch = (searchQuery: string, src: 'query' | 'recent-search-click' = 'query') => {
+  const handleSearch = (
+    searchQuery: string,
+    src: "query" | "recent-search-click" = "query"
+  ) => {
     if (!searchQuery.trim()) return;
 
     const updatedSearches = [
@@ -108,7 +111,7 @@ const SearchBar = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && query.trim()) {
-      handleSearch(query, 'query');
+      handleSearch(query, "query");
     }
   };
 
@@ -120,7 +123,7 @@ const SearchBar = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsSearchActive(true)}
-          placeholder="Search for buckets..."
+          placeholder="Search for webs..."
           className="w-full py-3 px-6 caret-violet-500"
         />
       </div>
@@ -139,7 +142,7 @@ const SearchBar = ({
                     <span
                       onClick={() => {
                         setQuery(search);
-                        handleSearch(search, 'recent-search-click');
+                        handleSearch(search, "recent-search-click");
                       }}
                       className="flex-1 text-sm"
                     >
@@ -162,13 +165,13 @@ const SearchBar = ({
           {debouncedQuery && searchResults && (
             <div>
               <h3 className="text-sm font-semibold mb-2">Suggestions</h3>
-              {searchResults.slice(0, 5).map((bucket: Bucket) => (
+              {searchResults.slice(0, 5).map((web: Web) => (
                 <div
-                  key={bucket.bucketId}
+                  key={web.webId}
                   className="flex items-center py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2 cursor-pointer"
-                  onClick={() => handleSearch(bucket.name)}
+                  onClick={() => handleSearch(web.name)}
                 >
-                  <span>{formatText(bucket.name, 80)}</span>
+                  <span>{formatText(web.name, 80)}</span>
                 </div>
               ))}
             </div>

@@ -18,21 +18,21 @@ from src.lib.logger.index import logger
 router = APIRouter()
 
 
-@router.get("/all/bucket/{bucket_id}")
-def get_all_connections(bucket_id: str):
+@router.get("/all/web/{web_id}")
+def get_all_connections(web_id: str):
     try:
-        bucketConnections = neo4jClient.get_all_connections_for_web(
-            "connection", bucket_id
+        webConnections = neo4jClient.get_all_connections_for_web(
+            "connection", web_id
         )
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
-    return {"result": bucketConnections}
+    return {"result": webConnections}
 
 
-@router.get("/outgoing/{bucket_id}/{source_id}")
-def get_outgoing_connections(bucket_id: str, source_id: str):
+@router.get("/outgoing/{web_id}/{source_id}")
+def get_outgoing_connections(web_id: str, source_id: str):
     try:
         outgoing_connections = neo4jClient.get_outgoing_connections_for_source(
             "connection", source_id
@@ -44,8 +44,8 @@ def get_outgoing_connections(bucket_id: str, source_id: str):
     return {"result": outgoing_connections}
 
 
-@router.get("/incoming/{bucket_id}/{source_id}")
-def get_incoming_connections(bucket_id: str, source_id: str):
+@router.get("/incoming/{web_id}/{source_id}")
+def get_incoming_connections(web_id: str, source_id: str):
     try:
         incomingConnections = neo4jClient.get_incoming_connections_for_source(
             "connection", source_id
@@ -56,8 +56,8 @@ def get_incoming_connections(bucket_id: str, source_id: str):
     return {"result": incomingConnections}
 
 
-@router.get("/connection/{bucket_id}/{connection_id}")
-def get_connection(bucket_id: str, connection_id: str):
+@router.get("/connection/{web_id}/{connection_id}")
+def get_connection(web_id: str, connection_id: str):
     try:
         connection = neo4jClient.get_connection_by_id("connection", connection_id)
     except Exception as e:
@@ -79,7 +79,7 @@ def create_connection(connection_data: CreateConnection, user=Depends(manager)):
             "connectionId": str(uuid.uuid4()),
             "fromSourceId": connection_data.fromSourceId,
             "toSourceId": connection_data.toSourceId,
-            "bucketId": connection_data.bucketId,
+            "webId": connection_data.webId,
             "data.description": connection_data.data.get("description"),
             "created": datetime.now(UTC),
             "updated": datetime.now(UTC),
