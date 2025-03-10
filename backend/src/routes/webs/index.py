@@ -368,7 +368,7 @@ def delete_web(webId: str, user=Depends(manager)):
 
 
 @router.patch("/update/{webId}")
-def update_web(webId: str, config: UpdateWeb, user=Depends(manager)):
+def update_web(webId: str, updateWebPayload: UpdateWeb, user=Depends(manager)):
     """
     Update a web.
 
@@ -385,7 +385,7 @@ def update_web(webId: str, config: UpdateWeb, user=Depends(manager)):
     if not web:
         raise HTTPException(status_code=404, detail="Web not found")
 
-    update_fields = config.model_dump()
+    update_fields = updateWebPayload.model_dump(exclude_none=True)
     update_fields["updated"] = datetime.now(UTC)
 
     vector_updates = {}
