@@ -1,8 +1,7 @@
 from pydantic_settings import BaseSettings
-import os
 from dotenv import load_dotenv
 
-selected_env = "local" #toggle here
+selected_env = "local" # Toggle here "local" or "prod"
 
 load_dotenv(f".env.{selected_env}")
 print(f"Loading .env.{selected_env}")
