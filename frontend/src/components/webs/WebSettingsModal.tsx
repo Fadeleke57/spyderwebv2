@@ -15,7 +15,15 @@ import { useUpdateWeb } from "@/hooks/webs";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
-function WebSettingsModal({ web }: { web: Web }) {
+function WebSettingsModal({
+  web,
+  refetchWeb,
+}: {
+  web: Web;
+  refetchWeb: () => void;
+}) {
+  const [open, setOpen] = React.useState(false);
+
   const [webSettings, setWebSettings] = React.useState({
     enableAIConnections: web.enableAIConnections,
     visibility: web.visibility,
@@ -33,10 +41,12 @@ function WebSettingsModal({ web }: { web: Web }) {
       visibility: webSettings.visibility,
     };
     await updateWeb(updates);
+    refetchWeb();
+    setOpen(false);
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
         <Button variant="ghost" className="h-fit p-2 m-0 rounded-full">
           <SettingsIcon size={20} className="cursor-pointer" />
@@ -50,7 +60,10 @@ function WebSettingsModal({ web }: { web: Web }) {
         <div className="py-4 space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label htmlFor="ai-connections" className="text-sm font-medium flex items-center">
+              <Label
+                htmlFor="ai-connections"
+                className="text-sm font-medium flex items-center"
+              >
                 AI Connections <Orbit size={16} className="ml-2" />
               </Label>
               <p className="text-xs text-gray-500">
@@ -67,7 +80,9 @@ function WebSettingsModal({ web }: { web: Web }) {
           </div>
 
           <div className="space-y-3">
-            <Label className="text-sm font-medium flex items-center">Visibility <Lock size={16} className="ml-2" /></Label>
+            <Label className="text-sm font-medium flex items-center">
+              Visibility <Lock size={16} className="ml-2" />
+            </Label>
             <RadioGroup
               value={webSettings.visibility}
               onValueChange={(value) =>
