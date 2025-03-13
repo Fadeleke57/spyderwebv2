@@ -115,7 +115,6 @@ function WebPlayground({
     setSearchDialogOpen((prev: boolean) => !prev);
   }, [setSearchDialogOpen]);
 
-  // Adds a keyboard shortcut to toggle the sidebar.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (

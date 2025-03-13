@@ -23,7 +23,12 @@ import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Separator } from "@/components/ui/separator";
 import ContributersBlock from "@/components/webs/ContributersBlock";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 function Index() {
   const router = useRouter();
@@ -134,22 +139,23 @@ function Index() {
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
             {web && <MobileWebForm web={web} user={user ? user : null} />}
             {webOwner && web?.enableAIConnections && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="relative inline-flex items-center justify-center">
-                    {/* Pulsing background effect */}
-                    <div className="absolute rounded-full bg-violet-400/30 animate-pulse w-6 h-6 blur-sm"></div>
-                    {/* Second pulse layer for more depth */}
-                    <div className="absolute rounded-full bg-violet-400/20 animate-pulse w-8 h-8 blur-md"></div>
-                    {/* Core circle */}
-                    <div className="relative rounded-full bg-violet-400 w-4 h-4 flex items-center justify-center z-10">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="relative inline-flex items-center justify-center">
+                      {/*pulsing background effect */}
+                      <div className="absolute rounded-full bg-violet-400/30 animate-pulse w-6 h-6 blur-sm"></div>
+                      {/*second pulse layer for more depth */}
+                      <div className="absolute rounded-full bg-violet-400/20 animate-pulse w-8 h-8 blur-md"></div>
+                      {/*core circle */}
+                      <div className="relative rounded-full bg-violet-400 w-4 h-4 flex items-center justify-center z-10"></div>
                     </div>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>AI connections enabled</p>
-                </TooltipContent>
-              </Tooltip>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>AI connections enabled</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
             {user && web && webOwner ? (
               <IterateModal
