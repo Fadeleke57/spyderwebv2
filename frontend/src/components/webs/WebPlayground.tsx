@@ -9,6 +9,7 @@ import {
   Youtube,
   Minimize2,
   Maximize2,
+  Search,
 } from "lucide-react";
 import { Web } from "@/types/web";
 import { PublicUser } from "@/types/user";
@@ -25,11 +26,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+
 import WebDataDrawer from "./WebDataModal";
 
 import { PlusCircle } from "lucide-react";
@@ -42,7 +39,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { mapSourceToIcon } from "../utility/Icons";
 import {
   Tooltip,
@@ -51,6 +48,8 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import WebSettingsModal from "./WebSettingsModal";
+
+const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
 
 function WebPlayground({
   web,
@@ -65,6 +64,7 @@ function WebPlayground({
     title: web?.name || "",
     description: web?.description || "",
   });
+  const [searchDialogOpen, setSearchDialogOpen] = useState<boolean>(false);
 
   const {
     data: sources,
@@ -76,7 +76,6 @@ function WebPlayground({
   const isOwner = user && user?.id === web?.userId;
   const [selectedSourceId, setSelectedSourceId] = useState<string>("");
   const [fetchedSources, setFetchedSources] = useState<Source[]>([]);
-  const [open, setOpen] = React.useState(false);
   const [isWebDataDrawerOpen, setIsWebDataDrawerOpen] = useState(false);
   const [isAddSourceModalOpen, setIsAddSourceModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -87,7 +86,7 @@ function WebPlayground({
   const handleSourceClick = (sourceId: string) => {
     setSelectedSourceId(sourceId);
     setIsWebDataDrawerOpen(true);
-    setOpen(false);
+    setSearchDialogOpen(false);
   };
 
   const handleDropdownButtonClick = (
@@ -99,19 +98,44 @@ function WebPlayground({
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
+    localStorage.setItem("expanded", String(!isExpanded));
   };
 
   useEffect(() => {
     if (sources) {
       setFetchedSources(sources);
     }
+
+    if (localStorage.getItem("expanded") === "true") {
+      setIsExpanded(true);
+    }
   }, [sources]);
+
+  const toggleSearchDialogOpen = React.useCallback(() => {
+    setSearchDialogOpen((prev: boolean) => !prev);
+  }, [setSearchDialogOpen]);
+
+  // Adds a keyboard shortcut to toggle the sidebar.
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key === SOURCES_DIALOG_KEYBOARD_CSHORTCUT &&
+        (event.metaKey || event.ctrlKey)
+      ) {
+        event.preventDefault();
+        toggleSearchDialogOpen();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [toggleSearchDialogOpen]);
 
   return (
     <div
       className={`${
         isExpanded
-          ? "absolute inset-0 z-50 h-full w-full bg-muted"
+          ? "absolute inset-0 z-50 h-full w-full bg-neutral-800"
           : "h-full min-h-[50vh] flex-col lg:col-span-2 bg-muted/50 rounded-xl"
       }`}
     >
@@ -121,14 +145,14 @@ function WebPlayground({
             isExpanded ? "right-6" : "right-3"
           }  top-3`}
         >
-          {isOwner && <WebSettingsModal web={web} />}
+          {isOwner && <WebSettingsModal refetchWeb={refetch} web={web} />}
           <Badge variant="outline" className={`border dark:border-violet-400`}>
             {web?.sourceIds?.length || 0} sources added
           </Badge>
         </div>
 
         <div
-          className={`absolute bottom-28 ${
+          className={`absolute bottom-8 ${
             isExpanded ? "right-6" : "right-6"
           } cursor-pointer z-10`}
         >
@@ -136,18 +160,22 @@ function WebPlayground({
             <Tooltip>
               <TooltipTrigger
                 onClick={toggleExpand}
-                className="p-2 rounded-full transition-colors bg-muted hover:bg-muted/80"
+                className="p-2 rounded-full transition-colors"
               >
                 {isExpanded ? (
-                  <Minimize2
-                    size={20}
-                    className="text-white dark:text-foreground"
-                  />
+                  <Button
+                    className="rounded-full p-0 px-[10px]"
+                    variant="outline"
+                  >
+                    <Minimize2 size={20} />
+                  </Button>
                 ) : (
-                  <Maximize2
-                    size={20}
-                    className="text-white dark:text-foreground"
-                  />
+                  <Button
+                    className="rounded-full p-0 px-[10px]"
+                    variant="outline"
+                  >
+                    <Maximize2 size={20} />
+                  </Button>
                 )}
               </TooltipTrigger>
               <TooltipContent>
@@ -193,7 +221,6 @@ function WebPlayground({
                       <DropdownMenuItem className="cursor-pointer">
                         <Link size={16} className="mr-2" />
                         <span>Website</span>
-                        {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
                       </DropdownMenuItem>
                     </DialogTrigger>
                     <DialogTrigger
@@ -203,7 +230,6 @@ function WebPlayground({
                       <DropdownMenuItem className="cursor-pointer">
                         <File size={16} className="mr-2" />
                         <span>File</span>
-                        {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
                       </DropdownMenuItem>
                     </DialogTrigger>
                     <DialogTrigger
@@ -213,7 +239,6 @@ function WebPlayground({
                       <DropdownMenuItem className="cursor-pointer">
                         <Notebook size={16} className="mr-2" />
                         <span>Note</span>
-                        {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
                       </DropdownMenuItem>
                     </DialogTrigger>
                     <DialogTrigger
@@ -223,7 +248,6 @@ function WebPlayground({
                       <DropdownMenuItem className="cursor-pointer">
                         <Youtube size={16} className="mr-2" />
                         <span>Youtube</span>
-                        {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
                       </DropdownMenuItem>
                     </DialogTrigger>
                   </DropdownMenuGroup>
@@ -272,7 +296,6 @@ function WebPlayground({
                         <DropdownMenuItem className="cursor-pointer">
                           <Link size={16} className="mr-2" />
                           <span>Website</span>
-                          {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
                         </DropdownMenuItem>
                       </DialogTrigger>
                       <DialogTrigger
@@ -282,7 +305,6 @@ function WebPlayground({
                         <DropdownMenuItem className="cursor-pointer">
                           <File size={16} className="mr-2" />
                           <span>File</span>
-                          {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
                         </DropdownMenuItem>
                       </DialogTrigger>
                       <DialogTrigger
@@ -292,7 +314,6 @@ function WebPlayground({
                         <DropdownMenuItem className="cursor-pointer">
                           <Notebook size={16} className="mr-2" />
                           <span>Note</span>
-                          {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
                         </DropdownMenuItem>
                       </DialogTrigger>
                       <DialogTrigger
@@ -302,7 +323,6 @@ function WebPlayground({
                         <DropdownMenuItem className="cursor-pointer">
                           <Youtube size={16} className="mr-2" />
                           <span>Youtube</span>
-                          {/*<DropdownMenuShortcut>⌘K</DropdownMenuShortcut>*/}
                         </DropdownMenuItem>
                       </DialogTrigger>
                     </DropdownMenuGroup>
@@ -333,23 +353,25 @@ function WebPlayground({
             id="comments"
             className=" resize-none border-0 p-4 shadow-none focus-visible:ring-0"
           ></p>
-          <div className="flex w-full flex-col pt-0">
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
+          <div className="flex w-fit rounded-full flex-col pt-0">
+            <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
+              <DialogTrigger asChild>
                 <Button
                   variant="outline"
                   role="combobox"
-                  aria-expanded={open}
-                  className="w-full h-16 justify-between"
+                  aria-expanded={searchDialogOpen}
+                  className="w-full justify-between p-0 m-0 rounded-full p-2 px-[10px]"
                 >
-                  Find sources...
-                  <ChevronsUpDown className="opacity-50" />
+                  <Search size={20} />
                 </Button>
-              </PopoverTrigger>
+              </DialogTrigger>
 
-              <PopoverContent widthAnchor>
-                <Command>
-                  <CommandInput placeholder="Search sources..." />
+              <DialogContent>
+                <Command className="bg-transparent">
+                  <CommandInput
+                    placeholder="Search sources..."
+                    className="bg-transparent"
+                  />
                   <CommandList>
                     <CommandEmpty>
                       No sources found. <span>Create one?</span>
@@ -368,8 +390,8 @@ function WebPlayground({
                     </CommandGroup>
                   </CommandList>
                 </Command>
-              </PopoverContent>
-            </Popover>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
         {isWebDataDrawerOpen && selectedSourceId && web?.webId && (

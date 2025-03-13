@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Separator } from "@/components/ui/separator";
 import ContributersBlock from "@/components/webs/ContributersBlock";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 function Index() {
   const router = useRouter();
@@ -131,10 +132,25 @@ function Index() {
             )}
           </div>
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
-            {web && (
-              <MobileWebForm web={web} user={user ? user : null} />
+            {web && <MobileWebForm web={web} user={user ? user : null} />}
+            {webOwner && web?.enableAIConnections && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="relative inline-flex items-center justify-center">
+                    {/* Pulsing background effect */}
+                    <div className="absolute rounded-full bg-violet-400/30 animate-pulse w-6 h-6 blur-sm"></div>
+                    {/* Second pulse layer for more depth */}
+                    <div className="absolute rounded-full bg-violet-400/20 animate-pulse w-8 h-8 blur-md"></div>
+                    {/* Core circle */}
+                    <div className="relative rounded-full bg-violet-400 w-4 h-4 flex items-center justify-center z-10">
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>AI connections enabled</p>
+                </TooltipContent>
+              </Tooltip>
             )}
-
             {user && web && webOwner ? (
               <IterateModal
                 open={showIterateModal}
@@ -168,9 +184,7 @@ function Index() {
               </Button>
             )}
 
-            <ShareDialog
-              link={`${window.location.origin}/web/${webId}`}
-            />
+            <ShareDialog link={`${window.location.origin}/web/${webId}`} />
           </div>
         </header>
         <div className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3 overflow-hidden scrollbar-none">

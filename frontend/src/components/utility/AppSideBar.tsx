@@ -17,7 +17,6 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/router";
 import {
-  ChartNoAxesGantt,
   CirclePlus,
   Home,
   LayoutGrid,
