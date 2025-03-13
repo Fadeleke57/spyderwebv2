@@ -457,7 +457,7 @@ function WebGraph({
   return (
     <>
       {isOwner && (
-        <div ref={trashRef} className="absolute left-3 top-3 cursor-pointer">
+        <div ref={trashRef} className="absolute left-6 top-4 cursor-pointer">
           <TooltipProvider delayDuration={100}>
             <Tooltip>
               <TooltipTrigger className="p-0 m-0 bg-red-600 dark:bg-violet-500 dark:hover:bg-violet-600 rounded-full p-2">

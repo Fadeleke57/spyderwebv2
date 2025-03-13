@@ -39,7 +39,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
 import { mapSourceToIcon } from "../utility/Icons";
 import {
   Tooltip,
@@ -115,7 +120,6 @@ function WebPlayground({
     setSearchDialogOpen((prev: boolean) => !prev);
   }, [setSearchDialogOpen]);
 
-  // Adds a keyboard shortcut to toggle the sidebar.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
@@ -135,7 +139,7 @@ function WebPlayground({
     <div
       className={`${
         isExpanded
-          ? "absolute inset-0 z-50 h-full w-full bg-neutral-800"
+          ? "absolute inset-0 z-50 h-[100dvh] w-full bg-neutral-800"
           : "h-full min-h-[50vh] flex-col lg:col-span-2 bg-muted/50 rounded-xl"
       }`}
     >
@@ -345,14 +349,7 @@ function WebPlayground({
           selectedSourceId={selectedSourceId}
           setSelectedSourceId={setSelectedSourceId}
         />
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 right-0 w-[96%]">
-          <Label htmlFor="comments" className="sr-only">
-            Comment
-          </Label>
-          <p
-            id="comments"
-            className=" resize-none border-0 p-4 shadow-none focus-visible:ring-0"
-          ></p>
+        <div className="absolute bottom-8 left-6">
           <div className="flex w-fit rounded-full flex-col pt-0">
             <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
               <DialogTrigger asChild>
@@ -366,7 +363,9 @@ function WebPlayground({
                 </Button>
               </DialogTrigger>
 
-              <DialogContent>
+              <DialogContent className="lg:max-w-2xl">
+                <DialogTitle hidden className="pl-4">
+                </DialogTitle>
                 <Command className="bg-transparent">
                   <CommandInput
                     placeholder="Search sources..."
