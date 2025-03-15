@@ -1,37 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 import { WebConfigFormValues } from "@/types/article";
 import { Web } from "@/types/web";
 import {
   useFileUpload,
-  useUploadNote,
   useUploadWebsite,
   useUploadYoutube,
 } from "@/hooks/sources";
 import { toast } from "../ui/use-toast";
 import gsap from "gsap";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Uploading } from "../utility/Loading";
 import { extractVideoId } from "@/lib/utils";
 import { DialogTitle } from "@radix-ui/react-dialog";
-import {
-  UploadFile,
-  UploadNote,
-  UploadWebsite,
-  UploadYoutube,
-} from "./AddSourceViews";
+import { UploadFile, UploadWebsite, UploadYoutube } from "./AddSourceViews";
 import { Drawer, DrawerContent, DrawerHeader } from "../ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Skeleton } from "../ui/skeleton";
 
 type ConfigGraphModalProps = {
   open: boolean;
@@ -42,6 +27,8 @@ type ConfigGraphModalProps = {
   refreshSources: () => void;
   refreshWeb: () => void;
   view?: string;
+  setIsWebDataModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setSelectedSourceId: React.Dispatch<React.SetStateAction<string>>;
   children: React.ReactNode;
 };
 
@@ -53,21 +40,12 @@ export default function AddSourceModal({
   children,
   refreshSources,
   refreshWeb,
+  setIsWebDataModalOpen,
+  setSelectedSourceId,
 }: ConfigGraphModalProps) {
-  const noteSchema = z.object({
-    title: z.string().min(1, { message: "Title is required" }),
-    content: z.string().optional(),
-  });
-
-  type noteType = z.infer<typeof noteSchema>;
-
   const isMobile = useIsMobile();
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [note, setNote] = useState({
-    title: "",
-    content: "",
-  });
 
   const {
     mutateAsync: uploadFile,
@@ -82,12 +60,6 @@ export default function AddSourceModal({
   } = useUploadWebsite(web.webId);
 
   const {
-    mutateAsync: uploadNote,
-    error: noteError,
-    isPending: isNoteUploading,
-  } = useUploadNote(web.webId);
-
-  const {
     mutateAsync: uploadYoutube,
     error: youtubeError,
     isPending: isYoutubeUploading,
@@ -95,66 +67,22 @@ export default function AddSourceModal({
 
   const contentRef = useRef(null);
 
-  const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.value === "") {
-      setNote({
-        ...note,
-        title: "Untitled",
-      });
-      return;
-    }
-    setNote({
-      ...note,
-      title: event.target.value,
-    });
-  };
-
-  const onDescriptionChange = (
-    event: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setNote({
-      ...note,
-      content: event.target.value,
-    });
-  };
-
-  const onSubmit: SubmitHandler<noteType> = async (data) => {
-    try {
-      const noteId = await uploadNote({
-        title: note.title,
-        content: note.content,
-      });
-      form.reset();
-      handleClose();
-      refreshSources();
-      refreshWeb();
-    } catch (error: any) {
-      toast({
-        title: "Error creating web",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const form = useForm<noteType>({
-    resolver: zodResolver(noteSchema),
-  });
-
   const handleFileUpload = async (file: File | null) => {
     if (!file) {
       return;
     }
     try {
-      const result = await uploadFile(file);
+      const sourceId = await uploadFile(file);
       toast({
         title: "File uploaded",
         description: "File uploaded successfully",
         duration: 500,
       });
-      handleClose();
       refreshSources();
       refreshWeb();
+      setSelectedSourceId(sourceId);
+      setIsWebDataModalOpen(true);
+      handleClose();
     } catch (err) {
       console.error(err);
       toast({
@@ -166,15 +94,17 @@ export default function AddSourceModal({
 
   const handleWebsiteUpload = async (url: string) => {
     try {
-      const result = await uploadWebsite(url);
+      const sourceId = await uploadWebsite(url);
       toast({
         title: "Website uploaded",
         description: "Website uploaded successfully",
         duration: 500,
       });
-      handleClose();
       refreshSources();
       refreshWeb();
+      setSelectedSourceId(sourceId);
+      handleClose();
+      setIsWebDataModalOpen(true);
     } catch (err: any) {
       console.error(err);
       toast({
@@ -191,15 +121,17 @@ export default function AddSourceModal({
   const handleYoutubeUpload = async (url: string) => {
     try {
       const videoId = extractVideoId(url);
-      const result = await uploadYoutube(videoId as string);
+      const sourceId = await uploadYoutube(videoId as string);
       toast({
         title: "Uploaded",
         description: "Youtube video uploaded successfully",
         duration: 500,
       });
-      handleClose();
       refreshSources();
       refreshWeb();
+      setSelectedSourceId(sourceId);
+      handleClose();
+      setIsWebDataModalOpen(true);
     } catch (err: any) {
       console.error(err);
       toast({
@@ -257,15 +189,6 @@ export default function AddSourceModal({
             isYoutubeUploading={isYoutubeUploading}
           />
         );
-      case "note":
-        return (
-          <UploadNote
-            isNoteUploading={isNoteUploading}
-            onTitleChange={onTitleChange}
-            onDescriptionChange={onDescriptionChange}
-            onSubmit={onSubmit}
-          />
-        );
       default:
         return null;
     }
@@ -309,18 +232,6 @@ export default function AddSourceModal({
             </p>
           </div>
         );
-      case "note":
-        return (
-          <div className="space-y-2">
-            <DialogTitle className="scroll-m-20 text-2xl lg:text-3xl font-extrabold tracking-tight lg:text-6xl text-left">
-              <span> Add Note</span>
-            </DialogTitle>
-            <p className="text-sm max-w-full md:max-w-lg lg:text-md text-muted-foreground text-left">
-              It isn&apos;t about the answers, it&apos;s the steps that will get
-              you there.
-            </p>
-          </div>
-        );
     }
   }
 
@@ -336,10 +247,9 @@ export default function AddSourceModal({
           <DrawerHeader className="w-full p-0">
             {mapViewToHeader()}
           </DrawerHeader>
-          {isFileUploading || isWebsiteUploading || isNoteUploading ? (
+          {isFileUploading || isWebsiteUploading || isYoutubeUploading ? (
             <div className="w-full h-[200px] flex flex-col gap-4 items-center justify-center">
-              <Uploading />
-              <p className="text-sm text-center">Uploading...</p>
+              <Skeleton className="h-full w-full rounded-xl" />
             </div>
           ) : (
             <div
@@ -355,38 +265,39 @@ export default function AddSourceModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      {children}
+    <>
+      <Dialog open={open} onOpenChange={setOpen}>
+        {children}
 
-      <DialogContent
-        hideClose
-        aria-describedby={undefined}
-        className="max-w-[80vw] min-h-[70vh] flex flex-col gap-6 items-center px-6 lg:p-12 overflow-y-auto no-scrollbar rounded-xl border-none"
-      >
-        <DialogHeader className="w-full mx-auto flex flex-row justify-between items-center lg:items-start">
-          {mapViewToHeader()}
-          <div
-            className="cursor-pointer rounded-sm opacity-50 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-            onClick={handleClose}
-          >
-            <X size={24} />
-            <span>esc</span>
-          </div>
-        </DialogHeader>
-        {isFileUploading || isWebsiteUploading || isNoteUploading ? (
-          <div className="w-full h-[200px] flex flex-col gap-4 items-center justify-center">
-            <Uploading />
-            <p className="text-sm text-center">Uploading...</p>
-          </div>
-        ) : (
-          <div
-            className="w-full flex flex-col gap-8 no-scrollbar"
-            ref={contentRef}
-          >
-            {mapViewToContent()}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+        <DialogContent
+          hideClose
+          aria-describedby={undefined}
+          className="max-w-[80vw] min-h-[70vh] flex flex-col gap-6 items-center px-6 lg:p-12 overflow-y-auto no-scrollbar rounded-xl border-none"
+        >
+          <DialogHeader className="w-full mx-auto flex flex-row justify-between items-center lg:items-start">
+            {mapViewToHeader()}
+            <div
+              className="cursor-pointer rounded-sm opacity-50 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+              onClick={handleClose}
+            >
+              <X size={24} />
+              <span>esc</span>
+            </div>
+          </DialogHeader>
+          {isFileUploading || isWebsiteUploading || isYoutubeUploading ? (
+            <div className="w-full h-[200px] flex flex-col gap-4 items-center justify-center">
+              <Skeleton className="h-full w-full rounded-xl" />
+            </div>
+          ) : (
+            <div
+              className="w-full flex flex-col gap-8 no-scrollbar"
+              ref={contentRef}
+            >
+              {mapViewToContent()}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

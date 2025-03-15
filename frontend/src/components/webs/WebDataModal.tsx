@@ -96,6 +96,10 @@ export default function WebDataModal({
   ) => {
     // for notes only
     const newContent = e.target.value;
+    if (newContent.length < 3) {
+      setContent(newContent);
+      return;
+    }
     setContent(newContent);
     debouncedSave(title || "", newContent);
   };
@@ -108,9 +112,9 @@ export default function WebDataModal({
     }
     try {
       await editSourceTitle(newTitle);
-      toast({ title: "Changes saved." });
       refetchSource();
       setIsEditing(false);
+      toast({ title: "Changes saved." });
     } catch (err) {
       console.error("Failed to update note:", err);
     }
@@ -211,7 +215,7 @@ export default function WebDataModal({
                       defaultValue={title}
                       onChange={(e) => handleNewTitleChange(e)}
                       placeholder="Title..."
-                      className="w-full text-lg font-bold resize-none !p-0 !m-0 !shadow-none !bg-transparent rounded-md focus-visible:ring-0 focus-visible:ring-offset-0"
+                      className="w-full text-lg font-bold resize-none !p-0 !m-0 !shadow-none !bg-transparent rounded-md focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg"
                     />
                     {isOwner && (
                       <div className="absolute left-0 -bottom-4 flex border rounded-sm">
@@ -260,7 +264,7 @@ export default function WebDataModal({
                     defaultValue={title}
                     onChange={(e) => handleNewTitleChange(e)}
                     placeholder="Title..."
-                    className="w-full text-lg font-bold resize-none !p-0 !m-0 !shadow-none !bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="w-full text-lg font-bold resize-none !p-0 !m-0 !shadow-none !bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg"
                   />
                   {isOwner && (
                     <div className="absolute left-0 -bottom-4 flex border rounded-sm">

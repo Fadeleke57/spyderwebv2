@@ -92,12 +92,13 @@ async def upload_file(
             {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
         )
 
-        return {"result": f"File uploaded to {temp_path}"}
+        return {"result": sourceId}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         # remove temp file
         os.remove(temp_path)
+        return {"result": sourceId}
 
 
 class UrlRequest(BaseModel):
