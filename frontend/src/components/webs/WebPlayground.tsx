@@ -17,7 +17,7 @@ import AddSourceModal from "./AddSourceModal";
 import WebGraph from "./WebGraph";
 import { WebConfigFormValues } from "@/types/article";
 import { Source } from "@/types/source";
-import { useFetchSourcesForWeb } from "@/hooks/sources";
+import { useFetchSourcesForWeb, useUploadNote } from "@/hooks/sources";
 import {
   Command,
   CommandEmpty,
@@ -27,7 +27,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
-import WebDataDrawer from "./WebDataModal";
+import WebDataModal from "./WebDataModal";
 
 import { PlusCircle } from "lucide-react";
 
@@ -53,6 +53,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import WebSettingsModal from "./WebSettingsModal";
+import { toast } from "../ui/use-toast";
 
 const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
 
@@ -65,6 +66,11 @@ function WebPlayground({
   user: PublicUser | null;
   refetch: () => void;
 }) {
+  const {
+    mutateAsync: uploadNote,
+    isPending,
+    error,
+  } = useUploadNote(web?.webId);
   const [config, setConfig] = useState<WebConfigFormValues>({
     title: web?.name || "",
     description: web?.description || "",
@@ -81,7 +87,7 @@ function WebPlayground({
   const isOwner = user && user?.id === web?.userId;
   const [selectedSourceId, setSelectedSourceId] = useState<string>("");
   const [fetchedSources, setFetchedSources] = useState<Source[]>([]);
-  const [isWebDataDrawerOpen, setIsWebDataDrawerOpen] = useState(false);
+  const [isWebDataModalOpen, setIsWebDataModalOpen] = useState(false);
   const [isAddSourceModalOpen, setIsAddSourceModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [webSearchModalView, setAddSourceModalView] = useState<
@@ -90,7 +96,7 @@ function WebPlayground({
 
   const handleSourceClick = (sourceId: string) => {
     setSelectedSourceId(sourceId);
-    setIsWebDataDrawerOpen(true);
+    setIsWebDataModalOpen(true);
     setSearchDialogOpen(false);
   };
 
@@ -104,6 +110,25 @@ function WebPlayground({
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
     localStorage.setItem("expanded", String(!isExpanded));
+  };
+
+  const handleCreateEmptyNote = async () => {
+    try {
+      const noteId = await uploadNote({
+        title: "Untitled",
+        content: "",
+      });
+      setSelectedSourceId(noteId);
+      refetchSources();
+      refetch();
+      setIsWebDataModalOpen(true);
+    } catch (error: any) {
+      toast({
+        title: "Error creating web",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
   useEffect(() => {
@@ -149,7 +174,16 @@ function WebPlayground({
             isExpanded ? "right-6" : "right-3"
           }  top-3`}
         >
-          {isOwner && <WebSettingsModal refetchWeb={refetch} web={web} />}
+          {isOwner && (
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger>
+                  <WebSettingsModal refetchWeb={refetch} web={web} />{" "}
+                </TooltipTrigger>
+                <TooltipContent>Settings</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           <Badge variant="outline" className={`border dark:border-violet-400`}>
             {web?.sourceIds?.length || 0} sources added
           </Badge>
@@ -198,6 +232,8 @@ function WebPlayground({
             <AddSourceModal
               open={isAddSourceModalOpen}
               setOpen={setIsAddSourceModalOpen}
+              setIsWebDataModalOpen={setIsWebDataModalOpen}
+              setSelectedSourceId={setSelectedSourceId}
               web={web}
               config={config}
               setConfig={setConfig}
@@ -236,15 +272,14 @@ function WebPlayground({
                         <span>File</span>
                       </DropdownMenuItem>
                     </DialogTrigger>
-                    <DialogTrigger
-                      asChild
-                      onClick={() => handleDropdownButtonClick("note")}
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => handleCreateEmptyNote()}
                     >
-                      <DropdownMenuItem className="cursor-pointer">
-                        <Notebook size={16} className="mr-2" />
-                        <span>Note</span>
-                      </DropdownMenuItem>
-                    </DialogTrigger>
+                      <Notebook size={16} className="mr-2" />
+                      <span>Note</span>
+                    </DropdownMenuItem>
+
                     <DialogTrigger
                       asChild
                       onClick={() => handleDropdownButtonClick("youtube")}
@@ -273,6 +308,8 @@ function WebPlayground({
               <AddSourceModal
                 open={isAddSourceModalOpen}
                 setOpen={setIsAddSourceModalOpen}
+                setSelectedSourceId={setSelectedSourceId}
+                setIsWebDataModalOpen={setIsWebDataModalOpen}
                 web={web}
                 config={config}
                 setConfig={setConfig}
@@ -311,15 +348,15 @@ function WebPlayground({
                           <span>File</span>
                         </DropdownMenuItem>
                       </DialogTrigger>
-                      <DialogTrigger
-                        asChild
-                        onClick={() => handleDropdownButtonClick("note")}
+
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={() => handleCreateEmptyNote()}
                       >
-                        <DropdownMenuItem className="cursor-pointer">
-                          <Notebook size={16} className="mr-2" />
-                          <span>Note</span>
-                        </DropdownMenuItem>
-                      </DialogTrigger>
+                        <Notebook size={16} className="mr-2" />
+                        <span>Note</span>
+                      </DropdownMenuItem>
+
                       <DialogTrigger
                         asChild
                         onClick={() => handleDropdownButtonClick("youtube")}
@@ -352,20 +389,28 @@ function WebPlayground({
         <div className="absolute bottom-8 left-6">
           <div className="flex w-fit rounded-full flex-col pt-0">
             <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={searchDialogOpen}
-                  className="w-full justify-between p-0 m-0 rounded-full p-2 px-[10px]"
-                >
-                  <Search size={20} />
-                </Button>
-              </DialogTrigger>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={searchDialogOpen}
+                        className="w-full justify-between p-0 m-0 rounded-full p-2 px-[10px]"
+                      >
+                        <Search size={20} />
+                      </Button>
+                    </DialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Search sources</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
 
               <DialogContent className="lg:max-w-2xl">
-                <DialogTitle hidden className="pl-4">
-                </DialogTitle>
+                <DialogTitle hidden className="pl-4"></DialogTitle>
                 <Command className="bg-transparent">
                   <CommandInput
                     placeholder="Search sources..."
@@ -393,10 +438,10 @@ function WebPlayground({
             </Dialog>
           </div>
         </div>
-        {isWebDataDrawerOpen && selectedSourceId && web?.webId && (
-          <WebDataDrawer
-            open={isWebDataDrawerOpen}
-            setOpen={setIsWebDataDrawerOpen}
+        {isWebDataModalOpen && selectedSourceId && web?.webId && (
+          <WebDataModal
+            open={isWebDataModalOpen}
+            setOpen={setIsWebDataModalOpen}
             sourceId={selectedSourceId}
             webId={web.webId}
           />

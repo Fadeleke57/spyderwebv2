@@ -1,4 +1,10 @@
-import React, { useEffect, ChangeEvent, DragEvent } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  ChangeEvent,
+  DragEvent,
+} from "react";
 import ReactMarkdown from "react-markdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,22 +27,58 @@ interface LoadingImage {
 }
 
 const NoteComponent: React.FC<NoteComponentProps> = ({
-  content,
+  content = "",
   isOwner = false,
   source,
   handleNoteContentChange,
   updateError,
   webId,
 }) => {
-  const [editing, setEditing] = React.useState<boolean>(false);
-  const [isDragging, setIsDragging] = React.useState<boolean>(false);
-  const [_, setLoadingImages] = React.useState<LoadingImage[]>([]);
-  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  //separate state for edit mode and local content
+  const [mode, setMode] = useState<"edit" | "preview">(
+    content ? "preview" : "edit"
+  );
+  const [localContent, setLocalContent] = useState<string>(content);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [loadingImages, setLoadingImages] = useState<LoadingImage[]>([]);
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   const {
     mutateAsync: uploadImages,
     isPending: addingImages,
     error: uploadError,
   } = useUploadImageToSource();
+
+  //sync localContent when prop content changes
+  useEffect(() => {
+    setLocalContent(content);
+  }, [content]);
+
+  //auto-resize textarea
+  useEffect(() => {
+    if (mode === "edit" && textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+
+      //focus the textarea when switching to edit mode
+      textareaRef.current.focus();
+    }
+  }, [mode, localContent]);
+
+  const handleLocalContentChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value;
+    setLocalContent(newContent);
+
+    //propagate changes to parent while staying in edit mode
+    handleNoteContentChange(e);
+
+    //auto-resize
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  };
 
   const insertTextAtCursor = (textToInsert: string): void => {
     const textarea = textareaRef.current;
@@ -51,15 +93,21 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
     const newText = `${before}${textToInsert}${after}`;
     textarea.value = newText;
 
-    const event = new Event("input", { bubbles: true });
-    textarea.dispatchEvent(event);
-
-    textarea.selectionStart = textarea.selectionEnd =
-      start + textToInsert.length;
-
-    handleNoteContentChange({
+    //create synthetic event to update state
+    const event = {
       target: { value: newText },
-    } as ChangeEvent<HTMLTextAreaElement>);
+    } as ChangeEvent<HTMLTextAreaElement>;
+
+    handleLocalContentChange(event);
+
+    //set cursor position after inserted text
+    setTimeout(() => {
+      if (textarea) {
+        textarea.focus();
+        textarea.selectionStart = textarea.selectionEnd =
+          start + textToInsert.length;
+      }
+    }, 0);
   };
 
   const handleFileUpload = async (files: File[]) => {
@@ -69,14 +117,14 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
 
     if (imageFiles.length === 0) return;
 
-    // add loading placeholders
+    //add loading placeholders
     const newLoadingImages = imageFiles.map((file) => ({
       id: Math.random().toString(36).substring(7),
       name: file.name,
     }));
     setLoadingImages((prev) => [...prev, ...newLoadingImages]);
 
-    // insert loading placeholders in the text
+    //insert loading placeholders in the text
     const loadingPlaceholders = newLoadingImages
       .map((img) => `![Uploading ${img.name}...](loading-${img.id})\n`)
       .join("");
@@ -88,7 +136,7 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
         files: imageFiles,
       });
 
-      // replace loading placeholders with actual images
+      //replace loading placeholders with actual images
       if (textareaRef.current) {
         let newContent = textareaRef.current.value;
         newLoadingImages.forEach((img, index) => {
@@ -98,14 +146,16 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
           );
         });
 
-        handleNoteContentChange({
+        const event = {
           target: { value: newContent },
-        } as ChangeEvent<HTMLTextAreaElement>);
+        } as ChangeEvent<HTMLTextAreaElement>;
+
+        handleLocalContentChange(event);
       }
     } catch (error) {
       console.error("Failed to upload images:", error);
 
-      // remove failed upload placeholders
+      //remove failed upload placeholders
       if (textareaRef.current) {
         let newContent = textareaRef.current.value;
         newLoadingImages.forEach((img) => {
@@ -114,12 +164,15 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
             ""
           );
         });
-        handleNoteContentChange({
+
+        const event = {
           target: { value: newContent },
-        } as ChangeEvent<HTMLTextAreaElement>);
+        } as ChangeEvent<HTMLTextAreaElement>;
+
+        handleLocalContentChange(event);
       }
     } finally {
-      // remove loading states
+      //remove loading states
       setLoadingImages((prev) =>
         prev.filter((img) => !newLoadingImages.find((n) => n.id === img.id))
       );
@@ -139,32 +192,39 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
     }
   };
 
-
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    e.stopPropagation();
     setIsDragging(true);
   };
 
   const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    e.stopPropagation();
     setIsDragging(false);
   };
 
   const handleDrop = async (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    e.stopPropagation();
     setIsDragging(false);
 
-    // handle files if present
+    if (mode !== "edit") {
+      setMode("edit");
+      // Allow time for mode to change before processing the drop
+      setTimeout(() => processDrop(e), 0);
+      return;
+    }
+
+    processDrop(e);
+  };
+
+  const processDrop = async (e: DragEvent<HTMLDivElement>) => {
+    //handle files if present
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       await handleFileUpload(files);
       return;
     }
 
-    // handle HTML content (for images dragged from web pages)
+    //handle HTML content (for images dragged from web pages)
     const htmlContent = e.dataTransfer.getData("text/html");
     if (htmlContent) {
       const parser = new DOMParser();
@@ -180,16 +240,24 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
       return;
     }
 
-    // handle plain text URLs
+    //handle plain text URLs
     const textContent = e.dataTransfer.getData("text/plain");
     if (textContent && textContent.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
       await fetchAndUploadImage(textContent);
+    } else if (textContent) {
+      //insert plain text at cursor
+      insertTextAtCursor(textContent);
     }
   };
 
+  //handle paste events for images
   useEffect(() => {
     const handlePaste = async (e: ClipboardEvent) => {
-      if (!textareaRef.current?.contains(document.activeElement)) return;
+      if (
+        mode !== "edit" ||
+        !textareaRef.current?.contains(document.activeElement)
+      )
+        return;
 
       for (const item of Array.from(e.clipboardData?.items ?? [])) {
         if (item.type.startsWith("image/")) {
@@ -202,58 +270,57 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
         }
       }
     };
+
     document.addEventListener("paste", handlePaste);
     return () => document.removeEventListener("paste", handlePaste);
-  }, []);
+  }, [mode]);
 
-  const handleTextAreaInput = (e: ChangeEvent<HTMLTextAreaElement>): void => {
-    e.target.style.height = "auto";
-    e.target.style.height = `${e.target.scrollHeight}px`;
-  };
-
-  const renderContent = (): JSX.Element => {
-    if (isOwner && (editing || !content?.trim())) {
+  const renderContent = () => {
+    //for non-owners, or preview mode with content
+    if (!isOwner || (mode === "preview" && localContent?.trim())) {
       return (
-        <Textarea
-          ref={textareaRef}
-          value={content}
-          placeholder="Content... (Supports Markdown)"
-          rows={20}
-          className={`w-full h-full bg-transparent p-0 text-base leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none text-foreground`}
-          onInput={handleTextAreaInput}
-          onChange={handleNoteContentChange}
-          onBlur={() => {
-            if (content?.trim()) {
-              setEditing(false);
-            }
-          }}
-        />
+        <div className="prose dark:prose-invert max-w-none whitespace-pre-wrap break-words">
+          <ReactMarkdown components={MarkdownComponents}>
+            {localContent || ""}
+          </ReactMarkdown>
+        </div>
       );
     }
 
+    //for owners in edit mode, or empty content
     return (
-      <div
-        className="h-full prose dark:prose-invert max-w-none whitespace-pre-wrap break-words"
-        onClick={() => setEditing(true)}
-      >
-        <ReactMarkdown components={MarkdownComponents}>
-          {content || ""}
-        </ReactMarkdown>
-      </div>
+      <Textarea
+        ref={textareaRef}
+        value={localContent}
+        placeholder="Start writing in markdown...Click outside to preview"
+        rows={20}
+        className={`w-full h-full bg-transparent p-0 text-base leading-relaxed resize-none focus:outline-none border-none bg-none ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground`}
+        onChange={handleLocalContentChange}
+        onFocus={() => setMode("edit")}
+        onBlur={() => setMode("preview")}
+      />
     );
   };
 
   return (
     <ScrollArea
-      className={`h-[calc(100vh-160px)] pr-4 ${
-        isOwner && editing && isDragging ? "border-4 border-dashed" : ""
+      className={`flex-1 pr-4 h-[calc(100vh-160px)] ${
+        isOwner && mode === "edit" && isDragging
+          ? "border-4 border-dashed border-primary/50"
+          : ""
       }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      onClick={() => {
+        if (isOwner && mode === "preview") {
+          setMode("edit");
+        }
+      }}
     >
       {renderContent()}
-      {updateError && <p className="text-red-500">{updateError}</p>}
+      {updateError && <p className="text-red-500 mt-2">{updateError}</p>}
+      {uploadError && <p className="text-red-500 mt-2">Image upload failed</p>}
     </ScrollArea>
   );
 };

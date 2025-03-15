@@ -8,7 +8,6 @@ class CreateNote(BaseModel):
 
 
 class UpdateNote(BaseModel):
-    title: Optional[str]
     content: Optional[str]
 
 
