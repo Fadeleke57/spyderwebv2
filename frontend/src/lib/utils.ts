@@ -198,12 +198,37 @@ export const updateTextElements = (
 
   return textElements;
 };
-export const formatDate = (dateString?: string) => {
+export const formatDate = (
+  dateString?: string,
+  options: { onlyTime?: boolean; onlyDate?: boolean } = {}
+) => {
   if (!dateString) return "";
-  return new Date(dateString).toLocaleDateString("en-US", {
+
+  const date = new Date(dateString);
+
+  if (options.onlyTime) {
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    });
+  }
+
+  if (options.onlyDate) {
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+
+  return date.toLocaleString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
   });
 };
 

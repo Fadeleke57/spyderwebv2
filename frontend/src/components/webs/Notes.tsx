@@ -1,11 +1,10 @@
-import React, { useEffect, ChangeEvent, useCallback, DragEvent } from "react";
-import ReactMarkdown, { Components } from "react-markdown";
+import React, { useEffect, ChangeEvent, DragEvent } from "react";
+import ReactMarkdown from "react-markdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { formatDate } from "@/lib/utils";
 import { SourceAsNode } from "@/types/source";
 import { useUploadImageToSource } from "@/hooks/sources";
-import { Loader2 } from "lucide-react";
+import { MarkdownComponents } from "../notes/MarkdownComponents";
 
 interface NoteComponentProps {
   content?: string;
@@ -140,24 +139,6 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
     }
   };
 
-  //custom ReactMarkdown renderer for images
-  const MarkdownComponents: Components = {
-    img: ({ node, ...props }) => {
-      const src = props.src || "";
-      // check if this is a loading image
-      if (src.startsWith("loading-")) {
-        const imageId = src.replace("loading-", "");
-        return (
-          <span className="inline-flex items-center gap-2 text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            {props.alt}
-          </span>
-        );
-      }
-
-      return <img alt="" {...props} className="max-w-full h-auto" />;
-    },
-  };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -238,7 +219,7 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
           value={content}
           placeholder="Content... (Supports Markdown)"
           rows={20}
-          className={`mt-4 w-full h-full bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-foreground`}
+          className={`w-full h-full bg-transparent p-0 text-base leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none text-foreground`}
           onInput={handleTextAreaInput}
           onChange={handleNoteContentChange}
           onBlur={() => {
@@ -252,7 +233,7 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
 
     return (
       <div
-        className="h-full prose dark:prose-invert max-w-none mt-4"
+        className="h-full prose dark:prose-invert max-w-none whitespace-pre-wrap break-words"
         onClick={() => setEditing(true)}
       >
         <ReactMarkdown components={MarkdownComponents}>
@@ -264,16 +245,13 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
 
   return (
     <ScrollArea
-      className={`h-[calc(100vh-210px)] pr-4 ${
+      className={`h-[calc(100vh-160px)] pr-4 ${
         isOwner && editing && isDragging ? "border-4 border-dashed" : ""
       }`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <small className="text-muted-foreground">
-        {formatDate(source?.updated.toString())}
-      </small>
       {renderContent()}
       {updateError && <p className="text-red-500">{updateError}</p>}
     </ScrollArea>
