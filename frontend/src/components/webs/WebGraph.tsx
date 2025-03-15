@@ -4,7 +4,7 @@ import { WebConfigFormValues } from "@/types/article";
 import { useState, Dispatch, SetStateAction } from "react";
 import { LoadingPage } from "@/components/utility/Loading";
 import WebDataDrawer from "./WebDataModal";
-import { useDeleteSource } from "@/hooks/sources";
+import { useDeleteSource, useFetchSourcesForWeb } from "@/hooks/sources";
 import { Source, SourceAsNode } from "@/types/source";
 import { Trash } from "lucide-react";
 import { useUser } from "@/context/UserContext";
@@ -55,8 +55,6 @@ function WebGraph({
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   const isMobile = useIsMobile();
-
-  const { user } = useUser();
   const { theme } = useTheme();
 
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
@@ -445,9 +443,6 @@ function WebGraph({
     trashRef,
     connections,
     theme,
-    isMobile,
-    connectionsLoading,
-    sourcesLoading,
   ]);
 
   if ((connectionsLoading || sourcesLoading) && hasSources) {
@@ -457,7 +452,7 @@ function WebGraph({
   return (
     <>
       {isOwner && (
-        <div ref={trashRef} className="absolute left-6 top-4 cursor-pointer">
+        <div ref={trashRef} className="absolute left-3 top-3 cursor-pointer">
           <TooltipProvider delayDuration={100}>
             <Tooltip>
               <TooltipTrigger className="p-0 m-0 bg-red-600 dark:bg-violet-500 dark:hover:bg-violet-600 rounded-full p-2">
