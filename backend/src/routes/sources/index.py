@@ -15,7 +15,7 @@ from src.utils.youtube import get_video_transcript, get_video_info
 import requests
 from pydantic import BaseModel, HttpUrl
 from bs4 import BeautifulSoup
-from src.models.note import CreateNote, UpdateNote
+from src.models.source import CreateNote, UpdateNote
 import boto3
 from urllib.parse import unquote
 from src.lib.logger.index import logger
@@ -75,7 +75,7 @@ async def upload_file(
             # upload to S3
             s3_bucket.upload_file(temp_path, object_name)
             sourceId = str(uuid4())
-            sourceToInsert = {
+            sourceToInsert : Source = {
                 "sourceId": sourceId,
                 "webId": web_id,
                 "userId": user_id,

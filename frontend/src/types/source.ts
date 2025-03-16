@@ -4,11 +4,11 @@ export interface Source {
   userId?: string;
   name: string;
   url: string;
+  content?: string;
+  size?: number;
   type: string;
   created: Date;
   updated: Date;
-  size?: number;
-  content?: string;
 };
 
 export interface SourceAsNode extends Source {

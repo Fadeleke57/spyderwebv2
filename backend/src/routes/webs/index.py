@@ -14,7 +14,7 @@ from src.db.neo4j import client as neo4jClient
 from src.models.analytics import Search, Searches
 from src.models.source import Sources, Source
 from datetime import datetime
-from src.models.web import Webs, WebConfig, UpdateWeb, IterateWeb
+from src.models.web import Webs, Web, CreateWeb, UpdateWeb, IterateWeb
 from fastapi.exceptions import HTTPException
 from botocore.exceptions import ClientError
 from src.lib.logger.index import logger
@@ -189,7 +189,7 @@ def get_user_liked_webs(user: User = Depends(manager)):
 
 
 @router.post("/create")
-def create_web(config: WebConfig, user=Depends(manager)):
+def create_web(createWebPayload: CreateWeb, user=Depends(manager)):
     """
     Create a new web.
 
@@ -203,23 +203,24 @@ def create_web(config: WebConfig, user=Depends(manager)):
     check_user(user)
     try:
         webId = str(uuid.uuid4())
-        web_to_insert = {
+        web_to_insert : Web = {
             "webId": webId,
-            "name": config.name,
-            "description": config.description,
+            "name": createWebPayload.name,
+            "description": createWebPayload.description,
             "userId": user["id"],
-            "sourceIds": config.sourceIds or [],
+            "sourceIds": createWebPayload.sourceIds or [],
             "created": datetime.now(UTC),
             "updated": datetime.now(UTC),
-            "visibility": config.visibility,
-            "tags": config.tags or [],
+            "visibility": createWebPayload.visibility,
+            "tags": createWebPayload.tags or [],
             "likes": [],
             "iterations": [],
             "imageKeys": [],
+            "enableAIConnections": createWebPayload.enableAIConnections
         }
 
         # pinecone pipeline
-        vectors = generate_web_embeddings(config.name, config.description)
+        vectors = generate_web_embeddings(createWebPayload.name, createWebPayload.description)
         pincone_insert = (
             web_to_insert.copy()
         )  # create copy so we don't modify the original
@@ -319,7 +320,7 @@ def delete_image(web_id: str, image_name: str, user=Depends(manager)):
             raise HTTPException(status_code=404, detail="Web not found")
 
         s3.delete_object(Web=s3_bucket.bucket_name, Key=filepath)
-        return {"result": "Image deleted"}
+        return {"result": True}
 
     except Exception as e:
         logger.error(f"Error deleting image: {str(e)}")
@@ -353,8 +354,8 @@ def get_web_images(web_id: str):
             url = f"https://{settings.cloudfront_domain}/{key}"
             urls.append(url)
 
-        logger.info(f"Urls generated {urls}")
         return {"result": urls}
+        
     except ClientError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -387,7 +388,7 @@ def delete_web(webId: str, user=Depends(manager)):
                 s3.delete_object(Web=s3_bucket.bucket_name, Key=source["url"])
             neo4jClient.delete_source(source["sourceId"])
 
-        return {"result": "Web deleted"}
+        return {"result": True}
 
     except Exception as e:
         logger.error(f"Error deleting web: {str(e)}")
@@ -442,7 +443,7 @@ def update_web(webId: str, updateWebPayload: UpdateWeb, user=Depends(manager)):
                 status_code=404, detail="Web not found or no changes applied"
             )
 
-        return {"result": "Web updated"}
+        return {"result": True}
 
     except Exception as e:
         logger.error(f"Error updating web: {str(e)}")
@@ -572,7 +573,7 @@ def add_tag(web_id: str, tag: str, user=Depends(manager)):
             {"webId": web_id, "userId": user["id"]},
             {"$addToSet": {"tags": formatted_tag}},
         )
-        return {"result": "Tag added"}
+        return {"result": True}
 
     except Exception as e:
         logger.error(f"Error adding tag: {str(e)}")
@@ -589,7 +590,7 @@ def remove_tag(web_id: str, tag: str, user=Depends(manager)):
             {"webId": web_id, "userId": user["id"]},
             {"$pull": {"tags": formatted_tag}},
         )
-        return {"result": "Tag added"}
+        return {"result": True}
 
     except Exception as e:
         logger.error(f"Error removing tag: {str(e)}")

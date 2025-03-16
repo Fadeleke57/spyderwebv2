@@ -9,7 +9,7 @@ from src.models.connection import (
     Connections,
     CreateConnection,
     UpdateConnection,
-    ConnectionType,
+    Connection,
 )
 from src.db.neo4j import client as neo4jClient
 from fastapi.exceptions import HTTPException

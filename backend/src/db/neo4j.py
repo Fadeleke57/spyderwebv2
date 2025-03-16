@@ -71,7 +71,7 @@ class Neo4jDBService:
             result = session.run(query, parameters)
             return [record.data() for record in result]
 
-    def create_node(self, label: str, properties: Dict[str, Any]) -> Dict[str, Any]:
+    def create_node(self, label: str, properties: Source) -> Dict[str, Any]:
         if label not in self.supported_labels:
             raise ValueError(f"Unsupported label: {label}")
 

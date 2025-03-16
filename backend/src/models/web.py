@@ -24,13 +24,14 @@ class Web(BaseModel):
     enableAIConnections: Optional[bool]
 
 
-class WebConfig(BaseModel):
+class CreateWeb(BaseModel):
     name: str
     description: str
     visibility: Literal["Private", "Public", "Invite"]
     tags: list[str] = []
     sourceIds: list[str] = []
     imageKeys: list[str] = []
+    enableAIConnections: Optional[bool] = True
 
 
 class UpdateWeb(BaseModel):
