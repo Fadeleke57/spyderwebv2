@@ -6,7 +6,7 @@ on:
   push:
     paths:
       - 'backend/src/models/**'
-  # Manual trigger
+  # Manual trigge
   workflow_dispatch:
 
 jobs:
