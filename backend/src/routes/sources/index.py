@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
 from src.models.source import Source, UpdateSource
+from src.models.web import Webs
 from src.routes.auth.oauth2 import manager
 from src.utils.exceptions import check_user
 from src.lib.s3.index import S3Bucket
@@ -59,46 +60,53 @@ async def upload_file(
         HTTPException: If the upload fails.
     """
     check_user(user)
-
-    object_name = (
-        f"files/{user_id}/{web_id}/{file_type}/{file.filename.replace(' ', '_')}"
-    )
-
-    # save file to temp location
-    temp_path = f"/tmp/{file.filename}"
-    with open(temp_path, "wb") as buffer:
-        buffer.write(await file.read())
-
     try:
-        # upload to S3
-        s3_bucket.upload_file(temp_path, object_name)
-        sourceId = str(uuid4())
-        sourceToInsert = {
-            "sourceId": sourceId,
-            "webId": web_id,
-            "userId": user_id,
-            "name": file.filename,
-            "content": None,
-            "url": object_name,
-            "type": file_type,
-            "size": os.path.getsize(temp_path),
-            "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-            "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-        }
-        neo4jClient.create_node("source", sourceToInsert)
-        webs = get_collection("webs")
-        webs.update_one(
-            {"webId": web_id, "userId": user_id},
-            {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
+
+        object_name = (
+            f"files/{user_id}/{web_id}/{file_type}/{file.filename.replace(' ', '_')}"
         )
 
-        return {"result": sourceId}
+        # save file to temp location
+        temp_path = f"/tmp/{file.filename}"
+        with open(temp_path, "wb") as buffer:
+            buffer.write(await file.read())
+
+        try:
+            # upload to S3
+            s3_bucket.upload_file(temp_path, object_name)
+            sourceId = str(uuid4())
+            sourceToInsert = {
+                "sourceId": sourceId,
+                "webId": web_id,
+                "userId": user_id,
+                "name": file.filename,
+                "content": None,
+                "url": object_name,
+                "type": file_type,
+                "size": os.path.getsize(temp_path),
+                "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+                "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            }
+            neo4jClient.create_node("source", sourceToInsert)
+            Webs.update_one(
+                {"webId": web_id, "userId": user_id},
+                {
+                    "$push": {"sourceIds": sourceId},
+                    "$set": {"updated": datetime.now(UTC)},
+                },
+            )
+
+            return {"result": sourceId}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+        finally:
+            # remove temp file
+            os.remove(temp_path)
+            return {"result": sourceId}
+
     except Exception as e:
+        logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
-    finally:
-        # remove temp file
-        os.remove(temp_path)
-        return {"result": sourceId}
 
 
 class UrlRequest(BaseModel):
@@ -127,41 +135,48 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
     check_user(user)
 
     try:
-        response = requests.get(url.url)
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=400, detail="Could not retrieve the webpage")
 
-    soup = BeautifulSoup(response.content, "html.parser")
-    main_content = soup.get_text(separator=" ")
+        try:
+            response = requests.get(url.url)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise HTTPException(
+                status_code=400, detail="Could not retrieve the webpage"
+            )
 
-    cleaned_content = " ".join(main_content.split())
+        soup = BeautifulSoup(response.content, "html.parser")
+        main_content = soup.get_text(separator=" ")
 
-    try:
-        title = process_html(cleaned_content)
+        cleaned_content = " ".join(main_content.split())
+
+        try:
+            title = process_html(cleaned_content)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Could not parse the webpage")
+
+        sourceId = str(uuid4())
+        sourceToInsert = {
+            "sourceId": sourceId,
+            "webId": web_id,
+            "userId": user["id"],
+            "name": title,
+            "url": str(url.url),
+            "type": "website",
+            "size": len(cleaned_content) * 200,
+            "content": f"{title}\n{cleaned_content}",
+            "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        }
+        neo4jClient.create_node("source", sourceToInsert)
+        Webs.update_one(
+            {"webId": web_id, "userId": user["id"]},
+            {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
+        )
+        return {"result": sourceId}
+
     except Exception as e:
-        raise HTTPException(status_code=400, detail="Could not parse the webpage")
-
-    sourceId = str(uuid4())
-    sourceToInsert = {
-        "sourceId": sourceId,
-        "webId": web_id,
-        "userId": user["id"],
-        "name": title,
-        "url": str(url.url),
-        "type": "website",
-        "size": len(cleaned_content) * 200,
-        "content": f"{title}\n{cleaned_content}",
-        "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-        "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-    }
-    neo4jClient.create_node("source", sourceToInsert)
-    webs = get_collection("webs")
-    webs.update_one(
-        {"webId": web_id, "userId": user["id"]},
-        {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
-    )
-    return {"result": sourceId}
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/all/{web_id}")
@@ -175,13 +190,13 @@ def get_all_sources(web_id: str):
     Returns:
         dict: A JSON response containing a list of sources associated with the given web ID.
     """
-    # sourcesForWeb = sources.find({"webId": web_id}, {"_id": 0})
     try:
         sources = neo4jClient.get_all_sources_for_web("source", web_id)
+        return {"result": sources}
+
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
-    return {"result": sources}
 
 
 @router.get("/presigned/url/{file_path:path}")
@@ -233,52 +248,51 @@ def upload_note(web_id: str, note: CreateNote, user=Depends(manager)):
 
     try:
         neo4jClient.create_node("source", sourceToInsert)
+
+        Webs.update_one(
+            {"webId": web_id, "userId": user["id"]},
+            {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
+        )
+        return {"result": sourceId}
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
-
-    webs = get_collection("webs")
-    webs.update_one(
-        {"webId": web_id, "userId": user["id"]},
-        {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
-    )
-    return {"result": sourceId}
 
 
 @router.post("/youtube/{web_id}/{video_id}")
 def add_youtube(web_id: str, video_id: str, user=Depends(manager)):
     check_user(user)
 
-    info = get_video_info(video_id)
-    title, description = info["title"], info["description"]
-    # transcripts = get_video_transcript(video_id)
-    # proccessed_transcripts = proccess_transcripts(transcripts) #TODO: these will be stored as embeddings in reference to the video
-
-    sourceId = str(uuid4())
-    sourceToInsert = {
-        "sourceId": sourceId,
-        "webId": web_id,
-        "userId": user["id"],
-        "name": title,
-        "content": description,
-        "url": f"https://www.youtube.com/watch?v={video_id}",
-        "type": "youtube",
-        "size": 300000,
-        "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-        "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-    }
     try:
+        info = get_video_info(video_id)
+        title, description = info["title"], info["description"]
+        # transcripts = get_video_transcript(video_id)
+        # proccessed_transcripts = proccess_transcripts(transcripts) #TODO: these will be stored as embeddings in reference to the video
+
+        sourceId = str(uuid4())
+        sourceToInsert = {
+            "sourceId": sourceId,
+            "webId": web_id,
+            "userId": user["id"],
+            "name": title,
+            "content": description,
+            "url": f"https://www.youtube.com/watch?v={video_id}",
+            "type": "youtube",
+            "size": 300000,
+            "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        }
+
         neo4jClient.create_node("source", sourceToInsert)
+        Webs.update_one(
+            {"webId": web_id, "userId": user["id"]},
+            {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
+        )
+        return {"result": sourceId}
+
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
-
-    webs = get_collection("webs")
-    webs.update_one(
-        {"webId": web_id, "userId": user["id"]},
-        {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
-    )
-    return {"result": sourceId}
 
 
 @router.patch("/update/note/{web_id}/{source_id}")
@@ -299,16 +313,22 @@ def update_note(
     """
     check_user(user)
 
-    update_data = {
-        key: value
-        for key, value in updateNotePayload.model_dump(exclude_none=True).items()
-    }
-    update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
-    result = neo4jClient.update_source(source_id=source_id, properties=update_data)
-    if result:
-        return {"result": "Note updated"}
-    else:
-        return {"error": "Note not found or user not authorized"}, 404
+    try:
+
+        update_data = {
+            key: value
+            for key, value in updateNotePayload.model_dump(exclude_none=True).items()
+        }
+        update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+        result = neo4jClient.update_source(source_id=source_id, properties=update_data)
+        if result:
+            return {"result": "Note updated"}
+        else:
+            return {"error": "Note not found or user not authorized"}, 404
+
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete("/delete/source/{source_id}")
@@ -327,30 +347,36 @@ def delete_source(source_id: str, user=Depends(manager)):
         HTTPException: If the source is not found or user is not authorized.
     """
     check_user(user)
-    result = neo4jClient.delete_source(source_id)
-    if not result:
-        raise HTTPException(status_code=404, detail="Item not found")
 
-    # remove from s3 if it's a document type (commenting out for now for iterations)
-    # if source["type"] == "document":
-    #    s3.delete_object(Bucket=s3_bucket.bucket_name, Key=source["url"])
+    try:
+        result = neo4jClient.delete_source(source_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="Item not found")
 
-    # clean up web
-    webs = get_collection("webs")
-    web = webs.find_one_and_update(
-        {"sourceIds": source_id},
-        {"$pull": {"sourceIds": source_id}, "$set": {"updated": datetime.now(UTC)}},
-        return_document=True,
-    )
+        # remove from s3 if it's a document type (commenting out for now for iterations)
+        # if source["type"] == "document":
+        #    s3.delete_object(Bucket=s3_bucket.bucket_name, Key=source["url"])
 
-    if not web:
-        raise HTTPException(status_code=404, detail="Item not found")
+        # clean up web
+        webs = get_collection("webs")
+        web = webs.find_one_and_update(
+            {"sourceIds": source_id},
+            {"$pull": {"sourceIds": source_id}, "$set": {"updated": datetime.now(UTC)}},
+            return_document=True,
+        )
 
-    return {"result": "Source deleted"}
+        if not web:
+            raise HTTPException(status_code=404, detail="Item not found")
+
+        return {"result": "Source deleted"}
+
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{source_id}")
-def get_source(source_id: str):
+def get_source(source_id: str, user=Depends(manager.optional)):
     """
     Retrieve a source by its ID.
 
@@ -364,43 +390,50 @@ def get_source(source_id: str):
     Raises:
         HTTPException: If the source is not found, raises a 404 error.
     """
-    source = neo4jClient.get_source_by_id("source", source_id)
-    if not source:
-        raise HTTPException(status_code=404, detail="Item not found")
+    if user:
+        check_user(user)
+    try:
+        source = neo4jClient.get_source_by_id("source", source_id)
+        if not source:
+            raise HTTPException(status_code=404, detail="Item not found")
 
-    # if the source is a document, get the url from s3
-    file_url = ""
-    if source.get("type") == "document":
-        decoded_file_path = source["url"]
-        url = s3.generate_presigned_url(
-            "get_object",
-            Params={
-                "Bucket": s3_bucket.bucket_name,
-                "Key": decoded_file_path,
-                "ResponseContentDisposition": "inline",
-                "ResponseContentType": "application/pdf",
-            },
-            ExpiresIn=3600,
-        )
-        file_url = url
+        # if the source is a document, get the url from s3
+        file_url = ""
+        if source.get("type") == "document":
+            decoded_file_path = source["url"]
+            url = s3.generate_presigned_url(
+                "get_object",
+                Params={
+                    "Bucket": s3_bucket.bucket_name,
+                    "Key": decoded_file_path,
+                    "ResponseContentDisposition": "inline",
+                    "ResponseContentType": "application/pdf",
+                },
+                ExpiresIn=3600,
+            )
+            file_url = url
 
-    return {"result": source, "file_url": file_url}
+        return {"result": source, "file_url": file_url}
+
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.patch("/edit/source/{sourceId}")
 def edit_source(sourceId: str, info: UpdateSource, user=Depends(manager)):
     check_user(user)
-
-    update_data = info.model_dump(exclude_none=True)
-    update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
-
     try:
+        update_data = info.model_dump(exclude_none=True)
+        update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+
         neo4jClient.update_source(source_id=sourceId, properties=update_data)
+
+        return {"result", "Source updated"}
+
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
-
-    return {"result", "Source updated"}
 
 
 @router.post("/upload/image/{source_id}")  # for markdown image storage
@@ -409,7 +442,6 @@ async def upload_file_to_source(
     files: list[UploadFile] = File(..., description="Multiple files as UploadFile"),
     user=Depends(manager),
 ):
-
     check_user(user)
     uploaded_image_urls = []
 

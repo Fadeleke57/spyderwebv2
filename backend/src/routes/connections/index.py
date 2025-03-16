@@ -22,11 +22,10 @@ router = APIRouter()
 def get_all_connections(web_id: str):
     try:
         webConnections = neo4jClient.get_all_connections_for_web("connection", web_id)
+        return {"result": webConnections}
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
-
-    return {"result": webConnections}
 
 
 @router.get("/outgoing/{web_id}/{source_id}")
@@ -35,11 +34,10 @@ def get_outgoing_connections(web_id: str, source_id: str):
         outgoing_connections = neo4jClient.get_outgoing_connections_for_source(
             "connection", source_id
         )
+        return {"result": outgoing_connections}
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
-
-    return {"result": outgoing_connections}
 
 
 @router.get("/incoming/{web_id}/{source_id}")
@@ -48,24 +46,23 @@ def get_incoming_connections(web_id: str, source_id: str):
         incomingConnections = neo4jClient.get_incoming_connections_for_source(
             "connection", source_id
         )
+        return {"result": incomingConnections}
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
-    return {"result": incomingConnections}
 
 
 @router.get("/connection/{web_id}/{connection_id}")
 def get_connection(web_id: str, connection_id: str):
     try:
         connection = neo4jClient.get_connection_by_id("connection", connection_id)
+        if not connection:
+            raise HTTPException(status_code=404, detail="Item not found")
+        else:
+            return {"result": connection}
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
-
-    if not connection:
-        raise HTTPException(status_code=404, detail="Item not found")
-    else:
-        return {"result": connection}
 
 
 @router.post("/create")
@@ -96,7 +93,7 @@ def create_connection(connection_data: CreateConnection, user=Depends(manager)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.patch("/update/{connection_id}")
+@router.patch("/update/{connection_id}")  # TODO
 def update_connection(
     connection_id: str, config: UpdateConnection, user=Depends(manager)
 ):
