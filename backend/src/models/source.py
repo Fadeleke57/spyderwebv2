@@ -5,6 +5,12 @@ from src.db.mongodb import get_collection
 
 Sources = get_collection("sources")
 
+class CreateNote(BaseModel):
+    title: str
+    content: str
+
+class UpdateNote(BaseModel):
+    content: Optional[str]
 
 class Source(BaseModel):
     sourceId: str
@@ -17,6 +23,11 @@ class Source(BaseModel):
     size: int
     created: datetime
     updated: datetime
+
+class CreateSource(BaseModel):
+    webId: str
+    name: str
+    content: str
 
 
 class UpdateSource(BaseModel):

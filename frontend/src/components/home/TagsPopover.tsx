@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, Hash } from "lucide-react";
-import { Web, WebTag, tagsList } from "@/types/web";
+import { Web, WebTag } from "@/types/web";
+import { tagsList } from "@/lib/consts";
 import { useAddTagToWeb } from "@/hooks/webs";
 import { useRemoveTagFromWeb } from "@/hooks/webs";
 import {

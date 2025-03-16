@@ -8,6 +8,7 @@ from pytz import UTC
 from typing import Optional
 from src.lib.logger.index import logger
 
+
 class Neo4jDBService:
     def __init__(self) -> None:
         """
@@ -19,8 +20,8 @@ class Neo4jDBService:
         self.driver = GraphDatabase.driver(
             settings.neo4j_uri,
             auth=(settings.neo4j_username, settings.neo4j_password),
-            max_connection_lifetime=300, #close stale connection after 5 minutes and reefresh
-            keep_alive=True, #keep connection alive
+            max_connection_lifetime=300,  # close stale connection after 5 minutes and reefresh
+            keep_alive=True,  # keep connection alive
         )
         self.supported_labels = {"source", "connection"}
 
@@ -70,7 +71,7 @@ class Neo4jDBService:
             result = session.run(query, parameters)
             return [record.data() for record in result]
 
-    def create_node(self, label: str, properties: Dict[str, Any]) -> Dict[str, Any]:
+    def create_node(self, label: str, properties: Source) -> Dict[str, Any]:
         if label not in self.supported_labels:
             raise ValueError(f"Unsupported label: {label}")
 

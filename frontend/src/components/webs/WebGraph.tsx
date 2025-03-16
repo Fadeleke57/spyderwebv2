@@ -1,13 +1,12 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
-import { WebConfigFormValues } from "@/types/article";
+import { CreateWeb } from "@/types/web";
 import { useState, Dispatch, SetStateAction } from "react";
 import { LoadingPage } from "@/components/utility/Loading";
 import WebDataDrawer from "./WebDataModal";
-import { useDeleteSource, useFetchSourcesForWeb } from "@/hooks/sources";
+import { useDeleteSource} from "@/hooks/sources";
 import { Source, SourceAsNode } from "@/types/source";
 import { Trash } from "lucide-react";
-import { useUser } from "@/context/UserContext";
 import { updateTextElements, shouldUseTspans } from "@/lib/utils";
 import {
   Tooltip,
@@ -25,15 +24,16 @@ import {
 } from "@/lib/utils";
 import SourceTooltip from "./SourceToolTip";
 import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
-import { Connection, ConnectionData } from "@/types/connection";
+import { Connection } from "@/types/connection";
 
 interface GraphProps {
   isOwner: boolean;
-  setConfig: (value: WebConfigFormValues) => void;
+  setConfig: (value: CreateWeb) => void;
   webId: string;
   hasSources: boolean;
   refetchSources: () => void;
   fetchedSources: Source[];
+  refetchWeb: () => void;
   setFetchedSources: Dispatch<SetStateAction<Source[]>>;
   sourcesLoading: boolean;
   selectedSourceId: string | null;
@@ -46,6 +46,7 @@ function WebGraph({
   hasSources,
   fetchedSources,
   refetchSources,
+  refetchWeb,
   setFetchedSources,
   sourcesLoading,
   selectedSourceId,
@@ -78,19 +79,14 @@ function WebGraph({
     await deleteSource(sourceId);
     refetchConnections();
     refetchSources();
+    refetchWeb();
   };
 
   useEffect(() => {
-    if (
-      !svgRef.current ||
-      !fetchedSources ||
-      fetchedSources.length === 0 ||
-      !connections ||
-      connectionsLoading ||
-      sourcesLoading
-    ) {
+    if (!svgRef.current || !fetchedSources || !connections) {
       return;
     }
+    
     const width = 3200;
     const height = 2400;
     const centerX = width / 8 + (isMobile ? -220 : 40);

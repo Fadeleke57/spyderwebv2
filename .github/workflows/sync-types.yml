@@ -1,0 +1,140 @@
+# .github/workflows/sync-types.yml
+name: Sync Types
+
+on:
+  # Run on every push to any branch
+  push:
+    paths:
+      - 'backend/src/models/**'
+  # Manual trigge
+  workflow_dispatch:
+
+jobs:
+  sync-types:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pip install pydantic
+
+      - name: Create TypeScript folder structure
+        run: |
+          mkdir -p frontend/src/types
+
+      - name: Create custom type generation script
+        run: |
+          cat > backend/generate_types.py << 'EOF'
+          import os
+          import sys
+          import importlib
+          import inspect
+          from typing import Dict, Any, Type, List
+          from pydantic import BaseModel
+          
+          def get_models_from_file(file_path: str) -> List[Type[BaseModel]]:
+              """Extract all Pydantic models from a Python file"""
+              # Convert file path to module path
+              module_path = file_path.replace('/', '.').replace('.py', '')
+              
+              try:
+                  # Import the module
+                  module = importlib.import_module(module_path)
+                  
+                  # Get all Pydantic models
+                  models = []
+                  for name, obj in inspect.getmembers(module):
+                      if inspect.isclass(obj) and issubclass(obj, BaseModel) and obj != BaseModel:
+                          models.append(obj)
+                  
+                  return models
+              except Exception as e:
+                  print(f"Error importing {module_path}: {e}", file=sys.stderr)
+                  return []
+          
+          def generate_typescript_for_file(file_path: str, output_dir: str) -> None:
+              """Generate TypeScript definitions for a single Python file"""
+              from pydantic2ts import generate_typescript_defs
+              
+              # Get models from the file
+              models = get_models_from_file(file_path)
+              if not models:
+                  print(f"No models found in {file_path}")
+                  return
+              
+              # Determine output file name
+              file_name = os.path.basename(file_path)
+              ts_file_name = file_name.replace('.py', '.ts')
+              output_path = os.path.join(output_dir, ts_file_name)
+              
+              # Generate TypeScript
+              generate_typescript_defs(
+                  models,
+                  output_path,
+                  json2ts_cmd='npm install json2ts'
+              )
+              
+              print(f"Generated TypeScript for {file_path} -> {output_path}")
+          
+          def main():
+              # Get the list of Python files to process
+              python_files = []
+              for root_dir in ['backend.src.models']:
+                  if os.path.exists(root_dir):
+                      for file in os.listdir(root_dir):
+                          if file.endswith('.py') and file != '__init__.py':
+                              python_files.append(os.path.join(root_dir, file))
+              
+              # Create output directory
+              output_dir = 'frontend/src/generated/types'
+              os.makedirs(output_dir, exist_ok=True)
+              
+              # Process each file
+              for file_path in python_files:
+                  generate_typescript_for_file(file_path, output_dir)
+          
+          if __name__ == "__main__":
+              main()
+          EOF
+
+      - name: Run custom type generation script
+        run: python backend/generate_types.py
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit changes
+        if: steps.changes.outputs.changes == 'true' && github.event_name == 'push'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add frontend/src/types/generated/*.ts
+          git commit -m "chore: update TypeScript types from Pydantic models [skip ci]"
+          git push
+          
+      - name: Create Pull Request with changes
+        if: steps.changes.outputs.changes == 'true' && github.event_name == 'pull_request'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          title: "Update TypeScript types from Pydantic models"
+          body: "Automatically generated TypeScript types from Pydantic models"
+          commit-message: "chore: update TypeScript types from Pydantic models"
+          branch: ""
+          base: ${{ github.head_ref }}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { X } from "lucide-react";
-import { WebConfigFormValues } from "@/types/article";
+import { CreateWeb } from "@/types/web";
 import { Web } from "@/types/web";
 import {
   useFileUpload,
@@ -21,8 +21,8 @@ import { Skeleton } from "../ui/skeleton";
 type ConfigGraphModalProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
-  config: WebConfigFormValues;
-  setConfig: (value: WebConfigFormValues) => void;
+  config: CreateWeb;
+  setConfig: (value: CreateWeb) => void;
   web: Web;
   refreshSources: () => void;
   refreshWeb: () => void;

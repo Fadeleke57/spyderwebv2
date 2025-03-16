@@ -11,7 +11,7 @@ class ConnectionData(TypedDict):
     description: str
 
 
-class ConnectionType(BaseModel):
+class Connection(BaseModel):
     connectionId: str
     webId: str
     data: ConnectionData

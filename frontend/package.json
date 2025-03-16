@@ -43,6 +43,8 @@
     "form": "^0.2.4",
     "framer-motion": "^11.11.8",
     "gsap": "^3.12.5",
+    "json-schema-to-typescript": "^15.0.4",
+    "json2ts": "^0.0.7",
     "ldrs": "^1.0.2",
     "lodash": "^4.17.21",
     "lucide-react": "^0.414.0",

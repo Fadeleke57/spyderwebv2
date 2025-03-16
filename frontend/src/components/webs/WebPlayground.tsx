@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "../ui/label";
 import {
-  ChevronsUpDown,
   Link,
   File,
   Notebook,
@@ -15,7 +13,7 @@ import { Web } from "@/types/web";
 import { PublicUser } from "@/types/user";
 import AddSourceModal from "./AddSourceModal";
 import WebGraph from "./WebGraph";
-import { WebConfigFormValues } from "@/types/article";
+import { CreateWeb } from "@/types/web";
 import { Source } from "@/types/source";
 import { useFetchSourcesForWeb, useUploadNote } from "@/hooks/sources";
 import {
@@ -71,7 +69,7 @@ function WebPlayground({
     isPending,
     error,
   } = useUploadNote(web?.webId);
-  const [config, setConfig] = useState<WebConfigFormValues>({
+  const [config, setConfig] = useState<CreateWeb>({
     title: web?.name || "",
     description: web?.description || "",
   });
@@ -382,6 +380,7 @@ function WebPlayground({
           fetchedSources={fetchedSources}
           setFetchedSources={setFetchedSources}
           refetchSources={refetchSources}
+          refetchWeb={refetch}
           sourcesLoading={sourcesLoading}
           selectedSourceId={selectedSourceId}
           setSelectedSourceId={setSelectedSourceId}
