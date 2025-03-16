@@ -44,9 +44,7 @@ export const MarkdownComponents: Components = {
     </h5>
   ),
   h6: ({ children }) => <h6 className="font-semibold my-0 py-0">{children}</h6>,
-  ul: ({ children }) => (
-    <ul className="-my-4 py-0">{children}</ul>
-  ),
+  ul: ({ children }) => <ul className="-my-4 py-0">{children}</ul>,
   ol: ({ children }) => (
     <ol className="list-decimal list-inside my-0 py-0">{children}</ol>
   ),
@@ -68,7 +66,7 @@ export const MarkdownComponents: Components = {
   a: ({ children, ...props }) => (
     <a
       {...props}
-      className="text-primary underline hover:text-primary-dark my-0 py-0"
+      className="text-violet-500 underline hover:text-violet-400 my-0 py-0"
     >
       {children}
     </a>

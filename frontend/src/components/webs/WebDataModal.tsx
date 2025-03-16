@@ -1,23 +1,14 @@
 import { useEditSourceTitle, useFetchSource } from "@/hooks/sources";
-import { useUpdateNote } from "@/hooks/sources";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Check,
-  Copy,
-  Edit,
-  SquareArrowOutUpRight,
-  X,
-} from "lucide-react";
+import { ArrowLeft, Check, Edit, X } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { Textarea } from "../ui/textarea";
-import { debounce } from "lodash";
 import { useUser } from "@/context/UserContext";
 import { toast } from "../ui/use-toast";
 import { extractVideoId } from "@/lib/utils";
 import { SourceAsNode } from "@/types/source";
-import NoteComponent from "./Notes";
+import NoteComponent from "../notes/Notes";
 import {
   Dialog,
   DialogContent,
@@ -51,7 +42,6 @@ export default function WebDataModal({
   const [title, setTitle] = useState(source?.name);
   const [content, setContent] = useState(source?.content);
   const [isEditing, setIsEditing] = useState(false);
-  const [newTitle, setNewTitle] = useState(source?.name);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -63,55 +53,22 @@ export default function WebDataModal({
     setIsLoading(false);
   }, [sourceData]);
 
-  const {
-    mutateAsync: updateNote,
-    isPending: isUploading,
-    error: updateError,
-  } = useUpdateNote(webId, sourceId);
-
   const isOwner = (source?.userId && user?.id) === source?.userId;
-
-  const debouncedSave = useCallback(
-    debounce(async (newTitle: string, newContent: string) => {
-      try {
-        await updateNote({
-          title: newTitle,
-          content: newContent,
-        });
-        toast({ title: "Changes saved." });
-      } catch (err) {
-        console.error("Failed to update note:", err);
-      }
-    }, 1000),
-    [updateNote]
-  );
 
   const handleNewTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newTitle = e.target.value;
-    setNewTitle(newTitle);
-  };
-
-  const handleNoteContentChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    // for notes only
-    const newContent = e.target.value;
-    if (newContent.length < 3) {
-      setContent(newContent);
-      return;
-    }
-    setContent(newContent);
-    debouncedSave(title || "", newContent);
+    setTitle(newTitle);
   };
 
   const handleEditTitle = async () => {
     // any source
-    if (!newTitle) {
+    if (!title) {
       setIsEditing(false);
       return;
     }
     try {
-      await editSourceTitle(newTitle);
+      handleNewTitleChange({ target: { value: title } } as any);
+      await editSourceTitle(title);
       refetchSource();
       setIsEditing(false);
       toast({ title: "Changes saved." });
@@ -164,22 +121,7 @@ export default function WebDataModal({
         );
       case "note":
         return (
-          <NoteComponent
-            webId={webId}
-            source={source}
-            content={content}
-            isOwner={isOwner}
-            updateError={updateError}
-            handleNoteContentChange={handleNoteContentChange}
-          /> /*
-          <Editor
-            webId={webId}
-            source={source} 
-            content={content}
-            isOwner={isOwner}
-            updateError={updateError}
-            handleNoteContentChange={handleNoteContentChange}
-          />*/
+          <NoteComponent webId={webId} source={source} isOwner={isOwner} />
         );
       default:
         return null;
@@ -193,7 +135,6 @@ export default function WebDataModal({
     setSource(null);
     setOpen(false);
     setIsEditing(false);
-    setNewTitle("");
     setIsLoading(true);
   };
 
@@ -244,7 +185,7 @@ export default function WebDataModal({
                       className="hover:underline hover:text-violet-400 inline text-lg"
                     >
                       <span className="flex flex-row items-center gap-2">
-                        {source?.name || "Loading..."}
+                        {title || "Loading..."}
                       </span>
                     </Link>
                     {isOwner && (

@@ -103,7 +103,7 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
                 </div>
               ) : (
                 <div
-                  className={`${fontSans.className} h-screen w-screen flex items-center justify-center bg-background`}
+                  className={`${fontSans.className} h-full w-full flex items-center justify-center bg-background`}
                 >
                   <div className="text-center">
                     <h2 className="text-xl font-semibold mb-2">

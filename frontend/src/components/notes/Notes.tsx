@@ -4,21 +4,22 @@ import React, {
   useEffect,
   ChangeEvent,
   DragEvent,
+  useCallback,
 } from "react";
 import ReactMarkdown from "react-markdown";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { SourceAsNode } from "@/types/source";
-import { useUploadImageToSource } from "@/hooks/sources";
-import { MarkdownComponents } from "../notes/MarkdownComponents";
+import { useUpdateNote, useUploadImageToSource } from "@/hooks/sources";
+import { MarkdownComponents } from "./MarkdownComponents";
+import SourcesPopover from "../sources/SourcesPopover";
+import { debounce } from "lodash";
+import { toast } from "../ui/use-toast";
 
 interface NoteComponentProps {
-  content?: string;
   webId: string;
-  isOwner?: boolean;
+  isOwner: boolean;
   source: SourceAsNode | null;
-  handleNoteContentChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
-  updateError?: string;
 }
 
 interface LoadingImage {
@@ -27,18 +28,52 @@ interface LoadingImage {
 }
 
 const NoteComponent: React.FC<NoteComponentProps> = ({
-  content = "",
   isOwner = false,
   source,
-  handleNoteContentChange,
-  updateError,
   webId,
 }) => {
+  const [localContent, setLocalContent] = useState<string>(
+    source?.content || ""
+  );
+
+  const {
+    mutateAsync: updateNote,
+    isPending: isNoteUpdating,
+    error: noteUpdatingError,
+  } = useUpdateNote(webId, source?.sourceId || "");
+
+  const debouncedSave = useCallback(
+    debounce(async (newContent: string) => {
+      try {
+        await updateNote({
+          content: newContent,
+        });
+        toast({ title: "Changes saved." });
+      } catch (err) {
+        console.error("Failed to update note:", err);
+      }
+    }, 1000),
+    [updateNote]
+  );
+
+  const handleNoteContentChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    // for notes only
+    const newContent = e.target.value;
+    if (newContent.length < 3) {
+      setLocalContent(newContent);
+      return;
+    }
+    setLocalContent(newContent);
+    debouncedSave(newContent);
+  };
+
   //separate state for edit mode and local content
   const [mode, setMode] = useState<"edit" | "preview">(
-    content ? "preview" : "edit"
+    localContent ? "preview" : "edit"
   );
-  const [localContent, setLocalContent] = useState<string>(content);
+
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [loadingImages, setLoadingImages] = useState<LoadingImage[]>([]);
 
@@ -47,13 +82,13 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
   const {
     mutateAsync: uploadImages,
     isPending: addingImages,
-    error: uploadError,
+    error: uploadImageError,
   } = useUploadImageToSource();
 
   //sync localContent when prop content changes
   useEffect(() => {
-    setLocalContent(content);
-  }, [content]);
+    setLocalContent(localContent);
+  }, [localContent]);
 
   //auto-resize textarea
   useEffect(() => {
@@ -292,7 +327,7 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
       <Textarea
         ref={textareaRef}
         value={localContent}
-        placeholder="Start writing in markdown...Click outside to preview"
+        placeholder="Start writing in markdown...click outside to preview"
         rows={20}
         className={`w-full h-full bg-transparent p-0 text-base leading-relaxed resize-none focus:outline-none border-none bg-none ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground`}
         onChange={handleLocalContentChange}
@@ -319,8 +354,12 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
       }}
     >
       {renderContent()}
-      {updateError && <p className="text-red-500 mt-2">{updateError}</p>}
-      {uploadError && <p className="text-red-500 mt-2">Image upload failed</p>}
+      {noteUpdatingError && (
+        <p className="text-red-500 mt-2">{noteUpdatingError}</p>
+      )}
+      {uploadImageError && (
+        <p className="text-red-500 mt-2">Image upload failed</p>
+      )}
     </ScrollArea>
   );
 };
