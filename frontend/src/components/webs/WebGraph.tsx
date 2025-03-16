@@ -24,7 +24,7 @@ import {
 } from "@/lib/utils";
 import SourceTooltip from "./SourceToolTip";
 import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
-import { Connection, ConnectionData } from "@/types/connection";
+import { Connection } from "@/types/connection";
 
 interface GraphProps {
   isOwner: boolean;
@@ -33,6 +33,7 @@ interface GraphProps {
   hasSources: boolean;
   refetchSources: () => void;
   fetchedSources: Source[];
+  refetchWeb: () => void;
   setFetchedSources: Dispatch<SetStateAction<Source[]>>;
   sourcesLoading: boolean;
   selectedSourceId: string | null;
@@ -45,6 +46,7 @@ function WebGraph({
   hasSources,
   fetchedSources,
   refetchSources,
+  refetchWeb,
   setFetchedSources,
   sourcesLoading,
   selectedSourceId,
@@ -77,19 +79,14 @@ function WebGraph({
     await deleteSource(sourceId);
     refetchConnections();
     refetchSources();
+    refetchWeb();
   };
 
   useEffect(() => {
-    if (
-      !svgRef.current ||
-      !fetchedSources ||
-      fetchedSources.length === 0 ||
-      !connections ||
-      connectionsLoading ||
-      sourcesLoading
-    ) {
+    if (!svgRef.current || !fetchedSources || !connections) {
       return;
     }
+    
     const width = 3200;
     const height = 2400;
     const centerX = width / 8 + (isMobile ? -220 : 40);

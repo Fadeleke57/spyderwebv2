@@ -6,10 +6,6 @@ on:
   push:
     paths:
       - 'backend/src/models/**'
-  # Run on every pull request to any branch
-  pull_request:
-    paths:
-      - 'backend/src/models/**'
   # Manual trigger
   workflow_dispatch:
 
@@ -140,5 +136,5 @@ jobs:
           title: "Update TypeScript types from Pydantic models"
           body: "Automatically generated TypeScript types from Pydantic models"
           commit-message: "chore: update TypeScript types from Pydantic models"
-          branch: "auto-type-sync-${{ github.run_id }}"
+          branch: ""
           base: ${{ github.head_ref }}

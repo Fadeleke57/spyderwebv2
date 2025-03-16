@@ -380,6 +380,7 @@ function WebPlayground({
           fetchedSources={fetchedSources}
           setFetchedSources={setFetchedSources}
           refetchSources={refetchSources}
+          refetchWeb={refetch}
           sourcesLoading={sourcesLoading}
           selectedSourceId={selectedSourceId}
           setSelectedSourceId={setSelectedSourceId}
