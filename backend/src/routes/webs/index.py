@@ -315,7 +315,7 @@ def delete_image(web_id: str, image_name: str, user=Depends(manager)):
         if result.modified_count == 0:
             raise HTTPException(status_code=404, detail="Web not found")
 
-        s3.delete_object(Web=s3_bucket.bucket_name, Key=filepath)
+        s3.delete_object(Bucket=s3_bucket.bucket_name, Key=filepath)
         return {"result": True}
 
     except Exception as e:
