@@ -19,6 +19,7 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import ConnectionsConfig from "../sources/ConnectionConfig";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
+import FaviconDisplay from "../utility/FaviconDisplay";
 
 interface WebDataDrawerProps {
   open: boolean;
@@ -52,7 +53,6 @@ export default function WebDataModal({
     setPresignedUrl(sourceData.file_url);
     setIsLoading(false);
   }, [sourceData]);
-
   const isOwner = (source?.userId && user?.id) === source?.userId;
 
   const handleNewTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -87,6 +87,19 @@ export default function WebDataModal({
               width="100%"
               className="rounded-lg h-full"
             />
+          </>
+        );
+      case "pdf":
+        return (
+          <>
+            <object
+              data={presignedUrl}
+              type="application/pdf"
+              width="100%"
+              className="rounded-lg border h-full"
+            >
+              <p>Your browser does not support PDFs.</p>
+            </object>
           </>
         );
       case "document":
@@ -182,8 +195,9 @@ export default function WebDataModal({
                     <Link
                       href={presignedUrl || source?.url || ""}
                       target="_blank"
-                      className="hover:underline hover:text-violet-400 inline text-lg"
-                    >
+                      className="hover:underline hover:text-violet-400 inline text-lg flex flex-row items-center gap-2"
+                        >
+                          <FaviconDisplay url={source?.url || ""} />
                       <span className="flex flex-row items-center gap-2">
                         {title || "Loading..."}
                       </span>

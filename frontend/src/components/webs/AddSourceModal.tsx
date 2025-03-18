@@ -10,12 +10,12 @@ import {
 } from "@/hooks/sources";
 import { toast } from "../ui/use-toast";
 import gsap from "gsap";
-import { Uploading } from "../utility/Loading";
 import { extractVideoId } from "@/lib/utils";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { UploadFile, UploadWebsite, UploadYoutube } from "./AddSourceViews";
 import { Drawer, DrawerContent, DrawerHeader } from "../ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Progress } from "@/components/ui/progress"; // Import Progress component
 import { Skeleton } from "../ui/skeleton";
 
 type ConfigGraphModalProps = {
@@ -29,6 +29,8 @@ type ConfigGraphModalProps = {
   view?: string;
   setIsWebDataModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedSourceId: React.Dispatch<React.SetStateAction<string>>;
+  handleFileUpload: (files: FileList | null) => void;
+  isFileUploading: boolean;
   children: React.ReactNode;
 };
 
@@ -42,16 +44,12 @@ export default function AddSourceModal({
   refreshWeb,
   setIsWebDataModalOpen,
   setSelectedSourceId,
+  handleFileUpload,
+  isFileUploading,
 }: ConfigGraphModalProps) {
   const isMobile = useIsMobile();
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
-
-  const {
-    mutateAsync: uploadFile,
-    error,
-    isPending: isFileUploading,
-  } = useFileUpload(web.userId, web.webId, "document");
 
   const {
     mutateAsync: uploadWebsite,
@@ -65,32 +63,9 @@ export default function AddSourceModal({
     isPending: isYoutubeUploading,
   } = useUploadYoutube(web.webId);
 
-  const contentRef = useRef(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  const handleFileUpload = async (file: File | null) => {
-    if (!file) {
-      return;
-    }
-    try {
-      const sourceId = await uploadFile(file);
-      toast({
-        title: "File uploaded",
-        description: "File uploaded successfully",
-        duration: 500,
-      });
-      refreshSources();
-      refreshWeb();
-      setSelectedSourceId(sourceId);
-      setIsWebDataModalOpen(true);
-      handleClose();
-    } catch (err) {
-      console.error(err);
-      toast({
-        variant: "destructive",
-        title: "Error uploading file",
-      });
-    }
-  };
+  const contentRef = useRef(null);
 
   const handleWebsiteUpload = async (url: string) => {
     try {
@@ -203,8 +178,8 @@ export default function AddSourceModal({
               <span>Upload File</span>
             </DialogTitle>
             <p className="text-sm max-w-full md:max-w-lg lg:text-md text-muted-foreground text-left">
-              Files are the building blocks of knowledge. Upload them here. Only
-              PDFs are supported at the moment and are limited to 4 MB.
+              Files are the building blocks of knowledge. Upload them here.
+              Supported types include .pdf, .txt, and .md. Batches are limited to 4MB.
             </p>
           </div>
         );
@@ -249,7 +224,7 @@ export default function AddSourceModal({
           </DrawerHeader>
           {isFileUploading || isWebsiteUploading || isYoutubeUploading ? (
             <div className="w-full h-[200px] flex flex-col gap-4 items-center justify-center">
-              <Skeleton className="h-full w-full rounded-xl" />
+              <Skeleton className="h-full w-full rounded-xl bg-violet-400" />
             </div>
           ) : (
             <div

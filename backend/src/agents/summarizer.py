@@ -1,12 +1,12 @@
-import json
-from src.lib.openai.index import CLIENT
+from src.lib.openai.index import client as openaiClient
+from src.lib.logger.index import logger
 
 
-def process_html(raw_html_content):
+def process_md(md: str): #TODO: TURN THIS INTO A SUMMARY AGENT THAT RETURNS A TWO SENTENCE SUMMARY OF THE TEXT
 
     try:
         prompt = (
-            "Extract the title or main idea from the following HTML content.\n\n"
+            "Extract the title or main idea from the following md content.\n\n"
             "Usually, the title will be available, but if not, try to extract the main idea.\n\n"
             "This means ignore any other text such as ads that are not part of the title or main idea.\n\n"
             "For the case of discussions like on reddit, try to extract the title of the discussion.\n\n"
@@ -15,10 +15,10 @@ def process_html(raw_html_content):
             "If the title, main content, or source is not clear or not enough data is provided, return 'Unititled Source'.\n\n"
             "Otherwise return the result in this format:\n\n"
             "{title} - {source}\n\n"
-            f"HTML Content:\n{raw_html_content}"
+            f"HTML Content:\n{md}"
         )
 
-        response = CLIENT.chat.completions.create(
+        response = openaiClient.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {
@@ -34,5 +34,5 @@ def process_html(raw_html_content):
         return content
 
     except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        return "Error processing HTML content"
+        logger.error(f"An error occurred: {str(e)}")
+        return "Untitled Source"

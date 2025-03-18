@@ -1,48 +1,41 @@
-from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, BackgroundTasks
 from src.models.source import Source, UpdateSource
 from src.models.web import Webs
 from src.routes.auth.oauth2 import manager
 from src.utils.exceptions import check_user
+import tempfile
 from src.lib.s3.index import S3Bucket
-from src.db.mongodb import get_collection, insert_item
+from src.db.mongodb import get_collection
+from src.service.source import service as sourceService
 from src.db.neo4j import client as neo4jClient
-from src.models.connection import Connections
+from src.core.config import settings
 from uuid import uuid4
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from src.core.config import settings
 from src.utils.youtube import get_video_transcript, get_video_info
-import requests
 from pydantic import BaseModel, HttpUrl
-from bs4 import BeautifulSoup
+from src.lib.firecrawl.index import client as firecrawlClient
 from src.models.source import CreateNote, UpdateNote
+from typing import List
 import boto3
 from urllib.parse import unquote
 from src.lib.logger.index import logger
 from botocore.exceptions import ClientError
-from src.agents.structure_html_agent import process_html
 from pytz import UTC
 import os
+from src.lib.pinecone.index import client as pineconeClient
 
 router = APIRouter()
 s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
 s3 = boto3.client("s3")
 
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Connection": "keep-alive",
-}
 
-
-@router.post("/upload/{user_id}/{web_id}/{file_type}")
-async def upload_file(
+async def process_file(
     user_id: str,
     web_id: str,
-    file_type: str,
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    user=Depends(manager),
 ):
     """
     Uploads a file to S3 and creates a Source document in the database.
@@ -59,54 +52,115 @@ async def upload_file(
     Raises:
         HTTPException: If the upload fails.
     """
-    check_user(user)
+    file_type = file.filename.split(".")[-1].lower()
+
+    temp_dir = tempfile.gettempdir()  # gets system temp directory (cross-platform)
+    temp_path = os.path.join(temp_dir, file.filename)
+
+    with open(temp_path, "wb") as buffer:
+        buffer.write(await file.read())
+
     try:
-
-        object_name = (
-            f"files/{user_id}/{web_id}/{file_type}/{file.filename.replace(' ', '_')}"
-        )
-
-        # save file to temp location
-        temp_path = f"/tmp/{file.filename}"
-        with open(temp_path, "wb") as buffer:
-            buffer.write(await file.read())
-
-        try:
+        sourceId = str(uuid4())
+        if file_type == "pdf":
+            object_name = f"files/{user_id}/{web_id}/document/{uuid4()}_{file.filename.replace(' ', '_')}"
             # upload to S3
             s3_bucket.upload_file(temp_path, object_name)
-            sourceId = str(uuid4())
-            sourceToInsert : Source = {
+            sourceToInsert: Source = {
                 "sourceId": sourceId,
                 "webId": web_id,
                 "userId": user_id,
                 "name": file.filename,
                 "content": None,
                 "url": object_name,
-                "type": file_type,
+                "type": "document",
                 "size": os.path.getsize(temp_path),
                 "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
                 "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             }
-            neo4jClient.create_node("source", sourceToInsert)
-            Webs.update_one(
-                {"webId": web_id, "userId": user_id},
-                {
-                    "$push": {"sourceIds": sourceId},
-                    "$set": {"updated": datetime.now(UTC)},
-                },
+
+            background_tasks.add_task(
+                sourceService.embed_and_upsert_pdf,
+                sourceId,
+                temp_path,
+                web_id,
+                object_name,
             )
 
-            return {"result": sourceId}
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
-        finally:
-            # remove temp file
+        elif file_type in {"txt", "md"}:
+            with open(temp_path, "r", encoding="utf-8") as f:
+                text_content = f.read()
+
+                filename = (" ".join(file.filename.split(".")[:-1])).replace("%22", " ")
+                sourceToInsert: Source = {
+                    "sourceId": sourceId,
+                    "webId": web_id,
+                    "userId": user_id,
+                    "name": filename,
+                    "content": text_content,
+                    "url": None,
+                    "type": "note",
+                    "size": os.path.getsize(temp_path),
+                    "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+                    "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+                }
             os.remove(temp_path)
-            return {"result": sourceId}
+            background_tasks.add_task(
+                sourceService.embed_and_upsert_note,
+                sourceId,
+                text=text_content,
+                web_id=web_id,
+                title=filename,
+            )
+
+        neo4jClient.create_node("source", sourceToInsert)
+        Webs.update_one(
+            {"webId": web_id, "userId": user_id},
+            {
+                "$push": {"sourceIds": sourceId},
+                "$set": {"updated": datetime.now(UTC)},
+            },
+        )
+        return sourceToInsert
 
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/upload/files/{web_id}")
+async def upload_files(
+    web_id: str,
+    background_tasks: BackgroundTasks,
+    preserve_obsidian_links: bool,
+    files: List[UploadFile] = File(...),
+    user=Depends(manager),
+):
+    """
+    Uploads multiple files, stores them temporarily, sends them to S3,
+    processes embeddings, and saves metadata in the database.
+    """
+    check_user(user)
+    logger.info("Preserve Obsidian links: %s", preserve_obsidian_links)
+
+    if not files:
+        raise HTTPException(status_code=400, detail="No files uploaded.")
+
+    sources = []
+    for file in files:
+        result = await process_file(
+            user_id=user["id"],
+            web_id=web_id,
+            background_tasks=background_tasks,
+            file=file,
+        )
+        sources.append(result)
+
+    if preserve_obsidian_links:
+        logger.info("Parsing Obsidian links...")
+        background_tasks.add_task(sourceService.parse_obsidian_links, web_id, sources)
+
+    return {"result": sources[0]["sourceId"] if sources else None}
 
 
 class UrlRequest(BaseModel):
@@ -114,7 +168,12 @@ class UrlRequest(BaseModel):
 
 
 @router.post("/website/{web_id}")
-def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
+def add_website(
+    web_id: str,
+    url: UrlRequest,
+    background_tasks: BackgroundTasks,
+    user=Depends(manager),
+):
     """
     Add a website source to a specified web (web).
 
@@ -135,24 +194,14 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
     check_user(user)
 
     try:
-
         try:
-            response = requests.get(url.url)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as e:
+
+            title, md = firecrawlClient.run_scrape(str(url.url))
+
+        except Exception as e:
             raise HTTPException(
                 status_code=400, detail="Could not retrieve the webpage"
             )
-
-        soup = BeautifulSoup(response.content, "html.parser")
-        main_content = soup.get_text(separator=" ")
-
-        cleaned_content = " ".join(main_content.split())
-
-        try:
-            title = process_html(cleaned_content)
-        except Exception as e:
-            raise HTTPException(status_code=400, detail="Could not parse the webpage")
 
         sourceId = str(uuid4())
         sourceToInsert = {
@@ -162,11 +211,16 @@ def add_website(web_id: str, url: UrlRequest, user=Depends(manager)):
             "name": title,
             "url": str(url.url),
             "type": "website",
-            "size": len(cleaned_content) * 200,
-            "content": f"{title}\n{cleaned_content}",
+            "size": len(md) * 200,
+            "content": md,
             "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         }
+
+        background_tasks.add_task(
+            sourceService.embed_and_upsert_website, sourceId, md, web_id, url.url
+        )
+
         neo4jClient.create_node("source", sourceToInsert)
         Webs.update_one(
             {"webId": web_id, "userId": user["id"]},
@@ -219,7 +273,12 @@ async def get_presigned_url(file_path: str):
 
 
 @router.post("/upload/note/{web_id}/")
-def upload_note(web_id: str, note: CreateNote, user=Depends(manager)):
+def upload_note(
+    web_id: str,
+    note: CreateNote,
+    background_tasks: BackgroundTasks,
+    user=Depends(manager),
+):
     """
     Upload a note to a given web.
 
@@ -246,9 +305,16 @@ def upload_note(web_id: str, note: CreateNote, user=Depends(manager)):
         "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
     }
 
+    background_tasks.add_task(
+        sourceService.embed_and_upsert_note,
+        sourceId,
+        note.content,
+        web_id,
+        title=note.title,
+    )
+
     try:
         neo4jClient.create_node("source", sourceToInsert)
-
         Webs.update_one(
             {"webId": web_id, "userId": user["id"]},
             {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
@@ -260,14 +326,23 @@ def upload_note(web_id: str, note: CreateNote, user=Depends(manager)):
 
 
 @router.post("/youtube/{web_id}/{video_id}")
-def add_youtube(web_id: str, video_id: str, user=Depends(manager)):
+def add_youtube(
+    web_id: str, video_id: str, background_tasks: BackgroundTasks, user=Depends(manager)
+):
     check_user(user)
 
     try:
         info = get_video_info(video_id)
         title, description = info["title"], info["description"]
-        # transcripts = get_video_transcript(video_id)
-        # proccessed_transcripts = proccess_transcripts(transcripts) #TODO: these will be stored as embeddings in reference to the video
+        try:
+            transcripts = get_video_transcript(video_id)
+
+        except Exception as e:
+            transcripts = []
+
+        logger.info(f"Transcripts: {transcripts}")
+
+        url = f"https://www.youtube.com/watch?v={video_id}"
 
         sourceId = str(uuid4())
         sourceToInsert = {
@@ -282,6 +357,10 @@ def add_youtube(web_id: str, video_id: str, user=Depends(manager)):
             "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         }
+
+        background_tasks.add_task(
+            sourceService.embed_and_upsert_youtube, sourceId, transcripts, web_id, url
+        )
 
         neo4jClient.create_node("source", sourceToInsert)
         Webs.update_one(
@@ -356,17 +435,20 @@ def delete_source(source_id: str, user=Depends(manager)):
         # remove from s3 if it's a document type (commenting out for now for iterations)
         # if source["type"] == "document":
         #    s3.delete_object(Bucket=s3_bucket.bucket_name, Key=source["url"])
-
         # clean up web
-        webs = get_collection("webs")
-        web = webs.find_one_and_update(
+        affected_web = Webs.find_one_and_update(
             {"sourceIds": source_id},
             {"$pull": {"sourceIds": source_id}, "$set": {"updated": datetime.now(UTC)}},
             return_document=True,
         )
 
-        if not web:
+        if not affected_web:
             raise HTTPException(status_code=404, detail="Item not found")
+
+        try:
+            pineconeClient.index.delete(ids=[source_id], namespace=affected_web["webId"])
+        except:
+            logger.info("Pinecone namespace not found...Skipping embeddings deletion")
 
         return {"result": "Source deleted"}
 
