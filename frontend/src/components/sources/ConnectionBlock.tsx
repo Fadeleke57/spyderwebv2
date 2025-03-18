@@ -2,7 +2,7 @@ import { useFetchSource } from "@/hooks/sources";
 import { Connection } from "@/types/connection";
 import React from "react";
 import { Skeleton } from "../ui/skeleton";
-import { ArrowLeft, ArrowRight, Loader2, Trash } from "lucide-react";
+import { ArrowLeft, ArrowRight, Trash } from "lucide-react";
 import { useDeleteConnection } from "@/hooks/connections";
 
 function ConnectionBlock({
@@ -61,10 +61,10 @@ function ConnectionBlock({
       <div className="col-span-2 space-y-2 rounded-lg p-2">
         {toLoading ? (
           <div className="flex items-center justify-center h-full">
-            <Loader2 className="animate-spin" />
+            <Skeleton className="h-16 w-full rounded-xl" />
           </div>
         ) : (
-          <div>
+          <div className="break-words">
             <h4 className="font-medium">
               {type == "out" ? "Connecting to:" : "From:"}
             </h4>

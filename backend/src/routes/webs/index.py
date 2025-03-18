@@ -19,10 +19,11 @@ from fastapi.exceptions import HTTPException
 from botocore.exceptions import ClientError
 from src.lib.logger.index import logger
 from pymongo import ReturnDocument
-from typing import List
 from src.core.config import settings
 import boto3
-from src.lib.pinecone.index import PCINDEX, PC, generate_web_embeddings
+from src.lib.pinecone.index import client as pineconeClient
+from fastapi import BackgroundTasks
+from src.service.web import service as webService
 
 router = APIRouter()
 
@@ -189,21 +190,29 @@ def get_user_liked_webs(user: User = Depends(manager)):
 
 
 @router.post("/create")
-def create_web(createWebPayload: CreateWeb, user=Depends(manager)):
+def create_web(
+    createWebPayload: CreateWeb,
+    background_tasks: BackgroundTasks,
+    user=Depends(manager),
+):
     """
     Create a new web.
 
     Args:
-        config (WebConfig): The configuration for the new web.
-        user (User): The user creating the web.
+        createWebPayload (CreateWeb): The web to create.
+        background_tasks (BackgroundTasks): A FastAPI BackgroundTasks instance.
+        user (User): The user making the request.
 
     Returns:
-        dict: A JSON response with a result key containing the ID of the new web.
+        dict: A JSON response containing the ID of the newly created web.
+
+    Raises:
+        HTTPException: If web creation fails.
     """
     check_user(user)
     try:
         webId = str(uuid.uuid4())
-        web_to_insert : Web = {
+        web_to_insert: Web = {
             "webId": webId,
             "name": createWebPayload.name,
             "description": createWebPayload.description,
@@ -216,23 +225,10 @@ def create_web(createWebPayload: CreateWeb, user=Depends(manager)):
             "likes": [],
             "iterations": [],
             "imageKeys": [],
-            "enableAIConnections": createWebPayload.enableAIConnections
+            "enableAIConnections": createWebPayload.enableAIConnections,
         }
 
-        # pinecone pipeline
-        vectors = generate_web_embeddings(createWebPayload.name, createWebPayload.description)
-        pincone_insert = (
-            web_to_insert.copy()
-        )  # create copy so we don't modify the original
-        pincone_insert["created"] = str(
-            web_to_insert["created"]
-        )  # data object not allowed in pinecone
-        pincone_insert["updated"] = str(web_to_insert["updated"])
-        embedding_data = [(webId, vectors, pincone_insert)]
-        PCINDEX.upsert(
-            vectors=embedding_data,
-            namespace="webs",
-        )
+        background_tasks.add_task(webService.emebd_and_upsert_web, web_to_insert)
 
         # mongo insert
         Webs.insert_one(web_to_insert)
@@ -355,7 +351,7 @@ def get_web_images(web_id: str):
             urls.append(url)
 
         return {"result": urls}
-        
+
     except ClientError as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -378,15 +374,32 @@ def delete_web(webId: str, user=Depends(manager)):
     """
     check_user(user)
     try:
-        Webs.delete_one({"webId": webId, "userId": user["id"]})
+        webToDelete = Webs.find_one_and_delete({"webId": webId, "userId": user["id"]})
+        logger.info(f"Web {webId} deleted by user {user['id']}")
 
-        PCINDEX.delete(ids=[webId], namespace="webs")
+        pineconeClient.index.delete(ids=[webId], namespace="webs")
+        pineconeClient.index.delete(
+            ids=webToDelete.get("sourceIds", []), namespace=webId
+        )
+        logger.info(f"Web {webId} deleted from Pinecone")
 
-        sourcesForWeb = Sources.find({"webId": webId})
-        for source in sourcesForWeb:
-            if source["type"] == "document":
-                s3.delete_object(Web=s3_bucket.bucket_name, Key=source["url"])
-            neo4jClient.delete_source(source["sourceId"])
+        neo4jClient.delete_nodes_by_properties("source", {"webId": webId})
+        logger.info(f"Sources {webId} attached to web deleted from Neo4j")
+
+        images_path = f"files/{user['id']}/{webId}/images"
+        pages = s3.get_paginator("list_objects_v2").paginate(
+            Bucket=s3_bucket.bucket_name, Prefix=images_path
+        )
+        delete_keys = []
+        for page in pages:
+            if "Contents" in page:
+                for obj in page["Contents"]:
+                    delete_keys.append({"Key": obj["Key"]})
+        if delete_keys:
+            s3.delete_objects(
+                Bucket=s3_bucket.bucket_name, Delete={"Objects": delete_keys}
+            )
+            logger.info(f"Deleted {len(delete_keys)} images from S3 for web {webId}")
 
         return {"result": True}
 
@@ -396,7 +409,12 @@ def delete_web(webId: str, user=Depends(manager)):
 
 
 @router.patch("/update/{webId}")
-def update_web(webId: str, updateWebPayload: UpdateWeb, user=Depends(manager)):
+def update_web(
+    webId: str,
+    updateWebPayload: UpdateWeb,
+    background_tasks: BackgroundTasks,
+    user=Depends(manager),
+):
     """
     Update a web.
 
@@ -417,22 +435,7 @@ def update_web(webId: str, updateWebPayload: UpdateWeb, user=Depends(manager)):
         update_fields = updateWebPayload.model_dump(exclude_none=True)
         update_fields["updated"] = datetime.now(UTC)
 
-        vector_updates = {}
-        if "name" in update_fields:
-            vector_updates["name"] = update_fields["name"]
-        if "description" in update_fields:
-            vector_updates["description"] = update_fields["description"]
-
-        if vector_updates:
-            vectors = generate_web_embeddings(
-                vector_updates["name"], vector_updates["description"]
-            )
-            PCINDEX.update(
-                id=webId,
-                values=vectors,
-                set_metadata=update_fields,
-                namespace="webs",
-            )
+        background_tasks.add_task(webService.update_emebeddings, webId, update_fields)
 
         result = Webs.update_one(
             {"webId": webId, "userId": user["id"]}, {"$set": update_fields}
@@ -598,7 +601,12 @@ def remove_tag(web_id: str, tag: str, user=Depends(manager)):
 
 
 @router.post("/iterate/{web_id}")
-def iterate_web(web_id: str, iteratePayload: IterateWeb, user=Depends(manager)):
+def iterate_web(
+    web_id: str,
+    iteratePayload: IterateWeb,
+    background_task: BackgroundTasks,
+    user=Depends(manager),
+):
     """
     Iterate over a given web and create a new web with the same sources but with a new name and description.
 
@@ -635,7 +643,7 @@ def iterate_web(web_id: str, iteratePayload: IterateWeb, user=Depends(manager)):
             logger.error(str(e))
             raise HTTPException(status_code=500, detail=str(e))
 
-        web_to_insert = {
+        web_to_insert: Web = {
             "webId": newWebId,
             "name": iteratePayload.name,
             "description": iteratePayload.description,
@@ -650,18 +658,7 @@ def iterate_web(web_id: str, iteratePayload: IterateWeb, user=Depends(manager)):
             "iterations": [],
         }
 
-        vectors = generate_web_embeddings(
-            iteratePayload.name, iteratePayload.description
-        )
-        pincone_insert = web_to_insert.copy()
-
-        pincone_insert["created"] = str(web_to_insert["created"])
-        pincone_insert["updated"] = str(web_to_insert["updated"])
-        embedding_data = [(newWebId, vectors, pincone_insert)]
-        PCINDEX.upsert(
-            vectors=embedding_data,
-            namespace="webs",
-        )
+        background_task.add_task(webService.emebd_and_upsert_web, web_to_insert)
 
         Webs.insert_one(web_to_insert)
         Webs.find_one_and_update(
@@ -706,7 +703,6 @@ def search_webs(
         Searches.insert_one(search_info)
 
         results = run_semantic_search(query, 10, filter)
-        logger.info(f"Semantic search results: {results}")
         return {"result": results}
 
     except Exception as e:

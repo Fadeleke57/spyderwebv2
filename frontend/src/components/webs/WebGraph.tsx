@@ -38,6 +38,8 @@ interface GraphProps {
   sourcesLoading: boolean;
   selectedSourceId: string | null;
   setSelectedSourceId: Dispatch<SetStateAction<string>>;
+  handleFileUpload: (files: FileList | null) => void;
+  isFileUploading: boolean;
 }
 
 function WebGraph({
@@ -51,7 +53,104 @@ function WebGraph({
   sourcesLoading,
   selectedSourceId,
   setSelectedSourceId,
+  handleFileUpload,
+  isFileUploading,
 }: GraphProps) {
+
+  const [isDragging, setIsDragging] = useState(false);
+    const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    //handle directory and file drops
+    const items = Array.from(e.dataTransfer.items);
+    
+    //filter for acceptable file types
+    const acceptedFileTypes = ['.md', '.txt', '.pdf'];
+    const isAcceptedFile = (file: File) => 
+      acceptedFileTypes.some(type => file.name.toLowerCase().endsWith(type));
+    
+    //handle both files and folders
+    if (items.length > 0) {
+      const fileList: File[] = [];
+      
+      //process entries recursively to handle folders
+      const processEntry = async (entry: any) => {
+        if (entry.isFile) {
+          //handle file
+          const file = await new Promise<File>((resolve) => {
+            entry.file((file: File) => {
+              resolve(file);
+            });
+          });
+          
+          if (isAcceptedFile(file)) {
+            fileList.push(file);
+          }
+        } else if (entry.isDirectory) {
+          //handle directory
+          const reader = entry.createReader();
+          const entries = await new Promise<any[]>((resolve) => {
+            reader.readEntries((entries: any[]) => {
+              resolve(entries);
+            });
+          });
+          
+          // process all entries in the directory
+          for (const childEntry of entries) {
+            await processEntry(childEntry);
+          }
+        }
+      };
+      
+      //process all dropped items
+      for (const item of items) {
+        if (item.kind === 'file') {
+          const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
+          
+          if (entry) {
+            await processEntry(entry);
+          } else {
+            // fallback for browsers without webkitGetAsEntry
+            const file = item.getAsFile();
+            if (file && isAcceptedFile(file)) {
+              fileList.push(file);
+            }
+          }
+        }
+      }
+      
+      if (fileList.length > 0) {
+        // convert array to FileList-like object
+        const dataTransfer = new DataTransfer();
+        fileList.forEach(file => dataTransfer.items.add(file));
+        handleFileUpload(dataTransfer.files);
+      }
+    } else if (e.dataTransfer.files.length > 0) {
+      // direct file drop handling (fallback)
+      handleFileUpload(e.dataTransfer.files);
+    }
+  };
+
   const trashRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
 
@@ -75,6 +174,7 @@ function WebGraph({
 
   const { mutateAsync: deleteSource } = useDeleteSource();
 
+
   const handleDeleteSource = async (sourceId: string) => {
     await deleteSource(sourceId);
     refetchConnections();
@@ -83,7 +183,7 @@ function WebGraph({
   };
 
   useEffect(() => {
-    if (!svgRef.current || !fetchedSources || !connections) {
+    if (!svgRef.current || !fetchedSources || !connections || connectionsLoading || sourcesLoading) {
       return;
     }
     
@@ -441,12 +541,17 @@ function WebGraph({
     theme,
   ]);
 
-  if ((connectionsLoading || sourcesLoading) && hasSources) {
+  if (isFileUploading || ((connectionsLoading || sourcesLoading) && hasSources)) {
     return <LoadingPage></LoadingPage>;
   }
 
   return (
-    <>
+    <div className={`h-full ${isDragging ? "cursor-grabbing border border-dashed border-foreground border-2 rounded-md" : ""}`}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       {isOwner && (
         <div ref={trashRef} className="absolute left-3 top-3 cursor-pointer">
           <TooltipProvider delayDuration={100}>
@@ -477,7 +582,7 @@ function WebGraph({
           webId={webId}
         />
       )}
-    </>
+    </div>
   );
 }
 

@@ -107,7 +107,7 @@ class Neo4jDBService:
             raise ValueError(f"Unsupported label: {label}")
 
         props_filter = " AND ".join([f"n.{key} = ${key}" for key in properties.keys()])
-        query = f"MATCH (n:{label}) WHERE {props_filter} DELETE n RETURN count(n) AS deleted_count"
+        query = f"MATCH (n:{label}) WHERE {props_filter} DETACH DELETE n RETURN count(n) AS deleted_count"
         result = self.execute_query(query, properties)
         return result[0]["deleted_count"] if result else 0
 

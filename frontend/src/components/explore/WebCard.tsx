@@ -45,6 +45,7 @@ import { ScrollBar } from "../ui/scroll-area";
 import { PublicUser } from "@/types/user";
 import { ImageModal } from "../utility/ImageModal";
 import { SkeletonCard } from "../utility/SkeletonCard";
+import { AnimatedStarButton } from "./AnimatedStar";
 
 export function WebCard({
   web,
@@ -325,24 +326,10 @@ export function WebCard({
         <CardContent />
         <div className="absolute bottom-4 left-6 flex flex-row space-x-2">
           <div className="flex flex-row items-center space-x-1">
-            <p
-              className={`text-sm ${
-                webLiked
-                  ? "text-blue-500 dark:text-blue-400"
-                  : "text-muted-foreground"
-              }`}
-            >
-              {webLikedCount}
-            </p>
-            <Star
-              size={16}
-              className={`${
-                webLiked
-                  ? "text-blue-500 dark:text-blue-400"
-                  : "text-muted-foreground hover:text-blue-500 dark:hover:text-blue-400"
-              } ${webLiked ? "fill-blue-500 dark:fill-blue-400" : "none"}`}
-              onClick={handleLikeWeb}
-              strokeWidth={1.4}
+            <AnimatedStarButton
+              isStarred={webLiked}
+              count={webLikedCount}
+              onStarClick={handleLikeWeb}
             />
           </div>
           <div className="flex flex-row items-center space-x-1">

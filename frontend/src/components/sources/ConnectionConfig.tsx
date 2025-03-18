@@ -26,6 +26,7 @@ import { Source } from "@/types/source";
 import { ChevronsUpDown, CirclePlus, Loader2 } from "lucide-react";
 import { Connection } from "@/types/connection";
 import { ScrollArea } from "../ui/scroll-area";
+import { Skeleton } from "../ui/skeleton";
 
 function ConnectionsConfig({
   webId,
@@ -107,11 +108,12 @@ function ConnectionsConfig({
                   <CommandGroup>
                     {otherSources?.map((otherSource: Source, id: number) => (
                       <CommandItem
-                        key={id + 1000}
+                        key={otherSource.sourceId}
                         className="cursor-pointer items-start wrap "
                         onSelect={() => {
                           handleSelectToSource(otherSource.sourceId);
                         }}
+                        value={otherSource.name + id.toString()}
                       >
                         {mapSourceToIcon(otherSource.type, 16)}
                         {otherSource.name}
@@ -141,7 +143,7 @@ function ConnectionsConfig({
         </div>
         <CollapsibleContent className="space-y-2 w-full px-4 pb-2 font-mono text-sm">
           {isLoadingOutgoingConnections ? (
-            <Loader2 className="animate-spin" />
+            <Skeleton className="h-16 w-full rounded-xl" />
           ) : (
             <>
               {!outgoingConnections?.length &&
@@ -187,7 +189,7 @@ function ConnectionsConfig({
         </div>
         <CollapsibleContent className="space-y-2 w-full px-4 pb-2 font-mono text-sm">
           {isLoadingIncomingConnections ? (
-            <Loader2 className="animate-spin" />
+            <Skeleton className="h-16 w-full rounded-xl" />
           ) : !incomingConnections?.length ? (
             <span>Nothing yet.</span>
           ) : incomingConnections ? (

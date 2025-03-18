@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge"
 import {
   Link,
   File,
@@ -15,7 +15,7 @@ import AddSourceModal from "./AddSourceModal";
 import WebGraph from "./WebGraph";
 import { CreateWeb } from "@/types/web";
 import { Source } from "@/types/source";
-import { useFetchSourcesForWeb, useUploadNote } from "@/hooks/sources";
+import { useFetchSourcesForWeb, useFileUpload, useUploadNote } from "@/hooks/sources";
 import {
   Command,
   CommandEmpty,
@@ -74,13 +74,39 @@ function WebPlayground({
     description: web?.description || "",
   });
   const [searchDialogOpen, setSearchDialogOpen] = useState<boolean>(false);
-
+  const { mutateAsync: uploadFile, isPending: isFileUploading } = useFileUpload(web?.webId || "");
   const {
     data: sources,
     isLoading: sourcesLoading,
     error: sourcesError,
     refetch: refetchSources,
   } = useFetchSourcesForWeb(web?.webId);
+
+   const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    try {
+      const firstSourceId = await uploadFile({ files : files, preserve_obsidian_links: true });
+      toast({
+        title: "File uploaded",
+        description: "File uploaded successfully",
+        duration: 500,
+      });
+      refetchSources();
+      refetch();
+      setSelectedSourceId(firstSourceId);
+      setIsWebDataModalOpen(true);
+      setIsAddSourceModalOpen(false);
+    } catch (err) {
+      console.error(err);
+      toast({
+        variant: "destructive",
+        title: "Error uploading file",
+      });
+    }
+  };
 
   const isOwner = user && user?.id === web?.userId;
   const [selectedSourceId, setSelectedSourceId] = useState<string>("");
@@ -238,6 +264,9 @@ function WebPlayground({
               refreshSources={refetchSources}
               refreshWeb={refetch}
               view={webSearchModalView}
+              handleFileUpload={handleFileUpload}
+                isFileUploading={isFileUploading}
+    
             >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -293,13 +322,13 @@ function WebPlayground({
             </AddSourceModal>
           </div>
         ) : null}
-        {isOwner && web?.sourceIds?.length === 0 && (
+        {isOwner && web?.sourceIds?.length === 0 && !isFileUploading && (
           <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/4 flex flex-col items-center gap-1 text-center min-w-[300px]">
             <h3 className="text-2xl font-bold tracking-tight">
               Add your first source
             </h3>
             <p className="text-sm text-muted-foreground">
-              Start collecting data to add your mind map here.
+              Drag and drop or click below to start collecting data to add your web.
             </p>
             <div className="flex flex-wrap gap-2 whitespace-nowrap mt-2 justify-center">
               {" "}
@@ -314,6 +343,8 @@ function WebPlayground({
                 refreshSources={refetchSources}
                 refreshWeb={refetch}
                 view={webSearchModalView}
+                handleFileUpload={handleFileUpload}
+                isFileUploading={isFileUploading}
               >
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -384,6 +415,8 @@ function WebPlayground({
           sourcesLoading={sourcesLoading}
           selectedSourceId={selectedSourceId}
           setSelectedSourceId={setSelectedSourceId}
+          handleFileUpload={handleFileUpload}
+          isFileUploading={isFileUploading}
         />
         <div className="absolute bottom-8 left-6">
           <div className="flex w-fit rounded-full flex-col pt-0">
@@ -425,6 +458,7 @@ function WebPlayground({
                           key={id}
                           className="cursor-pointer items-start"
                           onSelect={() => handleSourceClick(source.sourceId)}
+                          value={`${source.name}${id}`}
                         >
                           {mapSourceToIcon(source.type, 16)}
                           {source.name}

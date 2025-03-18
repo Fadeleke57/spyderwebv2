@@ -1,22 +1,28 @@
 import api from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+type UploadFilesRequest = {
+  preserve_obsidian_links: boolean;
+  files: FileList;
+}
+
 export const useFileUpload = (
-  userId: string,
   webId: string,
-  fileType: string
 ) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (file: File) => {
+    mutationFn: async ({ preserve_obsidian_links, files }: UploadFilesRequest) => {
       const formData = new FormData();
-      formData.append("file", file);
+      Array.from(files).forEach((file) => formData.append("files", file));
       const response = await api.post(
-        `/sources/upload/${userId}/${webId}/${fileType}`,
+        `/sources/upload/files/${webId}/`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
+          },
+          params: {
+            preserve_obsidian_links,
           },
         }
       );
@@ -73,20 +79,7 @@ export const useUploadYoutube = (webId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sources", webId] });
     },
-  });
-};
-
-export const useRenderFile = (filePath: string) => {
-  return useQuery({
-    queryKey: ["render", "file", filePath],
-    queryFn: async () => {
-      const response = await api.get(
-        `/sources/presigned/url/${encodeURIComponent(filePath)}`
-      );
-      return response.data.presigned_url;
-    },
-    enabled: !!filePath,
-    staleTime: 300000, //5 minutes stale time
+    
   });
 };
 
