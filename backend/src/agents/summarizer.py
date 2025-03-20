@@ -2,7 +2,9 @@ from src.lib.openai.index import client as openaiClient
 from src.lib.logger.index import logger
 
 
-def process_md(md: str): #TODO: TURN THIS INTO A SUMMARY AGENT THAT RETURNS A TWO SENTENCE SUMMARY OF THE TEXT
+def process_md(
+    md: str,
+):  # TODO: TURN THIS INTO A SUMMARY AGENT THAT RETURNS A TWO SENTENCE SUMMARY OF THE TEXT
 
     try:
         prompt = (

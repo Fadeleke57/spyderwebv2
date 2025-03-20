@@ -446,7 +446,9 @@ def delete_source(source_id: str, user=Depends(manager)):
             raise HTTPException(status_code=404, detail="Item not found")
 
         try:
-            pineconeClient.index.delete(ids=[source_id], namespace=affected_web["webId"])
+            pineconeClient.index.delete(
+                ids=[source_id], namespace=affected_web["webId"]
+            )
         except:
             logger.info("Pinecone namespace not found...Skipping embeddings deletion")
 
