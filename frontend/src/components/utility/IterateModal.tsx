@@ -242,7 +242,6 @@ export function IterateModal({
             </label>
             {/* TODO: implement this */}
             <Switch
-              disabled
               id="with-connections"
               name="withConnections"
               checked={formData.withConnections}
