@@ -11,7 +11,18 @@ import { PublicUser } from "@/types/user";
 import { Skeleton } from "../ui/skeleton";
 import { Badge } from "../ui/badge";
 
-function ContributorsBlock({ webId }: { webId: string }) {
+/**
+ * A component that displays a list of contributors for a given web ID.
+ *
+ * It fetches the contributors using the useFetchContributers hook and displays
+ * them in a grid. If there is an error or the contributors are loading, it
+ * displays a loading or error message.
+ *
+ * @param {Object} props The properties of the component.
+ * @param {string} props.webId The ID of the web to fetch contributors for.
+ * @param {number} props.count The number of contributors to display.
+ */
+function ContributorsBlock({ webId, count }: { webId: string, count: number }) { //count is number of contributors
   const {
     data: contributors,
     isLoading: isContributorsLoading,
@@ -23,7 +34,7 @@ function ContributorsBlock({ webId }: { webId: string }) {
       <div className="px-4 py-2">
         <h2 className="text-md mb-4">Contributors</h2>
         <div className="flex flex-wrap gap-2">
-          {[...Array(3)].map((_, i) => (
+          {[...Array(count)].map((_, i) => (
             <Skeleton key={i} className="w-12 h-12 rounded-full" />
           ))}
         </div>

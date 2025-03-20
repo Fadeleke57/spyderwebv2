@@ -207,7 +207,7 @@ function Index() {
                 <PublicWebView web={web} />
               ) : null}
               <Separator className="my-4" />
-              {webId && <ContributersBlock webId={webId as string} />}
+              {webId && web && web.iterations.length > 0 && <ContributersBlock count={web.iterations.length} webId={webId as string} />}
             </ScrollArea>
           )}
           {loading ? (
