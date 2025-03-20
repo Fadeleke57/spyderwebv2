@@ -400,58 +400,47 @@ class Neo4jDBService:
         self.execute_query(query, {"source_id": source_id})
         return True
 
-    def _create_connections_for_copied_sources(
-        self, original_web_id: str, new_web_id: str, id_mapping: dict
-    ) -> None:
-        query = """
-            MATCH (originalSource:source)-[c:connection]->(originalTarget:source)
-            WHERE originalSource.webId = $originalWebId 
-            AND originalTarget.webId = $originalWebId
-            AND originalSource.sourceId IN $originalSourceIds
-            AND originalTarget.sourceId IN $originalSourceIds
+    def copy_sources_to_new_web(self, original_web_id: str, new_web_id: str, new_user_id: str, with_connections: bool = False) -> Tuple[str, List[str]]:
+        if with_connections:
+            logger.info("Copying sources with connections...")
+            query = """
+            MATCH (originalSource:source)
+            WHERE originalSource.webId = $originalWebId
             
-            WITH originalSource.sourceId AS origSourceId, 
-                originalTarget.sourceId AS origTargetId,
-                c,
-                $idMapping AS idMapping
+            WITH collect(originalSource) AS originalSources
+            CALL apoc.graph.fromCypher("
+                MATCH (s:source {webId: $originalWebId})
+                OPTIONAL MATCH (s)-[r:CONNECTION]->(t:source {webId: $originalWebId})
+                RETURN s, r, t
+            ", {originalWebId: $originalWebId}, "sourceGraph") YIELD graph
+
+            CALL apoc.refactor.cloneSubgraph(graph.nodes, graph.relationships) YIELD input, output, error
             
-            MATCH (newSource:source), (newTarget:source)
-            WHERE newSource.sourceId = idMapping[origSourceId]
-            AND newTarget.sourceId = idMapping[origTargetId]
-            AND newSource.webId = $newWebId
-            AND newTarget.webId = $newWebId
-            
-            CREATE (newSource)-[newC:connection]->(newTarget)
-            SET newC = c {.*, connectionId: randomUUID()}
-        """
-
-        self.execute_query(
-            query,
-            {
-                "originalWebId": original_web_id,
-                "newWebId": new_web_id,
-                "idMapping": id_mapping,
-                "originalSourceIds": list(id_mapping.keys()),
-            },
-        )
-
-    def copy_sources_to_new_web(
-        self,
-        original_web_id: str,
-        new_web_id: str,
-        new_user_id: str,
-        with_connections: bool = False,
-    ) -> Tuple[str, List[str]]:
-        # copy all source nodes and create a mapping
-        query = """
-        MATCH (originalSource:source)
-        WHERE originalSource.webId = $originalWebId
-        WITH originalSource, $newWebId AS newWebId, $newUserId AS newUserId
-
-        CREATE (newSource:source)
-        SET newSource = originalSource {.*, sourceId: randomUUID(), webId: newWebId, userId: newUserId}
-        RETURN originalSource.sourceId AS originalSourceId, newSource.sourceId AS newSourceId;
-        """
+            WITH collect(output) AS outputs
+            UNWIND outputs AS clone
+            WITH clone
+            WHERE clone IS NOT NULL AND 'source' IN labels(clone)
+            SET clone.webId = $newWebId,
+                clone.userId = $newUserId,
+                clone.sourceId = randomUUID()
+                
+            MATCH (s:source {webId: $newWebId})-[r:CONNECTION]->(t:source {webId: $newWebId})
+            SET r.connectionId = randomUUID(),
+                r.webId = $newWebId
+                
+            RETURN DISTINCT s.sourceId AS newSourceId;
+            """
+        else:
+            logger.info("Copying sources without connections...")
+            query = """
+            MATCH (originalSource:source)
+            WHERE originalSource.webId = $originalWebId
+            CALL apoc.refactor.cloneNodes([originalSource]) YIELD input, output
+            SET output.webId = $newWebId,
+                output.userId = $newUserId,
+                output.sourceId = randomUUID()
+            RETURN output.sourceId AS newSourceId;
+            """
 
         result = self.execute_query(
             query,
@@ -461,18 +450,8 @@ class Neo4jDBService:
                 "newUserId": new_user_id,
             },
         )
-
-        # create mapping and collect new source IDs
-        id_mapping = {
-            record["originalSourceId"]: record["newSourceId"] for record in result
-        }
-        new_source_ids = list(id_mapping.values())
-
-        # if with_connections is True, create the connections between new sources
-        if with_connections and id_mapping:
-            self._create_connections_for_copied_sources(
-                original_web_id, new_web_id, id_mapping
-            )
+        logger.info(f"New source IDs: {result}")
+        new_source_ids = [record["newSourceId"] for record in result]
 
         return new_web_id, new_source_ids
 

@@ -58,7 +58,7 @@ function WebGraph({
 }: GraphProps) {
 
   const [isDragging, setIsDragging] = useState(false);
-    const handleDragEnter = (e: React.DragEvent) => {
+  const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
@@ -86,7 +86,7 @@ function WebGraph({
     
     //filter for acceptable file types
     const acceptedFileTypes = ['.md', '.txt', '.pdf'];
-    const isAcceptedFile = (file: File) => 
+    const isAcceptedFile = (file: File) =>
       acceptedFileTypes.some(type => file.name.toLowerCase().endsWith(type));
     
     //handle both files and folders
@@ -183,10 +183,9 @@ function WebGraph({
   };
 
   useEffect(() => {
-    if (!svgRef.current || !fetchedSources || !connections || connectionsLoading || sourcesLoading) {
+    if (!svgRef.current || !fetchedSources || fetchedSources.length === 0 || !connections || connectionsLoading || sourcesLoading) {
       return;
     }
-    
     const width = 3200;
     const height = 2400;
     const centerX = width / 8 + (isMobile ? -220 : 40);
