@@ -151,8 +151,10 @@ export function IterateModal({
             <div className="flex flex-col gap-2">
               <label htmlFor="with-connections" className="text-sm font-medium">
                 Include connections?
+                <span className="ml-2 rounded-xl bg-violet-400 px-2 py-1 text-white text-xs">PRO</span>
               </label>
               <Switch
+                disabled
                 id="with-connections"
                 name="withConnections"
                 checked={formData.withConnections}
@@ -239,9 +241,11 @@ export function IterateModal({
           <div className="flex flex-col gap-2">
             <label htmlFor="with-connections" className="text-sm font-medium">
               Include connections?
+              <span className="ml-2 rounded-xl bg-violet-400 px-2 py-1 text-white text-xs">PRO</span>
             </label>
             {/* TODO: implement this */}
             <Switch
+              disabled
               id="with-connections"
               name="withConnections"
               checked={formData.withConnections}

@@ -404,7 +404,7 @@ class Neo4jDBService:
         new_user_id: str,
         with_connections: bool = False,
     ) -> Tuple[str, List[str]]:
-        if with_connections:
+        if with_connections: # TODO: Fix this
             logger.info("Copying sources with connections...")
             query = """
             MATCH (originalSource:source {webId: $originalWebId})
