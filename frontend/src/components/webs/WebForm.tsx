@@ -13,13 +13,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Textarea } from "../ui/textarea";
-import { debounce, set } from "lodash";
+import { debounce} from "lodash";
 import { ConfirmModal } from "../utility/ConfirmModal";
-import { TagsPopover } from "../home/TagsPopover";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { ImageIcon, X } from "lucide-react";
+import { ImageIcon, Lock, X } from "lucide-react";
 import DeleteModal from "../utility/DeleteModal";
 import {
   MAX_IMAGE_SIZE,
@@ -272,8 +271,9 @@ function WebForm({ web, user }: FormProps) {
         <div>
           <div className="flex flex-col">
             <div className="flex flex-col">
-              <small className="text-sm font-medium leading-none text-blue-500 dark:text-blue-400">
-                {webConfig.visibility}
+              <small className="text-sm font-medium leading-none text-violet-500 dark:text-violet-400 flex flex-row items-center">
+                
+                <></>{webConfig.visibility} <Lock size={12} className="mr-2 ml-1" />
                 {isOwner && (
                   <ConfirmModal
                     action={() =>
@@ -285,14 +285,14 @@ function WebForm({ web, user }: FormProps) {
                     }
                     actionButtonStr={
                       webConfig.visibility === "Private"
-                        ? "Make Public"
+                        ? "Publish"
                         : "Make Private"
                     }
                     actionStr={
-                      "Are you sure you want to switch this web to " +
+                      "Are you sure you want to " +
                       (webConfig.visibility === "Private"
-                        ? "public"
-                        : "private") +
+                        ? "publish this web"
+                        : "make this web private") +
                       "?"
                     }
                   >

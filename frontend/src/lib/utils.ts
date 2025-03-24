@@ -14,6 +14,12 @@ export function formatText(text: string, maxChars: number) {
   return text;
 }
 
+/**
+ * Extract the video id from a given YouTube url.
+ *
+ * @param {string} url
+ * @returns {string | null}
+ */
 export function extractVideoId(url: string | undefined) {
   if (!url) return;
   const regex =
@@ -22,8 +28,17 @@ export function extractVideoId(url: string | undefined) {
   return match ? match[1] : null;
 }
 
-/*graph stuff*/
-
+/**
+ * Maps a given theme to its corresponding base node color.
+ *
+ * @param {string | undefined} theme - The theme for which to get the base node color.
+ * @returns {string} - The hex color code representing the base node color for the given theme.
+ *
+ * @example
+ * mapThemeToBaseNodeColor("light") // "#5ea4ff"
+ * mapThemeToBaseNodeColor("dark") // "#b8b8b8"
+ * mapThemeToBaseNodeColor(undefined) // "#b8b8b8"
+ */
 export const mapThemeToBaseNodeColor = (theme: string | undefined) => {
   switch (theme) {
     case "light":
@@ -35,6 +50,17 @@ export const mapThemeToBaseNodeColor = (theme: string | undefined) => {
   }
 };
 
+/**
+ * Maps a given theme to its corresponding node hover color.
+ *
+ * @param {string | undefined} theme - The theme for which to get the node hover color.
+ * @returns {string} - The hex color code representing the node hover color for the given theme.
+ *
+ * @example
+ * mapThemetoHoverNodeColor("light") // "#c084fc"
+ * mapThemetoHoverNodeColor("dark") // "#a78bfa"
+ * mapThemetoHoverNodeColor(undefined) // "#a78bfa"
+ */
 export const mapThemetoHoverNodeColor = (theme: string | undefined) => {
   switch (theme) {
     case "light":
@@ -45,6 +71,18 @@ export const mapThemetoHoverNodeColor = (theme: string | undefined) => {
       return "#a78bfa";
   }
 };
+
+/**
+ * Maps a given theme to its corresponding text color.
+ *
+ * @param {string | undefined} theme - The theme for which to get the text color.
+ * @returns {string} - The hex color code representing the text color for the given theme.
+ *
+ * @example
+ * mapThemeToTextColor("light") // "#374151"
+ * mapThemeToTextColor("dark") // "#b8b8b8"
+ * mapThemeToTextColor(undefined) // "#b8b8b8"
+ */
 
 export const mapThemeToTextColor = (theme: string | undefined) => {
   switch (theme) {
@@ -57,6 +95,16 @@ export const mapThemeToTextColor = (theme: string | undefined) => {
   }
 };
 
+/**
+ * Detects if the user is on a mobile device and using the LinkedIn app,
+ * and if so, redirects them to the same URL but with a special prefix that
+ * allows the app to open the URL in the external browser.
+ *
+ * This is a workaround for a bug in the LinkedIn app where it doesn't allow
+ * the user to open external links in the app's built-in browser.
+ *
+ * @returns {boolean} Whether the redirect was successful.
+ */
 export const handleLinkedInWebView = () => {
   if (typeof window === "undefined") return;
 
@@ -74,7 +122,17 @@ export const handleLinkedInWebView = () => {
   return false;
 };
 
-// Detect Safari browser
+
+/**
+ * Checks if the current browser is Safari.
+ * 
+ * This function determines whether the user's browser is Safari by checking
+ * the user agent string. It excludes cases where the browser is Chrome,
+ * despite potentially identifying as Safari.
+ * 
+ * @returns {boolean} True if the browser is Safari, false otherwise.
+ */
+
 export const isSafari = () => {
   if (typeof window === "undefined") return false;
   const userAgent = window.navigator.userAgent.toLowerCase();
@@ -85,6 +143,13 @@ export const isSafari = () => {
 export const shouldUseTspans = isSafari();
 
 export const wrapText = {
+  /**
+   * Appends a foreignObject to the selection for each text element, so that text can be wrapped.
+   * @param selection The selection to append the foreignObject to.
+   * @param width The width of the foreignObject.
+   * @param theme The theme to use for the text color.
+   * @param getColor A function that takes a theme and returns a color.
+   */
   foreignObject: (
     selection: D3Selection,
     width: number,
@@ -114,6 +179,11 @@ export const wrapText = {
     });
   },
 
+  /**
+   * Wraps text selection to tspans to enable line wrapping.
+   * @param {D3Selection} selection The D3 selection to wrap.
+   * @param {number} width The width of the text area.
+   */
   tspans: (selection: D3Selection, width: number) => {
     selection.each(function () {
       const textNode = d3.select(this);
@@ -168,6 +238,16 @@ export const wrapText = {
   },
 };
 
+/**
+ * Updates the text elements of a D3 selection given an array of nodes.
+ * @param {d3.Selection} g The D3 selection to update.
+ * @param {any[]} nodes The array of nodes to update with.
+ * @param {string} theme The current theme.
+ * @param {function} getColor A function that takes the theme and returns the color.
+ * @param {function} getSizeScale A function that takes the size and returns the scaled size.
+ * @param {function} formatText A function that takes the text and a limit, and returns the formatted text.
+ * @returns The updated D3 selection.
+ */
 export const updateTextElements = (
   g: D3Selection,
   nodes: any[],
@@ -198,6 +278,20 @@ export const updateTextElements = (
 
   return textElements;
 };
+
+/**
+ * Format a date string according to the given options.
+ *
+ * If no dateString is given, an empty string is returned.
+ *
+ * If onlyTime is true, only the time is formatted.
+ * If onlyDate is true, only the date is formatted.
+ * Otherwise, the full date and time is formatted.
+ *
+ * @param dateString string to be formatted
+ * @param options formatting options
+ * @returns formatted string
+ */
 export const formatDate = (
   dateString?: string,
   options: { onlyTime?: boolean; onlyDate?: boolean } = {}
@@ -231,6 +325,49 @@ export const formatDate = (
     hour12: true,
   });
 };
+
+/**
+ * Returns a greeting message based on the time of day in the user's timezone
+ * @param timezone - A valid IANA timezone string (e.g., "America/New_York", "Europe/London")
+ * @param time - Optional Date object. If not provided, current time will be used
+ * @returns A greeting message appropriate for the time of day
+ */
+export function getTimeBasedGreeting(timezone: string): string {
+  // Use provided time or current time
+  const currentTime = new Date();
+  
+  // Create date with user's timezone
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: timezone,
+    hour: 'numeric',
+    hour12: false
+  };
+  
+  // Get hour in 24-hour format for the specified timezone
+  const formatter = new Intl.DateTimeFormat('en-US', options);
+  const formattedTime = formatter.format(currentTime);
+  const hour = parseInt(formattedTime, 10);
+  
+  // Determine appropriate greeting based on hour
+  if (hour >= 5 && hour < 12) {
+    return "Good morning";
+  } else if (hour >= 12 && hour < 17) {
+    return "Good afternoon";
+  } else if (hour >= 17 && hour < 22) {
+    return "Good evening";
+  } else {
+    return "Good night";
+  }
+}
+
+// Example usage:
+// const greeting = getTimeBasedGreeting("America/Los_Angeles");
+// console.log(greeting); // Will output greeting based on current time in LA
+
+// For testing with a specific time:
+// const testTime = new Date("2025-03-21T08:30:00Z");
+// const greeting = getTimeBasedGreeting("Asia/Tokyo", testTime);
+// console.log(greeting);
 
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
