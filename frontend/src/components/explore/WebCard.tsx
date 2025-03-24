@@ -58,7 +58,7 @@ export function WebCard({
   const [webSaved, setWebSaved] = useState(false);
   const [webHidden, setWebHidden] = useState(false);
   const [webLiked, setWebLiked] = useState(false);
-  const [webIterated, _] = useState(false);
+  const [webIterated, setWebIterated] = useState(false);
 
   const { data: webOwner, isLoading: webOwnerLoading } = useFetchUserById(
     web.userId
@@ -167,6 +167,7 @@ export function WebCard({
 
   useEffect(() => {
     setWebLiked(web.likes.includes(user?.id as string));
+    setWebIterated(web.iterations.includes(user?.id as string));
     setWebLikedCount(web.likes.length);
     setWebIterationsCount(web.iterations.length);
 
@@ -250,7 +251,7 @@ export function WebCard({
                 {iteratedFrom ? (
                   <p className="text-xs text-muted-foreground font-normal">
                     Iterated From{" "}
-                    <span className="font-semibold text-blue-500 dark:text-blue-400">
+                    <span className="font-semibold text-violet-500 dark:text-violet-400">
                       @{iteratedFrom.username}
                     </span>
                   </p>
@@ -299,7 +300,7 @@ export function WebCard({
         {images.length > 0 && (
           <>
             <ScrollArea className="w-full flex flex-row px-4">
-              <div className="flex-1">
+              <div className="flex-1 w-full max-h-[300px] overflow-hidden mb-2 ">
                 <Image
                   height={300}
                   width={500}
@@ -324,7 +325,7 @@ export function WebCard({
         )}
 
         <CardContent />
-        <div className="absolute bottom-4 left-6 flex flex-row space-x-2">
+        <div className="absolute bottom-4 left-6 flex flex-row space-x-1">
           <div className="flex flex-row items-center space-x-1">
             <AnimatedStarButton
               isStarred={webLiked}
@@ -332,12 +333,12 @@ export function WebCard({
               onStarClick={handleLikeWeb}
             />
           </div>
-          <div className="flex flex-row items-center space-x-1">
+          <div className="flex flex-row items-center space-x-1 text-muted-foreground rounded-full hover:bg-green-300/10 hover:text-green-500 dark:hover:bg-green-400/10 p-1 transition ease-in">
             <p
               className={`text-sm ${
                 webIterated
-                  ? "text-blue-500 dark:text-blue-400"
-                  : "text-muted-foreground"
+                  ? "text-green-500 dark:text-green-300"
+                  : ""
               }`}
             >
               {webIterationsCount}
@@ -345,8 +346,8 @@ export function WebCard({
             <IterationCcw
               className={`${
                 webIterated
-                  ? "text-blue-500 dark:text-blue-400"
-                  : "text-muted-foreground hover:text-blue-500 dark:hover:text-blue-400"
+                  ? "text-green-500 dark:text-green-400"
+                  : ""
               }`}
               size={14}
               onClick={handleIterateWeb}

@@ -30,7 +30,7 @@ function PublicWebView({ web }: { web: Web }) {
       <div className="grid gap-6 rounded-lg pb-2 pt-4 px-4">
         <div>
           <div className="flex flex-col space-y-2">
-            <small className="text-sm font-medium leading-none text-blue-500 dark:text-blue-400">
+            <small className="text-sm font-medium leading-none text-violet-500 dark:text-violet-400">
               {web?.visibility === "Private" ? "Private" : "Public"}
             </small>
             <span id="name" className="text-md font-semibold">

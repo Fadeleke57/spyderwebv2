@@ -8,11 +8,16 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { Settings } from "lucide-react";
 import SpydrAI from "@/components/utility/Assistant";
+import { getTimeBasedGreeting } from "@/lib/utils";
+import spydrLogo from "@/assets/spydr_icon.svg"
+import Image from "next/image";
 
 function Index() {
   const { user } = useUser();
   const router = useRouter();
   const { loginSource } = router.query;
+
+  const greeting = getTimeBasedGreeting("America/New_York");
 
   return (
     <div className="flex flex-col gap-12 lg:gap-20 p-6 pt-16 pb-36 lg:py-16 min-h-screen overflow-x-hidden max-w-[920px] mx-auto">
@@ -32,19 +37,24 @@ function Index() {
         onClick={() => router.push("/settings")}
         className="absolute top-6 right-4 lg:top-8 lg:right-8 cursor-pointer hover:opacity-50"
       />
-      <h1 className="text-2xl text-center lg:text-4xl font-extrabold tracking-tight">
-        Welcome to Spydr, {user?.username}
-      </h1>
+      
+      <div className="flex flex-row gap-2 w-full items-center justify-center">
+        <Image src={spydrLogo} alt="spydr logo" width={30} height={30} />
+        <h1 className="text-2xl text-center lg:text-3xl font-extrabold tracking-tight">
+        {greeting}, {user?.username}
+        </h1> 
+      </div>
+
       <div>
-        <span className="text-lg font-semibold ml-2">Popular</span>
+        <span className="text-md font-semibold ml-2 dark:text-muted-foreground">Popular</span>
         <TrendingSearchCarousel />
       </div>
       <div>
         <div className="flex flex-col">
-          <span className="text-lg font-semibold ml-2">Recent Webs</span>{" "}
+          <span className="text-md font-semibold ml-2 dark:text-muted-foreground">Recent Webs</span>{" "}
           <Link
             href={"/webs"}
-            className="ml-2 text-blue-500 hover:underline"
+            className="ml-2 text-violet-400 hover:underline"
           >
             View All
           </Link>

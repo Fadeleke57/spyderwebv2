@@ -118,7 +118,7 @@ function Index() {
                   {web?.iteratedFrom ? (
                     <p className="text-xs font-normal text-muted-foreground">
                       Iterated From{" "}
-                      <span className="font-semibold text-blue-500 dark:text-blue-400">
+                      <span className="font-semibold text-violet-400 dark:text-violet-400">
                         @{iteratedFromUser?.username}
                       </span>
                     </p>
@@ -152,7 +152,7 @@ function Index() {
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>AI connections enabled</p>
+                    <p>{isOwner ? "AI connections enabled" : `${webOwner.username} has enabled AI connections`}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -205,9 +205,12 @@ function Index() {
                 <WebForm web={web} user={user ? user : null} />
               ) : web ? (
                 <PublicWebView web={web} />
-              ) : null}
-              <Separator className="my-4" />
-              {webId && web && web.iterations.length > 0 && <ContributersBlock count={web.iterations.length} webId={webId as string} />}
+                ) : null}{webId && web && web.iterations.length > 0 &&
+                  <>
+                    <Separator className="my-4" />
+                    <ContributersBlock count={web.iterations.length} webId={webId as string} />
+                  </>
+}
             </ScrollArea>
           )}
           {loading ? (
