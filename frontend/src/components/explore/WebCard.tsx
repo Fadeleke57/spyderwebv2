@@ -18,11 +18,7 @@ import {
   Bookmark,
   Star,
 } from "lucide-react";
-import {
-  useGetAllImagesForWeb,
-  useLikeWeb,
-  useUnlikeWeb,
-} from "@/hooks/webs";
+import { useGetAllImagesForWeb, useLikeWeb, useUnlikeWeb } from "@/hooks/webs";
 import UserAvatar from "../utility/UserAvatar";
 import {
   useFetchUserById,
@@ -47,13 +43,7 @@ import { ImageModal } from "../utility/ImageModal";
 import { SkeletonCard } from "../utility/SkeletonCard";
 import { AnimatedStarButton } from "./AnimatedStar";
 
-export function WebCard({
-  web,
-  user,
-}: {
-  web: Web;
-  user: PublicUser | null;
-}) {
+export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
   const [webLikedCount, setWebLikedCount] = useState(web.likes.length);
   const [webSaved, setWebSaved] = useState(false);
   const [webHidden, setWebHidden] = useState(false);
@@ -63,8 +53,9 @@ export function WebCard({
   const { data: webOwner, isLoading: webOwnerLoading } = useFetchUserById(
     web.userId
   );
-  const { data: imageUrls, isLoading: imagesLoading } =
-    useGetAllImagesForWeb(web.webId);
+  const { data: imageUrls, isLoading: imagesLoading } = useGetAllImagesForWeb(
+    web.webId
+  );
   const { data: iteratedFromUser, isLoading: iteratedFromLoading } =
     useFetchUserById(web.iteratedFrom || "");
   const [webIterationsCount, setWebIterationsCount] = useState(
@@ -300,7 +291,7 @@ export function WebCard({
         {images.length > 0 && (
           <>
             <ScrollArea className="w-full flex flex-row px-4">
-              <div className="flex-1 w-full max-h-[300px] overflow-hidden mb-2 ">
+              <div className="flex-1 w-full max-h-[300px] overflow-hidden mb-2 rounded-md ">
                 <Image
                   height={300}
                   width={500}
@@ -333,24 +324,22 @@ export function WebCard({
               onStarClick={handleLikeWeb}
             />
           </div>
-          <div className="flex flex-row items-center space-x-1 text-muted-foreground rounded-full hover:bg-green-300/10 hover:text-green-500 dark:hover:bg-green-400/10 p-1 transition ease-in">
+          <div
+            className="flex flex-row items-center space-x-1 text-muted-foreground rounded-full hover:bg-green-300/10 hover:text-green-500 dark:hover:bg-green-400/10 p-1 transition ease-in"
+            onClick={handleIterateWeb}
+          >
             <p
               className={`text-sm ${
-                webIterated
-                  ? "text-green-500 dark:text-green-300"
-                  : ""
+                webIterated ? "text-green-500 dark:text-green-300" : ""
               }`}
             >
               {webIterationsCount}
             </p>
             <IterationCcw
               className={`${
-                webIterated
-                  ? "text-green-500 dark:text-green-400"
-                  : ""
+                webIterated ? "text-green-500 dark:text-green-400" : ""
               }`}
               size={14}
-              onClick={handleIterateWeb}
             />
           </div>
         </div>
