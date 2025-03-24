@@ -12,11 +12,9 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import {
   IterationCcw,
-  ArrowBigUpDash,
   EllipsisIcon,
   EyeOff,
   Bookmark,
-  Star,
 } from "lucide-react";
 import { useGetAllImagesForWeb, useLikeWeb, useUnlikeWeb } from "@/hooks/webs";
 import UserAvatar from "../utility/UserAvatar";
