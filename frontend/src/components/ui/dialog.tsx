@@ -49,7 +49,7 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogPrimitive.Close hidden={props.hideClose ?? false} className={`absolute right-4 top-5 opacity-100 transition-opacity hover:${props.secondary ? "opacity-70" : "bg-muted"} disabled:pointer-events-none rounded-full bg-${props.secondary ? "muted-foreground" : "transparent"} dark:text-white p-2 ${props.hideClose ? "hidden" : ""}`}>
+      <DialogPrimitive.Close hidden={props.hideClose ?? false} className={`absolute right-4 top-5 opacity-100 transition-opacity hover:${props.secondary ? "opacity-70" : "opacity-100"} rounded-full bg-${props.secondary ? "background" : "transparent"} p-2 ${props.hideClose ? "hidden" : ""}`}>
         <X size={16} />
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
