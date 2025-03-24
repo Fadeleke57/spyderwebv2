@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Star } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { Star } from "lucide-react";
 
-export const AnimatedStarButton = ({ 
-  count, 
-  isStarred, 
-  onStarClick, 
+export const AnimatedStarButton = ({
+  count,
+  isStarred,
+  onStarClick,
   size = 16,
-  className = ""
+  className = "",
 }: {
   count: number;
   isStarred: boolean;
@@ -16,8 +16,8 @@ export const AnimatedStarButton = ({
 }) => {
   const [animating, setAnimating] = useState(false);
   const starRef = useRef(null);
-  
-  const handleClick = (e : any) => {
+
+  const handleClick = (e: any) => {
     onStarClick(e);
     if (!isStarred) {
       setAnimating(true);
@@ -26,13 +26,18 @@ export const AnimatedStarButton = ({
   };
 
   return (
-    <div className="flex flex-row items-center space-x-1 relative text-muted-foreground hover:text-violet-500 p-1 rounded-full hover:bg-violet-500/20 transition-colors ease-in">
-      <p className={`text-sm transition-all duration-300 ${
-        isStarred ? "text-violet-500 dark:text-violet-400" : ""
-      } ${animating ? "scale-110" : ""}`}>
+    <div
+      className="flex flex-row items-center space-x-1 relative text-muted-foreground hover:text-violet-500 p-1 rounded-full hover:bg-violet-500/20 transition-colors ease-in"
+      onClick={handleClick}
+    >
+      <p
+        className={`text-sm transition-all duration-300 ${
+          isStarred ? "text-violet-500 dark:text-violet-400" : ""
+        } ${animating ? "scale-110" : ""}`}
+      >
         {count}
       </p>
-      
+
       <div className="relative">
         {/* Background burst */}
         {animating && (
@@ -40,7 +45,7 @@ export const AnimatedStarButton = ({
             <div className="absolute w-8 h-8 bg-violet-100 dark:bg-violet-900 rounded-full opacity-70 scale-0 animate-ping-scale" />
           </div>
         )}
-        
+
         {/* Small stars that fly out */}
         {animating && (
           <>
@@ -53,7 +58,7 @@ export const AnimatedStarButton = ({
             </div>
           </>
         )}
-        
+
         <Star
           ref={starRef}
           size={size}
@@ -63,7 +68,6 @@ export const AnimatedStarButton = ({
               ? "text-violet-500 dark:text-violet-400 fill-violet-500 dark:fill-violet-400"
               : ""
           } ${animating ? "animate-star-pop" : "transition-colors duration-300"} ${className}`}
-          onClick={handleClick}
         />
       </div>
     </div>
@@ -140,18 +144,17 @@ const styles = `
 }
 `;
 
-
 export default function AnimatedStar() {
   const [starred, setStarred] = useState(false);
   const [count, setCount] = useState(42);
-  
-  const handleStarClick = (e : React.MouseEvent) => {
+
+  const handleStarClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     setStarred(!starred);
     setCount(starred ? count - 1 : count + 1);
   };
-  
+
   return (
     <div className="p-6 bg-white dark:bg-slate-800 rounded-md shadow">
       <style jsx>{styles}</style>
