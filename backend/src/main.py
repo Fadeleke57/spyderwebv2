@@ -6,6 +6,8 @@ from src.routes.user.index import router as user_router
 from src.routes.webs.index import router as webs_router
 from src.routes.sources.index import router as sources_router
 from src.routes.connections.index import router as connections_router
+from src.routes.chat.index import router as chat_router
+from src.routes.process.index import router as process_router
 import logging
 
 logging.basicConfig(level=logging.ERROR)
@@ -37,6 +39,8 @@ app.include_router(user_router, prefix="/users")
 app.include_router(webs_router, prefix="/webs")
 app.include_router(sources_router, prefix="/sources")
 app.include_router(connections_router, prefix="/connections")
+app.include_router(chat_router, prefix="/chat")
+app.include_router(process_router, prefix="/processes")
 
 
 @app.get("/")

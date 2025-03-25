@@ -25,6 +25,7 @@ from botocore.exceptions import ClientError
 from pytz import UTC
 import os
 from src.lib.pinecone.index import client as pineconeClient
+from src.models.process import create_process, update_process
 
 router = APIRouter()
 s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
@@ -34,6 +35,7 @@ s3 = boto3.client("s3")
 async def process_file(
     user_id: str,
     web_id: str,
+    job_id: str,
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
 ):
@@ -53,6 +55,8 @@ async def process_file(
         HTTPException: If the upload fails.
     """
     file_type = file.filename.split(".")[-1].lower()
+    if file_type not in {"pdf", "txt", "md"}:
+        return None
 
     temp_dir = tempfile.gettempdir()  # gets system temp directory (cross-platform)
     temp_path = os.path.join(temp_dir, file.filename)
@@ -124,6 +128,7 @@ async def process_file(
         return sourceToInsert
 
     except Exception as e:
+        update_process(job_id=job_id, status="failed", percentage=0, error=str(e))
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -141,9 +146,14 @@ async def upload_files(
     processes embeddings, and saves metadata in the database.
     """
     check_user(user)
-    logger.info("Preserve Obsidian links: %s", preserve_obsidian_links)
+    job_id = create_process(
+        web_id=web_id, type="upload", description=f"Uploading {len(files)} files..."
+    )
 
     if not files:
+        update_process(
+            job_id=job_id, status="failed", percentage=0, error="No files uploaded."
+        )
         raise HTTPException(status_code=400, detail="No files uploaded.")
 
     sources = []
@@ -151,16 +161,26 @@ async def upload_files(
         result = await process_file(
             user_id=user["id"],
             web_id=web_id,
+            job_id=job_id,
             background_tasks=background_tasks,
             file=file,
         )
-        sources.append(result)
+
+        if result:
+            sources.append(result)
+
+        update_process(
+            job_id=job_id,
+            status="processing",
+            percentage=((len(sources) / len(files)) * 100),
+        )
 
     if preserve_obsidian_links:
         logger.info("Parsing Obsidian links...")
         background_tasks.add_task(sourceService.parse_obsidian_links, web_id, sources)
 
-    return {"result": sources[0]["sourceId"] if sources else None}
+    update_process(job_id=job_id, status="completed", percentage=100)
+    return {"result": sources[0]["sourceId"] if sources else None, "process": job_id}
 
 
 class UrlRequest(BaseModel):
@@ -194,11 +214,11 @@ def add_website(
     check_user(user)
 
     try:
+
         try:
-
             title, md = firecrawlClient.run_scrape(str(url.url))
-
         except Exception as e:
+            logger.error(str(e))
             raise HTTPException(
                 status_code=400, detail="Could not retrieve the webpage"
             )
@@ -430,7 +450,7 @@ def delete_source(source_id: str, user=Depends(manager)):
     try:
         result = neo4jClient.delete_source(source_id)
         if not result:
-            raise HTTPException(status_code=404, detail="Item not found")
+            return {"result": "Source not found"}
 
         # remove from s3 if it's a document type (commenting out for now for iterations)
         # if source["type"] == "document":
@@ -443,7 +463,7 @@ def delete_source(source_id: str, user=Depends(manager)):
         )
 
         if not affected_web:
-            raise HTTPException(status_code=404, detail="Item not found")
+            {"result": "Web not found"}
 
         try:
             pineconeClient.index.delete(

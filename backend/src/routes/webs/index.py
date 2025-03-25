@@ -375,6 +375,10 @@ def delete_web(webId: str, user=Depends(manager)):
     check_user(user)
     try:
         webToDelete = Webs.find_one_and_delete({"webId": webId, "userId": user["id"]})
+        if not webToDelete:
+            logger.info(f"Web {webId} not found or not owned by user {user['id']}")
+            return {"result": "Web not found"}
+
         logger.info(f"Web {webId} deleted by user {user['id']}")
 
         pineconeClient.index.delete(ids=[webId], namespace="webs")

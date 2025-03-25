@@ -4,7 +4,7 @@ import { CreateWeb } from "@/types/web";
 import { useState, Dispatch, SetStateAction } from "react";
 import { LoadingPage } from "@/components/utility/Loading";
 import WebDataDrawer from "./WebDataModal";
-import { useDeleteSource} from "@/hooks/sources";
+import { useDeleteSource } from "@/hooks/sources";
 import { Source, SourceAsNode } from "@/types/source";
 import { Trash } from "lucide-react";
 import { updateTextElements, shouldUseTspans } from "@/lib/utils";
@@ -23,7 +23,6 @@ import {
   mapThemeToTextColor,
 } from "@/lib/utils";
 import SourceTooltip from "./SourceToolTip";
-import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
 import { Connection } from "@/types/connection";
 
 interface GraphProps {
@@ -40,6 +39,9 @@ interface GraphProps {
   setSelectedSourceId: Dispatch<SetStateAction<string>>;
   handleFileUpload: (files: FileList | null) => void;
   isFileUploading: boolean;
+  connections: Connection[];
+  connectionsLoading: boolean;
+  refetchConnections: () => void;
 }
 
 function WebGraph({
@@ -55,8 +57,10 @@ function WebGraph({
   setSelectedSourceId,
   handleFileUpload,
   isFileUploading,
+  connections,
+  connectionsLoading,
+  refetchConnections,
 }: GraphProps) {
-
   const [isDragging, setIsDragging] = useState(false);
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -83,16 +87,16 @@ function WebGraph({
 
     //handle directory and file drops
     const items = Array.from(e.dataTransfer.items);
-    
+
     //filter for acceptable file types
-    const acceptedFileTypes = ['.md', '.txt', '.pdf'];
+    const acceptedFileTypes = [".md", ".txt", ".pdf"];
     const isAcceptedFile = (file: File) =>
-      acceptedFileTypes.some(type => file.name.toLowerCase().endsWith(type));
-    
+      acceptedFileTypes.some((type) => file.name.toLowerCase().endsWith(type));
+
     //handle both files and folders
     if (items.length > 0) {
       const fileList: File[] = [];
-      
+
       //process entries recursively to handle folders
       const processEntry = async (entry: any) => {
         if (entry.isFile) {
@@ -102,7 +106,7 @@ function WebGraph({
               resolve(file);
             });
           });
-          
+
           if (isAcceptedFile(file)) {
             fileList.push(file);
           }
@@ -114,19 +118,19 @@ function WebGraph({
               resolve(entries);
             });
           });
-          
+
           // process all entries in the directory
           for (const childEntry of entries) {
             await processEntry(childEntry);
           }
         }
       };
-      
+
       //process all dropped items
       for (const item of items) {
-        if (item.kind === 'file') {
+        if (item.kind === "file") {
           const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
-          
+
           if (entry) {
             await processEntry(entry);
           } else {
@@ -138,11 +142,11 @@ function WebGraph({
           }
         }
       }
-      
+
       if (fileList.length > 0) {
         // convert array to FileList-like object
         const dataTransfer = new DataTransfer();
-        fileList.forEach(file => dataTransfer.items.add(file));
+        fileList.forEach((file) => dataTransfer.items.add(file));
         handleFileUpload(dataTransfer.files);
       }
     } else if (e.dataTransfer.files.length > 0) {
@@ -166,14 +170,7 @@ function WebGraph({
 
   const [isDrawerOpen, setDrawerOpen] = useState(false);
 
-  const {
-    data: connections,
-    isLoading: connectionsLoading,
-    refetch: refetchConnections,
-  } = useFetchAllConnectionsForWeb(webId);
-
   const { mutateAsync: deleteSource } = useDeleteSource();
-
 
   const handleDeleteSource = async (sourceId: string) => {
     await deleteSource(sourceId);
@@ -183,7 +180,14 @@ function WebGraph({
   };
 
   useEffect(() => {
-    if (!svgRef.current || !fetchedSources || fetchedSources.length === 0 || !connections || connectionsLoading || sourcesLoading) {
+    if (
+      !svgRef.current ||
+      !fetchedSources ||
+      fetchedSources.length === 0 ||
+      !connections ||
+      connectionsLoading ||
+      sourcesLoading
+    ) {
       return;
     }
     const width = 3200;
@@ -540,12 +544,16 @@ function WebGraph({
     theme,
   ]);
 
-  if (isFileUploading || ((connectionsLoading || sourcesLoading) && hasSources)) {
+  if (
+    isFileUploading ||
+    ((connectionsLoading || sourcesLoading) && hasSources)
+  ) {
     return <LoadingPage></LoadingPage>;
   }
 
   return (
-    <div className={`h-full ${isDragging ? "cursor-grabbing border border-dashed border-foreground border-2 rounded-md" : ""}`}
+    <div
+      className={`h-full ${isDragging ? "cursor-grabbing border border-dashed border-foreground border-2 rounded-md" : ""}`}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
