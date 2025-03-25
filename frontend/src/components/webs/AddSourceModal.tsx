@@ -15,7 +15,6 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { UploadFile, UploadWebsite, UploadYoutube } from "./AddSourceViews";
 import { Drawer, DrawerContent, DrawerHeader } from "../ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Progress } from "@/components/ui/progress"; // Import Progress component
 import { Skeleton } from "../ui/skeleton";
 
 type ConfigGraphModalProps = {

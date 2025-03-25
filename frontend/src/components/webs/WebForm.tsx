@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, ChangeEvent } from "react";
 import { Web } from "@/types/web";
 import { PublicUser } from "@/types/user";
 import {
@@ -12,7 +12,6 @@ import { useRouter } from "next/router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Textarea } from "../ui/textarea";
 import { debounce} from "lodash";
 import { ConfirmModal } from "../utility/ConfirmModal";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
@@ -27,6 +26,7 @@ import {
 } from "@/lib/utils";
 import ConfirmImageModal from "../utility/ConfirmImageModal";
 import { ImageModal } from "../utility/ImageModal";
+import { DynamicTextarea } from "../utility/DynamicScrollbar";
 
 type FormProps = {
   web: Web;
@@ -118,10 +118,10 @@ function WebForm({ web, user }: FormProps) {
     debouncedSave(newConfig);
   };
 
-  const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onTitleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     onConfigChange({
       ...webConfig,
-      name: event.target.value || "Untitled",
+      name: e.target.value || "Untitled",
     });
   };
 
@@ -272,8 +272,7 @@ function WebForm({ web, user }: FormProps) {
           <div className="flex flex-col">
             <div className="flex flex-col">
               <small className="text-sm font-medium leading-none text-violet-500 dark:text-violet-400 flex flex-row items-center">
-                
-                <></>{webConfig.visibility} <Lock size={12} className="mr-2 ml-1" />
+                {webConfig.visibility} <Lock size={12} className="mr-2 ml-1" />
                 {isOwner && (
                   <ConfirmModal
                     action={() =>
@@ -329,33 +328,22 @@ function WebForm({ web, user }: FormProps) {
                 />
               </Button>
             </div>
-
-            <Textarea
+            <DynamicTextarea
               id="name"
               placeholder="Give it a title..."
-              rows={1}
               defaultValue={web?.name || "Untitled"}
               {...form.register("name")}
-              className="w-full min-h-[2rem] bg-transparent p-0 font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-md font-semibold"
-              onInput={(e: any) => {
-                e.target.style.height = "auto";
-                e.target.style.height = `${e.target.scrollHeight}px`;
-                form.trigger("name");
-              }}
-              onChange={(e: any) => onTitleChange(e)}
+              className="font-bold leading-tight text-md font-semibold"
+              onValueChange={onTitleChange}
             />
-            <Textarea
+      
+            <DynamicTextarea
               id="description"
               placeholder="Add a description..."
-              rows={1}
               defaultValue={web?.description || ""}
               {...form.register("description")}
-              className="w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-muted-foreground"
-              onInput={(e: any) => {
-                e.target.style.height = "auto";
-                e.target.style.height = `${e.target.scrollHeight}px`;
-              }}
-              onChange={(e: any) => onDescriptionChange(e)}
+              className="text-lg leading-relaxed text-sm text-muted-foreground"
+              onValueChange={onDescriptionChange}
             />
           </div>
         </div>

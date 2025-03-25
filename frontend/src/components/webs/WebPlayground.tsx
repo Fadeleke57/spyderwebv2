@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
 import {
   Link,
   File,
@@ -15,7 +15,11 @@ import AddSourceModal from "./AddSourceModal";
 import WebGraph from "./WebGraph";
 import { CreateWeb } from "@/types/web";
 import { Source } from "@/types/source";
-import { useFetchSourcesForWeb, useFileUpload, useUploadNote } from "@/hooks/sources";
+import {
+  useFetchSourcesForWeb,
+  useFileUpload,
+  useUploadNote,
+} from "@/hooks/sources";
 import {
   Command,
   CommandEmpty,
@@ -52,6 +56,9 @@ import {
 } from "../ui/tooltip";
 import WebSettingsModal from "./WebSettingsModal";
 import { toast } from "../ui/use-toast";
+import ProcessModal from "@/components/webs/ProcessModal";
+import { set } from "lodash";
+import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
 
 const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
 
@@ -74,40 +81,7 @@ function WebPlayground({
     description: web?.description || "",
   });
   const [searchDialogOpen, setSearchDialogOpen] = useState<boolean>(false);
-  const { mutateAsync: uploadFile, isPending: isFileUploading } = useFileUpload(web?.webId || "");
-  const {
-    data: sources,
-    isLoading: sourcesLoading,
-    error: sourcesError,
-    refetch: refetchSources,
-  } = useFetchSourcesForWeb(web?.webId);
-
-   const handleFileUpload = async (files: FileList | null) => {
-    if (!files || files.length === 0) {
-      return;
-    }
-
-    try {
-      const firstSourceId = await uploadFile({ files : files, preserve_obsidian_links: true });
-      toast({
-        title: "File uploaded",
-        description: "File uploaded successfully",
-        duration: 500,
-      });
-      refetchSources();
-      refetch();
-      setSelectedSourceId(firstSourceId);
-      setIsWebDataModalOpen(true);
-      setIsAddSourceModalOpen(false);
-    } catch (err) {
-      console.error(err);
-      toast({
-        variant: "destructive",
-        title: "Error uploading file",
-      });
-    }
-  };
-
+  const [proccessModalOpen, setProcessModalOpen] = useState<boolean>(false);
   const isOwner = user && user?.id === web?.userId;
   const [selectedSourceId, setSelectedSourceId] = useState<string>("");
   const [fetchedSources, setFetchedSources] = useState<Source[]>([]);
@@ -117,6 +91,57 @@ function WebPlayground({
   const [webSearchModalView, setAddSourceModalView] = useState<
     "youtube" | "website" | "default" | "note"
   >("default");
+  const { mutateAsync: uploadFile, isPending: isFileUploading } = useFileUpload(
+    web?.webId || ""
+  );
+  const {
+    data: sources,
+    isLoading: sourcesLoading,
+    error: sourcesError,
+    refetch: refetchSources,
+  } = useFetchSourcesForWeb(web?.webId);
+  const {
+    data: connections,
+    isLoading: connectionsLoading,
+    refetch: refetchConnections,
+  } = useFetchAllConnectionsForWeb(web?.webId);
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    try {
+      if (files.length > 1) {
+        uploadFile({
+          files: files,
+          preserve_obsidian_links: true,
+        });
+
+        setTimeout(() => {
+          setProcessModalOpen(true);
+          setIsAddSourceModalOpen(false);
+        }, 2000);
+      } else {
+        const { firstSourceId } = await uploadFile({
+          files: files,
+          preserve_obsidian_links: true,
+        });
+
+        refetchSources();
+        refetch();
+        setSelectedSourceId(firstSourceId);
+        setIsWebDataModalOpen(true);
+        setIsAddSourceModalOpen(false);
+      }
+    } catch (err) {
+      console.error(err);
+      toast({
+        variant: "destructive",
+        title: "Error uploading file(s)",
+      });
+    }
+  };
 
   const handleSourceClick = (sourceId: string) => {
     setSelectedSourceId(sourceId);
@@ -265,8 +290,7 @@ function WebPlayground({
               refreshWeb={refetch}
               view={webSearchModalView}
               handleFileUpload={handleFileUpload}
-                isFileUploading={isFileUploading}
-    
+              isFileUploading={isFileUploading}
             >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -328,7 +352,8 @@ function WebPlayground({
               Add your first source
             </h3>
             <p className="text-sm text-muted-foreground">
-              Drag and drop or click below to start collecting data to add your web.
+              Drag and drop or click below to start collecting data to add your
+              web.
             </p>
             <div className="flex flex-wrap gap-2 whitespace-nowrap mt-2 justify-center">
               {" "}
@@ -417,6 +442,9 @@ function WebPlayground({
           setSelectedSourceId={setSelectedSourceId}
           handleFileUpload={handleFileUpload}
           isFileUploading={isFileUploading}
+          connections={connections}
+          connectionsLoading={connectionsLoading}
+          refetchConnections={refetchConnections}
         />
         <div className="absolute bottom-8 left-6">
           <div className="flex w-fit rounded-full flex-col pt-0">
@@ -478,6 +506,16 @@ function WebPlayground({
             sourceId={selectedSourceId}
             webId={web.webId}
           />
+        )}
+        {proccessModalOpen && web?.webId && (
+          <ProcessModal
+            refetchWeb={refetch}
+            refetchSources={refetchSources}
+            refetchConnections={refetchConnections}
+            webId={web.webId}
+            isOpen={proccessModalOpen}
+            onOpenChange={setProcessModalOpen}
+          ></ProcessModal>
         )}
       </div>
     </div>
