@@ -5,8 +5,6 @@
 ## Prerequisites (Backend)
 
 Before getting started, ensure you have the following installed:
-- Docker
-- Docker Compose
 - Node.js (version 18+)
 - MongoDB and MongoDB account
 - Neo4j and Neo4j account
