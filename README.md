@@ -1,8 +1,6 @@
-## SPYDR
+# SPYDRV2 Project Setup and Configuration
 
-# Project Setup and Configuration
-
-## Prerequisites (Backend)
+## Prerequisites
 
 Before getting started, ensure you have the following installed:
 - Node.js (version 18+)
@@ -20,6 +18,7 @@ Before getting started, ensure you have the following installed:
 Copy the `.env.example` to a new file named `.env`:
 
 ```bash
+cd backend
 cp .env.example .env
 ```
 
@@ -38,7 +37,7 @@ cp .env.example .env
 
 #### API Configuration
 - `FASTAPI_ENV`: Environment (dev/prod)
-- `FASTAPI_SECRET_KEY`: Secret key for FastAPI application
+- `FASTAPI_SECRET_KEY`: Secret key for FastAPI application (Generate a 16-digit HSA key)
 - `FASTAPI_API_URL`: Base URL for FastAPI backend
 
 #### OAuth2 Authentication
@@ -102,7 +101,7 @@ cp .env.example .env
 
 5. Start the FastAPI server:
    ```bash
-   uvicorn main:app --reload
+   uvicorn src.main:app --reload
    ```
 
 #### Frontend Setup (Next.js)
@@ -141,7 +140,11 @@ pip install -r requirements.txt
 cd ../frontend
 cp .env.example .env
 npm install
+
+# Run
+make start
 ```
+
 
 ## Troubleshooting
 
