@@ -14,6 +14,19 @@ router = APIRouter()
 
 @router.get("/all/{web_id}")
 def get_all_processes(web_id: str, user=Depends(manager)) -> dict[str, list[Process]]:
+    """
+    Retrieve all processes associated with a given web ID, within the last minute.
+
+    Args:
+        web_id (str): The ID of the web (web) to retrieve processes from.
+        user (User): The user making the request.
+
+    Returns:
+        dict: A JSON response containing a list of processes associated with the given web ID.
+
+    Raises:
+        HTTPException: If the web is not found, raises a 404 error.
+    """
     check_user(user)
 
     # get all processes from the last minute
@@ -33,6 +46,19 @@ def get_all_processes(web_id: str, user=Depends(manager)) -> dict[str, list[Proc
 
 @router.get("/process/{job_id}")
 def get_process(job_id: str, user=Depends(manager)) -> Process:
+    """
+    Retrieve a process by its ID.
+
+    Args:
+        job_id (str): The ID of the process to retrieve.
+        user (User): The user making the request.
+
+    Returns:
+        dict: A JSON response containing the requested process.
+
+    Raises:
+        HTTPException: If the process is not found, raises a 404 error.
+    """
     check_user(user)
 
     process = Processes.find_one({"jobId": job_id}, {"_id": 0})

@@ -12,7 +12,7 @@ import { useRouter } from "next/router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { debounce} from "lodash";
+import { debounce } from "lodash";
 import { ConfirmModal } from "../utility/ConfirmModal";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import Image from "next/image";
@@ -76,9 +76,7 @@ function WebForm({ web, user }: FormProps) {
 
   const isOwner = user?.id === web?.userId;
 
-  const { mutateAsync: updateWeb, isPending } = useUpdateWeb(
-    web?.webId
-  );
+  const { mutateAsync: updateWeb, isPending } = useUpdateWeb(web?.webId);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -272,7 +270,10 @@ function WebForm({ web, user }: FormProps) {
           <div className="flex flex-col">
             <div className="flex flex-col">
               <small className="text-sm font-medium leading-none text-violet-500 dark:text-violet-400 flex flex-row items-center">
-                {webConfig.visibility} <Lock size={12} className="mr-2 ml-1" />
+                {webConfig.visibility}{" "}
+                {webConfig.visibility === "Private" && (
+                  <Lock size={12} className="mr-2 ml-1" />
+                )}
                 {isOwner && (
                   <ConfirmModal
                     action={() =>
@@ -336,7 +337,7 @@ function WebForm({ web, user }: FormProps) {
               className="font-bold leading-tight text-md font-semibold"
               onValueChange={onTitleChange}
             />
-      
+
             <DynamicTextarea
               id="description"
               placeholder="Add a description..."

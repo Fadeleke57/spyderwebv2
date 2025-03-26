@@ -1,5 +1,5 @@
 fastapi
-pymongo
+pymongo>=4.10.1
 neo4j
 uvicorn
 python-dotenv

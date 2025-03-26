@@ -15,6 +15,7 @@ import { SearchResultCard } from "@/components/explore/SearchResult";
 import { LoaderCircle } from "lucide-react";
 import PopularWebsCard from "@/components/explore/PopularWebsCard";
 import SpydrAI from "@/components/utility/Assistant";
+import ExplorePageErrorCard from "@/components/utility/ExplorePageErrorCard";
 
 function Index() {
   const { ref, inView } = useInView();
@@ -93,7 +94,7 @@ function Index() {
       <div className="w-full lg:px-16 flex flex-row gap-6 relative">
         {isSearchLoading && <LoaderCircle className="animate-spin" />}
         <div className="w-full flex flex-col gap-1">
-          {error && <p>Error loading webs</p>}
+          {error && <ExplorePageErrorCard />}
           {query && (
             <p className="mb-4 font-semibold ml-2 lg:ml-0">
               Results for &quot;{query}&quot;
