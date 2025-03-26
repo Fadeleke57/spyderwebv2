@@ -7,6 +7,17 @@ class FireCrawlClient:
         self.app = FirecrawlApp(settings.firecrawl_api_key)
 
     def run_scrape(self, url) -> tuple[str, str]:
+        """
+        Scrape a webpage for structured data and retrieve the title and
+        content as markdown.
+
+        Args:
+            url (str): The URL of the webpage to scrape.
+
+        Returns:
+            tuple[str, str]: A tuple containing the title and content of the
+            webpage as markdown.
+        """
         r = self.app.scrape_url(url, params={"formats": ["markdown"]})
         return r["metadata"]["title"], r["markdown"]
 

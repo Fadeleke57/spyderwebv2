@@ -142,8 +142,15 @@ async def upload_files(
     user=Depends(manager),
 ):
     """
-    Uploads multiple files, stores them temporarily, sends them to S3,
-    processes embeddings, and saves metadata in the database.
+    Upload multiple files to a web.
+
+    Args:
+        web_id (str): The ID of the web to upload to.
+        preserve_obsidian_links (bool): Whether to preserve Obsidian links (default: False).
+        files (List[UploadFile]): The files to upload.
+
+    Returns:
+        dict: A JSON response with a result key containing the ID of the first uploaded source, and a process key containing the ID of the background process.
     """
     check_user(user)
     job_id = create_process(

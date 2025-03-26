@@ -8,7 +8,6 @@ import uuid
 from src.lib.s3.index import S3Bucket
 from pytz import UTC
 from src.utils.exceptions import check_user
-from src.utils.search import run_semantic_search
 from src.models.user import User, Users
 from src.db.neo4j import client as neo4jClient
 from src.models.analytics import Search, Searches
@@ -706,7 +705,7 @@ def search_webs(
         }
         Searches.insert_one(search_info)
 
-        results = run_semantic_search(query, 10, filter)
+        results = pineconeClient.run_semantic_search(query, 10, filter)
         return {"result": results}
 
     except Exception as e:
