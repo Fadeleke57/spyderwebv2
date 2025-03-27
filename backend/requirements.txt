@@ -7,9 +7,7 @@ pydantic-settings
 passlib[bcrypt] 
 fastapi-login 
 aiohttp
-dnspython
 python-multipart
-nltk
 pinecone
 openai
 boto3
