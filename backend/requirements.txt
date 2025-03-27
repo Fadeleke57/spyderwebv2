@@ -18,5 +18,4 @@ youtube_transcript_api
 pydantic-to-typescript>=2
 firecrawl
 pymupdf4llm
-werkzeug
 google-generativeai
