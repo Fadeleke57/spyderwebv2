@@ -272,7 +272,7 @@ function WebForm({ web, user }: FormProps) {
               <small className="text-sm font-medium leading-none text-violet-500 dark:text-violet-400 flex flex-row items-center">
                 {webConfig.visibility}{" "}
                 {webConfig.visibility === "Private" && (
-                  <Lock size={12} className="mr-2 ml-1" />
+                  <Lock size={12} className="ml-1" />
                 )}
                 {isOwner && (
                   <ConfirmModal
@@ -296,7 +296,7 @@ function WebForm({ web, user }: FormProps) {
                       "?"
                     }
                   >
-                    <span className="text-red-500 dark:text-foreground cursor-pointer">
+                    <span className="text-red-500 dark:text-foreground cursor-pointer ml-2">
                       {" "}
                       (
                       {webConfig.visibility === "Private"

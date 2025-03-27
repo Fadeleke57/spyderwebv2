@@ -164,11 +164,13 @@ class SourceService:
                 update_process(
                     job_id=connection_proccess_id,
                     status="processing",
+                    description=f"Parsing Obsidian links...",
                     percentage=round((i + 1) / len(sources) * 100, 2),
                 )
 
             update_process(
                 job_id=connection_proccess_id,
+                description="Completed parsing Obsidian links",
                 status="completed",
                 percentage=100,
                 closeModal=True,
@@ -179,6 +181,7 @@ class SourceService:
             update_process(
                 job_id=connection_proccess_id,
                 status="failed",
+                description="Failed to parse Obsidian links",
                 percentage=0,
                 error=str(e),
             )

@@ -16,12 +16,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import {
-  CirclePlus,
-  Home,
-  LayoutGrid,
-  Waypoints,
-} from "lucide-react";
+import { Brain, CirclePlus, Home, LayoutGrid, Waypoints } from "lucide-react";
 import { NewWebModal } from "../webs/NewWebModal";
 import { AuthModal } from "../auth/AuthModal";
 
@@ -185,6 +180,37 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </div>
           </SidebarMenuButton>
           <SidebarIndicator show={selectedButton === "webs"} />
+        </div>
+        <div className="relative px-2">
+          <SidebarMenuButton
+            size="sm"
+            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none  py-4 rounded-md`}
+            onClick={() => handleButtonClick("/chat")}
+          >
+            <div
+              className={`flex flex-row gap-2 items-center rounded-lg bg-none text-sidebar-primary-foreground`}
+            >
+              <Brain
+                className={`size-5 ${
+                  selectedButton === "chat"
+                    ? "text-muted-foreground dark:text-foreground font-semibold"
+                    : "text-muted-foreground"
+                }`}
+              />
+            </div>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span
+                className={`truncate text-lg ${
+                  selectedButton === "chat"
+                    ? "text-muted-foreground dark:text-foreground font-semibold"
+                    : "text-muted-foreground"
+                }`}
+              >
+                Charlotte AI
+              </span>
+            </div>
+          </SidebarMenuButton>
+          <SidebarIndicator show={selectedButton === "chat"} />
         </div>
         {user ? (
           <NewWebModal>

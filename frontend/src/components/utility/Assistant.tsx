@@ -1,32 +1,46 @@
 import React, { useState } from "react";
-import { Search, HelpCircle, Rocket, BookOpen, Keyboard, Workflow } from "lucide-react";
+import { Search, Workflow } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import spydrIcon from "@/assets/spydr_icon.svg"
 import { DropdownMenu, DropdownMenuContent } from "../ui/dropdown-menu";
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
+import Charlotte from "@/components/chat/Charlotte";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const SpydrAI = () => {
   const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
   const router = useRouter();
 
   const menuItems = [
-    { icon: <Workflow className="h-5 w-5" />, label: "Get Started", onClick: () => {} },
-    { icon: <Search className="h-5 w-5" />, label: "Quick Search", onClick: () => {} },
-    { icon: <QuestionMarkCircledIcon className="h-5 w-5" />, label: "Need Help?", onClick: () => {} },
+    {
+      icon: <Workflow className="h-5 w-5" />,
+      label: "Get Started",
+      onClick: () => {},
+    },
+    {
+      icon: <Search className="h-5 w-5" />,
+      label: "Quick Search",
+      onClick: () => {},
+    },
+    {
+      icon: <QuestionMarkCircledIcon className="h-5 w-5" />,
+      label: "Need Help?",
+      onClick: () => {},
+    },
   ];
 
-  
   return (
     <div className="fixed bottom-20 lg:bottom-6 right-6 lg:right-16">
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild className="bg-zinc-800">
           <Button
-            className="h-fit w-fit rounded-full px-4 py-4 hover:bg-zinc-900/95"
+            variant={"link"}
+            className="p-0 m-0 w-10 h-10 bg-background rounded-full"
           >
-            <Image src={spydrIcon} alt="Spydr Logo" className="w-6 h-6" />
+            <Charlotte width={14} height={14} activeEyes={!isMobile} />
           </Button>
         </DropdownMenuTrigger>
 
@@ -36,7 +50,6 @@ const SpydrAI = () => {
           side="left"
           sideOffset={10}
           avoidCollisions={false}
-        
         >
           <div className="flex flex-col space-y-1">
             {menuItems.map((item, index) => (

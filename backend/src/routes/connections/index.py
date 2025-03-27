@@ -69,28 +69,24 @@ def get_connection(web_id: str, connection_id: str):
 def create_connection(connection_data: CreateConnection, user=Depends(manager)):
     check_user(user)
 
+    connection = {
+        "connectionId": str(uuid.uuid4()),
+        "fromSourceId": connection_data.fromSourceId,
+        "toSourceId": connection_data.toSourceId,
+        "webId": connection_data.webId,
+        "description": connection_data.description,
+        "created": datetime.now(UTC),
+        "updated": datetime.now(UTC),
+    }
     try:
-        connection = {
-            "connectionId": str(uuid.uuid4()),
-            "fromSourceId": connection_data.fromSourceId,
-            "toSourceId": connection_data.toSourceId,
-            "webId": connection_data.webId,
-            "data.description": connection_data.data.get("description"),
-            "created": datetime.now(UTC),
-            "updated": datetime.now(UTC),
-        }
-        try:
-            neo4jClient.create_connection_between_sources(
-                connection_data.fromSourceId, connection_data.toSourceId, connection
-            )
-        except Exception as e:
-            logger.error(str(e))
-            raise HTTPException(status_code=500, detail=str(e))
-
-        return {"result": connection}
+        neo4jClient.create_connection_between_sources(
+            connection_data.fromSourceId, connection_data.toSourceId, connection
+        )
     except Exception as e:
-        logger.info(str(e))
+        logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
+
+    return {"result": connection}
 
 
 @router.patch("/update/{connection_id}")  # TODO

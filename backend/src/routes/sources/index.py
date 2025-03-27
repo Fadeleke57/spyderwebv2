@@ -128,7 +128,13 @@ async def process_file(
         return sourceToInsert
 
     except Exception as e:
-        update_process(job_id=job_id, status="failed", percentage=0, error=str(e))
+        update_process(
+            job_id=job_id,
+            status="failed",
+            description="Failed to proccess file..",
+            percentage=0,
+            error=str(e),
+        )
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -159,7 +165,11 @@ async def upload_files(
 
     if not files:
         update_process(
-            job_id=job_id, status="failed", percentage=0, error="No files uploaded."
+            job_id=job_id,
+            status="failed",
+            description="No files uploaded.",
+            percentage=0,
+            error="No files uploaded.",
         )
         raise HTTPException(status_code=400, detail="No files uploaded.")
 
@@ -178,6 +188,7 @@ async def upload_files(
 
         update_process(
             job_id=job_id,
+            description=f"Uploading {len(files) - len(sources)} files...",
             status="processing",
             percentage=((len(sources) / len(files)) * 100),
         )
@@ -186,7 +197,12 @@ async def upload_files(
         logger.info("Parsing Obsidian links...")
         background_tasks.add_task(sourceService.parse_obsidian_links, web_id, sources)
 
-    update_process(job_id=job_id, status="completed", percentage=100)
+    update_process(
+        job_id=job_id,
+        description="Finished uploading files!",
+        status="completed",
+        percentage=100,
+    )
     return {"result": sources[0]["sourceId"] if sources else None, "process": job_id}
 
 
@@ -470,7 +486,8 @@ def delete_source(source_id: str, user=Depends(manager)):
         )
 
         if not affected_web:
-            {"result": "Web not found"}
+            logger.info("Web not found")
+            return {"result": "Web not found"}
 
         try:
             pineconeClient.index.delete(

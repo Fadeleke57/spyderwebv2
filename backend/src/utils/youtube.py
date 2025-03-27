@@ -3,6 +3,7 @@ from src.core.config import settings
 from youtube_transcript_api import YouTubeTranscriptApi
 from fastapi import HTTPException
 
+
 def get_video_info(video_id: str) -> dict:
     """
     Get the information of a YouTube video from its video ID.

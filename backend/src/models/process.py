@@ -68,6 +68,7 @@ def update_process(
     job_id: str,
     status: Literal["pending", "processing", "completed", "failed"],
     percentage: float,
+    description: str,
     error: Optional[str] = None,
     closeModal: Optional[bool] = None,
 ):
@@ -96,6 +97,7 @@ def update_process(
                     "status": status,
                     "percentage": percentage,
                     "updated": datetime.now(UTC),
+                    "description": description,
                     "error": error,
                     "closeModal": closeModal,
                 }

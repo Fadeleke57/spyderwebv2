@@ -32,7 +32,7 @@ function Header() {
         <h1 className="text-5xl lg:text-9xl tracking-tight max-w-xs lg:max-w-full mb-2 sm:mb-4 font-extrabold lg:font-bold dark:text-white">
           Welcome to the{" "}
           <TypingAnimation
-            className="text-blue-500 text-5xl sm:text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tigh italic"
+            className="text-violet-400 text-5xl sm:text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tigh italic"
             text="Web."
           />
         </h1>
@@ -97,14 +97,14 @@ function Header() {
                   By signing up, you agree to our{" "}
                   <Link
                     href="/about/terms-of-service"
-                    className="dark:text-blue-500"
+                    className="dark:text-violet-400"
                   >
                     Terms of Service
                   </Link>{" "}
                   and{" "}
                   <Link
                     href="/about/privacy-policy"
-                    className="dark:text-blue-500"
+                    className="dark:text-violet-400"
                   >
                     Privacy Policy
                   </Link>

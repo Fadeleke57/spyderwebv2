@@ -50,7 +50,7 @@ export default function Sidebar() {
           </Tooltip>
         </TooltipProvider>
 
-        {/* <TooltipProvider>
+        <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild onClick={() => setActive(2)}>
               <button
@@ -62,12 +62,12 @@ export default function Sidebar() {
                 onClick={() => router.push("/terminal")}
               >
                 <Search className="h-5 w-5 transition-all group-hover:scale-110" />
-                <span className="sr-only">Search</span>
+                <span className="sr-only">Charlotte AI</span>
               </button>
             </TooltipTrigger>
             <TooltipContent side="right">Search</TooltipContent>
           </Tooltip>
-        </TooltipProvider> */}
+        </TooltipProvider> 
 
         <TooltipProvider>
           <Tooltip>
