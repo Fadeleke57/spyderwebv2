@@ -54,7 +54,7 @@ function ContributorsBlock({ webId, count }: { webId: string; count: number }) {
   const visibleContributors = contributors.slice(0, MAX_VISIBLE_CONTRIBUTORS);
 
   const renderContributor = (contributor: PublicUser) => (
-    <Tooltip key={contributor.id}>
+    <Tooltip key={contributor.id} delayDuration={100}>
       <TooltipTrigger>
         <div className="relative w-10 h-10 rounded-full overflow-hidden cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all">
           <Image
