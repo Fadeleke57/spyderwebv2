@@ -11,9 +11,7 @@ from src.routes.auth.oauth2 import (
     get_user,
 )
 from src.core.config import settings
-from src.models.user import Users, User, CreateUser
-from src.models.web import Webs
-from src.models.source import Sources
+from src.models.index import Sources, Webs, Users, User, CreateUser
 from datetime import timedelta
 import logging
 from fastapi import APIRouter

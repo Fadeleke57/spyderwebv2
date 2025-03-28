@@ -23,10 +23,16 @@ import ConnectionBlock from "./ConnectionBlock";
 import CreateConnectionBlock from "./CreateConnectionBlock";
 import { mapSourceToIcon } from "../utility/Icons";
 import { Source } from "@/types/source";
-import { ChevronsUpDown, CirclePlus, Loader2 } from "lucide-react";
+import { ChevronsUpDown, CirclePlus, Loader2, OrbitIcon } from "lucide-react";
 import { Connection } from "@/types/connection";
 import { ScrollArea } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 function ConnectionsConfig({
   webId,
@@ -79,7 +85,7 @@ function ConnectionsConfig({
     (outgoingConnections?.length || 0) + (incomingConnections?.length || 0);
   return (
     <ScrollArea className="border rounded-lg p-4 flex flex-col hidden lg:block h-[calc(100vh-160px)]">
-      <div className="flex items-center justify-between space-x-4 px-4 ">
+      <div className="flex items-center justify-between px-4">
         <h4 className="font-mono text-sm">
           {totalConnections
             ? `${totalConnections} connection${
@@ -164,7 +170,6 @@ function ConnectionsConfig({
                       key={id}
                       connection={connection}
                       type="out"
-                      onDelete={() => refetchOutgoingConnections()}
                       isOwner={isOwner}
                     />
                   )
@@ -198,7 +203,6 @@ function ConnectionsConfig({
                 key={id}
                 connection={connection}
                 type="in"
-                onDelete={() => refetchIncomingConnections()}
                 isOwner={isOwner}
               />
             ))

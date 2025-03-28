@@ -1,27 +1,34 @@
-from fastapi import APIRouter, Depends, UploadFile, File
-from src.routes.auth.oauth2 import manager
-from fastapi import APIRouter, Depends, Query
-from typing import Optional, Literal
 import os
-from werkzeug.utils import secure_filename
 import uuid
-from src.lib.s3.index import S3Bucket
+import boto3
 from pytz import UTC
-from src.utils.exceptions import check_user
-from src.models.user import User, Users
-from src.db.neo4j import client as neo4jClient
-from src.models.analytics import Search, Searches
-from src.models.source import Sources, Source
 from datetime import datetime
-from src.models.web import Webs, Web, CreateWeb, UpdateWeb, IterateWeb
+from typing import Optional, Literal
+from pymongo import ReturnDocument
+from fastapi import APIRouter, Depends, UploadFile, File, Query, BackgroundTasks
 from fastapi.exceptions import HTTPException
 from botocore.exceptions import ClientError
+from werkzeug.utils import secure_filename
+from src.routes.auth.oauth2 import manager
+from src.lib.s3.index import S3Bucket
+from src.utils.exceptions import check_user
+from src.db.neo4j import client as neo4jClient
+from src.models.index import (
+    Webs,
+    Web,
+    CreateWeb,
+    UpdateWeb,
+    IterateWeb,
+    Sources,
+    Source,
+    User,
+    Users,
+    Search,
+    Searches,
+)
 from src.lib.logger.index import logger
-from pymongo import ReturnDocument
 from src.core.config import settings
-import boto3
 from src.lib.pinecone.index import client as pineconeClient
-from fastapi import BackgroundTasks
 from src.service.web import service as webService
 
 router = APIRouter()

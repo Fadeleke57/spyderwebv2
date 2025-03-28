@@ -33,7 +33,6 @@ class PineconeClient:
             return 50
         return 40
 
-
     """
         @staticmethod
         def _map_type_to_metadata(
@@ -93,7 +92,6 @@ class PineconeClient:
                 }
             return metadata
     """
-
 
     def run_semantic_search(self, query: str, limit: int, filter):
         """
@@ -271,7 +269,6 @@ class PineconeClient:
                 return None
     """
 
-
     def embed_and_upsert_to_pinecone(
         self,
         source_id: str,
@@ -350,7 +347,7 @@ class PineconeClient:
                 parameters={"input_type": "passage", "truncate": "END"},
             )
             embedding = embeddings.data[0].values
-            
+
             autolinker.add_vector_to_stage((chunk_id, embedding, metadata))
             vectors.append((chunk_id, embedding, metadata))
 

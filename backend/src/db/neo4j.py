@@ -2,7 +2,7 @@ from neo4j import GraphDatabase
 from src.core.config import settings
 from neo4j import Record, Session
 from typing import Dict, Any, List, Tuple
-from src.models.source import Source
+from src.models.index import Source
 from src.lib.logger.index import logger
 
 

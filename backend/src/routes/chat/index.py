@@ -1,13 +1,11 @@
-from fastapi import APIRouter, Depends
-from src.routes.auth.oauth2 import manager
-from fastapi import APIRouter, Depends
 from pytz import UTC
+from fastapi import APIRouter, Depends, FastAPI, Query
+from fastapi.responses import StreamingResponse
+from src.routes.auth.oauth2 import manager
 from src.utils.exceptions import check_user
 from src.lib.logger.index import logger
-from fastapi import FastAPI, Query
-from fastapi.responses import StreamingResponse
 from src.utils.chat.prompt import ClientMessage, convert_to_openai_messages, stream_text
-from src.models.chat import Request
+from src.models.index import Request
 
 router = APIRouter()
 

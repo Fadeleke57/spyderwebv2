@@ -1,7 +1,7 @@
 import requests
-from src.core.config import settings
 from youtube_transcript_api import YouTubeTranscriptApi
 from fastapi import HTTPException
+from src.core.config import settings
 
 
 def get_video_info(video_id: str) -> dict:

@@ -1,31 +1,34 @@
+import os
+import boto3
+import tempfile
+from typing import List
+from pytz import UTC
+from datetime import datetime
+from uuid import uuid4
+from botocore.exceptions import ClientError
+from werkzeug.utils import secure_filename
+from pydantic import BaseModel, HttpUrl
+from urllib.parse import unquote
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, BackgroundTasks
-from src.models.source import Source, UpdateSource
-from src.models.web import Webs
 from src.routes.auth.oauth2 import manager
 from src.utils.exceptions import check_user
-import tempfile
+from src.lib.logger.index import logger
 from src.lib.s3.index import S3Bucket
-from src.db.mongodb import get_collection
+from src.models.index import (
+    Webs,
+    create_process,
+    update_process,
+    CreateNote,
+    UpdateNote,
+    Source,
+    UpdateSource,
+)
 from src.service.source import service as sourceService
 from src.db.neo4j import client as neo4jClient
 from src.core.config import settings
-from uuid import uuid4
-from werkzeug.utils import secure_filename
-from datetime import datetime
-from src.core.config import settings
 from src.utils.youtube import get_video_transcript, get_video_info
-from pydantic import BaseModel, HttpUrl
 from src.lib.firecrawl.index import client as firecrawlClient
-from src.models.source import CreateNote, UpdateNote
-from typing import List
-import boto3
-from urllib.parse import unquote
-from src.lib.logger.index import logger
-from botocore.exceptions import ClientError
-from pytz import UTC
-import os
 from src.lib.pinecone.index import client as pineconeClient
-from src.models.process import create_process, update_process
 
 router = APIRouter()
 s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
@@ -174,7 +177,7 @@ async def upload_files(
         raise HTTPException(status_code=400, detail="No files uploaded.")
 
     sources = []
-    for file in files:
+    for i, file in enumerate(files):
         result = await process_file(
             user_id=user["id"],
             web_id=web_id,
@@ -190,7 +193,7 @@ async def upload_files(
             job_id=job_id,
             description=f"Uploading {len(files) - len(sources)} files...",
             status="processing",
-            percentage=((len(sources) / len(files)) * 100),
+            percentage=(round((i + 1) / len(files) * 100, 2)),
         )
 
     if preserve_obsidian_links:

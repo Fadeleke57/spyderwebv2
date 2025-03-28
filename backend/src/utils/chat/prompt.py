@@ -1,7 +1,7 @@
-from typing import List
 import json
+from typing import List
 from openai.types.chat.chat_completion_message_param import ChatCompletionMessageParam
-from src.models.chat import ClientMessage
+from src.models.index import ClientMessage
 from src.lib.openai.index import client as openaiClient
 from src.utils.chat.tools import available_tools
 

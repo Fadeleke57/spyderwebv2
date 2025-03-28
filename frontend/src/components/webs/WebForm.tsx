@@ -300,7 +300,7 @@ function WebForm({ web, user }: FormProps) {
                       {" "}
                       (
                       {webConfig.visibility === "Private"
-                        ? "Switch to Public"
+                        ? "Publish"
                         : "Switch to Private"}
                       )
                     </span>

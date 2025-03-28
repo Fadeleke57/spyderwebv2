@@ -26,3 +26,15 @@ export const useFetchAllProcesses = (webId: string) => {
     enabled: !!webId,
   });
 };
+
+export const useCheckAutolinkerStatus = (webId: string, sourceId: string) => {
+  return useQuery({
+    queryKey: ["process", "status", webId, sourceId],
+    queryFn: async () => {
+      const response = await api.get(
+        `/processes/status/${webId}/${sourceId}`
+      );
+      return response.data.result;
+    },
+  })
+};

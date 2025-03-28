@@ -1,9 +1,16 @@
+from pinecone import Pinecone
 from src.lib.logger.index import logger
 from src.core.config import settings
-from pinecone import Pinecone
 
 
 class CandidateSelectorAgent:  # visits the pincone database for sources within the same web (can configure to later search across other webs and increase performance/accuracy)
+    def __new__(cls, *args, **kwargs):
+        """
+        Override __new__ method to always create a new instance.
+        This approach prevents using singleton pattern or caching.
+        """
+        return super().__new__(cls)
+
     def __init__(self, webId: str, sourceId: str):
         if not webId or not sourceId:
             raise ValueError("Information is missing: webId or sourceId")
@@ -17,8 +24,8 @@ class CandidateSelectorAgent:  # visits the pincone database for sources within 
     def find_top_candidates(
         self,
         embedding: list[float],
-        k: int = 10,
-        threshold: float = 0.5,
+        k: int = 5,
+        threshold: float = 0.8,
     ):
         logger.info(f"Finding top k candidates for embedding: {embedding[:5]}...")
         raw_candidates = self._run_similiarity_search(
@@ -27,10 +34,10 @@ class CandidateSelectorAgent:  # visits the pincone database for sources within 
             web_id=self.webId,
             filter={"sourceId": {"$ne": self.sourceId}},
         )
-        logger.info(f"Found {len(raw_candidates)} candidates")
         raw_candidates = [
-           candidate for candidate in raw_candidates if candidate["score"] >= threshold
+            candidate for candidate in raw_candidates if candidate["score"] >= threshold
         ]
+        logger.info(f"Found {len(raw_candidates)} candidates that met threshold")
         return raw_candidates
 
     def create_candidate_doc(self, raw_candidates, model_candidate_metadata):

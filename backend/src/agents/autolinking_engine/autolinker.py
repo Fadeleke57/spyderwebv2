@@ -1,9 +1,8 @@
-from src.lib.logger.index import logger
 from typing import Any
+from src.lib.logger.index import logger
 from src.agents.autolinking_engine.candidate_selector import CandidateSelectorAgent
 from src.agents.autolinking_engine.connection_reasoning import ConnectionReasoningAgent
-from src.models.process import create_process, update_process
-from src.models.web import Webs, Web
+from src.models.index import Webs, Web, create_process, update_process
 
 
 class AutoLinkerEngine:  # proccess running CandidateSelectorAgent and ConnectionGeneratorAgent in the background
@@ -35,6 +34,8 @@ class AutoLinkerEngine:  # proccess running CandidateSelectorAgent and Connectio
         self.webId = webId
         self.sourceId = sourceId
         web_to_autolink: Web = Webs.find_one({"webId": webId})
+        if not web_to_autolink:
+            raise ValueError("Web not found!")
         self.enabled = web_to_autolink["enableAIConnections"]
 
     def run(self):
@@ -50,6 +51,7 @@ class AutoLinkerEngine:  # proccess running CandidateSelectorAgent and Connectio
                 web_id=self.webId,
                 type="autolink",
                 description="Charlie is finding connections for you...",
+                source_id=self.sourceId,
             )
 
             cs = CandidateSelectorAgent(webId=self.webId, sourceId=self.sourceId)
@@ -57,7 +59,7 @@ class AutoLinkerEngine:  # proccess running CandidateSelectorAgent and Connectio
 
             # for each vector in the stage, find top candidates and create candidate document, which is a dictioary containing the model source and the chosen candidates
             for index, vector in enumerate(self.vector_stage):
-                id, embedding, metadata = vector
+                _, embedding, metadata = vector
 
                 # find top candidates
                 raw_candidates = cs.find_top_candidates(embedding=embedding)
@@ -66,7 +68,7 @@ class AutoLinkerEngine:  # proccess running CandidateSelectorAgent and Connectio
                     logger.info("No candidates found..Shutting down...")
                     return
 
-                # create candidate document which is a dictioary containing the "model" source and "chosen_candidates"
+                # create candidate document which is a dict containing the "model" source and "chosen_candidates"
                 candidate_document = cs.create_candidate_doc(
                     raw_candidates=raw_candidates, model_candidate_metadata=metadata
                 )
@@ -76,9 +78,20 @@ class AutoLinkerEngine:  # proccess running CandidateSelectorAgent and Connectio
                 update_process(
                     job_id=self.jobId,
                     status="processing",
-                    description="Charlie is finding connections for you...",
                     percentage=round((index + 1) / len(self.vector_stage) * 100, 2),
                 )
+
+        except Exception as e:
+            logger.error(f"Error running AutoLinkerEngine: {e}")
+            update_process(
+                job_id=self.jobId,
+                description="Charlie ran into an error..",
+                status="completed",
+                percentage=0,
+            )
+            raise RuntimeError(f"Error running AutoLinkerEngine: {e}")
+
+        finally:
 
             update_process(
                 job_id=self.jobId,
@@ -86,12 +99,7 @@ class AutoLinkerEngine:  # proccess running CandidateSelectorAgent and Connectio
                 status="completed",
                 percentage=100,
             )
-
-        except Exception as e:
-            logger.error(f"Error running AutoLinkerEngine: {e}")
-            raise RuntimeError(f"Error running AutoLinkerEngine: {e}")
-
-        finally:
+            
             self._reset()
 
 

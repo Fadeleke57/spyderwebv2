@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends
 from src.routes.auth.oauth2 import manager
-from fastapi import APIRouter, Depends
-import uuid
+from uuid import uuid4
 from pytz import UTC
 from src.utils.exceptions import check_user
 from datetime import datetime, timedelta
-from src.models.process import Processes, Process
+from src.models.index import Processes, Process
 from fastapi.exceptions import HTTPException
 from src.lib.logger.index import logger
 
@@ -67,4 +66,17 @@ def get_process(job_id: str, user=Depends(manager)) -> Process:
         logger.info(f"Process {job_id} not found")
         raise HTTPException(status_code=404, detail="Process not found")
 
+    return {"result": process}
+
+@router.get("/status/{web_id}/{source_id}")
+def get_status(web_id: str, source_id: str, user=Depends(manager)):
+    check_user(user)
+    process = Processes.find_one(
+        {
+            "sourceId": source_id, 
+            "status": {"$in": ["processing"]}
+        }, 
+        {"_id": 0}
+    ) or None
+    logger.info(f"Process {source_id} status: {process}")
     return {"result": process}

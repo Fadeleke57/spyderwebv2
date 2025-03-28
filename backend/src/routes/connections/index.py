@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends
-from src.routes.auth.oauth2 import manager
-from fastapi import APIRouter, Depends
 import uuid
 from pytz import UTC
-from src.utils.exceptions import check_user
 from datetime import datetime
+from fastapi import APIRouter, Depends
+from fastapi.exceptions import HTTPException
+from src.routes.auth.oauth2 import manager
+from src.utils.exceptions import check_user
 from src.models.connection import (
     Connections,
     CreateConnection,
@@ -12,7 +12,6 @@ from src.models.connection import (
     Connection,
 )
 from src.db.neo4j import client as neo4jClient
-from fastapi.exceptions import HTTPException
 from src.lib.logger.index import logger
 
 router = APIRouter()

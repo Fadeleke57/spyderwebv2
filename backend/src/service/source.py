@@ -1,16 +1,14 @@
-from src.models.source import Source
-from src.models.connection import Connection
+import os
+import re
+import pymupdf4llm
+from typing import List
+from uuid import uuid4
 from datetime import datetime
 from fastapi import HTTPException
+from src.models.index import Source, Connection, create_process, update_process
 from src.db.neo4j import client as neo4jClient
 from src.lib.pinecone.index import client as pineconeClient
 from src.lib.logger.index import logger
-from typing import List
-from uuid import uuid4
-from src.models.process import create_process, update_process
-import re
-import pymupdf4llm
-import os
 
 
 class SourceService:
@@ -50,6 +48,9 @@ class SourceService:
         try:
             md = pymupdf4llm.to_markdown(file_path)
             os.remove(file_path)
+            if not md:
+                logger.info("No text found in PDF")
+                return
             chunks = pineconeClient.chunk_clean_text(
                 md, chunk_size=1000, chunk_overlap=100
             )
@@ -164,7 +165,6 @@ class SourceService:
                 update_process(
                     job_id=connection_proccess_id,
                     status="processing",
-                    description=f"Parsing Obsidian links...",
                     percentage=round((i + 1) / len(sources) * 100, 2),
                 )
 

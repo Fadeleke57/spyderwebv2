@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  BadgeCheck,
-  ChevronsUpDown,
-  LogOut,
-  Settings,
-} from "lucide-react";
+import { BadgeCheck, ChevronsUpDown, LogOut, Settings } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -47,7 +42,14 @@ export function NavUser() {
         <Button onClick={handleLogin} variant={"secondary"} className="w-full">
           Sign Up
         </Button>
-        {open && <AuthModal type="login" referrer="nav" open={open} setOpen={setOpen} />}
+        {open && (
+          <AuthModal
+            type="login"
+            referrer="nav"
+            open={open}
+            setOpen={setOpen}
+          />
+        )}
       </div>
     );
   }
@@ -55,6 +57,14 @@ export function NavUser() {
   const handleLogout = () => {
     logout();
     router.push("/explore");
+  };
+
+  const extractInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
+      .toUpperCase();
   };
 
   return (
@@ -68,7 +78,9 @@ export function NavUser() {
                   src={`https://robohash.org/${user.id}?size=300x300`}
                   alt={user.full_name}
                 />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">
+                  {extractInitials(user.full_name)}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{user.username}</span>

@@ -178,7 +178,7 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
     return null;
   }
 
-  if (imagesLoading || webOwnerLoading || iteratedFromLoading) {
+  if (webOwnerLoading || iteratedFromLoading) {
     return <SkeletonCard />;
   }
 
@@ -297,7 +297,6 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
                   alt={web.name}
                   className="rounded-md w-full border h-auto object-cover"
                   onClick={(e) => handleImageClick(e, images[0])}
-                  style={{ maxHeight: "1000px" }}
                 />
               </div>
               <ScrollBar orientation="horizontal" />
