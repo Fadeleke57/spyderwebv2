@@ -289,7 +289,7 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
         {images.length > 0 && (
           <>
             <ScrollArea className="w-full flex flex-row px-4">
-              <div className="flex-1 w-full max-h-[300px] overflow-hidden mb-2 rounded-md ">
+              <div className="flex-1 w-full max-h-[400px] overflow-hidden mb-2 rounded-md ">
                 <Image
                   height={300}
                   width={500}

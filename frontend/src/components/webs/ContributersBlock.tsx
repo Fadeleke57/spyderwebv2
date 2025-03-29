@@ -76,7 +76,7 @@ function ContributorsBlock({ webId, count }: { webId: string; count: number }) {
               className="rounded-full mr-2"
             />
             <div>
-              <div className="font-bold text-white">
+              <div className="font-bold text-foreground">
                 {contributor.username || "Anonymous"}
               </div>
               <div className="text-sm text-gray-400">
@@ -108,8 +108,8 @@ function ContributorsBlock({ webId, count }: { webId: string; count: number }) {
   return (
     <div className="px-4 py-2">
       <div className="flex items-center mb-4">
-        <h2 className="text-md font-semibold text-white">Contributors</h2>
-        <Badge className="ml-2 w-fit h-fit py-[2px] px-[4px] flex items-center justify-center text-xs">
+        <h2 className="text-md font-semibold text-foreground">Contributors</h2>
+        <Badge className="ml-2 min-w-[23px] h-fit py-[2px] px-[4px] flex items-center justify-center text-xs">
           {count}
         </Badge>
       </div>

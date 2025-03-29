@@ -170,7 +170,7 @@ function UploadFile({
           </div>
         </div>
       </div>
-      <div className="flex flex-col items-start space-y-2">
+      <div className="flex flex-row items-center space-x-2">
         <div className="space-y-1">
           <Label
             htmlFor="link-parsing"

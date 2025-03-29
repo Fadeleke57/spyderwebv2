@@ -185,8 +185,8 @@ function WebPlayground({
       setIsWebDataModalOpen(true);
     } catch (error: any) {
       toast({
-        title: "Error creating web",
-        description: error.message,
+        title: "Error creating note",
+        description: "Please try again",
         variant: "destructive",
       });
     }
@@ -354,8 +354,8 @@ function WebPlayground({
             >
               <TooltipProvider>
                 <Tooltip delayDuration={100}>
-                  <TooltipTrigger>
-                    <DropdownMenu onOpenChange={handleDropdownOpenChange}>
+                  <DropdownMenu onOpenChange={handleDropdownOpenChange}>
+                    <TooltipTrigger>
                       <DropdownMenuTrigger asChild>
                         <Button
                           size={"icon"}
@@ -367,51 +367,52 @@ function WebPlayground({
                           />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        side="left"
-                        sideOffset={5}
-                        className="w-40 right-0"
-                      >
-                        <DropdownMenuGroup>
-                          <DialogTrigger
-                            asChild
-                            onClick={() => handleDropdownButtonClick("website")}
-                          >
-                            <DropdownMenuItem className="cursor-pointer">
-                              <Link size={16} className="mr-2" />
-                              <span>Website</span>
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                          <DialogTrigger
-                            asChild
-                            onClick={() => handleDropdownButtonClick("default")}
-                          >
-                            <DropdownMenuItem className="cursor-pointer">
-                              <File size={16} className="mr-2" />
-                              <span>File</span>
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                          <DropdownMenuItem
-                            className="cursor-pointer"
-                            onClick={() => handleCreateEmptyNote()}
-                          >
-                            <Notebook size={16} className="mr-2" />
-                            <span>Note</span>
+                    </TooltipTrigger>
+                    <DropdownMenuContent
+                      side="left"
+                      sideOffset={5}
+                      className="w-40 right-0"
+                    >
+                      <DropdownMenuGroup>
+                        <DialogTrigger
+                          asChild
+                          onClick={() => handleDropdownButtonClick("website")}
+                        >
+                          <DropdownMenuItem className="cursor-pointer">
+                            <Link size={16} className="mr-2" />
+                            <span>Website</span>
                           </DropdownMenuItem>
+                        </DialogTrigger>
+                        <DialogTrigger
+                          asChild
+                          onClick={() => handleDropdownButtonClick("default")}
+                        >
+                          <DropdownMenuItem className="cursor-pointer">
+                            <File size={16} className="mr-2" />
+                            <span>File</span>
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onClick={() => handleCreateEmptyNote()}
+                        >
+                          <Notebook size={16} className="mr-2" />
+                          <span>Note</span>
+                        </DropdownMenuItem>
 
-                          <DialogTrigger
-                            asChild
-                            onClick={() => handleDropdownButtonClick("youtube")}
-                          >
-                            <DropdownMenuItem className="cursor-pointer">
-                              <Youtube size={16} className="mr-2" />
-                              <span>Youtube</span>
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                        </DropdownMenuGroup>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TooltipTrigger>
+                        <DialogTrigger
+                          asChild
+                          onClick={() => handleDropdownButtonClick("youtube")}
+                        >
+                          <DropdownMenuItem className="cursor-pointer">
+                            <Youtube size={16} className="mr-2" />
+                            <span>Youtube</span>
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
                   <TooltipContent>Add source</TooltipContent>
                 </Tooltip>
               </TooltipProvider>{" "}

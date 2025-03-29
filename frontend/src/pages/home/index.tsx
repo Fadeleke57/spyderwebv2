@@ -6,7 +6,7 @@ import { useUser } from "@/context/UserContext";
 import Link from "next/link";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { Settings } from "lucide-react";
+import { Settings, User } from "lucide-react";
 import SpydrAI from "@/components/utility/Assistant";
 import { getTimeBasedGreeting } from "@/lib/utils";
 import spydrLogo from "@/assets/spydr_icon.svg"
@@ -33,13 +33,12 @@ function Index() {
           }`}
         />
       </Head>
-      <Settings
+      <User
         onClick={() => router.push("/settings")}
         className="absolute top-6 right-4 lg:top-8 lg:right-8 cursor-pointer hover:opacity-50"
       />
       
       <div className="flex flex-row gap-2 w-full items-center justify-center">
-        <Image src={spydrLogo} alt="spydr logo" width={30} height={30} />
         <h1 className="text-2xl text-center lg:text-3xl font-extrabold tracking-tight">
         {greeting}, {user?.username}
         </h1> 

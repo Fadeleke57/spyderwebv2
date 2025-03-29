@@ -5,7 +5,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUser } from "@/context/UserContext";
 import WebPlayground from "@/components/webs/WebPlayground";
 import WebForm from "@/components/webs/WebForm";
-import MobileWebForm from "@/components/webs/MobileWebForm";
 import PublicWebView from "@/components/webs/PublicWebView";
 import { useFetchUserById } from "@/hooks/user";
 import { formatDistanceToNow } from "date-fns";
