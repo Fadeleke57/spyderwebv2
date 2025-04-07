@@ -71,4 +71,5 @@ docker-compose.yml
 .DS_Store
 
 # Environments
-spy/
+/spy/
+
