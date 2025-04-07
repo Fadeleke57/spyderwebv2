@@ -1,3 +1,5 @@
+/// <reference types="chrome" />
+
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -167,7 +169,6 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
 
       if (response.status === 201) {
         localStorage.setItem("token", response.data.access_token);
-
         toast({
           title: "Success",
           description: "Registration successful!",
@@ -192,9 +193,8 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
       >
         <DialogClose />
         <div className="flex flex-col items-center justify-center">
-          <Image src={spydrLogo} className="w-16 h-16 mb-4" alt="Spydr Logo"/>
+          <Image src={spydrLogo} className="w-16 h-16 mb-4" alt="Spydr Logo" />
           <DialogTitle className="text-center text-xl font-semibold">
-            
             {isExistingUser && step !== "email"
               ? "Welcome back"
               : "A New Age of Ideation"}

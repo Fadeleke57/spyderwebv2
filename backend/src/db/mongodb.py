@@ -4,7 +4,7 @@ from pymongo.collection import Collection
 from src.core.config import settings
 from typing import List, Dict, Any
 
-client = MongoClient(settings.mongo_url)
+client = MongoClient("mongodb+srv://spy:2ppRX7fEXUBKfBbR@cluster0.dzkndbz.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 db = client[settings.mongo_initdb_database]
 
 

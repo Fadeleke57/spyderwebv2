@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Spyder Web Clipper",
+  "version": "1.0",
+  "description": "Clip YouTube videos, websites, and PDFs into Spyder Webs.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "http://localhost:8000/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {}
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://localhost:3000/*"],
+      "js": ["contentScript.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["injected.js"],
+      "matches": ["http://localhost:3000/*"]
+    }
+  ]
+}

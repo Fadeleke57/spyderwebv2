@@ -191,7 +191,7 @@ class PineconeClient:
                     "chunkCount": len(chunks),
                     "type": type,
                     "url": str(url) if url else None,
-                    "text": chunk_text[:1000],
+                     "text": chunk_text[:1000],
                     "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
                     "start_time": chunks[i]["start_time"],
                     "end_time": chunks[i]["end_time"],
