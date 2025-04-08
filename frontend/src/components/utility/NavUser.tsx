@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  BadgeCheck,
-  ChevronsUpDown,
-  LogOut,
-  Settings,
-} from "lucide-react";
+import { BadgeCheck, ChevronsUpDown, LogOut, Settings } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -47,7 +42,14 @@ export function NavUser() {
         <Button onClick={handleLogin} variant={"secondary"} className="w-full">
           Sign Up
         </Button>
-        {open && <AuthModal type="login" referrer="nav" open={open} setOpen={setOpen} />}
+        {open && (
+          <AuthModal
+            type="login"
+            referrer="nav"
+            open={open}
+            setOpen={setOpen}
+          />
+        )}
       </div>
     );
   }

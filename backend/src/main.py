@@ -8,6 +8,7 @@ from src.routes.sources.index import router as sources_router
 from src.routes.connections.index import router as connections_router
 from src.routes.chat.index import router as chat_router
 from src.routes.process.index import router as process_router
+from src.routes.payment.index import router as payment_router
 import logging
 
 logging.basicConfig(level=logging.ERROR)
@@ -41,6 +42,7 @@ app.include_router(sources_router, prefix="/sources")
 app.include_router(connections_router, prefix="/connections")
 app.include_router(chat_router, prefix="/chat")
 app.include_router(process_router, prefix="/processes")
+app.include_router(payment_router, prefix="/payment")
 
 
 @app.get("/")

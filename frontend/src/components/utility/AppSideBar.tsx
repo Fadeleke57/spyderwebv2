@@ -16,14 +16,10 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import {
-  CirclePlus,
-  Home,
-  LayoutGrid,
-  Waypoints,
-} from "lucide-react";
+import { CirclePlus, Home, LayoutGrid, Waypoints } from "lucide-react";
 import { NewWebModal } from "../webs/NewWebModal";
 import { AuthModal } from "../auth/AuthModal";
+import { ResourceUsage } from "./ResourceUsage";
 
 const SidebarIndicator = ({ show }: { show: boolean }) => {
   const { state } = useSidebar();
@@ -243,6 +239,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         hideWhen={user ? null : "collapsed"}
         className="mb-2 relative"
       >
+        <div className="px-2 mb-4">
+          <ResourceUsage
+            storageUsed={2.5 * 1024 * 1024 * 1024} // 2.5GB
+            storageLimit={5 * 1024 * 1024 * 1024} // 5GB
+            computationUsed={750}
+            computationLimit={1000}
+          />
+        </div>
         <NavUser />
       </SidebarFooter>
       <SidebarRail></SidebarRail>

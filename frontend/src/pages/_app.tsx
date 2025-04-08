@@ -12,6 +12,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/hoc/theme-provider";
 import { handleLinkedInWebView } from "@/lib/utils";
+import { Toaster as SonnerToaster } from "sonner";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -100,6 +101,7 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
                 <div className={`${fontSans.className}`}>
                   <Component {...pageProps} />
                   <Toaster />
+                  <SonnerToaster />
                 </div>
               ) : (
                 <div
@@ -114,6 +116,7 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
                     </p>
                   </div>
                   <Toaster />
+                  <SonnerToaster />
                 </div>
               )}
             </>
