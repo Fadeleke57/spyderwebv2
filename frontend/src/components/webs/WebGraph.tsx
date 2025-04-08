@@ -262,7 +262,7 @@ function WebGraph({
       .data(links)
       .join("line")
       .style("stroke", "#ccc")
-      .style("stroke-width", 2)
+      .style("stroke-width", 3.5)
       .style("opacity", 0);
 
     const linkForce = d3
@@ -379,11 +379,11 @@ function WebGraph({
             : 0.2;
         })
         .style("stroke-width", (l: any) => {
-          if (!isHovering) return 1;
+          if (!isHovering) return 3.5;
           return l.source.sourceId === d.sourceId ||
             l.target.sourceId === d.sourceId
-            ? 3
-            : 1;
+            ? 4
+            : 3.5;
         })
         .style("stroke", (l: any) => {
           if (!isHovering) return "#ccc";
@@ -460,7 +460,7 @@ function WebGraph({
 
           d3.select(this)
             .attr("stroke", mapThemetoHoverNodeColor(theme))
-            .attr("stroke-width", 2);
+            .attr("stroke-width", 3.5);
         });
 
       if (!shouldUseTspans) {
