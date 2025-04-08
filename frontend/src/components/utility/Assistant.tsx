@@ -1,90 +1,661 @@
-import React, { useState } from "react";
-import { Search, Workflow } from "lucide-react";
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent } from "../ui/dropdown-menu";
+import { environment } from "@/environment/load_env";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "../ui/dropdown-menu";
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import Image from "next/image";
-import { useRouter } from "next/router";
-import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import Charlotte from "@/components/chat/Charlotte";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Drawer, DrawerContent, DrawerTrigger } from "../ui/drawer";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { Textarea } from "../ui/textarea";
+import { v4 as uuid } from "uuid";
+import {
+  ArrowUp,
+  Clock,
+  Ellipsis,
+  Loader,
+  MoveLeft,
+  PlusCircle,
+  SquarePen,
+  Trash2,
+  Waypoints,
+  X,
+} from "lucide-react";
+import { useChat } from "@ai-sdk/react";
+import { cn, formatText } from "@/lib/utils";
+import {
+  useConfigureChat,
+  useDeleteChat,
+  useFetchChat,
+  useFetchChats,
+  useSaveChat,
+} from "@/hooks/chats";
+import type { Message } from "ai";
+import { motion } from "framer-motion";
+import { formatDate } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { PreviewMessage, ThinkingMessage } from "../chat/charlotte-messages";
+import SimpleTooltip from "./SimpleTooltip";
+import { useScrollToBottom } from "@/hooks/general";
+import { useRouter } from "next/router";
+import DeleteModal from "./DeleteModal";
+
+type viewType = "chat" | "history";
+
+type DBMessage = Message & {
+  chatId: string;
+  userId: string;
+  createdAt: Date;
+  messages: Message[];
+};
+
+type CharlotteAIProps = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  view: viewType;
+  setView: (view: viewType) => void;
+  selectedChat: string | null;
+  setSelectedChat: (chatId: string | null) => void;
+  previouslySelectedChat: string | null;
+  setPreviouslySelectedChat: (chatId: string | null) => void;
+};
+
+const suggestedActions = [
+  {
+    label: "Suggested",
+    title: "What are the most interesting insights from this web so far?",
+    action: "What are the most interesting insights from this web so far?",
+  },
+];
 
 const SpydrAI = () => {
   const [open, setOpen] = useState(false);
-  const isMobile = useIsMobile();
+  const [view, setView] = useState<viewType>("chat");
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
+  const [previouslySelectedChat, setPreviouslySelectedChat] = useState<
+    string | null
+  >(null);
+  const { mutateAsync: configureCharlotte, isPending: isConfiguring } =
+    useConfigureChat();
   const router = useRouter();
+  const { webId } = router.query;
+  console.log("webId", webId);
+  const isMobile = useIsMobile();
 
-  const menuItems = [
-    {
-      icon: <Workflow className="h-5 w-5" />,
-      label: "Get Started",
-      onClick: () => {},
-    },
-    {
-      icon: <Search className="h-5 w-5" />,
-      label: "Quick Search",
-      onClick: () => {},
-    },
-    {
-      icon: <QuestionMarkCircledIcon className="h-5 w-5" />,
-      label: "Need Help?",
-      onClick: () => {},
-    },
-  ];
+  const mapViewToComponent = () => {
+    switch (view) {
+      case "chat":
+        return (
+          <CharlotteChatInterface
+            selectedChat={selectedChat}
+            setSelectedChat={setSelectedChat}
+            previouslySelectedChat={previouslySelectedChat}
+            setPreviouslySelectedChat={setPreviouslySelectedChat}
+            open={open}
+            setOpen={setOpen}
+            view={view}
+            setView={setView}
+          />
+        );
+      case "history":
+        return (
+          <ChatHistoryInterface
+            selectedChat={selectedChat}
+            setSelectedChat={setSelectedChat}
+            previouslySelectedChat={previouslySelectedChat}
+            setPreviouslySelectedChat={setPreviouslySelectedChat}
+            open={open}
+            setOpen={setOpen}
+            view={view}
+            setView={setView}
+          />
+        );
+      default:
+        return (
+          <CharlotteChatInterface
+            selectedChat={selectedChat}
+            setSelectedChat={setSelectedChat}
+            previouslySelectedChat={previouslySelectedChat}
+            setPreviouslySelectedChat={setPreviouslySelectedChat}
+            open={open}
+            setOpen={setOpen}
+            view={view}
+            setView={setView}
+          />
+        );
+    }
+  };
 
-  return (
-    <div className="fixed bottom-20 lg:bottom-6 right-6 lg:right-16">
-      <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild className="bg-zinc-800">
+  useEffect(() => {
+    if (webId) {
+      configureCharlotte(webId as string);
+    }
+  }, [webId, router]);
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerTrigger asChild>
           <Button
             variant={"link"}
-            className="p-0 m-0 w-10 h-10 bg-background rounded-full"
+            className={`fixed bottom-6 right-6 p-0 m-0 w-10 h-10 bg-background rounded-full ${open ? "opacity-0" : ""}`}
           >
             <Charlotte width={14} height={14} activeEyes={!isMobile} />
           </Button>
-        </DropdownMenuTrigger>
+        </DrawerTrigger>
+        <DrawerContent className="h-[85dvh] max-h-[600px] bg-background/70 border-zinc-800 backdrop-blur-md rounded-t-xl">
+          {mapViewToComponent()}
+        </DrawerContent>
+      </Drawer>
+    );
+  }
 
-        <DropdownMenuContent
-          className="w-[250px] lg:w-[400px] p-2 bg-zinc-900/95 border-zinc-800 backdrop-blur-sm"
+  return (
+    <div className="fixed z-50 bottom-20 lg:bottom-6 right-6 lg:right-16">
+      <Popover open={open} onOpenChange={setOpen}>
+        <SimpleTooltip content="Chat with Charlotte AI">
+          <PopoverTrigger asChild className="bg-zinc-800">
+            <Button
+              variant={"link"}
+              className={`p-0 m-0 w-10 h-10 bg-background rounded-full ${open ? "opacity-0" : ""}`}
+            >
+              <Charlotte width={14} height={14} activeEyes={!isMobile} />
+            </Button>
+          </PopoverTrigger>
+        </SimpleTooltip>
+        <PopoverContent
+          className="w-[250px] lg:w-[500px] lg:h-[450px] bg-background/70 border-zinc-800 backdrop-blur-md rounded-xl p-0"
           align="end"
-          side="left"
-          sideOffset={10}
+          side="top"
+          sideOffset={-40}
           avoidCollisions={false}
         >
-          <div className="flex flex-col space-y-1">
-            {menuItems.map((item, index) => (
-              <Button
-                key={index}
-                variant="ghost"
-                className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-zinc-100 hover:bg-white/10"
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Button>
-            ))}
-
-            <div className="my-2 border-t border-zinc-800" />
-
-            <Button
-              variant="ghost"
-              className="flex w-full items-center justify-start px-3 py-2 text-sm text-zinc-500 hover:bg-white/10"
-              onClick={() => router.push("/about/terms-of-service")}
-            >
-              Terms of Service
-            </Button>
-
-            <Button
-              variant="ghost"
-              className="flex w-full items-center justify-start px-3 py-2 text-sm text-zinc-500 hover:bg-white/10"
-              onClick={() => router.push("/about/privacy-policy")}
-            >
-              Privacy Policy
-            </Button>
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          {mapViewToComponent()}
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };
 
 export default SpydrAI;
+
+const CharlotteChatInterface = ({
+  open,
+  setOpen,
+  view,
+  setView,
+  selectedChat,
+  setSelectedChat,
+  previouslySelectedChat,
+  setPreviouslySelectedChat,
+}: CharlotteAIProps) => {
+  const newChatIdRef = useRef(uuid());
+  const newChatId = newChatIdRef.current;
+  const chatId = selectedChat || newChatId;
+  const [initialMessages, setInitialMessages] = useState<Message[]>([]);
+  const [saveTrigger, setSaveTrigger] = useState(false);
+  const { mutateAsync: saveChat } = useSaveChat(chatId);
+  const token = localStorage.getItem("token") || "";
+
+  const {
+    messages,
+    handleSubmit,
+    input,
+    setInput,
+    isLoading,
+    stop,
+    status,
+    setMessages,
+    append,
+  } = useChat({
+    maxSteps: 4,
+    initialMessages: initialMessages,
+    id: chatId,
+    onFinish: (_, { usage }) => {
+      const { promptTokens, completionTokens, totalTokens } = usage;
+      setSaveTrigger(true);
+    },
+    api: environment.api_url + "/chat",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const {
+    data: messageData,
+    isLoading: initialMessagesLoading,
+    refetch: refetchInitialMessages,
+  } = useFetchChat(selectedChat);
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+
+    // auto-resize textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 300)}px`;
+    }
+  };
+
+  const [messagesContainerRef, messagesEndRef] =
+    useScrollToBottom<HTMLDivElement>(
+      [messages.length],
+      isLoading // or whatever your streaming state is called
+    );
+
+  const submitForm = () => {
+    if (input.trim()) {
+      handleSubmit(new Event("submit"));
+    }
+  };
+
+  const handleNavigateToHistory = () => {
+    if (selectedChat) {
+      setPreviouslySelectedChat(selectedChat);
+    }
+    setSelectedChat(null);
+    setView("history");
+  };
+
+  const handleNewChat = () => {
+    setPreviouslySelectedChat(null);
+    setSelectedChat(null);
+    setInitialMessages([]);
+    setMessages([]);
+    newChatIdRef.current = uuid();
+    setView("chat");
+  };
+
+  useEffect(() => {
+    if (saveTrigger) {
+      saveChat({ messages });
+      setSaveTrigger(false);
+    }
+  }, [messages, saveChat, saveTrigger]);
+
+  useEffect(() => {
+    if (messageData) {
+      setInitialMessages(messageData);
+      setMessages(messageData);
+    }
+  }, [
+    messageData,
+    initialMessages,
+    setInitialMessages,
+    setSelectedChat,
+    selectedChat,
+    view,
+    setView,
+    setMessages,
+  ]);
+
+  return (
+    <div className="flex flex-col h-full w-full rounded-lg p-0">
+      {/* header */}
+      <div className="flex justify-between space-x-2 py-2 px-4 items-center">
+        <div>
+          <small>{selectedChat ? "Chat" : "New Chat"}</small>
+        </div>
+        <div className="flex space-x-2 items-center">
+          {selectedChat ? (
+            <SimpleTooltip content="New Chat">
+              <Button
+                variant={"link"}
+                className="rounded-full p-1 h-fit w-fit hover:bg-muted m-0"
+                onClick={handleNewChat}
+              >
+                <SquarePen size={16} />
+              </Button>
+            </SimpleTooltip>
+          ) : (
+            <SimpleTooltip content="Chat History">
+              <Button
+                variant={"link"}
+                className="rounded-full p-1 h-fit w-fit hover:bg-muted m-0"
+                onClick={handleNavigateToHistory}
+              >
+                <Clock size={16} />
+              </Button>
+            </SimpleTooltip>
+          )}
+          <DropdownMenu>
+            <SimpleTooltip content="Manage chats, find help, etc.">
+              <DropdownMenuTrigger>
+                <Button
+                  variant={"link"}
+                  className="rounded-full p-1 h-fit w-fit hover:bg-muted m-0"
+                >
+                  <Ellipsis size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+            </SimpleTooltip>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Chat Options</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => {
+                    handleNavigateToHistory();
+                  }}
+                >
+                  History
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleNewChat}
+                  className="cursor-pointer"
+                >
+                  New Chat
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <SimpleTooltip content="Close">
+            <Button
+              onClick={() => setOpen(false)}
+              className="rounded-full p-1 h-fit w-fit hover:bg-muted m-0"
+            >
+              <X size={16} />
+            </Button>
+          </SimpleTooltip>
+        </div>
+      </div>
+
+      <ScrollArea
+        className="flex-grow flex justify-center p-2 pt-0"
+        ref={messagesContainerRef}
+      >
+        {messages.length === 0 && !selectedChat && (
+          <div className="flex flex-col items-center h-full space-y-2">
+            <motion.div
+              className="flex w-full justify-start h-full text-muted-foreground"
+              initial={{ y: 5, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+            >
+              <Charlotte width={16} height={16} activeEyes={false} />
+            </motion.div>
+            {suggestedActions.map((action, index) => (
+              <motion.div
+                className="w-full p-2 hover:bg-muted hover:text-blue-300 cursor-pointer rounded-md text-muted-foreground flex flex-col transition-colors duration-200 ease-in-out"
+                initial={{ y: 5, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                onClick={async () => {
+                  append({
+                    role: "user",
+                    content: action.action,
+                  });
+                }}
+                key={index}
+              >
+                <small className="mb-1">{action.label}</small>
+                <p className="text-sm font-semibold">{action.title}</p>
+              </motion.div>
+            ))}
+          </div>
+        )}
+        {messages.length > 0 && messages[0].createdAt && (
+          <div className="w-full flex justify-center mb-4">
+            <small className="text-muted-foreground w-full text-center">
+              {formatDate(messages[0].createdAt, "MMMM d, yyyy hh:mm aa")}
+            </small>
+          </div>
+        )}
+        <div className="flex w-full flex-col space-y-2">
+          {messages.map((message, index) => (
+            <PreviewMessage
+              key={message.id}
+              chatId={chatId as string}
+              message={message}
+              isLoading={isLoading && messages.length - 1 === index}
+            />
+          ))}
+        </div>
+
+        {isLoading &&
+          messages.length > 0 &&
+          messages[messages.length - 1].role === "user" && <ThinkingMessage />}
+        <div
+          ref={messagesEndRef}
+          className="shrink-0 min-w-[24px] min-h-[10px]"
+        />
+        <ScrollBar />
+      </ScrollArea>
+
+      {/* input Area */}
+      <div className="p-2 shadow w-full rounded-b-lg">
+        <div className="relative">
+          <Textarea
+            ref={textareaRef}
+            placeholder="Ask anything or talk to this web.."
+            value={input}
+            onChange={handleInput}
+            className="w-full min-h-[40px] max-h-[300px] p-3 pr-12 rounded-lg bg-muted resize-none focus:ring-violet-400 overflow-hidden transition-all ease-in-out duration-100"
+            rows={1}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                submitForm();
+              }
+            }}
+          />
+          <Button
+            variant={"secondary"}
+            className={cn(
+              "absolute right-2 bottom-2 border h-fit rounded-full p-1 ",
+              input.trim() === "" ? "opacity-50 cursor-not-allowed" : ""
+            )}
+            onClick={submitForm}
+            disabled={input.trim() === "" || isLoading}
+          >
+            {isLoading ? (
+              <Loader className="h-4 w-4 animate-spin" />
+            ) : (
+              <ArrowUp size={16} />
+            )}
+          </Button>
+          <Button
+            variant={"link"}
+            className={cn(
+              "absolute right-10 bottom-2 border h-fit rounded-full p-1 hover:bg-muted"
+            )}
+            onClick={submitForm}
+            disabled={isLoading}
+          >
+            {<Waypoints size={16} />}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ChatHistoryInterface = ({
+  open,
+  setOpen,
+  view,
+  setView,
+  selectedChat,
+  setSelectedChat,
+  previouslySelectedChat,
+  setPreviouslySelectedChat,
+}: CharlotteAIProps) => {
+  const {
+    data: allChats,
+    isLoading: allChatsLoading,
+    refetch: refetchAllChats,
+  } = useFetchChats();
+
+  const {
+    mutateAsync: deleteChat,
+    isPending: deletePending,
+    error: deleteError,
+  } = useDeleteChat();
+
+  const [deleteVisible, setDeleteVisible] = useState(-1);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteChatId, setDeleteChatId] = useState("");
+
+  const handleNewChat = () => {
+    setSelectedChat(null);
+    setView("chat");
+  };
+
+  const handleSelectChat = (chatId: string) => {
+    setSelectedChat(chatId);
+    setPreviouslySelectedChat(chatId);
+    setView("chat");
+  };
+
+  const handleGoBack = () => {
+    if (previouslySelectedChat) {
+      setSelectedChat(previouslySelectedChat);
+      setPreviouslySelectedChat(null);
+      setView("chat");
+    } else {
+      setSelectedChat(null);
+      setView("chat");
+    }
+  };
+
+  const handleDeleteChat = async (chatId: string) => {
+    try {
+      await deleteChat(chatId);
+      refetchAllChats();
+      setDeleteModalOpen(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1, // delay between each child animation
+        delayChildren: 0.2, // delay before starting the first child animation
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 260,
+        damping: 20,
+      },
+    },
+  };
+
+  return (
+    <div className="flex flex-col h-full w-full rounded-lg p-0">
+      {/* header */}
+      <div className="flex justify-between space-x-2 py-2 px-4 items-center">
+        <div>
+          <Button
+            className="rounded-full px-3 py-1 h-fit w-fit hover:bg-muted m-0"
+            onClick={handleGoBack}
+          >
+            <MoveLeft size={16} className="mr-2" />
+            <small>Back</small>
+          </Button>
+        </div>
+        <div className="w-full flex items-center justify-center">
+          {allChatsLoading ? (
+            <>
+              <Loader size={16} className="animate-spin mr-2" />
+              <small>Loading Chats..</small>
+            </>
+          ) : (
+            <small>All Chats</small>
+          )}
+        </div>
+        <div className="flex space-x-2 items-center">
+          <SimpleTooltip content="New Chat">
+            <Button
+              className="rounded-full py-1 px-3 h-fit w-fit hover:bg-muted m-0"
+              onClick={handleNewChat}
+            >
+              <PlusCircle size={16} className="mr-2" />
+              <small>New Chat</small>
+            </Button>
+          </SimpleTooltip>
+          <SimpleTooltip content="Close">
+            <Button
+              onClick={() => setOpen(false)}
+              className="rounded-full p-1 h-fit w-fit hover:bg-muted m-0"
+            >
+              <X size={16} />
+            </Button>
+          </SimpleTooltip>
+        </div>
+      </div>
+
+      <ScrollArea className="flex-grow flex justify-center p-2 pt-0 space-y-2 px-3">
+        <motion.div
+          className="w-full space-y-2"
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
+          {allChats &&
+            allChats.map((chat: DBMessage, index: number) => (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                className="relative border w-full p-2 bg-muted/80 hover:bg-muted cursor-pointer rounded-md text-muted-foreground flex flex-col transition-all duration-200 ease-in-out"
+                onClick={() => handleSelectChat(chat.chatId)}
+                onMouseEnter={() => setDeleteVisible(index)}
+                onMouseLeave={() => setDeleteVisible(-1)}
+              >
+                <span className="text-sm font-semibold text-foreground">
+                  {formatText(chat.messages[0].content, 50)}
+                </span>
+                <span className="text-xs">
+                  {formatDate(chat.createdAt, "MMM dd, yyyy hh:mm a")}
+                </span>
+                <Button
+                  variant={"link"}
+                  className={`absolute top-4 right-4 h-fit w-fit p-1 ${deleteVisible === index ? "opacity-100" : "opacity-0"} transition-all duration-200 ease-in-out hover:text-red-400`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setDeleteChatId(chat.chatId);
+                    setDeleteModalOpen(true);
+                  }}
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </motion.div>
+            ))}
+        </motion.div>
+        <ScrollBar />
+      </ScrollArea>
+      {deleteModalOpen && (
+        <DeleteModal
+          open={deleteModalOpen}
+          setOpen={setDeleteModalOpen}
+          onDelete={() => handleDeleteChat(deleteChatId!)}
+          isPending={deletePending}
+          itemType="chat"
+        />
+      )}
+    </div>
+  );
+};

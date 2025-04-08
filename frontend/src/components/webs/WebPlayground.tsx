@@ -57,6 +57,7 @@ import WebSettingsModal from "./WebSettingsModal";
 import { toast } from "../ui/use-toast";
 import ProcessModal from "@/components/webs/ProcessModal";
 import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
+import SimpleTooltip from "../utility/SimpleTooltip";
 
 const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
 
@@ -235,16 +236,7 @@ function WebPlayground({
             isExpanded ? "right-6" : "right-3"
           }  top-3`}
         >
-          {isOwner && (
-            <TooltipProvider delayDuration={100}>
-              <Tooltip>
-                <TooltipTrigger>
-                  <WebSettingsModal refetchWeb={refetch} web={web} />{" "}
-                </TooltipTrigger>
-                <TooltipContent>Settings</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+          {isOwner && <WebSettingsModal refetchWeb={refetch} web={web} />}
           <Badge variant="outline" className={`border dark:border-violet-400`}>
             {web?.sourceIds?.length || 0} sources added
           </Badge>
@@ -275,7 +267,7 @@ function WebPlayground({
                   </Button>
                 )}
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="z-24">
                 <p>{isExpanded ? "Collapse view" : "Expand view"}</p>
               </TooltipContent>
             </Tooltip>

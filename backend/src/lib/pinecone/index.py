@@ -93,11 +93,44 @@ class PineconeClient:
             return metadata
     """
 
-    def run_semantic_search(self, query: str, limit: int, filter):
+    def run_semantic_web_search(
+        self, query: str, filter: Dict[str, Any] = {}, limit: int = 10
+    ):
         """
-        Runs a semantic search over the Pinecone index using the given query.
+        Runs a semantic search on the Pinecone index for webs, given a query string and an optional filter.
 
         Args:
+            query (str): The query string to search for.
+            filter (Dict[str, Any]): A filter to apply on the results. The filter should be a dictionary
+                where each key is a metadata key and the value is a filter value.
+            limit (int): The number of results to return. Defaults to 10.
+
+        Returns:
+            list: A list of dictionaries, each containing the metadata of a result, as well as its ID.
+        """
+        query_embedding = self.get_query_embedding(query)
+        pinecone_response = self.index.query(
+            vector=query_embedding,
+            top_k=limit,
+            include_metadata=True,
+            namespace="webs",
+            filter=filter,
+        )
+        results = []
+        for match in pinecone_response["matches"]:
+            result = match["metadata"]
+            result["id"] = match["id"]
+            results.append(result)
+        return results
+
+    def run_remantic_source_search(
+        self, webId: str, query: str, filter: Dict[str, Any] = {}, limit: int = 10
+    ):
+        """
+        Runs a semantic search over the Pinecone index for a given web ID.
+
+        Args:
+        - webId (str): The ID of the web to search within.
         - query (str): The query string to search for.
         - limit (int): The maximum number of results to return.
         - filter (Dict[str, Any]): A filter to apply on the results. The filter should be a dictionary
@@ -112,7 +145,7 @@ class PineconeClient:
             vector=query_embedding,
             top_k=limit,
             include_metadata=True,
-            namespace="webs",
+            namespace=webId,
             filter=filter,
         )
         results = []

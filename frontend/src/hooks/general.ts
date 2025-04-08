@@ -46,32 +46,81 @@ export function useOnClickOutside<T extends HTMLElement = HTMLElement>(
   }, [ref, handler, mouseEvent]);
 }
 
-export function useScrollToBottom<T extends HTMLElement>(): [
-  RefObject<T>,
-  RefObject<T>,
-] {
+export function useScrollToBottom<T extends HTMLElement>(
+  dependencies: any[] = [],
+  isStreaming: boolean = false
+): [RefObject<T>, RefObject<T>] {
   const containerRef = useRef<T>(null);
   const endRef = useRef<T>(null);
+  const userScrolledRef = useRef(false);
+  const isStreamingRef = useRef(isStreaming);
+
+  // Update the streaming ref when the prop changes
+  useEffect(() => {
+    isStreamingRef.current = isStreaming;
+  }, [isStreaming]);
 
   useEffect(() => {
     const container = containerRef.current;
     const end = endRef.current;
 
-    if (container && end) {
-      const observer = new MutationObserver(() => {
-        end.scrollIntoView({ behavior: "auto", block: "end" });
-      });
+    if (!container || !end) return;
 
-      observer.observe(container, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        characterData: true,
-      });
+    // Detect when user manually scrolls
+    const handleScroll = () => {
+      if (!container) return;
 
-      return () => observer.disconnect();
-    }
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      // If we're not at the bottom, user has scrolled up
+      const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 10;
+
+      // Only consider it a manual scroll if we're not currently streaming
+      if (!isStreamingRef.current) {
+        userScrolledRef.current = !isAtBottom;
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
   }, []);
+
+  // Handle scrolling on message changes
+  useEffect(() => {
+    const end = endRef.current;
+
+    if (!end) return;
+
+    // Scroll if user hasn't manually scrolled up OR if we're currently streaming
+    if (!userScrolledRef.current || isStreaming) {
+      end.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [...dependencies, isStreaming]);
+
+  // Set up an interval to scroll while streaming
+  useEffect(() => {
+    if (!isStreaming) return;
+
+    // Reset user scrolled state when streaming starts
+    userScrolledRef.current = false;
+
+    const end = endRef.current;
+    if (!end) return;
+
+    // Initial scroll when streaming starts
+    end.scrollIntoView({ behavior: "smooth", block: "end" });
+
+    // Set up interval to scroll periodically during streaming
+    const intervalId = setInterval(() => {
+      if (isStreamingRef.current && end) {
+        end.scrollIntoView({ behavior: "smooth", block: "end" });
+      }
+    }, 100);
+
+    return () => clearInterval(intervalId);
+  }, [isStreaming]);
 
   return [containerRef, endRef];
 }

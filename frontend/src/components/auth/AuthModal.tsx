@@ -28,6 +28,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import Link from "next/link";
 import spydrLogo from "@/assets/spydr_icon.svg";
 import Image from "next/image";
+import { register } from "module";
 
 const emailSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -156,8 +157,9 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
       });
     }
   };
-
+  const [registerLoading, setRegisterLoading] = useState(false);
   const onRegisterSubmit = async (data: RegisterSubmission) => {
+    setRegisterLoading(true);
     try {
       const response = await api.post("/auth/register", {
         email: data.email,
@@ -182,6 +184,7 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
         variant: "destructive",
       });
     }
+    setRegisterLoading(false);
   };
 
   return (
@@ -378,8 +381,8 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
                   )}
                 />
 
-                <Button variant="secondary" type="submit" className="w-full">
-                  Create Account
+                <Button disabled={registerLoading} variant="secondary" type="submit" className="w-full">
+                  {registerLoading ? "Loading..." : "Create Account"}
                 </Button>
 
                 <Button

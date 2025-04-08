@@ -26,7 +26,7 @@ class SummarizerAgent:
             )
 
             response = openaiClient.client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model=openaiClient.selected_model,
                 messages=[
                     {
                         "role": "system",

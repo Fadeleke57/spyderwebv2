@@ -24,6 +24,7 @@ import {
 } from "@/lib/utils";
 import SourceTooltip from "./SourceToolTip";
 import { Connection } from "@/types/connection";
+import SpydrAI from "../utility/Assistant";
 
 interface GraphProps {
   isOwner: boolean;
@@ -589,6 +590,7 @@ function WebGraph({
           webId={webId}
         />
       )}
+      <SpydrAI />
     </div>
   );
 }

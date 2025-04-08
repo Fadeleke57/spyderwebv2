@@ -57,7 +57,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   return (
-    <Sidebar collapsible="icon" {...props} className="flex justify-center">
+    <Sidebar collapsible="icon" {...props} className="flex justify-center p-0 border-l-none h-screen">
       <SidebarHeader>
         <div className="flex flex-col items-end justify-center">
           <div className="w-full flex items-center justify-between rounded-full">
@@ -181,6 +181,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuButton>
           <SidebarIndicator show={selectedButton === "webs"} />
         </div>
+        {/*
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"
@@ -211,7 +212,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </div>
           </SidebarMenuButton>
           <SidebarIndicator show={selectedButton === "chat"} />
-        </div>
+        </div>*/}
         {user ? (
           <NewWebModal>
             <div className="px-2">
@@ -271,7 +272,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       >
         <NavUser />
       </SidebarFooter>
-      <SidebarRail></SidebarRail>
       {open && (
         <AuthModal
           type="login"

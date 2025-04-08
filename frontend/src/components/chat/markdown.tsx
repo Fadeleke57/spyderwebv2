@@ -1,7 +1,55 @@
 import Link from "next/link";
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { Button } from "../ui/button";
+import { Check, Copy } from "lucide-react";
+import SimpleTooltip from "../utility/SimpleTooltip";
+
+const CodeBlock = ({ className, match, children, ...props }: any) => {
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopy = () => {
+    const code = typeof children === "string" ? children : String(children);
+    navigator.clipboard.writeText(code);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  return (
+    <div className="relative group">
+      <ScrollArea className="w-full">
+        <pre
+          {...props}
+          className={`${className} text-sm w-full bg-zinc-100 p-3 rounded-lg mt-2 dark:bg-zinc-800`}
+        >
+          <code className={match[1]}>{children}</code>
+        </pre>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+
+      <SimpleTooltip content="Copy">
+      <Button
+        size="sm"
+        onClick={handleCopy}
+        className="absolute -bottom-4 right-2 h-fit w-fit p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+      >
+        <div className="relative w-4 h-4">
+          <Copy
+            size={16}
+            className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-0 scale-50" : "opacity-100 scale-100"}`}
+          />
+          <Check
+            size={16}
+            className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
+          />
+        </div>
+      </Button>
+      </SimpleTooltip>
+    </div>
+  );
+};
 
 const NonMemoizedMarkdown = ({ children }: { children: string }) => {
   const components: Partial<Components> = {
@@ -9,13 +57,9 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
     code: ({ node, inline, className, children, ...props }) => {
       const match = /language-(\w+)/.exec(className || "");
       return !inline && match ? (
-        // @ts-expect-error
-        <pre
-          {...props}
-          className={`${className} text-sm w-full overflow-x-scroll bg-zinc-100 p-3 rounded-lg mt-2 dark:bg-zinc-800`}
-        >
-          <code className={match[1]}>{children}</code>
-        </pre>
+        <CodeBlock match={match} className={className} {...props}>
+          {children}
+        </CodeBlock>
       ) : (
         <code
           className={`${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`}
@@ -106,6 +150,13 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
         <h6 className="text-sm font-semibold mt-6 mb-2" {...props}>
           {children}
         </h6>
+      );
+    },
+    p: ({ node, children, ...props }) => {
+      return (
+        <p className="whitespace-pre-wrap break-words" {...props}>
+          {children}
+        </p>
       );
     },
   };

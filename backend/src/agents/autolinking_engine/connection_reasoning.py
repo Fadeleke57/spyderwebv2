@@ -4,22 +4,35 @@ from pytz import UTC
 from datetime import datetime
 from src.lib.logger.index import logger
 from src.lib.gemini.index import client as geminiClient
-from src.models.index import CreateConnection, Connections
+from src.models.index import CreateConnection
 from src.db.neo4j import client as neo4jClient
-
-
-
 
 
 class ConnectionReasoningAgent:  # reasons connections from selected sources and generates structured output
     def __new__(cls, *args, **kwargs):
         """
-        Override __new__ method to always create a new instance.
-        This approach prevents using singleton pattern or caching.
+        Creates a new instance of ConnectionReasoningAgent.
+        This method overrides the default behavior to ensure a new instance
+        is always created, preventing the use of a singleton pattern or caching.
         """
         return super().__new__(cls)
 
     def __init__(self, webId: str, sourceId: str):
+        """
+        Initializes a new instance of the ConnectionReasoningAgent.
+
+        Args:
+            webId (str): The identifier for the web context in which connections are being reasoned.
+            sourceId (str): The identifier for the source from which connections are being reasoned.
+
+        Raises:
+            ValueError: If either webId or sourceId is not provided.
+
+        Sets up:
+            - Initializes webId and sourceId attributes.
+            - Prepares an empty list to stage connections.
+            - Logs the initialization of the connection reasoning agent.
+        """
         if not webId or not sourceId:
             raise ValueError("Information is missing: webId or sourceId")
 
@@ -29,6 +42,18 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
         logger.info("CONNECTION REASONING AGENT INITIALIZED")
 
     def _create_connections_list(self, candidate_document):
+        """
+        Generates a list of CreateConnection objects from the candidate document using the Gemini Model.
+
+        Args:
+            candidate_document (dict): The candidate document containing the source and its candidates.
+
+        Returns:
+            list[CreateConnection]: A list of CreateConnection objects.
+
+        Raises:
+            RuntimeError: If there is an error generating content from the Gemini Model.
+        """
         logger.info(f"Creating connections...")
         try:
             response = geminiClient.client.models.generate_content(
@@ -64,6 +89,18 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
     def create_relationships_in_db(
         self, candidate_document
     ):  # use neo4j to take structured output and create relationships
+        """
+        Uses the structured output from the Gemini Model to create relationships in the database.
+
+        Args:
+            candidate_document (dict): The candidate document containing the source and its candidates.
+
+        Returns:
+            bool: True if all relationships were created successfully, False otherwise.
+
+        Raises:
+            RuntimeError: If there is an error generating content from the Gemini Model.
+        """
         logger.info(f"Creating relationships...")
         connections: list[CreateConnection] = self._create_connections_list(
             candidate_document
@@ -99,7 +136,23 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
         return True
 
     def _generate_prompt(self, candidate_document):
+        """
+        Generates the prompt to send to the Gemini Model. This prompt is the input to the model, and it defines the task of generating meaningful connections between a new document chunk and a set of existing document chunks in a user's knowledge base.
 
+        The generated prompt includes the following information:
+        - A description of the task
+        - The input context: candidate document metadata, previously selected candidate documents, webId, previously established connections, fromSourceId, and the 'score' field
+        - Connection reasoning objectives: identify meaningful connections, generate natural descriptions, ensure connections add value, identify unique connections, and reference specific locations
+        - Guidelines: leverage metadata, avoid redundancy, focus on meaningful relationships, and emphasize natural language
+        - Connection generation criteria: generate 1-3 unique connections, each with a clear relationship explanation, validated source and destination document IDs, and the webId
+        - Important constraints: only generate connections with high confidence and clear rationale, avoid redundant or trivial connections, and do not refer to identifiers or documents as "the candidate document", etc.
+        - Output format requirements: structured JSON matching the CreateConnection model, detailed connection descriptions, and ensure programmatic parseability
+
+        The generated prompt is a string that is sent to the Gemini Model to generate connections. It is the single input to the model.
+
+        Returns:
+            str: The generated prompt
+        """
         GEMINI_CONNECTION_REASONING_PROMPT = f"""You are an expert knowledge graph connection reasoning agent. Your task is to evaluate and establish meaningful, non-trivial connections between a new document chunk and a set of existing document chunks in a user's knowledge base.
 
         Input Context:

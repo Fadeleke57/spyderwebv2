@@ -6,11 +6,9 @@ import { useUser } from "@/context/UserContext";
 import Link from "next/link";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { Settings, User } from "lucide-react";
+import { User } from "lucide-react";
 import SpydrAI from "@/components/utility/Assistant";
 import { getTimeBasedGreeting } from "@/lib/utils";
-import spydrLogo from "@/assets/spydr_icon.svg"
-import Image from "next/image";
 
 function Index() {
   const { user } = useUser();
@@ -20,7 +18,7 @@ function Index() {
   const greeting = getTimeBasedGreeting("America/New_York");
 
   return (
-    <div className="flex flex-col gap-12 lg:gap-20 p-6 pt-16 pb-36 lg:py-16 min-h-screen overflow-x-hidden max-w-[920px] mx-auto">
+    <div className="flex flex-col gap-12 lg:gap-20 p-6 pt-16 pb-36 lg:p-16 min-h-screen overflow-x-hidden w-full mx-auto">
       <Head>
         <title>{"home - spydr"}</title>
         <meta name="description" content={"Welcome to spydr"} />

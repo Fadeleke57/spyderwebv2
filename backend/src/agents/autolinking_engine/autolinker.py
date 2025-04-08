@@ -99,7 +99,7 @@ class AutoLinkerEngine:  # proccess running CandidateSelectorAgent and Connectio
                 status="completed",
                 percentage=100,
             )
-            
+
             self._reset()
 
 

@@ -15,12 +15,12 @@ class SourceService:
     def __init__(self):
         pass
 
-    def embed_and_upsert_website(self, sourceId, md, web_id, url):
+    def embed_and_upsert_website(self, sourceId, md, web_id, url, title):
         """ """
         try:
             chunks = pineconeClient.chunk_clean_text(md)
             results = pineconeClient.embed_and_upsert_to_pinecone(
-                sourceId, chunks, web_id, type="website", url=url
+                sourceId, chunks, web_id, type="website", url=url, title=title
             )
             logger.info(f"Pinecone results: {results}")
         except Exception as e:
@@ -28,13 +28,13 @@ class SourceService:
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
 
     def embed_and_upsert_youtube(
-        self, sourceId: str, transcripts, web_id: str, url: str
+        self, sourceId: str, transcripts, web_id: str, url: str, title: str
     ):
         """ """
         try:
             chunks = pineconeClient.chunk_youtube_transcript(transcripts)
             results = pineconeClient.embed_and_upsert_to_pinecone(
-                sourceId, chunks, web_id, type="youtube", url=url
+                sourceId, chunks, web_id, type="youtube", url=url, title=title
             )
             logger.info(f"Pinecone results: {results}")
         except Exception as e:
@@ -42,7 +42,7 @@ class SourceService:
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
 
     def embed_and_upsert_pdf(
-        self, sourceId: str, file_path: str, web_id: str, url: str
+        self, sourceId: str, file_path: str, web_id: str, url: str, title: str
     ):
         """ """
         try:
@@ -55,7 +55,7 @@ class SourceService:
                 md, chunk_size=1000, chunk_overlap=100
             )
             results = pineconeClient.embed_and_upsert_to_pinecone(
-                sourceId, chunks, web_id, type="document", url=url
+                sourceId, chunks, web_id, type="document", url=url, title=title
             )
             logger.info(f"Pinecone results: {results}")
         except Exception as e:

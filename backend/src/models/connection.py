@@ -2,9 +2,6 @@ from pydantic import BaseModel
 from typing import Optional
 from typing_extensions import TypedDict
 from datetime import datetime
-from src.db.mongodb import get_collection
-
-Connections = get_collection("connections")
 
 
 class Connection(BaseModel):

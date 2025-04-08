@@ -4,7 +4,6 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
-import { set } from "lodash";
 
 function UploadFile({
   handleFileUpload,
@@ -176,7 +175,7 @@ function UploadFile({
             htmlFor="link-parsing"
             className="font-medium flex items-center"
           ></Label>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Uploading an Obsidian Vault? Check here to preserve the links.
           </p>
         </div>

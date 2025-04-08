@@ -6,7 +6,6 @@ from fastapi.exceptions import HTTPException
 from src.routes.auth.oauth2 import manager
 from src.utils.exceptions import check_user
 from src.models.connection import (
-    Connections,
     CreateConnection,
     UpdateConnection,
     Connection,

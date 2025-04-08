@@ -7,7 +7,9 @@ import { SparklesIcon } from "./icons";
 import { Markdown } from "./markdown";
 import { PreviewAttachment } from "@/components/chat/preview-attachment";
 import { cn } from "@/lib/utils";
-import { Weather } from "@/components/chat/weather";
+import { Weather } from "@/components/chat/genui/weather";
+import ReferencesComponent from "@/components/chat/genui/graphcontext";
+import Charlotte from "./Charlotte";
 
 export const PreviewMessage = ({
   message,
@@ -25,18 +27,18 @@ export const PreviewMessage = ({
     >
       <div
         className={cn(
-          "group-data-[role=user]/message:bg-primary group-data-[role=user]/message:text-primary-foreground flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl",
+          "group-data-[role=user]/message:bg-primary group-data-[role=user]/message:text-primary-foreground flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl"
         )}
       >
         {message.role === "assistant" && (
           <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">
-            <SparklesIcon size={14} />
+            <Charlotte width={10} height={10} activeEyes={false} />
           </div>
         )}
 
         <div className="flex flex-col gap-2 w-full">
           {message.content && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 border">
               <Markdown>{message.content as string}</Markdown>
             </div>
           )}
@@ -51,10 +53,11 @@ export const PreviewMessage = ({
 
                   return (
                     <div key={toolCallId}>
-                      {toolName === "get_current_weather" ? (
+                      {toolName === "get_current_weather" && (
                         <Weather weatherAtLocation={result} />
-                      ) : (
-                        <pre>{JSON.stringify(result, null, 2)}</pre>
+                      )}
+                      {toolName === "get_graph_context" && (
+                        <ReferencesComponent context={result.context} />
                       )}
                     </div>
                   );
@@ -67,6 +70,9 @@ export const PreviewMessage = ({
                     })}
                   >
                     {toolName === "get_current_weather" ? <Weather /> : null}
+                    {toolName === "get_graph_context" ? (
+                      <ReferencesComponent />
+                    ) : null}
                   </div>
                 );
               })}
@@ -104,7 +110,7 @@ export const ThinkingMessage = () => {
           "flex gap-4 group-data-[role=user]/message:px-3 w-full group-data-[role=user]/message:w-fit group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl group-data-[role=user]/message:py-2 rounded-xl",
           {
             "group-data-[role=user]/message:bg-muted": true,
-          },
+          }
         )}
       >
         <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border">

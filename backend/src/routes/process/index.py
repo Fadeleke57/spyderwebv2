@@ -68,15 +68,15 @@ def get_process(job_id: str, user=Depends(manager)) -> Process:
 
     return {"result": process}
 
+
 @router.get("/status/{web_id}/{source_id}")
 def get_status(web_id: str, source_id: str, user=Depends(manager)):
     check_user(user)
-    process = Processes.find_one(
-        {
-            "sourceId": source_id, 
-            "status": {"$in": ["processing"]}
-        }, 
-        {"_id": 0}
-    ) or None
+    process = (
+        Processes.find_one(
+            {"sourceId": source_id, "status": {"$in": ["processing"]}}, {"_id": 0}
+        )
+        or None
+    )
     logger.info(f"Process {source_id} status: {process}")
     return {"result": process}

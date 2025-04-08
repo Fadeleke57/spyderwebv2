@@ -6,12 +6,22 @@ from src.core.config import settings
 class CandidateSelectorAgent:  # visits the pincone database for sources within the same web (can configure to later search across other webs and increase performance/accuracy)
     def __new__(cls, *args, **kwargs):
         """
-        Override __new__ method to always create a new instance.
-        This approach prevents using singleton pattern or caching.
+        Create and return a new instance of CandidateSelectorAgent.
+        Overrides the default behavior to ensure a new instance is always created.
         """
         return super().__new__(cls)
 
     def __init__(self, webId: str, sourceId: str):
+        """
+        Initialize the CandidateSelectorAgent.
+
+        Args:
+        webId (str): The Web ID to search within.
+        sourceId (str): The Source ID to exclude from results.
+
+        Raises:
+        ValueError: If either webId or sourceId are missing.
+        """
         if not webId or not sourceId:
             raise ValueError("Information is missing: webId or sourceId")
 
@@ -27,6 +37,17 @@ class CandidateSelectorAgent:  # visits the pincone database for sources within 
         k: int = 5,
         threshold: float = 0.8,
     ):
+        """
+        Find top k candidates in the Pinecone index that are similar to the given embedding, excluding the given sourceId, with a minimum similarity score threshold.
+
+        Args:
+        embedding (list[float]): The embedding vector to search for similar embeddings.
+        k (int): The number of candidates to return. Defaults to 5.
+        threshold (float): The minimum similarity score for a candidate to be returned. Defaults to 0.8.
+
+        Returns:
+        list: A list of dictionaries, each containing the metadata of a candidate, as well as its similarity score.
+        """
         logger.info(f"Finding top k candidates for embedding: {embedding[:5]}...")
         raw_candidates = self._run_similiarity_search(
             embedding=embedding,
@@ -41,6 +62,16 @@ class CandidateSelectorAgent:  # visits the pincone database for sources within 
         return raw_candidates
 
     def create_candidate_doc(self, raw_candidates, model_candidate_metadata):
+        """
+        Create a candidate document from a list of raw candidates and metadata for the model candidate.
+
+        Args:
+        raw_candidates (list): A list of dictionaries, each containing the metadata of a candidate, as well as its similarity score.
+        model_candidate_metadata (dict): The metadata of the model candidate.
+
+        Returns:
+        dict: The created candidate document containing metadata for the model candidate and the list of raw candidates.
+        """
         logger.info(f"Creating candidate doc...")
         candidate_document = {
             "model_candidate": model_candidate_metadata,
@@ -51,6 +82,19 @@ class CandidateSelectorAgent:  # visits the pincone database for sources within 
     def _run_similiarity_search(
         self, embedding: list[float], web_id: str, filter, k: int = 10
     ):
+        """
+        Runs a similarity search over the Pinecone index using the given embedding.
+
+        Args:
+        - embedding (list[float]): The vector embedding to search for.
+        - web_id (str): The namespace to search in.
+        - filter (Dict[str, Any]): A filter to apply on the results. The filter should be a dictionary
+            where each key is a metadata key and the value is a filter value.
+        - k (int): The number of results to return. Defaults to 10.
+
+        Returns:
+        - list: A list of dictionaries, each containing the metadata of a result, as well as its similarity score.
+        """
         logger.info(
             f"Running similiarity search for embedding: {embedding[:5]}... with filter: {filter} and k: {k} and namespace: {web_id}"
         )

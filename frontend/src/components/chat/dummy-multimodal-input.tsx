@@ -33,7 +33,7 @@ const suggestedActions = [
   },
 ];
 
-export function MultimodalInput({
+export function DummyMultimodalInput({
   chatId,
   input,
   setInput,
@@ -54,13 +54,13 @@ export function MultimodalInput({
   setMessages: Dispatch<SetStateAction<Array<Message>>>;
   append: (
     message: Message | CreateMessage,
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => Promise<string | null | undefined>;
   handleSubmit: (
     event?: {
       preventDefault?: () => void;
     },
-    chatRequestOptions?: ChatRequestOptions,
+    chatRequestOptions?: ChatRequestOptions
   ) => void;
   className?: string;
 }) {
@@ -82,7 +82,7 @@ export function MultimodalInput({
 
   const [localStorageInput, setLocalStorageInput] = useLocalStorage(
     "input",
-    "",
+    ""
   );
 
   useEffect(() => {
@@ -116,7 +116,9 @@ export function MultimodalInput({
   }, [handleSubmit, setLocalStorageInput, width]);
 
   return (
-    <div className={`w-full flex flex-col gap-4 ${messages.length ==0 ? "relative": ""}`}>
+    <div
+      className={`w-full flex flex-col gap-4 ${messages.length == 0 ? "relative" : ""}`}
+    >
       {messages.length === 0 && (
         <div className="grid sm:grid-cols-2 gap-2 w-full">
           {suggestedActions.map((suggestedAction, index) => (
@@ -147,57 +149,61 @@ export function MultimodalInput({
           ))}
         </div>
       )}
+      <div
+        className={`${messages.length === 0 ? "" : "fixed bottom-2 left-[20%] right-0 w-3/4"}`}
+      >
+        <div className="relative">
+          <Textarea
+            ref={textareaRef}
+            placeholder="Send a message..."
+            value={input}
+            onChange={handleInput}
+            className={cn(
+              `min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-xl !text-base bg-muted transiton-colors duration-150 ease-in-out`,
+              className
+            )}
+            rows={3}
+            autoFocus
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
 
-      <Textarea
-        ref={textareaRef}
-        placeholder="Send a message..."
-        value={input}
-        onChange={handleInput}
-        className={cn(
-          `min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-xl !text-base bg-muted transiton-colors duration-150 ease-in-out ${messages.length === 0 ? "" : 'fixed bottom-8'}`,
-          className,
-        )}
-        rows={3}
-        autoFocus
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
-
-            if (isLoading) {
-              toast({
-                title: "Please wait.",
-                description: "Your message is being processed.",
-              })
-            } else {
-              submitForm();
-            }
-          }
-        }}
-      />
-
-      {isLoading ? (
-        <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:bg-violet-500 dark:border-zinc-600"
-          onClick={(event) => {
-            event.preventDefault();
-            stop();
-            setMessages((messages) => sanitizeUIMessages(messages));
-          }}
-        >
-          <StopIcon size={14} />
-        </Button>
-      ) : (
-        <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:bg-violet-500 dark:border-zinc-600"
-          onClick={(event) => {
-            event.preventDefault();
-            submitForm();
-          }}
-          disabled={input.length === 0}
-        >
-          <ArrowUpIcon size={14} />
-        </Button>
-      )}
+                if (isLoading) {
+                  toast({
+                    title: "Please wait.",
+                    description: "Your message is being processed.",
+                  });
+                } else {
+                  submitForm();
+                }
+              }
+            }}
+          />
+          {isLoading ? (
+            <Button
+              className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:bg-violet-500 dark:border-zinc-600"
+              onClick={(event) => {
+                event.preventDefault();
+                stop();
+                setMessages((messages) => sanitizeUIMessages(messages));
+              }}
+            >
+              <StopIcon size={14} />
+            </Button>
+          ) : (
+            <Button
+              className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 border dark:bg-violet-500 dark:border-zinc-600"
+              onClick={(event) => {
+                event.preventDefault();
+                submitForm();
+              }}
+              disabled={input.length === 0}
+            >
+              <ArrowUpIcon size={14} />
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

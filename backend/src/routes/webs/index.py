@@ -187,7 +187,9 @@ def get_user_liked_webs(user: User = Depends(manager)):
     """
     check_user(user)
     try:
-        likedWebs = Webs.find({"likes": user["id"]}, {"_id": 0}, sort=[("created", -1)])
+        likedWebs = list(
+            Webs.find({"likes": user["id"]}, {"_id": 0}, sort=[("created", -1)])
+        )
         return {"result": likedWebs}
 
     except Exception as e:
@@ -387,11 +389,16 @@ def delete_web(webId: str, user=Depends(manager)):
 
         logger.info(f"Web {webId} deleted by user {user['id']}")
 
-        pineconeClient.index.delete(ids=[webId], namespace="webs")
-        pineconeClient.index.delete(
+        result = pineconeClient.index.delete(
+            ids=[webId], namespace="webs"
+        )  # these need to run in the background (refactor to a web service that handles deletions)
+        if result == {}:
+            logger.info(f"Web {webId} deleted from Pinecone")
+        result = pineconeClient.index.delete(
             ids=webToDelete.get("sourceIds", []), namespace=webId
         )
-        logger.info(f"Web {webId} deleted from Pinecone")
+        if result == {}:
+            logger.info(f"Web {webId} deleted from Pinecone")
 
         neo4jClient.delete_nodes_by_properties("source", {"webId": webId})
         logger.info(f"Sources {webId} attached to web deleted from Neo4j")
@@ -695,7 +702,6 @@ def search_webs(
         check_user(user)
 
     try:
-
         filter = {}
         if visibility:
             filter["visibility"] = {"$eq": visibility}
@@ -712,7 +718,7 @@ def search_webs(
         }
         Searches.insert_one(search_info)
 
-        results = pineconeClient.run_semantic_search(query, 10, filter)
+        results = pineconeClient.run_semantic_web_search(query, filter=filter, limit=20)
         return {"result": results}
 
     except Exception as e:

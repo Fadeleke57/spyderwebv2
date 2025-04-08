@@ -9,6 +9,32 @@ from src.utils.chat.tools import available_tools
 def convert_to_openai_messages(
     messages: List[ClientMessage],
 ) -> List[ChatCompletionMessageParam]:
+    """
+    Convert a list of ClientMessages (from vercel ai sdk) into a list of ChatCompletionMessageParam objects
+    that can be sent to the OpenAI Chat Completion API.
+
+    The conversion process involves taking the content of each message and splitting it
+    into parts according to the following rules:
+
+    1. If the message has no experimental attachments and no tool invocations, the
+       entire content of the message is sent as a single text part.
+    2. If the message has experimental attachments, each attachment is sent as a
+       separate part. If the attachment is an image, it is sent as an image_url part.
+       If the attachment is a text, it is sent as a text part.
+    3. If the message has tool invocations, each tool invocation is sent as a
+       separate part. The tool call ID is sent as the id field, the tool name is
+       sent as the function.name field, and the tool arguments are sent as the
+       function.arguments field.
+
+    The converted messages are returned as a list of ChatCompletionMessageParam
+    objects.
+
+    Args:
+        messages: A list of ClientMessage objects to be converted.
+
+    Returns:
+        A list of ChatCompletionMessageParam objects.
+    """
     openai_messages = []
 
     for message in messages:
@@ -70,8 +96,8 @@ def stream_text(messages: List[ChatCompletionMessageParam], protocol: str = "dat
     draft_tool_calls_index = -1
 
     stream = openaiClient.client.chat.completions.create(  # TODO: Add methods in interface for this
-        messages=messages,
-        model="gpt-4o",
+        messages=[openaiClient.system_prompt, *messages],
+        model=openaiClient.selected_model,
         stream=True,
         tools=[
             {
@@ -94,7 +120,33 @@ def stream_text(messages: List[ChatCompletionMessageParam], protocol: str = "dat
                         "required": ["latitude", "longitude"],
                     },
                 },
-            }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_graph_context",
+                    "description": "Get information from a knowledge graph related to a query that is beyond your knowledge. Optionally, specify source IDs to search only specific sources.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "webId": {
+                                "type": "string",
+                                "description": f"The webId of the knowledge graph to search. Please use: {openaiClient.webId}",
+                            },
+                            "query": {
+                                "type": "string",
+                                "description": "The query to search the knowledge graph for",
+                            },
+                            "sources": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "Optional: The source IDs to search within the knowledge graph. If not provided, all sources will be searched.",
+                            },
+                        },
+                        "required": ["webId", "query"],
+                    },
+                },
+            },
         ],
     )
 
@@ -153,36 +205,3 @@ def stream_text(messages: List[ChatCompletionMessageParam], protocol: str = "dat
                 prompt=prompt_tokens,
                 completion=completion_tokens,
             )
-
-
-def do_stream(messages: List[ChatCompletionMessageParam]):
-    stream = openaiClient.client.chat.completions.create(
-        messages=messages,
-        model="gpt-4o",
-        stream=True,
-        tools=[
-            {
-                "type": "function",
-                "function": {
-                    "name": "get_current_weather",
-                    "description": "Get the current weather at a location",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "latitude": {
-                                "type": "number",
-                                "description": "The latitude of the location",
-                            },
-                            "longitude": {
-                                "type": "number",
-                                "description": "The longitude of the location",
-                            },
-                        },
-                        "required": ["latitude", "longitude"],
-                    },
-                },
-            }
-        ],
-    )
-
-    return stream

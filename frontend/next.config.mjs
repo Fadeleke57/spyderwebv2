@@ -5,7 +5,7 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
-        pathname: "/**", // Match all paths under this domain
+        pathname: "/**",
       },
       {
         protocol: "https",
@@ -44,31 +44,8 @@ const nextConfig = {
       }
     ],
   },
-  devIndicators: false,
-  rewrites: async () => {
-    return [
-      {
-        source: "/api/:path*",
-        destination:
-          process.env.NODE_ENV === "development"
-            ? "http://127.0.0.1:8000/:path*"
-            : "https://vercel.spydr.dev/:path*",
-      },
-      {
-        source: "/docs",
-        destination:
-          process.env.NODE_ENV === "development"
-            ? "http://127.0.0.1:8000/docs"
-            : "https://vercel.spydr.dev/docs",
-      },
-      {
-        source: "/openapi.json",
-        destination:
-          process.env.NODE_ENV === "development"
-            ? "http://127.0.0.1:8000/openapi.json"
-            : "https://vercel.spydr.dev/openapi.json",
-      },
-    ];
+  devIndicators: {
+    buildActivity: false,
   },
 };
 

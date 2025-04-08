@@ -14,6 +14,7 @@ import { UpdateWeb, Web } from "@/types/web";
 import { useUpdateWeb } from "@/hooks/webs";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { Badge } from "../ui/badge";
 
 function WebSettingsModal({
   web,
@@ -65,10 +66,13 @@ function WebSettingsModal({
                 className="text-sm font-medium flex items-center"
               >
                 AI Connections <Orbit size={16} className="ml-2" />
+                <Badge className="ml-2 bg-violet-400 text-foreground">
+                  PRO
+                </Badge>
               </Label>
-              <p className="text-xs text-gray-500">
+              <a className="text-xs text-gray-500">
                 Allow AI to connect to and interact with this web
-              </p>
+              </a>
             </div>
             <Switch
               id="ai-connections"

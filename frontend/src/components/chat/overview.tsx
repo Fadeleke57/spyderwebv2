@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { MessageIcon } from "./icons";
 import Charlotte from "./Charlotte";
 
 export const Overview = () => {
@@ -17,7 +16,7 @@ export const Overview = () => {
           <Charlotte width={20} height={20} />
         </p>
         <h1 className="text-3xl font-semibold">
-          Talk you your <span className="text-violet-400">second brain</span>
+          Talk to your <span className="text-violet-400">second brain</span>
         </h1>
       </div>
     </motion.div>

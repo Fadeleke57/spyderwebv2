@@ -27,7 +27,9 @@ class Process(BaseModel):
     closeModal: Optional[bool]
 
 
-def create_process(web_id: str, type: str, description: str, source_id: Optional[str] = None) -> str:
+def create_process(
+    web_id: str, type: str, description: str, source_id: Optional[str] = None
+) -> str:
     """
     Create a new process in the database.
 
@@ -94,7 +96,7 @@ def update_process(
     elif percentage < 0:
         percentage = 0
 
-    updates = { "status": status, "percentage": percentage, "updated": datetime.now(UTC) }
+    updates = {"status": status, "percentage": percentage, "updated": datetime.now(UTC)}
 
     if description:
         updates["description"] = description
@@ -111,9 +113,7 @@ def update_process(
     try:
         Processes.find_one_and_update(
             {"jobId": job_id},
-            {
-                "$set": updates
-            },
+            {"$set": updates},
         )
     except Exception as e:
         logger.error(e)

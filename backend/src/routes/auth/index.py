@@ -1,3 +1,8 @@
+import uuid
+import logging
+from pytz import UTC
+from fastapi import APIRouter
+from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_login.exceptions import InvalidCredentialsException
@@ -11,15 +16,10 @@ from src.routes.auth.oauth2 import (
     get_user,
 )
 from src.core.config import settings
-from src.models.index import Sources, Webs, Users, User, CreateUser
-from datetime import timedelta
-import logging
-from fastapi import APIRouter
-import uuid
-from datetime import datetime
-from pytz import UTC
+from src.models.index import Webs, Users, User, CreateUser
 from src.utils.auth import generate_username
 from src.db.neo4j import client as neo4jClient
+from src.utils.exceptions import check_user
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -268,7 +268,7 @@ def get_current_user(user=Depends(manager)):
 
     :return: The current user
     """
-
+    check_user(user)
     try:
         if not user:
             logging.error("User not found in /auth/me")
@@ -295,5 +295,6 @@ async def logout(response: Response, user=Depends(manager)):
     Returns:
         dict: A JSON response with a message indicating successful logout.
     """
+    check_user(user)
     manager.set_cookie(response, "")
     return {"message": "Successfully logged out"}

@@ -187,7 +187,7 @@ export default function AppLayout({
 
   return (
     <SidebarProvider
-      className={cn("min-h-screen bg-background font-sans antialiased")}
+      className={cn("h-screen bg-background font-sans antialiased")}
       defaultOpen={isSidebarOpen}
     >
       <AppSidebar />

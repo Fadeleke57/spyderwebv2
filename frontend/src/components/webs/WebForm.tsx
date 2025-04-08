@@ -296,13 +296,11 @@ function WebForm({ web, user }: FormProps) {
                       "?"
                     }
                   >
-                    <span className="text-red-500 dark:text-foreground cursor-pointer ml-2">
+                    <span className="dark:text-foreground bg-muted py-1 px-2 rounded-md cursor-pointer ml-2">
                       {" "}
-                      (
                       {webConfig.visibility === "Private"
                         ? "Publish"
                         : "Switch to Private"}
-                      )
                     </span>
                   </ConfirmModal>
                 )}
