@@ -13,7 +13,7 @@ script.onload = function() {
 // Listen for the message from injected.js
 window.addEventListener("message", (event) => {
   if (event.source !== window) return;
-  if (event.data && event.data.type === "SPYDER_TOKEN") {
+  if (event.data && event.data.type === "SPYDR_TOKEN") {
     const token = event.data.token;
     console.log("Content script received token:", token);
     chrome.storage.local.set({ token: token }, () => {

@@ -150,7 +150,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   // Loading overlay control
-  function showLoading(message = "Saving to Spyder...") {
+  function showLoading(message = "Saving to Spydr...") {
     loadingMessage.textContent = message;
     loadingOverlay.classList.remove("hidden");
     saveButton.disabled = true;

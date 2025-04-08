@@ -24,8 +24,8 @@ console.log("Background service worker started")
 
 // Create a context menu item that appears on pages and links
 chrome.contextMenus.create({
-  id: "saveToSpyder",
-  title: "Save to Spyder Web",
+  id: "saveToSpydr",
+  title: "Save to Spydr Web",
   contexts: ["link", "page"]
 });
 
