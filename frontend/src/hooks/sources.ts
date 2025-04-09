@@ -1,17 +1,19 @@
+import { toast } from "@/components/ui/use-toast";
 import api from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 type UploadFilesRequest = {
   preserve_obsidian_links: boolean;
   files: FileList;
-}
+};
 
-export const useFileUpload = (
-  webId: string,
-) => {
+export const useFileUpload = (webId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ preserve_obsidian_links, files }: UploadFilesRequest) => {
+    mutationFn: async ({
+      preserve_obsidian_links,
+      files,
+    }: UploadFilesRequest) => {
       const formData = new FormData();
       Array.from(files).forEach((file) => formData.append("files", file));
       const response = await api.post(
@@ -26,7 +28,11 @@ export const useFileUpload = (
           },
         }
       );
-      return response.data.result;
+
+      return {
+        firstSourceId: response.data.result,
+        process: response.data.process,
+      };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sources", webId] });
@@ -79,7 +85,6 @@ export const useUploadYoutube = (webId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sources", webId] });
     },
-    
   });
 };
 
@@ -145,6 +150,10 @@ export const useDeleteSource = () => {
     onSuccess: (_, sourceId) => {
       queryClient.invalidateQueries({ queryKey: ["sources"] });
       queryClient.invalidateQueries({ queryKey: ["source", sourceId] });
+      toast({
+        title: "Source deleted",
+        description: "Source has been deleted successfully",
+      });
     },
   });
 };

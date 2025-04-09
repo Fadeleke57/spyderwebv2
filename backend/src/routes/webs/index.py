@@ -1,28 +1,34 @@
-from fastapi import APIRouter, Depends, UploadFile, File
-from src.routes.auth.oauth2 import manager
-from fastapi import APIRouter, Depends, Query
-from typing import Optional, Literal
 import os
-from werkzeug.utils import secure_filename
 import uuid
-from src.lib.s3.index import S3Bucket
+import boto3
 from pytz import UTC
-from src.utils.exceptions import check_user
-from src.utils.search import run_semantic_search
-from src.models.user import User, Users
-from src.db.neo4j import client as neo4jClient
-from src.models.analytics import Search, Searches
-from src.models.source import Sources, Source
 from datetime import datetime
-from src.models.web import Webs, Web, CreateWeb, UpdateWeb, IterateWeb
+from typing import Optional, Literal
+from pymongo import ReturnDocument
+from fastapi import APIRouter, Depends, UploadFile, File, Query, BackgroundTasks
 from fastapi.exceptions import HTTPException
 from botocore.exceptions import ClientError
+from werkzeug.utils import secure_filename
+from src.routes.auth.oauth2 import manager
+from src.lib.s3.index import S3Bucket
+from src.utils.exceptions import check_user
+from src.db.neo4j import client as neo4jClient
+from src.models.index import (
+    Webs,
+    Web,
+    CreateWeb,
+    UpdateWeb,
+    IterateWeb,
+    Sources,
+    Source,
+    User,
+    Users,
+    Search,
+    Searches,
+)
 from src.lib.logger.index import logger
-from pymongo import ReturnDocument
 from src.core.config import settings
-import boto3
 from src.lib.pinecone.index import client as pineconeClient
-from fastapi import BackgroundTasks
 from src.service.web import service as webService
 
 router = APIRouter()
@@ -181,7 +187,9 @@ def get_user_liked_webs(user: User = Depends(manager)):
     """
     check_user(user)
     try:
-        likedWebs = Webs.find({"likes": user["id"]}, {"_id": 0}, sort=[("created", -1)])
+        likedWebs = list(
+            Webs.find({"likes": user["id"]}, {"_id": 0}, sort=[("created", -1)])
+        )
         return {"result": likedWebs}
 
     except Exception as e:
@@ -375,13 +383,22 @@ def delete_web(webId: str, user=Depends(manager)):
     check_user(user)
     try:
         webToDelete = Webs.find_one_and_delete({"webId": webId, "userId": user["id"]})
+        if not webToDelete:
+            logger.info(f"Web {webId} not found or not owned by user {user['id']}")
+            return {"result": "Web not found"}
+
         logger.info(f"Web {webId} deleted by user {user['id']}")
 
-        pineconeClient.index.delete(ids=[webId], namespace="webs")
-        pineconeClient.index.delete(
+        result = pineconeClient.index.delete(
+            ids=[webId], namespace="webs"
+        )  # these need to run in the background (refactor to a web service that handles deletions)
+        if result == {}:
+            logger.info(f"Web {webId} deleted from Pinecone")
+        result = pineconeClient.index.delete(
             ids=webToDelete.get("sourceIds", []), namespace=webId
         )
-        logger.info(f"Web {webId} deleted from Pinecone")
+        if result == {}:
+            logger.info(f"Web {webId} deleted from Pinecone")
 
         neo4jClient.delete_nodes_by_properties("source", {"webId": webId})
         logger.info(f"Sources {webId} attached to web deleted from Neo4j")
@@ -685,7 +702,6 @@ def search_webs(
         check_user(user)
 
     try:
-
         filter = {}
         if visibility:
             filter["visibility"] = {"$eq": visibility}
@@ -702,7 +718,7 @@ def search_webs(
         }
         Searches.insert_one(search_info)
 
-        results = run_semantic_search(query, 10, filter)
+        results = pineconeClient.run_semantic_web_search(query, filter=filter, limit=20)
         return {"result": results}
 
     except Exception as e:

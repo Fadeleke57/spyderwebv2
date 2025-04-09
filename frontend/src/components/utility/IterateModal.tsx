@@ -24,6 +24,7 @@ import {
   DrawerTitle,
 } from "../ui/drawer";
 import { Switch } from "../ui/switch";
+import { Badge } from "../ui/badge";
 export function IterateModal({
   web,
   open,
@@ -151,8 +152,10 @@ export function IterateModal({
             <div className="flex flex-col gap-2">
               <label htmlFor="with-connections" className="text-sm font-medium">
                 Include connections?
+                <span className="ml-2 rounded-xl bg-violet-400 px-2 py-1 text-white text-xs">PRO</span>
               </label>
               <Switch
+                disabled
                 id="with-connections"
                 name="withConnections"
                 checked={formData.withConnections}
@@ -201,9 +204,9 @@ export function IterateModal({
             Iterate Web
           </DialogTitle>
           <DialogDescription className="text-left">
-            An iteration is a copy of someone else&apos;s web. Iterating a
-            web allows you to freely branch off in your own style without
-            affecting the original project.
+            An iteration is a copy of someone else&apos;s web. Iterating a web
+            allows you to freely branch off in your own style without affecting
+            the original project.
           </DialogDescription>
         </DialogHeader>
 
@@ -239,9 +242,11 @@ export function IterateModal({
           <div className="flex flex-col gap-2">
             <label htmlFor="with-connections" className="text-sm font-medium">
               Include connections?
+              <Badge className="ml-2 bg-violet-400 text-foreground">PRO</Badge>
             </label>
             {/* TODO: implement this */}
             <Switch
+              disabled
               id="with-connections"
               name="withConnections"
               checked={formData.withConnections}

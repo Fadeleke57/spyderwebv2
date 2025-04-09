@@ -15,7 +15,6 @@ import { DialogTitle } from "@radix-ui/react-dialog";
 import { UploadFile, UploadWebsite, UploadYoutube } from "./AddSourceViews";
 import { Drawer, DrawerContent, DrawerHeader } from "../ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Progress } from "@/components/ui/progress"; // Import Progress component
 import { Skeleton } from "../ui/skeleton";
 
 type ConfigGraphModalProps = {
@@ -31,6 +30,7 @@ type ConfigGraphModalProps = {
   setSelectedSourceId: React.Dispatch<React.SetStateAction<string>>;
   handleFileUpload: (files: FileList | null) => void;
   isFileUploading: boolean;
+  setParseObsidianLinks: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode;
 };
 
@@ -46,6 +46,7 @@ export default function AddSourceModal({
   setSelectedSourceId,
   handleFileUpload,
   isFileUploading,
+  setParseObsidianLinks,
 }: ConfigGraphModalProps) {
   const isMobile = useIsMobile();
   const [websiteUrl, setWebsiteUrl] = useState("");
@@ -62,8 +63,6 @@ export default function AddSourceModal({
     error: youtubeError,
     isPending: isYoutubeUploading,
   } = useUploadYoutube(web.webId);
-
-  const [uploadProgress, setUploadProgress] = useState(0);
 
   const contentRef = useRef(null);
 
@@ -145,7 +144,7 @@ export default function AddSourceModal({
   function mapViewToContent() {
     switch (view) {
       case "default":
-        return <UploadFile handleFileUpload={handleFileUpload} />;
+        return <UploadFile handleFileUpload={handleFileUpload} setParseObsidianLinks={setParseObsidianLinks} />;
       case "website":
         return (
           <UploadWebsite
@@ -179,7 +178,8 @@ export default function AddSourceModal({
             </DialogTitle>
             <p className="text-sm max-w-full md:max-w-lg lg:text-md text-muted-foreground text-left">
               Files are the building blocks of knowledge. Upload them here.
-              Supported types include .pdf, .txt, and .md. Batches are limited to 4MB.
+              Supported types include .pdf, .txt, and .md. Batches are limited
+              to 4MB.
             </p>
           </div>
         );

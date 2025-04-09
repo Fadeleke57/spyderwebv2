@@ -2,10 +2,7 @@ from neo4j import GraphDatabase
 from src.core.config import settings
 from neo4j import Record, Session
 from typing import Dict, Any, List, Tuple
-from src.models.source import Source
-from datetime import datetime
-from pytz import UTC
-from typing import Optional
+from src.models.index import Source
 from src.lib.logger.index import logger
 
 
@@ -335,8 +332,12 @@ class Neo4jDBService:
             "end_id": end_node_id,
             "props": properties or {},
         }
-        result = self.execute_query(query, params)
-        return result[0]["c"] if result else None
+        try:
+            result = self.execute_query(query, params)
+        except Exception:
+            logger.error("Error creating conntection")
+        finally:
+            return result[0]["c"] if result else None
 
     def update_connection(
         self,
@@ -400,42 +401,45 @@ class Neo4jDBService:
         self.execute_query(query, {"source_id": source_id})
         return True
 
-    def copy_sources_to_new_web(self, original_web_id: str, new_web_id: str, new_user_id: str, with_connections: bool = False) -> Tuple[str, List[str]]:
-        if with_connections:
+    def copy_sources_to_new_web(
+        self,
+        original_web_id: str,
+        new_web_id: str,
+        new_user_id: str,
+        with_connections: bool = False,
+    ) -> Tuple[str, List[str]]:
+        if with_connections:  # TODO: Fix this
             logger.info("Copying sources with connections...")
             query = """
-            MATCH (originalSource:source)
-            WHERE originalSource.webId = $originalWebId
-            
-            WITH collect(originalSource) AS originalSources
-            CALL apoc.graph.fromCypher("
-                MATCH (s:source {webId: $originalWebId})
-                OPTIONAL MATCH (s)-[r:CONNECTION]->(t:source {webId: $originalWebId})
-                RETURN s, r, t
-            ", {originalWebId: $originalWebId}, "sourceGraph") YIELD graph
+            MATCH (originalSource:source {webId: $originalWebId})
+            CALL apoc.path.subgraphAll(originalSource, {relationshipFilter: 'connection>'}) YIELD nodes, relationships
 
-            CALL apoc.refactor.cloneSubgraph(graph.nodes, graph.relationships) YIELD input, output, error
-            
-            WITH collect(output) AS outputs
-            UNWIND outputs AS clone
-            WITH clone
-            WHERE clone IS NOT NULL AND 'source' IN labels(clone)
-            SET clone.webId = $newWebId,
-                clone.userId = $newUserId,
-                clone.sourceId = randomUUID()
-                
-            MATCH (s:source {webId: $newWebId})-[r:CONNECTION]->(t:source {webId: $newWebId})
+            UNWIND nodes as node
+            WITH COLLECT(DISTINCT node) as uniqueNodes, relationships
+
+            CALL apoc.refactor.cloneSubgraph(uniqueNodes, relationships, {skipProperties: ["sourceId", "connectionId"]}) YIELD input, output, error
+            WHERE output IS NOT NULL AND 'source' IN labels(output)
+            SET output.webId = $newWebId,
+                output.userId = $newUserId,
+                output.sourceId = randomUUID()
+
+            WITH collect(DISTINCT output) as clonedNodes
+
+            MATCH (s:source {webId: $newWebId})-[r:connection]->(t:source {webId: $newWebId})
             SET r.connectionId = randomUUID(),
-                r.webId = $newWebId
-                
-            RETURN DISTINCT s.sourceId AS newSourceId;
+                r.webId = $newWebId,
+                r.fromSourceId = s.sourceId,
+                r.toSourceId = t.sourceId
+                        
+            WITH clonedNodes
+            UNWIND clonedNodes as node
+            RETURN DISTINCT node.sourceId as newSourceId
             """
         else:
             logger.info("Copying sources without connections...")
             query = """
-            MATCH (originalSource:source)
-            WHERE originalSource.webId = $originalWebId
-            CALL apoc.refactor.cloneNodes([originalSource]) YIELD input, output
+            MATCH (originalSource:source {webId: $originalWebId})
+            CALL apoc.refactor.cloneNodes([originalSource], false, ["sourceId"]) YIELD input, output
             SET output.webId = $newWebId,
                 output.userId = $newUserId,
                 output.sourceId = randomUUID()

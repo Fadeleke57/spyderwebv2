@@ -1,23 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
-import { useUser } from "@/context/UserContext";
-
 import { cn } from "@/lib/utils";
 import {
   NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { MobileNav } from "./Mobile-Nav";
-import { useRouter } from "next/router";
 import Image from "next/image";
-import logo from "@/assets/s_logo.jpg";
+import logo from "@/assets/slogonobg.png";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 
@@ -48,18 +41,9 @@ const components = [
 ];
 
 function NavigationMenuFull() {
-  const { user, logout } = useUser();
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    logout();
-    router.push("/auth/login");
-  };
   return (
     <NavigationMenu>
-      <NavigationMenuList className="hidden md:flex">
-        
-      </NavigationMenuList>
+      <NavigationMenuList className="hidden md:flex"></NavigationMenuList>
     </NavigationMenu>
   );
 }
@@ -137,30 +121,26 @@ export function Navbar() {
         showNav ? "translate-y-0" : "-translate-y-full"
       } bg-background py-2 fixed top-0 left-0 2xl:left-60 z-50 w-full`}
     >
-        <Link href="/">
-          <div className="flex gap-2 items-center justify-center rounded-lg rounded-full">
-            <Image
-              src={logo}
-              alt="logo"
-              width={36}
-              height={36}
-              className="rounded-full"
-              priority
-            />
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold text-3xl tracking-tighter">
-                spydr
-              </span>
-            </div>
+      <Link href="/">
+        <div className="flex gap-2 items-center justify-center rounded-lg rounded-full">
+          <Image
+            src={logo}
+            alt="logo"
+            width={36}
+            height={36}
+            className="rounded-full hover:animate-spin-slow"
+            priority
+          />
+          <div className="grid flex-1 -mt-1 text-left text-sm leading-tight">
+            <span className="truncate font-semibold text-3xl tracking-tighter">
+              spydr
+            </span>
           </div>
-        </Link>
-        <NavigationMenuFull />
+        </div>
+      </Link>
+      <NavigationMenuFull />
     </div>
   );
 
-  const mobileNav = <MobileNav />;
-
-  return (
-    <div className="w-full p-6 lg:p-0">{desktopNav}</div>
-  );
+  return <div className="w-full p-6 lg:p-0">{desktopNav}</div>;
 }

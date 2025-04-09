@@ -13,8 +13,8 @@ const GoogleCallback = () => {
     if (token && email && name) {
       localStorage.setItem("token", token as string);
       window.location.href = isMobile
-        ? "/webs"
-        : "/home?login-source=welcome";
+        ? "/webs?login-source=welcomeback"
+        : "/home?login-source=welcomeback";
     }
   }, [router.query, router, isMobile]);
 

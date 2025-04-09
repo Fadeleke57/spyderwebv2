@@ -1,29 +1,33 @@
+import os
+import boto3
+import tempfile
+from typing import List
+from pytz import UTC
+from datetime import datetime
+from uuid import uuid4
+from botocore.exceptions import ClientError
+from werkzeug.utils import secure_filename
+from pydantic import BaseModel, HttpUrl
+from urllib.parse import unquote
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, BackgroundTasks
-from src.models.source import Source, UpdateSource
-from src.models.web import Webs
 from src.routes.auth.oauth2 import manager
 from src.utils.exceptions import check_user
-import tempfile
+from src.lib.logger.index import logger
 from src.lib.s3.index import S3Bucket
-from src.db.mongodb import get_collection
+from src.models.index import (
+    Webs,
+    create_process,
+    update_process,
+    CreateNote,
+    UpdateNote,
+    Source,
+    UpdateSource,
+)
 from src.service.source import service as sourceService
 from src.db.neo4j import client as neo4jClient
 from src.core.config import settings
-from uuid import uuid4
-from werkzeug.utils import secure_filename
-from datetime import datetime
-from src.core.config import settings
 from src.utils.youtube import get_video_transcript, get_video_info
-from pydantic import BaseModel, HttpUrl
 from src.lib.firecrawl.index import client as firecrawlClient
-from src.models.source import CreateNote, UpdateNote
-from typing import List
-import boto3
-from urllib.parse import unquote
-from src.lib.logger.index import logger
-from botocore.exceptions import ClientError
-from pytz import UTC
-import os
 from src.lib.pinecone.index import client as pineconeClient
 
 router = APIRouter()
@@ -34,6 +38,7 @@ s3 = boto3.client("s3")
 async def process_file(
     user_id: str,
     web_id: str,
+    job_id: str,
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
 ):
@@ -53,6 +58,8 @@ async def process_file(
         HTTPException: If the upload fails.
     """
     file_type = file.filename.split(".")[-1].lower()
+    if file_type not in {"pdf", "txt", "md"}:
+        return None
 
     temp_dir = tempfile.gettempdir()  # gets system temp directory (cross-platform)
     temp_path = os.path.join(temp_dir, file.filename)
@@ -64,8 +71,9 @@ async def process_file(
         sourceId = str(uuid4())
         if file_type == "pdf":
             object_name = f"files/{user_id}/{web_id}/document/{uuid4()}_{file.filename.replace(' ', '_')}"
-            # upload to S3
-            s3_bucket.upload_file(temp_path, object_name)
+            
+            s3_bucket.upload_file(temp_path, object_name)# upload to S3
+
             sourceToInsert: Source = {
                 "sourceId": sourceId,
                 "webId": web_id,
@@ -81,10 +89,8 @@ async def process_file(
 
             background_tasks.add_task(
                 sourceService.embed_and_upsert_pdf,
-                sourceId,
-                temp_path,
-                web_id,
-                object_name,
+                file_path=temp_path,
+                source=sourceToInsert
             )
 
         elif file_type in {"txt", "md"}:
@@ -92,6 +98,7 @@ async def process_file(
                 text_content = f.read()
 
                 filename = (" ".join(file.filename.split(".")[:-1])).replace("%22", " ")
+
                 sourceToInsert: Source = {
                     "sourceId": sourceId,
                     "webId": web_id,
@@ -104,16 +111,17 @@ async def process_file(
                     "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
                     "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
                 }
+
             os.remove(temp_path)
+
             background_tasks.add_task(
                 sourceService.embed_and_upsert_note,
-                sourceId,
+                source=sourceToInsert,
                 text=text_content,
-                web_id=web_id,
-                title=filename,
             )
 
         neo4jClient.create_node("source", sourceToInsert)
+
         Webs.update_one(
             {"webId": web_id, "userId": user_id},
             {
@@ -121,9 +129,17 @@ async def process_file(
                 "$set": {"updated": datetime.now(UTC)},
             },
         )
+
         return sourceToInsert
 
     except Exception as e:
+        update_process(
+            job_id=job_id,
+            status="failed",
+            description="Failed to proccess file..",
+            percentage=0,
+            error=str(e),
+        )
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -137,30 +153,62 @@ async def upload_files(
     user=Depends(manager),
 ):
     """
-    Uploads multiple files, stores them temporarily, sends them to S3,
-    processes embeddings, and saves metadata in the database.
+    Upload multiple files to a web.
+
+    Args:
+        web_id (str): The ID of the web to upload to.
+        preserve_obsidian_links (bool): Whether to preserve Obsidian links (default: False).
+        files (List[UploadFile]): The files to upload.
+
+    Returns:
+        dict: A JSON response with a result key containing the ID of the first uploaded source, and a process key containing the ID of the background process.
     """
     check_user(user)
-    logger.info("Preserve Obsidian links: %s", preserve_obsidian_links)
+    job_id = create_process(
+        web_id=web_id, type="upload", description=f"Uploading {len(files)} files..."
+    )
 
     if not files:
+        update_process(
+            job_id=job_id,
+            status="failed",
+            description="No files uploaded.",
+            percentage=0,
+            error="No files uploaded.",
+        )
         raise HTTPException(status_code=400, detail="No files uploaded.")
 
     sources = []
-    for file in files:
+    for i, file in enumerate(files):
         result = await process_file(
             user_id=user["id"],
             web_id=web_id,
+            job_id=job_id,
             background_tasks=background_tasks,
             file=file,
         )
-        sources.append(result)
+
+        if result:
+            sources.append(result)
+
+        update_process(
+            job_id=job_id,
+            description=f"Uploading {len(files) - len(sources)} files...",
+            status="processing",
+            percentage=(round((i + 1) / len(files) * 100, 2)),
+        )
 
     if preserve_obsidian_links:
         logger.info("Parsing Obsidian links...")
         background_tasks.add_task(sourceService.parse_obsidian_links, web_id, sources)
 
-    return {"result": sources[0]["sourceId"] if sources else None}
+    update_process(
+        job_id=job_id,
+        description="Finished uploading files!",
+        status="completed",
+        percentage=100,
+    )
+    return {"result": sources[0]["sourceId"] if sources else None, "process": job_id}
 
 
 class UrlRequest(BaseModel):
@@ -194,16 +242,19 @@ def add_website(
     check_user(user)
 
     try:
+
         try:
 
             title, md = firecrawlClient.run_scrape(str(url.url))
 
         except Exception as e:
+            logger.error(str(e))
             raise HTTPException(
                 status_code=400, detail="Could not retrieve the webpage"
             )
 
         sourceId = str(uuid4())
+
         sourceToInsert = {
             "sourceId": sourceId,
             "webId": web_id,
@@ -218,10 +269,11 @@ def add_website(
         }
 
         background_tasks.add_task(
-            sourceService.embed_and_upsert_website, sourceId, md, web_id, url.url
+            sourceService.embed_and_upsert_website, source=sourceToInsert, md=md
         )
 
         neo4jClient.create_node("source", sourceToInsert)
+
         Webs.update_one(
             {"webId": web_id, "userId": user["id"]},
             {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
@@ -292,6 +344,7 @@ def upload_note(
     """
     check_user(user)
     sourceId = str(uuid4())
+
     sourceToInsert = {
         "sourceId": sourceId,
         "webId": web_id,
@@ -307,10 +360,8 @@ def upload_note(
 
     background_tasks.add_task(
         sourceService.embed_and_upsert_note,
-        sourceId,
-        note.content,
-        web_id,
-        title=note.title,
+        source=sourceToInsert,
+        text=note.content,
     )
 
     try:
@@ -334,6 +385,7 @@ def add_youtube(
     try:
         info = get_video_info(video_id)
         title, description = info["title"], info["description"]
+
         try:
             transcripts = get_video_transcript(video_id)
 
@@ -345,24 +397,29 @@ def add_youtube(
         url = f"https://www.youtube.com/watch?v={video_id}"
 
         sourceId = str(uuid4())
+
         sourceToInsert = {
             "sourceId": sourceId,
             "webId": web_id,
             "userId": user["id"],
             "name": title,
             "content": description,
-            "url": f"https://www.youtube.com/watch?v={video_id}",
+            "url": url,
             "type": "youtube",
             "size": 300000,
             "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         }
 
-        background_tasks.add_task(
-            sourceService.embed_and_upsert_youtube, sourceId, transcripts, web_id, url
-        )
+        if transcripts:
+            background_tasks.add_task(
+                sourceService.embed_and_upsert_youtube,
+                sourceToInsert,
+                transcripts,
+            )
 
         neo4jClient.create_node("source", sourceToInsert)
+
         Webs.update_one(
             {"webId": web_id, "userId": user["id"]},
             {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
@@ -399,7 +456,9 @@ def update_note(
             for key, value in updateNotePayload.model_dump(exclude_none=True).items()
         }
         update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+
         result = neo4jClient.update_source(source_id=source_id, properties=update_data)
+
         if result:
             return {"result": "Note updated"}
         else:
@@ -430,7 +489,7 @@ def delete_source(source_id: str, user=Depends(manager)):
     try:
         result = neo4jClient.delete_source(source_id)
         if not result:
-            raise HTTPException(status_code=404, detail="Item not found")
+            return {"result": "Source not found"}
 
         # remove from s3 if it's a document type (commenting out for now for iterations)
         # if source["type"] == "document":
@@ -443,10 +502,13 @@ def delete_source(source_id: str, user=Depends(manager)):
         )
 
         if not affected_web:
-            raise HTTPException(status_code=404, detail="Item not found")
+            logger.info("Web not found")
+            return {"result": "Web not found"}
 
         try:
-            pineconeClient.index.delete(ids=[source_id], namespace=affected_web["webId"])
+            pineconeClient.index.delete(
+                ids=[source_id], namespace=affected_web["webId"]
+            )
         except:
             logger.info("Pinecone namespace not found...Skipping embeddings deletion")
 

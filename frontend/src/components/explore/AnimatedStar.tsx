@@ -1,12 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Star } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { Star } from "lucide-react";
 
-export const AnimatedStarButton = ({ 
-  count, 
-  isStarred, 
-  onStarClick, 
+export const AnimatedStarButton = ({
+  count,
+  isStarred,
+  onStarClick,
   size = 16,
-  className = ""
+  className = "",
 }: {
   count: number;
   isStarred: boolean;
@@ -15,37 +15,37 @@ export const AnimatedStarButton = ({
   className?: string;
 }) => {
   const [animating, setAnimating] = useState(false);
-  const previousIsStarred = useRef(isStarred);
   const starRef = useRef(null);
-  
-  useEffect(() => {
-    if (!previousIsStarred.current && isStarred) {
+
+  const handleClick = (e: any) => {
+    onStarClick(e);
+    if (!isStarred) {
       setAnimating(true);
       setTimeout(() => setAnimating(false), 700);
     }
-    previousIsStarred.current = isStarred;
-  }, [isStarred]);
-  
-  const handleClick = (e : any) => {
-    onStarClick(e);
   };
 
   return (
-    <div className="flex flex-row items-center space-x-1 relative">
-      <p className={`text-sm transition-all duration-300 ${
-        isStarred ? "text-blue-500 dark:text-blue-400" : "text-muted-foreground"
-      } ${animating ? "scale-110" : ""}`}>
+    <div
+      className="flex flex-row items-center space-x-1 relative text-muted-foreground hover:text-violet-500 p-1 rounded-full hover:bg-violet-500/20 transition-colors ease-in cursor-pointer"
+      onClick={handleClick}
+    >
+      <p
+        className={`text-sm transition-all duration-300 ${
+          isStarred ? "text-violet-500 dark:text-violet-400" : ""
+        } ${animating ? "scale-110" : ""}`}
+      >
         {count}
       </p>
-      
+
       <div className="relative">
         {/* Background burst */}
         {animating && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="absolute w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full opacity-70 scale-0 animate-ping-scale" />
+            <div className="absolute w-8 h-8 bg-violet-100 dark:bg-violet-900 rounded-full opacity-70 scale-0 animate-ping-scale" />
           </div>
         )}
-        
+
         {/* Small stars that fly out */}
         {animating && (
           <>
@@ -58,17 +58,16 @@ export const AnimatedStarButton = ({
             </div>
           </>
         )}
-        
+
         <Star
           ref={starRef}
           size={size}
           strokeWidth={1.4}
           className={`${
             isStarred
-              ? "text-blue-500 dark:text-blue-400 fill-blue-500 dark:fill-blue-400"
-              : "text-muted-foreground hover:text-blue-500 dark:hover:text-blue-400"
+              ? "text-violet-500 dark:text-violet-400 fill-violet-500 dark:fill-violet-400"
+              : ""
           } ${animating ? "animate-star-pop" : "transition-colors duration-300"} ${className}`}
-          onClick={handleClick}
         />
       </div>
     </div>
@@ -145,23 +144,20 @@ const styles = `
 }
 `;
 
-// To use this component, you need to add the CSS keyframes to your global styles
 export default function AnimatedStar() {
-  // DEMO STATE - replace this with your actual state management
   const [starred, setStarred] = useState(false);
   const [count, setCount] = useState(42);
-  
-  const handleStarClick = (e : React.MouseEvent) => {
+
+  const handleStarClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     setStarred(!starred);
     setCount(starred ? count - 1 : count + 1);
   };
-  
+
   return (
     <div className="p-6 bg-white dark:bg-slate-800 rounded-md shadow">
       <style jsx>{styles}</style>
-      <h3 className="text-md mb-4 text-slate-700 dark:text-slate-300">Animated Star Button</h3>
       <AnimatedStarButton
         count={count}
         isStarred={starred}

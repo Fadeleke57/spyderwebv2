@@ -14,12 +14,12 @@ import PublicWebView from "./PublicWebView";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { ScrollBar } from "../ui/scroll-area";
 
-type FormProps = {
+type ViewProps = {
   web: Web;
   user: PublicUser | null;
 };
 
-function MobileWebForm({ web, user }: FormProps) {
+function MobileWebView({ web, user }: ViewProps) {
   return (
     <Drawer>
       <DrawerTrigger asChild>
@@ -43,4 +43,4 @@ function MobileWebForm({ web, user }: FormProps) {
   );
 }
 
-export default MobileWebForm;
+export default MobileWebView;

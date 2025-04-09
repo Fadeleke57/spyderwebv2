@@ -1,18 +1,21 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.db.index import lifespan
-from src.routes.auth.index import router as auth_router
-from src.routes.user.index import router as user_router
-from src.routes.webs.index import router as webs_router
-from src.routes.sources.index import router as sources_router
-from src.routes.connections.index import router as connections_router
-import logging
+from src.routes.index import (
+    auth_router,
+    user_router,
+    webs_router,
+    sources_router,
+    connections_router,
+    chat_router,
+    process_router,
+)
 
 logging.basicConfig(level=logging.ERROR)
 
 app = FastAPI(lifespan=lifespan)
 
-# CORS
 origins = [
     "http://localhost:3000",
     "http://localhost:8000",
@@ -37,8 +40,15 @@ app.include_router(user_router, prefix="/users")
 app.include_router(webs_router, prefix="/webs")
 app.include_router(sources_router, prefix="/sources")
 app.include_router(connections_router, prefix="/connections")
+app.include_router(chat_router, prefix="/chat")
+app.include_router(process_router, prefix="/processes")
 
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to SpyderWeb!"}
+    return {"message": "Welcome to the Web!"}
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}

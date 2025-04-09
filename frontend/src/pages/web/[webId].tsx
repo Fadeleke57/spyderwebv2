@@ -5,7 +5,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUser } from "@/context/UserContext";
 import WebPlayground from "@/components/webs/WebPlayground";
 import WebForm from "@/components/webs/WebForm";
-import MobileWebForm from "@/components/webs/MobileWebForm";
 import PublicWebView from "@/components/webs/PublicWebView";
 import { useFetchUserById } from "@/hooks/user";
 import { formatDistanceToNow } from "date-fns";
@@ -17,7 +16,7 @@ import {
 } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
 import { Web } from "@/types/web";
-import { IterationCcw } from "lucide-react";
+import { ArrowLeft, IterationCcw } from "lucide-react";
 import { IterateModal } from "@/components/utility/IterateModal";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -29,6 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import MobileWebView from "@/components/webs/MobileWebForm";
 
 function Index() {
   const router = useRouter();
@@ -90,7 +90,7 @@ function Index() {
   }
 
   return (
-    <div className="grid h-[90svh] mid:h-screen lg:h-screen w-full overflow-hidden scrollbar-none">
+    <div className="grid h-[91dvh] lg:h-screen w-full overflow-hidden scrollbar-none">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -104,59 +104,53 @@ function Index() {
         />
       </Head>
       <div className="flex flex-col">
-        <header className="sticky top-0 z-10 flex h-[80px] lg:h[55px] items-center justify-between gap-1 border-b bg-background px-4">
-          <div className="flex z-40 items-center gap-2 mb-3 lg:mb-0  max-w-[210px] lg:max-w-2xl">
+        <header
+          className={`sticky top-0 z-10 flex ${loading && "animate-pulse"} h-[70px] items-center justify-between gap-1 border-b bg-background px-4`}
+        >
+          <div className="flex flex-col z-40 items-center justify-start mb-3 lg:mb-0  max-w-[210px] lg:max-w-2xl">
             {loading || webOwnerLoading ? (
               <SkeletonUserCard />
             ) : (
-              <>
-                <UserAvatar userId={web?.userId} />{" "}
-                <div className="flex flex-col gap-0">
-                  <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
-                    {webOwner?.username || ""}{" "}
-                  </h1>
-                  {web?.iteratedFrom ? (
-                    <p className="text-xs font-normal text-muted-foreground">
-                      Iterated From{" "}
-                      <span className="font-semibold text-blue-500 dark:text-blue-400">
-                        @{iteratedFromUser?.username}
-                      </span>
-                    </p>
-                  ) : (
-                    ""
-                  )}
-
-                  <span className="text-xs text-muted-foreground font-normal m-0">
-                    {web?.updated &&
-                      formatDistanceToNow(new Date(web.updated + "Z"), {
-                        addSuffix: true,
-                      })}
-                  </span>
-                </div>
-              </>
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant={"link"}
+                  onClick={() => router.back()}
+                  className="flex items-center gap-2 p-0 h-fit w-fit text-md font-semibold text-violet-400/80"
+                >
+                  <ArrowLeft strokeWidth={4} className="h-4 w-4" /> Back
+                </Button>
+              </div>
             )}
           </div>
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
-            {web && <MobileWebForm web={web} user={user ? user : null} />}
             {webOwner && web?.enableAIConnections && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="relative inline-flex items-center justify-center">
-                      {/*pulsing background effect */}
                       <div className="absolute rounded-full bg-violet-400/30 animate-pulse w-6 h-6 blur-sm"></div>
-                      {/*second pulse layer for more depth */}
                       <div className="absolute rounded-full bg-violet-400/20 animate-pulse w-8 h-8 blur-md"></div>
-                      {/*core circle */}
                       <div className="relative rounded-full bg-violet-400 w-4 h-4 flex items-center justify-center z-10"></div>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>AI connections enabled</p>
+                    {isOwner ? (
+                      <p>AI connections enabled</p>
+                    ) : (
+                      <p>
+                        {" "}
+                        <span className="text-violet-400 font-semibold">
+                          {webOwner?.username}{" "}
+                        </span>{" "}
+                        enabled AI connections
+                      </p>
+                    )}
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
+            {web && <MobileWebView web={web} user={user ? user : null} />}
+
             {user && web && webOwner ? (
               <IterateModal
                 open={showIterateModal}
@@ -201,13 +195,45 @@ function Index() {
               className="relative h-[calc(90vh-18px)] hidden flex-col items-start gap-8 md:flex"
               x-chunk="dashboard-03-chunk-0"
             >
+              <div className="flex items-center gap-2 px-3">
+                <UserAvatar userId={web?.userId} height={28} width={28} />
+                <div className="flex flex-col gap-0">
+                  <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
+                    {webOwner?.username || ""}{" "}
+                  </h1>
+                  {web?.iteratedFrom ? (
+                    <p className="text-xs font-normal text-muted-foreground">
+                      Iterated From{" "}
+                      <span className="font-semibold text-violet-400 dark:text-violet-400">
+                        @{iteratedFromUser?.username}
+                      </span>
+                    </p>
+                  ) : (
+                    ""
+                  )}
+
+                  <span className="text-xs text-muted-foreground font-normal m-0">
+                    {web?.updated &&
+                      formatDistanceToNow(new Date(web.updated + "Z"), {
+                        addSuffix: true,
+                      })}
+                  </span>
+                </div>
+              </div>
               {web && isOwner ? (
                 <WebForm web={web} user={user ? user : null} />
               ) : web ? (
                 <PublicWebView web={web} />
               ) : null}
-              <Separator className="my-4" />
-              {webId && <ContributersBlock webId={webId as string} />}
+              {webId && web && web.iterations.length > 0 && (
+                <>
+                  <Separator className="my-4" />
+                  <ContributersBlock
+                    count={web.iterations.length}
+                    webId={webId as string}
+                  />
+                </>
+              )}
             </ScrollArea>
           )}
           {loading ? (

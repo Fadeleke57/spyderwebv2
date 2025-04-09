@@ -1,9 +1,10 @@
 from pydantic_settings import BaseSettings
+from src.lib.logger.index import logger
 import os
 from dotenv import load_dotenv
 
 load_dotenv(f".env")
-print(f"Loading .env")
+logger.info(f"LOADING ENVIRONMENT: {os.getenv('FASTAPI_ENV')}")
 
 
 class Settings(BaseSettings):
@@ -21,11 +22,11 @@ class Settings(BaseSettings):
     pinecone_api_key: str
     pinecone_index_name: str
     openai_api_key: str
+    gemini_api_key: str
     s3_bucket_name: str
     cloudfront_domain: str
     youtube_api_key: str
     firecrawl_api_key: str
-    
 
     class Config:
         env_file = f".env"

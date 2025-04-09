@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, ChangeEvent } from "react";
 import { Web } from "@/types/web";
 import { PublicUser } from "@/types/user";
 import {
@@ -12,14 +12,12 @@ import { useRouter } from "next/router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Textarea } from "../ui/textarea";
-import { debounce, set } from "lodash";
+import { debounce } from "lodash";
 import { ConfirmModal } from "../utility/ConfirmModal";
-import { TagsPopover } from "../home/TagsPopover";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { ImageIcon, X } from "lucide-react";
+import { ImageIcon, Lock, X } from "lucide-react";
 import DeleteModal from "../utility/DeleteModal";
 import {
   MAX_IMAGE_SIZE,
@@ -28,6 +26,8 @@ import {
 } from "@/lib/utils";
 import ConfirmImageModal from "../utility/ConfirmImageModal";
 import { ImageModal } from "../utility/ImageModal";
+import { DynamicTextarea } from "../utility/DynamicScrollbar";
+import { SHOWCASE_IMAGE } from "@/lib/consts";
 
 type FormProps = {
   web: Web;
@@ -77,9 +77,7 @@ function WebForm({ web, user }: FormProps) {
 
   const isOwner = user?.id === web?.userId;
 
-  const { mutateAsync: updateWeb, isPending } = useUpdateWeb(
-    web?.webId
-  );
+  const { mutateAsync: updateWeb, isPending } = useUpdateWeb(web?.webId);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -119,10 +117,10 @@ function WebForm({ web, user }: FormProps) {
     debouncedSave(newConfig);
   };
 
-  const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onTitleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     onConfigChange({
       ...webConfig,
-      name: event.target.value || "Untitled",
+      name: e.target.value || "Untitled",
     });
   };
 
@@ -157,7 +155,7 @@ function WebForm({ web, user }: FormProps) {
       });
     }
   };
-
+console.log("images", images)
   const handleDeleteImage = useCallback(async () => {
     if (!selectedImage) {
       return;
@@ -272,8 +270,11 @@ function WebForm({ web, user }: FormProps) {
         <div>
           <div className="flex flex-col">
             <div className="flex flex-col">
-              <small className="text-sm font-medium leading-none text-blue-500 dark:text-blue-400">
-                {webConfig.visibility}
+              <small className="text-sm font-semibold leading-none text-violet-500 dark:text-violet-400/80 flex flex-row items-center">
+                {webConfig.visibility}{" "}
+                {webConfig.visibility === "Private" && (
+                  <Lock size={12} className="ml-1" />
+                )}
                 {isOwner && (
                   <ConfirmModal
                     action={() =>
@@ -285,24 +286,22 @@ function WebForm({ web, user }: FormProps) {
                     }
                     actionButtonStr={
                       webConfig.visibility === "Private"
-                        ? "Make Public"
+                        ? "Publish"
                         : "Make Private"
                     }
                     actionStr={
-                      "Are you sure you want to switch this web to " +
+                      "Are you sure you want to " +
                       (webConfig.visibility === "Private"
-                        ? "public"
-                        : "private") +
+                        ? "publish this web"
+                        : "make this web private") +
                       "?"
                     }
                   >
-                    <span className="text-red-500 dark:text-foreground cursor-pointer">
+                    <span className="dark:text-foreground bg-muted py-1 px-2 rounded-md cursor-pointer ml-2">
                       {" "}
-                      (
                       {webConfig.visibility === "Private"
-                        ? "Switch to Public"
+                        ? "Publish"
                         : "Switch to Private"}
-                      )
                     </span>
                   </ConfirmModal>
                 )}
@@ -329,37 +328,51 @@ function WebForm({ web, user }: FormProps) {
                 />
               </Button>
             </div>
-
-            <Textarea
+            <DynamicTextarea
               id="name"
               placeholder="Give it a title..."
-              rows={1}
               defaultValue={web?.name || "Untitled"}
               {...form.register("name")}
-              className="w-full min-h-[2rem] bg-transparent p-0 font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-md font-semibold"
-              onInput={(e: any) => {
-                e.target.style.height = "auto";
-                e.target.style.height = `${e.target.scrollHeight}px`;
-                form.trigger("name");
-              }}
-              onChange={(e: any) => onTitleChange(e)}
+              className="font-bold leading-tight text-md font-semibold"
+              onValueChange={onTitleChange}
             />
-            <Textarea
+
+            <DynamicTextarea
               id="description"
               placeholder="Add a description..."
-              rows={1}
               defaultValue={web?.description || ""}
               {...form.register("description")}
-              className="w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-muted-foreground"
-              onInput={(e: any) => {
-                e.target.style.height = "auto";
-                e.target.style.height = `${e.target.scrollHeight}px`;
-              }}
-              onChange={(e: any) => onDescriptionChange(e)}
+              className="text-lg leading-relaxed text-sm text-muted-foreground"
+              onValueChange={onDescriptionChange}
             />
           </div>
         </div>
       </div>
+
+      {web?.showcase && (
+        <div key={-1} className="flex-1 relative">
+          <Image
+            height={300}
+            width={500}
+            src={SHOWCASE_IMAGE}
+            alt={web.name}
+            className="rounded-md w-full border h-auto object-cover"
+            style={{ maxHeight: "400px" }}
+            onClick={(e) => handleImageClick(e, SHOWCASE_IMAGE)}
+            priority
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 h-6 w-6 bg-black/50 hover:bg-black/70"
+            onClick={() => handleOpenDeleteModal(SHOWCASE_IMAGE)}
+          >
+            <X className="h-4 w-4 text-white" />
+          </Button>
+        </div>
+      )}
+
       {images.length > 0 && (
         <ScrollArea className="w-full flex flex-row gap-4 px-4 my-2">
           {images &&

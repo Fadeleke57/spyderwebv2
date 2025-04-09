@@ -1,9 +1,7 @@
 import requests
-from src.core.config import settings
 from youtube_transcript_api import YouTubeTranscriptApi
 from fastapi import HTTPException
-
-API_KEY = settings.youtube_api_key
+from src.core.config import settings
 
 
 def get_video_info(video_id: str) -> dict:
@@ -22,7 +20,7 @@ def get_video_info(video_id: str) -> dict:
     Raises:
         HTTPException: If there is an error with the API call.
     """
-    url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={API_KEY}"
+    url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={settings.youtube_api_key}"
     try:
         response = requests.get(url)
         response.raise_for_status()

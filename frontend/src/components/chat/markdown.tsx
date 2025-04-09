@@ -1,0 +1,211 @@
+import Link from "next/link";
+import React, { memo, useState } from "react";
+import ReactMarkdown, { type Components } from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { Button } from "../ui/button";
+import { Check, Copy } from "lucide-react";
+import SimpleTooltip from "../utility/SimpleTooltip";
+
+const languageColors: Record<string, string> = {
+  python: "bg-zinc-700 text-green-400",
+  javascript: "bg-zinc-700 text-yellow-300",
+  typescript: "bg-zinc-700 text-blue-400",
+  jsx: "bg-zinc-700 text-blue-300",
+  tsx: "bg-zinc-700 text-blue-300",
+  html: "bg-zinc-700 text-orange-400",
+  css: "bg-zinc-700 text-blue-400",
+  json: "bg-zinc-700 text-yellow-200",
+  // Add more languages as needed
+};
+
+// Default color for languages not in the map
+const defaultLanguageColor = "bg-zinc-700 text-gray-300";
+
+interface CodeBlockProps {
+  className?: string;
+  match: RegExpExecArray | null;
+  children: React.ReactNode;
+  [key: string]: any;
+}
+
+const CodeBlock: React.FC<CodeBlockProps> = ({
+  className,
+  match,
+  children,
+  ...props
+}) => {
+  const [isCopied, setIsCopied] = useState(false);
+  const language = match?.[1] || "text";
+
+  const handleCopy = () => {
+    const code = typeof children === "string" ? children : String(children);
+    navigator.clipboard.writeText(code);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const languageColorClass = languageColors[language] || defaultLanguageColor;
+
+  return (
+    <div className="relative group my-4 bg-zinc-900 rounded-md">
+      {/* Language badge */}
+
+      <ScrollArea className="w-full rounded-lg overflow-hidden">
+        <div className="absolute top-2 left-0 -translate-y-1/2 px-3 py-1 rounded-md text-xs font-mono">
+          <span className={`px-3 py-1 rounded-md ${languageColorClass}`}>
+            {language}
+          </span>
+        </div>
+        <pre
+          {...props}
+          className={`${className} text-sm w-full bg-zinc-900 rounded-lg mt-1 pt-10 pb-4 px-4 overflow-x-auto`}
+        >
+          <code className={`language-${language} font-mono`}>{children}</code>
+        </pre>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+
+      <SimpleTooltip content={isCopied ? "Copied!" : "Copy"}>
+        <Button
+          size="sm"
+          onClick={handleCopy}
+          className="absolute top-2 right-2 h-fit w-fit p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        >
+          <div className="relative w-4 h-4">
+            <Copy
+              size={16}
+              className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-0 scale-50" : "opacity-100 scale-100"}`}
+            />
+            <Check
+              size={16}
+              className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
+            />
+          </div>
+        </Button>
+      </SimpleTooltip>
+    </div>
+  );
+};
+
+const NonMemoizedMarkdown = ({ children }: { children: string }) => {
+  const components: Partial<Components> = {
+    // @ts-expect-error
+    code: ({ node, inline, className, children, ...props }) => {
+      const match = /language-(\w+)/.exec(className || "");
+      return !inline && match ? (
+        <CodeBlock match={match} className={className} {...props}>
+          {children}
+        </CodeBlock>
+      ) : (
+        <code
+          className={`${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`}
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    },
+    ol: ({ node, children, ...props }) => {
+      return (
+        <ol className="list-decimal list-outside ml-4" {...props}>
+          {children}
+        </ol>
+      );
+    },
+    li: ({ node, children, ...props }) => {
+      return (
+        <li className="py-1" {...props}>
+          {children}
+        </li>
+      );
+    },
+    ul: ({ node, children, ...props }) => {
+      return (
+        <ul className="list-decimal list-outside ml-4" {...props}>
+          {children}
+        </ul>
+      );
+    },
+    strong: ({ node, children, ...props }) => {
+      return (
+        <span className="font-semibold" {...props}>
+          {children}
+        </span>
+      );
+    },
+    a: ({ node, children, ...props }) => {
+      return (
+        // @ts-expect-error
+        <Link
+          className="text-blue-500 hover:underline"
+          target="_blank"
+          rel="noreferrer"
+          {...props}
+        >
+          {children}
+        </Link>
+      );
+    },
+    h1: ({ node, children, ...props }) => {
+      return (
+        <h1 className="text-3xl font-semibold mt-6 mb-2" {...props}>
+          {children}
+        </h1>
+      );
+    },
+    h2: ({ node, children, ...props }) => {
+      return (
+        <h2 className="text-2xl font-semibold mt-6 mb-2" {...props}>
+          {children}
+        </h2>
+      );
+    },
+    h3: ({ node, children, ...props }) => {
+      return (
+        <h3 className="text-xl font-semibold mt-6 mb-2" {...props}>
+          {children}
+        </h3>
+      );
+    },
+    h4: ({ node, children, ...props }) => {
+      return (
+        <h4 className="text-lg font-semibold mt-6 mb-2" {...props}>
+          {children}
+        </h4>
+      );
+    },
+    h5: ({ node, children, ...props }) => {
+      return (
+        <h5 className="text-base font-semibold mt-6 mb-2" {...props}>
+          {children}
+        </h5>
+      );
+    },
+    h6: ({ node, children, ...props }) => {
+      return (
+        <h6 className="text-sm font-semibold mt-6 mb-2" {...props}>
+          {children}
+        </h6>
+      );
+    },
+    p: ({ node, children, ...props }) => {
+      return (
+        <p className="whitespace-pre-wrap break-words" {...props}>
+          {children}
+        </p>
+      );
+    },
+  };
+
+  return (
+    <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+      {children}
+    </ReactMarkdown>
+  );
+};
+
+export const Markdown = memo(
+  NonMemoizedMarkdown,
+  (prevProps, nextProps) => prevProps.children === nextProps.children
+);

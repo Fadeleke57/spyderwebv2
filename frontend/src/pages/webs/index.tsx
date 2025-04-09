@@ -161,10 +161,43 @@ function Index() {
     setOpen(true);
   };
 
+  const TableSkeletonRow = () => (
+    <TableRow>
+      <TableCell>
+        <Skeleton className="h-6 w-8 lg:w-40" />
+      </TableCell>
+      <TableCell>
+        <Skeleton className="h-6 w-8 lg:w-16" />
+      </TableCell>
+      {!isMobile && (
+        <>
+          <TableCell>
+            <Skeleton className="h-6 w-8" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-6 w-8" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-6 w-8 lg:w-32" />
+          </TableCell>
+        </>
+      )}
+      <TableCell>
+        <Skeleton className="h-8 w-8 rounded-full" />
+      </TableCell>
+    </TableRow>
+  );
+
+  const renderSkeletonRows = (count = 5) => {
+    return Array(count)
+      .fill(0)
+      .map((_, index) => <TableSkeletonRow key={`skeleton-${index}`} />);
+  };
+
   return (
-    <div className="flex lg:min-h-screen justify-center flex-col max-w-[960px] mx-auto">
+    <div className="flex lg:min-h-screen justify-center flex-col w-full lg:px-8">
       <Head>
-        <title>{"all webs"}</title>
+        <title>{"webs - spydr"}</title>
         <meta name="description" content={"Welcome to spydr"} />
         <meta property="og:title" content={user?.full_name} />
         <meta property="og:description" content={"Welcome to spydr"} />
@@ -196,7 +229,7 @@ function Index() {
                     className="rounded-full"
                   />
                 ) : (
-                  <Skeleton className="w-[36px] h-[36px]" />
+                  <Skeleton className="w-[36px] h-[36px] rounded-full" />
                 )}
               </Button>
             </DropdownMenuTrigger>
@@ -283,107 +316,122 @@ function Index() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {webs.filter(tab.filter).map((web, index) => (
-                          <TableRow key={index}>
-                            <TableCell>
-                              <Link
-                                href={`/web/${web?.webId}`}
-                                className="font-medium hover:underline cursor-pointer hover:text-blue-500"
-                              >
-                                {formatText(web?.name || "", 30)}
-                              </Link>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">
-                                {web?.visibility === "Private"
-                                  ? "private"
-                                  : "public"}
-                              </Badge>
-                            </TableCell>
-                            {!isMobile && (
-                              <>
-                                <TableCell>{web?.likes?.length}</TableCell>
+                        {isFetching
+                          ? renderSkeletonRows(5)
+                          : webs.filter(tab.filter).map((web, index) => (
+                              <TableRow key={index}>
                                 <TableCell>
-                                  {web?.iterations?.length}
+                                  <Link
+                                    href={`/web/${web?.webId}`}
+                                    className="font-medium hover:underline cursor-pointer hover:text-blue-500"
+                                  >
+                                    {formatText(web?.name || "", 30)}
+                                  </Link>
                                 </TableCell>
                                 <TableCell>
-                                  {web?.created &&
-                                    format(
-                                      new Date(web?.created || ""),
-                                      "MMM dd, yyyy hh:mm a"
-                                    )}
+                                  <Badge variant="outline">
+                                    {web?.visibility === "Private"
+                                      ? "private"
+                                      : "public"}
+                                  </Badge>
                                 </TableCell>
-                              </>
-                            )}
-                            <TableCell>
-                              <DropdownMenu modal={false}>
-                                <DropdownMenuTrigger asChild>
-                                  <Button size="icon" variant="ghost">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuItem
-                                    className="cursor-pointer"
-                                    onClick={() =>
-                                      router.push(`/web/${web?.webId}`)
-                                    }
-                                  >
-                                    Edit
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleOpenDeleteModal(web?.webId)
-                                    }
-                                    className="text-red-400 hover:text-destructive cursor-pointer"
-                                  >
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                                {!isMobile && (
+                                  <>
+                                    <TableCell>{web?.likes?.length}</TableCell>
+                                    <TableCell>
+                                      {web?.iterations?.length}
+                                    </TableCell>
+                                    <TableCell>
+                                      {web?.created &&
+                                        format(
+                                          new Date(web?.created || ""),
+                                          "MMM dd, yyyy hh:mm a"
+                                        )}
+                                    </TableCell>
+                                  </>
+                                )}
+                                <TableCell>
+                                  <DropdownMenu modal={false}>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button size="icon" variant="ghost">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuLabel>
+                                        Actions
+                                      </DropdownMenuLabel>
+                                      <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={() =>
+                                          router.push(`/web/${web?.webId}`)
+                                        }
+                                      >
+                                        Edit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          handleOpenDeleteModal(web?.webId)
+                                        }
+                                        className="text-red-400 hover:text-destructive cursor-pointer"
+                                      >
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </TableCell>
+                              </TableRow>
+                            ))}
                       </TableBody>
                     </Table>
                   </CardContent>
                   <CardFooter>
                     <div className="flex justify-between items-center w-full">
                       <div className="text-xs text-muted-foreground">
-                        <strong>
-                          {isFetching ? "..." : (currentPage - 1) * 10 + 1}
-                        </strong>{" "}
-                        to{" "}
-                        <strong>
-                          {isFetching
-                            ? "..."
-                            : Math.min(
+                        {isFetching ? (
+                          <Skeleton className="h-4 w-32" />
+                        ) : (
+                          <>
+                            <strong>{(currentPage - 1) * 10 + 1}</strong> to{" "}
+                            <strong>
+                              {Math.min(
                                 currentPage * 10,
-
                                 data?.pages[0]?.total || 0
                               )}{" "}
-                        </strong>{" "}
-                        of{" "}
-                        <strong>
-                          {isFetching ? "..." : data?.pages[0]?.total || 0}
-                        </strong>{" "}
-                        webs
+                            </strong>{" "}
+                            of <strong>{data?.pages[0]?.total || 0}</strong>{" "}
+                            webs
+                          </>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <Button
                           size="sm"
                           onClick={handlePreviousPage}
-                          disabled={!cursors.prev || isFetchingPreviousPage}
+                          disabled={
+                            !cursors.prev ||
+                            isFetchingPreviousPage ||
+                            isFetching
+                          }
                         >
-                          Previous
+                          {isFetchingPreviousPage ? (
+                            <Skeleton className="h-4 w-16" />
+                          ) : (
+                            "Previous"
+                          )}
                         </Button>
                         <Button
                           size="sm"
                           onClick={handleNextPage}
-                          disabled={!cursors.next || isFetchingNextPage}
+                          disabled={
+                            !cursors.next || isFetchingNextPage || isFetching
+                          }
                         >
-                          Next
+                          {isFetchingNextPage ? (
+                            <Skeleton className="h-4 w-16" />
+                          ) : (
+                            "Next"
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -403,6 +451,7 @@ function Index() {
           setOpen={setOpen}
         ></DeleteModal>
       )}
+      <SpydrAI />
     </div>
   );
 }

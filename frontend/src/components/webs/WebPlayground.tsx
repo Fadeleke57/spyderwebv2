@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
 import {
   Link,
   File,
@@ -8,6 +8,7 @@ import {
   Minimize2,
   Maximize2,
   Search,
+  Plus,
 } from "lucide-react";
 import { Web } from "@/types/web";
 import { PublicUser } from "@/types/user";
@@ -15,7 +16,11 @@ import AddSourceModal from "./AddSourceModal";
 import WebGraph from "./WebGraph";
 import { CreateWeb } from "@/types/web";
 import { Source } from "@/types/source";
-import { useFetchSourcesForWeb, useFileUpload, useUploadNote } from "@/hooks/sources";
+import {
+  useFetchSourcesForWeb,
+  useFileUpload,
+  useUploadNote,
+} from "@/hooks/sources";
 import {
   Command,
   CommandEmpty,
@@ -26,8 +31,6 @@ import {
 } from "@/components/ui/command";
 
 import WebDataModal from "./WebDataModal";
-
-import { PlusCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -52,6 +55,9 @@ import {
 } from "../ui/tooltip";
 import WebSettingsModal from "./WebSettingsModal";
 import { toast } from "../ui/use-toast";
+import ProcessModal from "@/components/webs/ProcessModal";
+import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
+import SimpleTooltip from "../utility/SimpleTooltip";
 
 const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
 
@@ -74,40 +80,9 @@ function WebPlayground({
     description: web?.description || "",
   });
   const [searchDialogOpen, setSearchDialogOpen] = useState<boolean>(false);
-  const { mutateAsync: uploadFile, isPending: isFileUploading } = useFileUpload(web?.webId || "");
-  const {
-    data: sources,
-    isLoading: sourcesLoading,
-    error: sourcesError,
-    refetch: refetchSources,
-  } = useFetchSourcesForWeb(web?.webId);
-
-   const handleFileUpload = async (files: FileList | null) => {
-    if (!files || files.length === 0) {
-      return;
-    }
-
-    try {
-      const firstSourceId = await uploadFile({ files : files, preserve_obsidian_links: true });
-      toast({
-        title: "File uploaded",
-        description: "File uploaded successfully",
-        duration: 500,
-      });
-      refetchSources();
-      refetch();
-      setSelectedSourceId(firstSourceId);
-      setIsWebDataModalOpen(true);
-      setIsAddSourceModalOpen(false);
-    } catch (err) {
-      console.error(err);
-      toast({
-        variant: "destructive",
-        title: "Error uploading file",
-      });
-    }
-  };
-
+  const [parseObsidianLinks, setParseObsidianLinks] = useState<boolean>(false);
+  const [addIconOrientation, setAddIconOrientation] = useState<number>(0);
+  const [proccessModalOpen, setProcessModalOpen] = useState<boolean>(false);
   const isOwner = user && user?.id === web?.userId;
   const [selectedSourceId, setSelectedSourceId] = useState<string>("");
   const [fetchedSources, setFetchedSources] = useState<Source[]>([]);
@@ -117,6 +92,69 @@ function WebPlayground({
   const [webSearchModalView, setAddSourceModalView] = useState<
     "youtube" | "website" | "default" | "note"
   >("default");
+  const { mutateAsync: uploadFile, isPending: isFileUploading } = useFileUpload(
+    web?.webId || ""
+  );
+  const {
+    data: sources,
+    isLoading: sourcesLoading,
+    error: sourcesError,
+    refetch: refetchSources,
+  } = useFetchSourcesForWeb(web?.webId);
+  const {
+    data: connections,
+    isLoading: connectionsLoading,
+    refetch: refetchConnections,
+  } = useFetchAllConnectionsForWeb(web?.webId);
+
+  const handleDropdownOpenChange = (open: boolean) => {
+    setAddIconOrientation(open ? 45 : -45);
+  };
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    try {
+      if (files.length > 1) {
+        uploadFile({
+          files: files,
+          preserve_obsidian_links: parseObsidianLinks,
+        });
+
+        setTimeout(() => {
+          setProcessModalOpen(true);
+          setIsAddSourceModalOpen(false);
+        }, 2000);
+      } else {
+        try {
+          const { firstSourceId } = await uploadFile({
+            files: files,
+            preserve_obsidian_links: false,
+          });
+
+          refetchSources();
+          refetch();
+          setSelectedSourceId(firstSourceId);
+          setIsWebDataModalOpen(true);
+          setIsAddSourceModalOpen(false);
+        } catch (error: any) {
+          console.error(error);
+          toast({
+            variant: "destructive",
+            title: "Error uploading file(s)",
+          });
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      toast({
+        variant: "destructive",
+        title: "Error uploading file(s)",
+      });
+    }
+  };
 
   const handleSourceClick = (sourceId: string) => {
     setSelectedSourceId(sourceId);
@@ -148,8 +186,8 @@ function WebPlayground({
       setIsWebDataModalOpen(true);
     } catch (error: any) {
       toast({
-        title: "Error creating web",
-        description: error.message,
+        title: "Error creating note",
+        description: "Please try again",
         variant: "destructive",
       });
     }
@@ -198,31 +236,20 @@ function WebPlayground({
             isExpanded ? "right-6" : "right-3"
           }  top-3`}
         >
-          {isOwner && (
-            <TooltipProvider delayDuration={100}>
-              <Tooltip>
-                <TooltipTrigger>
-                  <WebSettingsModal refetchWeb={refetch} web={web} />{" "}
-                </TooltipTrigger>
-                <TooltipContent>Settings</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          <Badge variant="outline" className={`border dark:border-violet-400`}>
+          {isOwner && <WebSettingsModal refetchWeb={refetch} web={web} />}
+          <Badge variant="outline" className={`border dark:border-violet-400/70`}>
             {web?.sourceIds?.length || 0} sources added
           </Badge>
         </div>
 
         <div
-          className={`absolute bottom-8 ${
-            isExpanded ? "right-6" : "right-6"
-          } cursor-pointer z-10`}
+          className={`absolute bottom-${web.iteratedFrom ? 6 : 4} w-full px-3 cursor-pointer z-70 flex flex-row-reverse items-center justify-between`}
         >
           <TooltipProvider delayDuration={100}>
             <Tooltip>
               <TooltipTrigger
                 onClick={toggleExpand}
-                className="p-2 rounded-full transition-colors"
+                className="transition-colors"
               >
                 {isExpanded ? (
                   <Button
@@ -240,11 +267,60 @@ function WebPlayground({
                   </Button>
                 )}
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent className="z-99">
                 <p>{isExpanded ? "Collapse view" : "Expand view"}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+
+          <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={searchDialogOpen}
+                      className="rounded-full p-0 px-[10px] m-0"
+                    >
+                      <Search size={20} />
+                    </Button>
+                  </DialogTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Search sources</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <DialogContent className="lg:max-w-2xl no-scrollbar">
+              <DialogTitle hidden className="pl-4"></DialogTitle>
+              <Command className="bg-transparent no-scrollbar">
+                <CommandInput
+                  placeholder="Search sources..."
+                  className="bg-transparent"
+                />
+                <CommandList>
+                  <CommandEmpty>
+                    No sources found. <span>Create one?</span>
+                  </CommandEmpty>
+                  <CommandGroup>
+                    {sources?.map((source: Source, id: number) => (
+                      <CommandItem
+                        key={id}
+                        className="cursor-pointer items-start"
+                        onSelect={() => handleSourceClick(source.sourceId)}
+                        value={`${source.name}${id}`}
+                      >
+                        {mapSourceToIcon(source.type, 16)}
+                        {source.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </DialogContent>
+          </Dialog>
         </div>
         {isOwner &&
         (web?.sourceIds?.length === undefined ||
@@ -265,60 +341,74 @@ function WebPlayground({
               refreshWeb={refetch}
               view={webSearchModalView}
               handleFileUpload={handleFileUpload}
-                isFileUploading={isFileUploading}
-    
+              isFileUploading={isFileUploading}
+              setParseObsidianLinks={setParseObsidianLinks}
             >
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button className="rounded-full h-8 dark:bg-violet-500 dark:hover:bg-violet-400 ">
-                    <PlusCircle size={16} className="mr-2" />
-                    Add
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  side="left"
-                  sideOffset={5}
-                  className="w-40 right-0"
-                >
-                  <DropdownMenuGroup>
-                    <DialogTrigger
-                      asChild
-                      onClick={() => handleDropdownButtonClick("website")}
+              <TooltipProvider>
+                <Tooltip delayDuration={100}>
+                  <DropdownMenu onOpenChange={handleDropdownOpenChange}>
+                    <TooltipTrigger>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          size={"icon"}
+                          className="dark:bg-violet-400/80 dark:hover:bg-violet-400 rounded-full p-1 h-fit w-fit"
+                        >
+                          <Plus
+                            strokeWidth={3}
+                            size={16}
+                            className={`rotate-${addIconOrientation} transition-transform ease-in-out duration-300`}
+                          />
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <DropdownMenuContent
+                      side="left"
+                      sideOffset={5}
+                      className="w-40 right-0"
                     >
-                      <DropdownMenuItem className="cursor-pointer">
-                        <Link size={16} className="mr-2" />
-                        <span>Website</span>
-                      </DropdownMenuItem>
-                    </DialogTrigger>
-                    <DialogTrigger
-                      asChild
-                      onClick={() => handleDropdownButtonClick("default")}
-                    >
-                      <DropdownMenuItem className="cursor-pointer">
-                        <File size={16} className="mr-2" />
-                        <span>File</span>
-                      </DropdownMenuItem>
-                    </DialogTrigger>
-                    <DropdownMenuItem
-                      className="cursor-pointer"
-                      onClick={() => handleCreateEmptyNote()}
-                    >
-                      <Notebook size={16} className="mr-2" />
-                      <span>Note</span>
-                    </DropdownMenuItem>
+                      <DropdownMenuGroup>
+                        <DialogTrigger
+                          asChild
+                          onClick={() => handleDropdownButtonClick("website")}
+                        >
+                          <DropdownMenuItem className="cursor-pointer">
+                            <Link size={16} className="mr-2" />
+                            <span>Website</span>
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                        <DialogTrigger
+                          asChild
+                          onClick={() => handleDropdownButtonClick("default")}
+                        >
+                          <DropdownMenuItem className="cursor-pointer">
+                            <File size={16} className="mr-2" />
+                            <span>File</span>
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onClick={() => handleCreateEmptyNote()}
+                        >
+                          <Notebook size={16} className="mr-2" />
+                          <span>Note</span>
+                        </DropdownMenuItem>
 
-                    <DialogTrigger
-                      asChild
-                      onClick={() => handleDropdownButtonClick("youtube")}
-                    >
-                      <DropdownMenuItem className="cursor-pointer">
-                        <Youtube size={16} className="mr-2" />
-                        <span>Youtube</span>
-                      </DropdownMenuItem>
-                    </DialogTrigger>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                        <DialogTrigger
+                          asChild
+                          onClick={() => handleDropdownButtonClick("youtube")}
+                        >
+                          <DropdownMenuItem className="cursor-pointer">
+                            <Youtube size={16} className="mr-2" />
+                            <span>Youtube</span>
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <TooltipContent>Add source</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>{" "}
             </AddSourceModal>
           </div>
         ) : null}
@@ -328,7 +418,8 @@ function WebPlayground({
               Add your first source
             </h3>
             <p className="text-sm text-muted-foreground">
-              Drag and drop or click below to start collecting data to add your web.
+              Drag and drop or click below to start collecting information to
+              add your web.
             </p>
             <div className="flex flex-wrap gap-2 whitespace-nowrap mt-2 justify-center">
               {" "}
@@ -345,11 +436,16 @@ function WebPlayground({
                 view={webSearchModalView}
                 handleFileUpload={handleFileUpload}
                 isFileUploading={isFileUploading}
+                setParseObsidianLinks={setParseObsidianLinks}
               >
-                <DropdownMenu>
+                <DropdownMenu onOpenChange={handleDropdownOpenChange}>
                   <DropdownMenuTrigger asChild>
                     <Button className="rounded-full h-8">
-                      <PlusCircle size={16} className="mr-2" />
+                      <Plus
+                        strokeWidth={3}
+                        size={16}
+                        className={`mr-2 rotate-${addIconOrientation} transition-transform ease-in`}
+                      />
                       Create
                     </Button>
                   </DropdownMenuTrigger>
@@ -417,59 +513,12 @@ function WebPlayground({
           setSelectedSourceId={setSelectedSourceId}
           handleFileUpload={handleFileUpload}
           isFileUploading={isFileUploading}
+          connections={connections}
+          connectionsLoading={connectionsLoading}
+          refetchConnections={refetchConnections}
         />
         <div className="absolute bottom-8 left-6">
-          <div className="flex w-fit rounded-full flex-col pt-0">
-            <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={searchDialogOpen}
-                        className="w-full justify-between p-0 m-0 rounded-full p-2 px-[10px]"
-                      >
-                        <Search size={20} />
-                      </Button>
-                    </DialogTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Search sources</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              <DialogContent className="lg:max-w-2xl">
-                <DialogTitle hidden className="pl-4"></DialogTitle>
-                <Command className="bg-transparent">
-                  <CommandInput
-                    placeholder="Search sources..."
-                    className="bg-transparent"
-                  />
-                  <CommandList>
-                    <CommandEmpty>
-                      No sources found. <span>Create one?</span>
-                    </CommandEmpty>
-                    <CommandGroup>
-                      {sources?.map((source: Source, id: number) => (
-                        <CommandItem
-                          key={id}
-                          className="cursor-pointer items-start"
-                          onSelect={() => handleSourceClick(source.sourceId)}
-                          value={`${source.name}${id}`}
-                        >
-                          {mapSourceToIcon(source.type, 16)}
-                          {source.name}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </DialogContent>
-            </Dialog>
-          </div>
+          <div className="flex w-fit rounded-full flex-col pt-0"></div>
         </div>
         {isWebDataModalOpen && selectedSourceId && web?.webId && (
           <WebDataModal
@@ -478,6 +527,16 @@ function WebPlayground({
             sourceId={selectedSourceId}
             webId={web.webId}
           />
+        )}
+        {proccessModalOpen && web?.webId && (
+          <ProcessModal
+            refetchWeb={refetch}
+            refetchSources={refetchSources}
+            refetchConnections={refetchConnections}
+            webId={web.webId}
+            isOpen={proccessModalOpen}
+            onOpenChange={setProcessModalOpen}
+          ></ProcessModal>
         )}
       </div>
     </div>
