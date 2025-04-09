@@ -155,7 +155,7 @@ function WebForm({ web, user }: FormProps) {
       });
     }
   };
-
+console.log("images", images)
   const handleDeleteImage = useCallback(async () => {
     if (!selectedImage) {
       return;
@@ -270,7 +270,7 @@ function WebForm({ web, user }: FormProps) {
         <div>
           <div className="flex flex-col">
             <div className="flex flex-col">
-              <small className="text-sm font-semibold leading-none text-violet-500 dark:text-violet-400 flex flex-row items-center">
+              <small className="text-sm font-semibold leading-none text-violet-500 dark:text-violet-400/80 flex flex-row items-center">
                 {webConfig.visibility}{" "}
                 {webConfig.visibility === "Private" && (
                   <Lock size={12} className="ml-1" />
@@ -348,19 +348,44 @@ function WebForm({ web, user }: FormProps) {
           </div>
         </div>
       </div>
-      {images.length > 0 ||
-        (web?.showcase && (
-          <ScrollArea className="w-full flex flex-row gap-4 px-4 my-2">
-            {web?.showcase && (
-              <div key={-1} className="flex-1 relative">
+
+      {web?.showcase && (
+        <div key={-1} className="flex-1 relative">
+          <Image
+            height={300}
+            width={500}
+            src={SHOWCASE_IMAGE}
+            alt={web.name}
+            className="rounded-md w-full border h-auto object-cover"
+            style={{ maxHeight: "400px" }}
+            onClick={(e) => handleImageClick(e, SHOWCASE_IMAGE)}
+            priority
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 h-6 w-6 bg-black/50 hover:bg-black/70"
+            onClick={() => handleOpenDeleteModal(SHOWCASE_IMAGE)}
+          >
+            <X className="h-4 w-4 text-white" />
+          </Button>
+        </div>
+      )}
+
+      {images.length > 0 && (
+        <ScrollArea className="w-full flex flex-row gap-4 px-4 my-2">
+          {images &&
+            images.map((image: string, index: number) => (
+              <div key={index} className="flex-1 relative">
                 <Image
                   height={300}
                   width={500}
-                  src={SHOWCASE_IMAGE}
+                  src={image}
                   alt={web.name}
                   className="rounded-md w-full border h-auto object-cover"
                   style={{ maxHeight: "400px" }}
-                  onClick={(e) => handleImageClick(e, SHOWCASE_IMAGE)}
+                  onClick={(e) => handleImageClick(e, image)}
                   priority
                 />
                 <Button
@@ -368,40 +393,16 @@ function WebForm({ web, user }: FormProps) {
                   variant="ghost"
                   size="icon"
                   className="absolute top-2 right-2 h-6 w-6 bg-black/50 hover:bg-black/70"
-                  onClick={() => handleOpenDeleteModal(SHOWCASE_IMAGE)}
+                  onClick={() => handleOpenDeleteModal(image)}
                 >
                   <X className="h-4 w-4 text-white" />
                 </Button>
               </div>
-            )}
-            {images &&
-              images.map((image: string, index: number) => (
-                <div key={index} className="flex-1 relative">
-                  <Image
-                    height={300}
-                    width={500}
-                    src={image}
-                    alt={web.name}
-                    className="rounded-md w-full border h-auto object-cover"
-                    style={{ maxHeight: "400px" }}
-                    onClick={(e) => handleImageClick(e, image)}
-                    priority
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 h-6 w-6 bg-black/50 hover:bg-black/70"
-                    onClick={() => handleOpenDeleteModal(image)}
-                  >
-                    <X className="h-4 w-4 text-white" />
-                  </Button>
-                </div>
-              ))}
+            ))}
 
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        ))}
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      )}
       <DeleteModal
         isPending={isPending}
         onDelete={handleDeleteImage}

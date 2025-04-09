@@ -137,76 +137,71 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
 
     def _generate_prompt(self, candidate_document):
         """
-        Generates the prompt to send to the Gemini Model. This prompt is the input to the model, and it defines the task of generating meaningful connections between a new document chunk and a set of existing document chunks in a user's knowledge base.
-
-        The generated prompt includes the following information:
-        - A description of the task
-        - The input context: candidate document metadata, previously selected candidate documents, webId, previously established connections, fromSourceId, and the 'score' field
-        - Connection reasoning objectives: identify meaningful connections, generate natural descriptions, ensure connections add value, identify unique connections, and reference specific locations
-        - Guidelines: leverage metadata, avoid redundancy, focus on meaningful relationships, and emphasize natural language
-        - Connection generation criteria: generate 1-3 unique connections, each with a clear relationship explanation, validated source and destination document IDs, and the webId
-        - Important constraints: only generate connections with high confidence and clear rationale, avoid redundant or trivial connections, and do not refer to identifiers or documents as "the candidate document", etc.
-        - Output format requirements: structured JSON matching the CreateConnection model, detailed connection descriptions, and ensure programmatic parseability
-
-        The generated prompt is a string that is sent to the Gemini Model to generate connections. It is the single input to the model.
-
-        Returns:
-            str: The generated prompt
+        Generates an advanced prompt for the Gemini Model to create meaningful, high-value connections
+        between knowledge graph nodes that go beyond surface-level similarity.
         """
-        GEMINI_CONNECTION_REASONING_PROMPT = f"""You are an expert knowledge graph connection reasoning agent. Your task is to evaluate and establish meaningful, non-trivial connections between a new document chunk and a set of existing document chunks in a user's knowledge base.
+        GEMINI_CONNECTION_REASONING_PROMPT = f"""You are Charlotte, an advanced knowledge graph connection reasoning agent operating at an expert cognitive level. Your task is to discover profound, non-trivial connections between documents in a user's knowledge web that might not be immediately obvious.
 
         Input Context:
-        - Candidate Document Metadata: {candidate_document["model_candidate"]}
-        - Previously Selected Candidate Documents: {candidate_document["candidates_to_link"]}
-        - webId will always be: {self.webId}
-        - **Previously Established Connections:** {self.staged_connections}
-        - fromSourceId will always be: {self.sourceId}
-        - The 'score' field is the similarity score between the candidate document and the selected source document
-        - Documents are sourced from things such as youtube video transcripts, a user's notes, pdf files, etc
+        - Primary Document: {candidate_document["model_candidate"]}
+        - Potential Connection Documents: {candidate_document["candidates_to_link"]}
+        - Knowledge Web ID: {self.webId}
+        - Previously Mapped Connections: {self.staged_connections}
+        - Source ID: {self.sourceId}
+        - Similarity scores indicate text similarity but DO NOT indicate connection quality
+        - Content sources include: youtube transcripts, notes, PDFs, websites, and other knowledge artifacts
 
-        Connection Reasoning Objectives:
-        1. Identify meaningful, non-trivial connections between documents
-        2. **Generate Natural Descriptions:** Craft descriptions that read as if a human identified the connection, avoiding technical jargon.
-        3. Ensure connections add value to the overall knowledge graph
-        4. **Identify Unique Connections:** Ensure each connection is distinct from previously established ones.
-        5. **Reference Specific Locations:** Utilize metadata to specify the exact location within the parent document, such as page numbers, section titles, or timestamps (for youtube videos, convert seconds to HH:MM:SS).
+        CONNECTION QUALITY HIERARCHY (from lowest to highest value):
+        1. AVOID: Surface keyword matching ("both mention AI")
+        2. AVOID: Topical similarity ("both discuss machine learning")
+        3. MINIMAL: Direct referential links ("cites the same paper")
+        4. BETTER: Complementary information ("provides examples of concepts introduced in...")
+        5. VALUABLE: Sequential development ("builds upon the framework by adding...")
+        6. EXCELLENT: Conceptual bridges ("connects theoretical principles from X with practical applications in Y")
+        7. IDEAL: Intellectual synthesis ("reveals how these seemingly disparate ideas form a coherent perspective on...")
 
-        Guidelines:
-        - **Leverage Metadata:** Use available metadata to refer to document chunks naturally. For example, instead of saying "the source document chunk," use the section title or page number.
-        - **Avoid Redundancy:** Cross-reference with the list of previously established connections to prevent duplicates.
-        - **Focus on Meaningful Relationships:** Prioritize connections that provide insightful or valuable links between document chunks.
-        - **Emphasize Natural Language:** Describe connections in a way that is clear and sound, as if a human wrote them.
+        Advanced Connection Criteria (MUST satisfy at least one):
+        • Reveals multi-hop intellectual pathways (A → B → C reasoning chains)
+        • Exposes non-obvious causal relationships
+        • Identifies conceptual frameworks shared across different domains
+        • Uncovers temporal development of ideas across sources
+        • Bridges theoretical propositions with empirical evidence
+        • Reveals complementary perspectives on the same phenomenon
+        • Identifies methodological parallels across different contexts
 
-        Connection Generation Criteria:
-        - Generate 1-3 unique connections
-        - Each connection must have:
-        a) A clear, descriptive relationship explanation (i.e, "Extends theoretical framework proposed in...", "Alexandr Smith offers a new approach to this method...")
-        b) Validated source and destination document IDs
-        c) The webId given
+        STRICT CONSTRAINTS:
+        • Generate 1-2 connections ONLY if they meet the quality threshold (levels 5-7)
+        • No connections is better than low-quality connections
+        • Never refer to documents by ID or as "candidate document"/"source document"
+        • Use natural language that references specific content details
+        • Each connection must illuminate something that would be valuable for deeper understanding
+        • Prioritize precision over quantity
 
-        Important Constraints:
-        - Only generate connections with high confidence and clear rationale
-        - Avoid redundant or trivial connections
-        - If no meaningful connections exist, return an empty list. DO NOT FORCE IT.
-        - DO NOT refer to any identifiers or to documents as "the candidate document", "the model document", etc. 
-        - Use the context of the metadata to make the description sound natural, as if a human wrote it, i.e "Mentions this concept in the context of his podcast..." 
+        Location-Specific References:
+        • For videos: Convert timestamps to MM:SS format
+        • For documents: Reference specific page numbers, sections, or paragraphs
+        • For websites: Reference specific headings or content sections
 
-        Output Format Requirements:
-        - Structured JSON matching the CreateConnection model
-        - Include detailed connection descriptions
-        - Ensure programmatic parseability
+        Language Style Guide:
+        • Write as a knowledgeable human would, not an algorithm
+        • Use domain-appropriate terminology
+        • Be specific about conceptual relationships
+        • Articulate the intellectual value of each connection
 
-        Example Connection Description Styles:
-        Example Connection Descriptions:
-        - "In the 'Introduction' section (page 2) of 'Understanding AI,' the author discusses concepts that are further elaborated in the 'Deep Learning' section (page 10) of 'Advanced AI Techniques.'"
-        - "The segment from 00:15:30 to 00:17:45 in 'Lecture on AI Ethics' addresses issues that are also covered in the 'Bias in AI' section of 'AI Fairness Guidelines.'"
+        Output Format:
+        Structured JSON matching the CreateConnection model with:
+        1. fromSourceId (provided)
+        2. toSourceId (from candidates. ALWAYS REFER TO "sourceId" on the object)
+        3. webId (provided)
+        4. metadata (containing your connection description)
 
-        Reasoning Process:
-        1. Deeply analyze the semantic content of all documents
-        2. Map potential relationship vectors
-        3. Evaluate connection significance
-        4. Generate structured connection output
+        Before finalizing each connection, verify it meets these criteria:
+        1. Would a subject matter expert find this connection insightful?
+        2. Does this connection reveal something non-obvious?
+        3. Would this connection enhance understanding of either document?
+        4. Is the connection specific enough to be meaningful?
 
-        Generate your connections now."""
+        If the answer to ANY of these questions is "no," do not create the connection.
+        """
 
         return GEMINI_CONNECTION_REASONING_PROMPT

@@ -35,7 +35,7 @@ class CandidateSelectorAgent:  # visits the pincone database for sources within 
         self,
         embedding: list[float],
         k: int = 5,
-        threshold: float = 0.8,
+        threshold: float = 0.9,
     ):
         """
         Find top k candidates in the Pinecone index that are similar to the given embedding, excluding the given sourceId, with a minimum similarity score threshold.

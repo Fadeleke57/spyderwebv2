@@ -27,7 +27,6 @@ class Settings(BaseSettings):
     cloudfront_domain: str
     youtube_api_key: str
     firecrawl_api_key: str
-    peekalink_api_key: str
 
     class Config:
         env_file = f".env"

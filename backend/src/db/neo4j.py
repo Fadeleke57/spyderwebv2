@@ -332,8 +332,12 @@ class Neo4jDBService:
             "end_id": end_node_id,
             "props": properties or {},
         }
-        result = self.execute_query(query, params)
-        return result[0]["c"] if result else None
+        try:
+            result = self.execute_query(query, params)
+        except Exception:
+            logger.error("Error creating conntection")
+        finally:
+            return result[0]["c"] if result else None
 
     def update_connection(
         self,

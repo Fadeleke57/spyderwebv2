@@ -48,6 +48,8 @@ import SimpleTooltip from "./SimpleTooltip";
 import { useScrollToBottom } from "@/hooks/general";
 import { useRouter } from "next/router";
 import DeleteModal from "./DeleteModal";
+import AuthModal from "../auth/AuthModal";
+import { useUser } from "@/context/UserContext";
 
 type viewType = "chat" | "history";
 
@@ -74,6 +76,20 @@ const suggestedActions = [
     label: "Suggested",
     title: "What are the most interesting insights from this web so far?",
     action: "What are the most interesting insights from this web so far?",
+  },
+];
+
+const nonWebActions = [
+  {
+    label: "Hello there, I'm Charlotte!",
+    title: "Hop into any web to get started.",
+  },
+];
+
+const nonUserActions = [
+  {
+    label: "Hello there, I'm Charlotte!",
+    title: "Sign in or create an account to chat with me.",
   },
 ];
 
@@ -199,12 +215,17 @@ const CharlotteChatInterface = ({
   previouslySelectedChat,
   setPreviouslySelectedChat,
 }: CharlotteAIProps) => {
+  const router = useRouter();
   const newChatIdRef = useRef(uuid());
   const newChatId = newChatIdRef.current;
   const chatId = selectedChat || newChatId;
   const [initialMessages, setInitialMessages] = useState<Message[]>([]);
   const [saveTrigger, setSaveTrigger] = useState(false);
   const { mutateAsync: saveChat } = useSaveChat(chatId);
+  const { webId } = router.query;
+  const { user } = useUser();
+
+  console.log("user", user);
   const token = localStorage.getItem("token") || "";
 
   const {
@@ -252,7 +273,7 @@ const CharlotteChatInterface = ({
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>(
       [messages.length],
-      isLoading // or whatever your streaming state is called
+      isLoading // the streaming state
     );
 
   const submitForm = () => {
@@ -387,23 +408,47 @@ const CharlotteChatInterface = ({
             >
               <Charlotte width={16} height={16} activeEyes={false} />
             </motion.div>
-            {suggestedActions.map((action, index) => (
-              <motion.div
-                className="w-full p-2 hover:bg-muted hover:text-blue-300 cursor-pointer rounded-md text-muted-foreground flex flex-col transition-colors duration-200 ease-in-out"
-                initial={{ y: 5, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                onClick={async () => {
-                  append({
-                    role: "user",
-                    content: action.action,
-                  });
-                }}
-                key={index}
-              >
-                <small className="mb-1">{action.label}</small>
-                <p className="text-sm font-semibold">{action.title}</p>
-              </motion.div>
-            ))}
+            {!user
+              ? nonUserActions.map((action, index) => (
+                  <motion.div
+                    className="w-full p-2 hover:bg-muted hover:text-blue-300 cursor-pointer rounded-md text-muted-foreground flex flex-col transition-colors duration-200 ease-in-out"
+                    initial={{ y: 5, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    key={index}
+                  >
+                    <small className="mb-1">{action.label}</small>
+                    <p className="text-sm font-semibold">{action.title}</p>
+                  </motion.div>
+                ))
+              : webId
+                ? suggestedActions.map((action, index) => (
+                    <motion.div
+                      className="w-full p-2 hover:bg-muted hover:text-blue-300 cursor-pointer rounded-md text-muted-foreground flex flex-col transition-colors duration-200 ease-in-out"
+                      initial={{ y: 5, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      onClick={async () => {
+                        append({
+                          role: "user",
+                          content: action.action,
+                        });
+                      }}
+                      key={index}
+                    >
+                      <small className="mb-1">{action.label}</small>
+                      <p className="text-sm font-semibold">{action.title}</p>
+                    </motion.div>
+                  ))
+                : nonWebActions.map((action, index) => (
+                    <motion.div
+                      className="w-full p-2 hover:bg-muted hover:text-blue-300 cursor-pointer rounded-md text-muted-foreground flex flex-col transition-colors duration-200 ease-in-out"
+                      initial={{ y: 5, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      key={index}
+                    >
+                      <small className="mb-1">{action.label}</small>
+                      <p className="text-sm font-semibold">{action.title}</p>
+                    </motion.div>
+                  ))}
           </div>
         )}
         {messages.length > 0 && messages[0].createdAt && (
@@ -435,49 +480,53 @@ const CharlotteChatInterface = ({
       </ScrollArea>
 
       {/* input Area */}
-      <div className="p-2 shadow w-full rounded-b-lg">
-        <div className="relative">
-          <Textarea
-            ref={textareaRef}
-            placeholder="Ask anything or talk to this web.."
-            value={input}
-            onChange={handleInput}
-            className="w-full min-h-[40px] max-h-[300px] p-3 pr-12 rounded-lg bg-muted resize-none focus:ring-violet-400 overflow-hidden transition-all ease-in-out duration-100"
-            rows={1}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey) {
-                event.preventDefault();
-                submitForm();
-              }
-            }}
-          />
-          <Button
-            variant={"secondary"}
-            className={cn(
-              "absolute right-2 bottom-2 border h-fit rounded-full p-1 ",
-              input.trim() === "" ? "opacity-50 cursor-not-allowed" : ""
-            )}
-            onClick={submitForm}
-            disabled={input.trim() === "" || isLoading}
-          >
-            {isLoading ? (
-              <Loader className="h-4 w-4 animate-spin" />
-            ) : (
-              <ArrowUp size={16} />
-            )}
-          </Button>
-          <Button
-            variant={"link"}
-            className={cn(
-              "absolute right-10 bottom-2 border h-fit rounded-full p-1 hover:bg-muted"
-            )}
-            onClick={submitForm}
-            disabled={isLoading}
-          >
-            {<Waypoints size={16} />}
-          </Button>
+      {webId && user && (
+        <div className="p-2 shadow w-full rounded-b-lg">
+          <div className="relative">
+            <Textarea
+              ref={textareaRef}
+              placeholder="Ask anything or talk to this web.."
+              value={input}
+              onChange={handleInput}
+              className="w-full min-h-[40px] max-h-[300px] p-3 pr-12 rounded-lg bg-muted resize-none focus:ring-violet-400 overflow-hidden transition-all ease-in-out duration-100"
+              rows={1}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  submitForm();
+                }
+              }}
+            />
+            <Button
+              variant={"secondary"}
+              className={cn(
+                "absolute right-2 bottom-2 border h-fit rounded-full p-1 ",
+                input.trim() === "" ? "opacity-50 cursor-not-allowed" : ""
+              )}
+              onClick={submitForm}
+              disabled={input.trim() === "" || isLoading}
+            >
+              {isLoading ? (
+                <Loader className="h-4 w-4 animate-spin" />
+              ) : (
+                <ArrowUp size={16} />
+              )}
+            </Button>
+            {/*
+              <Button
+              variant={"link"}
+              className={cn(
+                "absolute right-10 bottom-2 border h-fit rounded-full p-1 hover:bg-muted"
+              )}
+              onClick={submitForm}
+              disabled={isLoading}
+            >
+              {<Waypoints size={16} />}
+            </Button>
+            */}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

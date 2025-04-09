@@ -5,7 +5,6 @@ import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import Image from "next/image";
 import { ImageModal } from "../utility/ImageModal";
 import { AnimatedStarButton } from "../explore/AnimatedStar";
-import { useHideWeb, useSaveWeb, useUnsaveWeb } from "@/hooks/user";
 import { useUser } from "@/context/UserContext";
 import AuthModal from "../auth/AuthModal";
 
@@ -19,8 +18,6 @@ function PublicWebView({ web }: { web: Web }) {
   const [webLiked, setWebLiked] = useState(false);
   const { mutateAsync: likeWeb } = useLikeWeb(web.webId);
   const { mutateAsync: unlikeWeb } = useUnlikeWeb(web.webId);
-  const { mutateAsync: saveWeb } = useSaveWeb(web.webId);
-  const { mutateAsync: unsaveWeb } = useUnsaveWeb(web.webId);
   const [images, setImages] = React.useState<string[]>([]);
   const [imageModalOpen, setImageModalOpen] = React.useState(false);
   const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
@@ -74,7 +71,7 @@ function PublicWebView({ web }: { web: Web }) {
         <div>
           <div className="flex flex-col space-y-2">
             <div className="flex flex-row items-center justify-between">
-              <small className="text-sm font-semibold leading-none text-violet-500 dark:text-violet-400">
+              <small className="text-sm font-semibold leading-none text-violet-500 dark:text-violet-400/80">
                 {web?.visibility === "Private" ? "Private" : "Public"}
               </small>
               <div className="flex flex-row items-center space-x-2">

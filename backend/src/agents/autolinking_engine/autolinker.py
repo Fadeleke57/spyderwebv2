@@ -5,12 +5,12 @@ from src.agents.autolinking_engine.connection_reasoning import ConnectionReasoni
 from src.models.index import Webs, Web, create_process, update_process
 
 
-class AutoLinkerEngine:  # proccess running CandidateSelectorAgent and ConnectionGeneratorAgent in the background
+class AutoLinkerEngine:
     def __init__(self):
         self.enabled = False
         self.running = False
 
-        # vector stage is where vectors will be staged right before being upserted, that way we running the autolinked won't bottleneck the main thread
+        # vector stage is where vectors will be staged right before being upserted, that way running the autolinked won't bottleneck the main thread
         self.vector_stage: list[tuple[str, list[float], dict[str, Any]]] = []
 
         self.webId = None
@@ -62,7 +62,7 @@ class AutoLinkerEngine:  # proccess running CandidateSelectorAgent and Connectio
                 _, embedding, metadata = vector
 
                 # find top candidates
-                raw_candidates = cs.find_top_candidates(embedding=embedding)
+                raw_candidates = cs.find_top_candidates(embedding=embedding, threshold=0.8)
 
                 if not raw_candidates:
                     logger.info("No candidates found..Shutting down...")

@@ -115,7 +115,7 @@ function Index() {
                 <Button
                   variant={"link"}
                   onClick={() => router.back()}
-                  className="flex items-center gap-2 p-0 h-fit w-fit text-md font-semibold text-violet-400"
+                  className="flex items-center gap-2 p-0 h-fit w-fit text-md font-semibold text-violet-400/80"
                 >
                   <ArrowLeft strokeWidth={4} className="h-4 w-4" /> Back
                 </Button>
