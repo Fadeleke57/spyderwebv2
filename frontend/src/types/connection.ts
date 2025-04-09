@@ -1,22 +1,20 @@
-export type ConnectionData = {
-  description: string;
-};
 
 export type Connection = {
   connectionId: string;
   webId: string;
-  "data.description": string; //hack because of how it's stored in neo4j
+  description: string;
   fromSourceId: string;
   toSourceId: string;
   created: Date;
   updated: Date;
+  aiGenerated?: boolean;
 };
 
 export type CreateConnection = {
   webId: string;
   fromSourceId: string;
   toSourceId: string;
-  data: ConnectionData;
+  description: string;
 };
 
 export type UpdateConnection = {

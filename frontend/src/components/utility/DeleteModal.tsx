@@ -12,7 +12,6 @@ import { Button } from "../ui/button";
 function DeleteModal({
   onDelete,
   isPending,
-  children,
   itemType,
   open,
   setOpen,
@@ -22,7 +21,6 @@ function DeleteModal({
   itemType: string;
   onDelete: () => Promise<void> | void;
   isPending: boolean;
-  children?: React.ReactNode;
 }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>

@@ -8,11 +8,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { useFetchPopularWebs, useFetchPublicWebs } from "@/hooks/webs";
-import { useRouter } from "next/router";
+import { useFetchPopularWebs } from "@/hooks/webs";
 import { Skeleton } from "../ui/skeleton";
 import TrendingSearchItem from "./TrendingSearchItem";
-import { Web } from "@/types/web";
 
 export function TrendingSearchCarousel() {
   const { data: webs, isLoading: loading, error } = useFetchPopularWebs(10);
@@ -20,8 +18,6 @@ export function TrendingSearchCarousel() {
   const [displayWebs, setDisplayWebs] = useState<any[]>(
     Array.from({ length: 9 })
   );
-
-  const router = useRouter();
 
   useEffect(() => {
     if (webs && !loading) {
@@ -42,7 +38,7 @@ export function TrendingSearchCarousel() {
           {!websRendered
             ? Array.from({ length: 9 }).map((_, index) => (
                 <CarouselItem key={index} className="basis-1/2 lg:basis-1/5">
-                  <Skeleton className="md:w-[250px] md:h-[250px] lg:w-[200px] lg:h-[200px] rounded-xl" />
+                  <Skeleton className="md:w-[250px] md:h-[250px] lg:w-[150px] lg:h-[150px] rounded-xl" />
                 </CarouselItem>
               ))
             : displayWebs.map((web, index) => (

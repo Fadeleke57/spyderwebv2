@@ -186,7 +186,8 @@ export function AccountForm({ user }: { user: PublicUser }) {
               <div className="space-y-0.5">
                 <FormLabel>Language</FormLabel>
                 <FormDescription>
-                  This is the language that will be used in app
+                  This is the language that will be used in app.<br></br>{" "}
+                  Multiple languages coming soon!
                 </FormDescription>
               </div>
               <Popover>

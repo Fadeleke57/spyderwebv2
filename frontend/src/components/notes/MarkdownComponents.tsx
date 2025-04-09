@@ -44,11 +44,11 @@ export const MarkdownComponents: Components = {
     </h5>
   ),
   h6: ({ children }) => <h6 className="font-semibold my-0 py-0">{children}</h6>,
-  ul: ({ children }) => <ul className="-my-4 py-0">{children}</ul>,
+  ul: ({ children }) => <ul className="-my-[21px] py-0">{children}</ul>,
   ol: ({ children }) => (
     <ol className="list-decimal list-inside my-0 py-0">{children}</ol>
   ),
-  li: ({ children }) => <li className="my-0 py-0">{children}</li>,
+  li: ({ children }) => <li className="-my-2 py-0">{children}</li>,
   blockquote: ({ children }) => (
     <blockquote className="border-l-2 pl-4 italic text-muted-foreground my-0 py-0">
       {children}

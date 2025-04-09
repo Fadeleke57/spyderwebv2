@@ -5,7 +5,7 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
-        pathname: "/**", // Match all paths under this domain
+        pathname: "/**",
       },
       {
         protocol: "https",
@@ -41,10 +41,17 @@ const nextConfig = {
         protocol: "https",
         hostname: "*.duckduckgo.com",
         pathname: "/**",
-      }
+      },
+      {
+        protocol: "https",
+        hostname: "*.spydr.dev",
+        pathname: "/**",
+      },
     ],
   },
-  devIndicators: false
+  devIndicators: {
+    buildActivity: false,
+  },
 };
 
 export default nextConfig;

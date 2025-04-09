@@ -4,12 +4,26 @@ import Image from "next/image";
 import { Skeleton } from "../ui/skeleton";
 import { cn } from "@/lib/utils";
 
-function UserAvatar({ userId, className, width, height }: { userId?: string, className?: string, width?: number, height?: number }) {
+function UserAvatar({
+  userId,
+  className,
+  width,
+  height,
+}: {
+  userId?: string;
+  className?: string;
+  width?: number;
+  height?: number;
+}) {
   return (
     <Button
       variant="outline"
       size="icon"
-      className={cn("rounded-full dark:bg-muted", className)}
+      className={cn(
+        "rounded-full dark:bg-muted",
+        className,
+        `w-[${width}px] h-[${height}px]`
+      )}
     >
       {userId ? (
         <Image

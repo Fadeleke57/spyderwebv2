@@ -9,7 +9,6 @@ interface SourceTooltipProps {
 }
 
 const SourceTooltip = ({ children, source, position }: SourceTooltipProps) => {
-
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return "";
     const sizes = ["Bytes", "KB", "MB", "GB"];
@@ -49,6 +48,7 @@ const SourceTooltip = ({ children, source, position }: SourceTooltipProps) => {
           hover:-translate-y-1
           bg-background
           p-3
+          overflow-hidden
           ${!source || !position ? "opacity-0" : "opacity-100"}
         `}
       >
@@ -58,7 +58,7 @@ const SourceTooltip = ({ children, source, position }: SourceTooltipProps) => {
             <span className="capitalize">{source?.type}</span>
           </div>
 
-          <div className="text-sm font-semibold">{source?.name}</div>
+          <div className="text-sm font-semibold truncate">{source?.name}</div>
 
           <div className="flex flex-col gap-1 text-xs text-gray-500 dark:text-gray-400">
             {source?.created && (

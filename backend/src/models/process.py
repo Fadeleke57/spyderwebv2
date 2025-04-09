@@ -17,7 +17,8 @@ class Process(BaseModel):
     jobId: str
     status: Literal["pending", "processing", "completed", "failed"]
     webId: str
-    type: Literal["upload", "embed", "connect"]
+    sourceId: Optional[str]
+    type: Literal["upload", "embed", "connect", "autolink"]
     percentage: float
     description: str
     created: datetime
@@ -26,26 +27,27 @@ class Process(BaseModel):
     closeModal: Optional[bool]
 
 
-def create_process(web_id: str, type: str, description: str) -> str:
+def create_process(
+    web_id: str, type: str, description: str, source_id: Optional[str] = None
+) -> str:
     """
-    Creates a new process in the database.
+    Create a new process in the database.
 
     Args:
-        web_id (str): The ID of the web that the process is related to.
-        type (str): The type of the process, e.g. "upload", "embed", "connect".
+        web_id (str): The ID of the web (web) the process belongs to.
+        type (str): The type of process (upload, embed, connect, autolink).
         description (str): A description of the process.
+        source_id (str): The ID of the source the process is associated with.
 
     Returns:
-        str: The ID of the new process.
-
-    Raises:
-        HTTPException: If the process cannot be created, e.g. due to a database error.
+        str: The ID of the newly created process.
     """
     jobId = str(uuid4())
     process: Process = {
         "jobId": jobId,
         "status": "pending",
         "webId": web_id,
+        "sourceId": source_id,
         "type": type,
         "percentage": 0,
         "description": description,
@@ -68,38 +70,50 @@ def update_process(
     job_id: str,
     status: Literal["pending", "processing", "completed", "failed"],
     percentage: float,
+    description: Optional[str] = None,
+    source_id: Optional[str] = None,
     error: Optional[str] = None,
     closeModal: Optional[bool] = None,
 ):
     """
-    Updates the status of a process in the database.
+    Update the status and metadata of an existing process.
 
     Args:
         job_id (str): The ID of the process to update.
-        status (str): The new status of the process, one of "pending", "processing", "completed", "failed".
-        percentage (float): The new percentage of the process, between 0 and 100.
-        error (str, optional): An error message if the process failed.
+        status (Literal["pending", "processing", "completed", "failed"]): The current status of the process.
+        percentage (float): The completion percentage of the process. Values are clamped between 0 and 100.
+        description (Optional[str]): An optional description of the process update.
+        source_id (Optional[str]): An optional ID of a related source.
+        error (Optional[str]): An optional error message if the process failed.
+        closeModal (Optional[bool]): An optional flag indicating if the modal should be closed.
 
     Raises:
-        HTTPException: If the process cannot be updated, e.g. due to a database error.
+        HTTPException: If the update fails due to a database error.
     """
+
     if percentage > 100:
         percentage = 100
     elif percentage < 0:
         percentage = 0
 
+    updates = {"status": status, "percentage": percentage, "updated": datetime.now(UTC)}
+
+    if description:
+        updates["description"] = description
+
+    if source_id:
+        updates["sourceId"] = source_id
+
+    if error:
+        updates["error"] = error
+
+    if closeModal:
+        updates["closeModal"] = closeModal
+
     try:
         Processes.find_one_and_update(
             {"jobId": job_id},
-            {
-                "$set": {
-                    "status": status,
-                    "percentage": percentage,
-                    "updated": datetime.now(UTC),
-                    "error": error,
-                    "closeModal": closeModal,
-                }
-            },
+            {"$set": updates},
         )
     except Exception as e:
         logger.error(e)

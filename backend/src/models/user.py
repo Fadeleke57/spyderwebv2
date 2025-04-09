@@ -7,15 +7,6 @@ from src.db.mongodb import get_collection
 Users = get_collection("users")
 
 
-class Search(BaseModel):
-    query: str
-    timestamp: str
-
-
-class Analytics(BaseModel):
-    searches: list[Search]
-
-
 class User(BaseModel):  # user
     id: str
     full_name: str
@@ -23,7 +14,6 @@ class User(BaseModel):  # user
     email: str
     disabled: bool
     hashed_password: str
-    analytics: Analytics
     bio: str
     created: datetime
     updated: datetime

@@ -38,9 +38,7 @@ function CreateConnectionBlock({
     webId,
     fromSourceId,
     toSourceId,
-    data: {
-      description: "",
-    },
+    description: "",
   });
 
   useEffect(() => {
@@ -57,7 +55,7 @@ function CreateConnectionBlock({
   }, [toSourceId]);
 
   const handleCreateConnection = async () => {
-    if (!config.data.description.trim()) {
+    if (!config.description.trim()) {
       toast({
         title: "Error",
         description: "Please add a description for the connection",
@@ -86,18 +84,18 @@ function CreateConnectionBlock({
         <Textarea
           className="h-full w-full rounded-lg"
           rows={7}
-          value={config.data.description}
+          value={config.description}
           onChange={(e) =>
             setConfig({
               ...config,
-              data: { ...config.data, description: e.target.value },
+              description: e.target.value,
             })
           }
           placeholder="A brief description of the connection..."
         />
         <Button
           onClick={handleCreateConnection}
-          disabled={createConnectionLoading || !config.data.description.trim()}
+          disabled={createConnectionLoading || !config.description.trim()}
           className="w-full"
         >
           {createConnectionLoading ? (

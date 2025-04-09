@@ -20,6 +20,7 @@ import ConnectionsConfig from "../sources/ConnectionConfig";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import FaviconDisplay from "../utility/FaviconDisplay";
+import AutoLinkerIndicator from "../sources/AutoLinkerIndicator";
 
 interface WebDataDrawerProps {
   open: boolean;
@@ -122,7 +123,7 @@ export default function WebDataModal({
               width="100%"
               src={`https://www.youtube.com/embed/${
                 extractVideoId(source?.url) || ""
-              }`}
+              }?t=0s`}
               title="YouTube video player"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -196,8 +197,8 @@ export default function WebDataModal({
                       href={presignedUrl || source?.url || ""}
                       target="_blank"
                       className="hover:underline hover:text-violet-400 inline text-lg flex flex-row items-center gap-2"
-                        >
-                          <FaviconDisplay url={source?.url || ""} />
+                    >
+                      <FaviconDisplay url={source?.url || ""} />
                       <span className="flex flex-row items-center gap-2">
                         {title || "Loading..."}
                       </span>
@@ -255,7 +256,7 @@ export default function WebDataModal({
                 </div>
               )}
             </DialogTitle>
-            <DialogDescription className="text-left pr-4 pb-1 font-semibold text-muted-foreground flex flex-col gap-2 justify-start border-b border-b-muted">
+            <DialogDescription className="text-left pb-1 font-semibold text-muted-foreground flex flex-col gap-2 justify-start border-b border-b-muted">
               {isLoading ? (
                 <div className="flex flex-row justify-between items-center">
                   <Skeleton className="h-4 w-24 rounded-lg" />
@@ -264,17 +265,20 @@ export default function WebDataModal({
               ) : (
                 <div className="flex flex-row justify-between items-center">
                   <span className="text-violet-400">{source?.type}</span>
-                  {source?.updated && (
-                    <small>
-                      {formatDate(source?.updated.toString(), {
-                        onlyDate: true,
-                      })}{" "}
-                      at{" "}
-                      {formatDate(source?.updated.toString(), {
-                        onlyTime: true,
-                      })}
-                    </small>
-                  )}
+                  <div className="flex flex-col items-end space-y-1">
+                    <AutoLinkerIndicator sourceId={sourceId} webId={webId} />
+                    {source?.updated && (
+                      <small>
+                        {formatDate(source?.updated.toString(), {
+                          onlyDate: true,
+                        })}{" "}
+                        at{" "}
+                        {formatDate(source?.updated.toString(), {
+                          onlyTime: true,
+                        })}
+                      </small>
+                    )}
+                  </div>
                 </div>
               )}
             </DialogDescription>

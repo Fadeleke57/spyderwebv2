@@ -27,7 +27,7 @@ export const AnimatedStarButton = ({
 
   return (
     <div
-      className="flex flex-row items-center space-x-1 relative text-muted-foreground hover:text-violet-500 p-1 rounded-full hover:bg-violet-500/20 transition-colors ease-in"
+      className="flex flex-row items-center space-x-1 relative text-muted-foreground hover:text-violet-500 p-1 rounded-full hover:bg-violet-500/20 transition-colors ease-in cursor-pointer"
       onClick={handleClick}
     >
       <p

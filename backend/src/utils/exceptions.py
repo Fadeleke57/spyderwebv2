@@ -1,5 +1,5 @@
-from fastapi import HTTPException
 import logging
+from fastapi import HTTPException
 
 
 def check_user(user):
