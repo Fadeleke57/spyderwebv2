@@ -29,14 +29,16 @@ const SearchInput = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div
         className={cn(
-          "rounded-md flex items-center border-2 pl-4 transition-all duration-150 ease-in-out",
+          "rounded-md flex items-center border-2 transition-all duration-150 ease-in-out",
           active
             ? "border-foreground shadow-[0_0_10px_rgba(var(--foreground),0.3)] dark:shadow-[0_0_10px_rgba(var(--foreground),0.2)]"
-            : "border-input"
+            : "border-input",
+          className
         )}
         onClick={() => setActive(true)}
       >
         <Search
+          strokeWidth={3}
           size={16}
           className={cn(
             "transition-colors duration-300",

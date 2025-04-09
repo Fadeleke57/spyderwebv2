@@ -354,6 +354,7 @@ function WebPlayground({
                           className="dark:bg-violet-500 dark:hover:bg-violet-400 rounded-full p-1 h-fit w-fit"
                         >
                           <Plus
+                            strokeWidth={3}
                             size={16}
                             className={`rotate-${addIconOrientation} transition-transform ease-in-out duration-300`}
                           />
@@ -417,8 +418,8 @@ function WebPlayground({
               Add your first source
             </h3>
             <p className="text-sm text-muted-foreground">
-              Drag and drop or click below to start collecting data to add your
-              web.
+              Drag and drop or click below to start collecting information to
+              add your web.
             </p>
             <div className="flex flex-wrap gap-2 whitespace-nowrap mt-2 justify-center">
               {" "}

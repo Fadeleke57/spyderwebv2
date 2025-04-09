@@ -16,7 +16,7 @@ import {
 } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
 import { Web } from "@/types/web";
-import { IterationCcw } from "lucide-react";
+import { ArrowLeft, IterationCcw } from "lucide-react";
 import { IterateModal } from "@/components/utility/IterateModal";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -104,36 +104,47 @@ function Index() {
         />
       </Head>
       <div className="flex flex-col">
-        <header className="sticky top-0 z-10 flex h-[80px] lg:h[55px] items-center justify-between gap-1 border-b bg-background px-4">
-          <div className="flex z-40 items-center gap-2 mb-3 lg:mb-0  max-w-[210px] lg:max-w-2xl">
+        <header
+          className={`sticky top-0 z-10 flex ${loading ? "animate-pulse" : ""} ${web && web.iteratedFrom ? "h-[90px]" : "h-[80px]"} items-center justify-between gap-1 border-b bg-background px-4`}
+        >
+          <div className="flex flex-col z-40 items-center justify-start mb-3 lg:mb-0  max-w-[210px] lg:max-w-2xl">
             {loading || webOwnerLoading ? (
               <SkeletonUserCard />
             ) : (
-              <>
-                <UserAvatar userId={web?.userId} />{" "}
-                <div className="flex flex-col gap-0">
-                  <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
-                    {webOwner?.username || ""}{" "}
-                  </h1>
-                  {web?.iteratedFrom ? (
-                    <p className="text-xs font-normal text-muted-foreground">
-                      Iterated From{" "}
-                      <span className="font-semibold text-violet-400 dark:text-violet-400">
-                        @{iteratedFromUser?.username}
-                      </span>
-                    </p>
-                  ) : (
-                    ""
-                  )}
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant={"link"}
+                  onClick={() => router.back()}
+                  className="flex items-center gap-2 p-0 h-fit w-fit font-semibold text-violet-400"
+                >
+                  <ArrowLeft strokeWidth={4} className="h-4 w-4" /> Back
+                </Button>
+                <div className="flex items-center gap-2">
+                  <UserAvatar userId={web?.userId} height={28} width={28} />
+                  <div className="flex flex-col gap-0">
+                    <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
+                      {webOwner?.username || ""}{" "}
+                    </h1>
+                    {web?.iteratedFrom ? (
+                      <p className="text-xs font-normal text-muted-foreground">
+                        Iterated From{" "}
+                        <span className="font-semibold text-violet-400 dark:text-violet-400">
+                          @{iteratedFromUser?.username}
+                        </span>
+                      </p>
+                    ) : (
+                      ""
+                    )}
 
-                  <span className="text-xs text-muted-foreground font-normal m-0">
-                    {web?.updated &&
-                      formatDistanceToNow(new Date(web.updated + "Z"), {
-                        addSuffix: true,
-                      })}
-                  </span>
+                    <span className="text-xs text-muted-foreground font-normal m-0">
+                      {web?.updated &&
+                        formatDistanceToNow(new Date(web.updated + "Z"), {
+                          addSuffix: true,
+                        })}
+                    </span>
+                  </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
           <div className="flex items-center gap-2 mb-3 lg:mb-0">

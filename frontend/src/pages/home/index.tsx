@@ -35,24 +35,25 @@ function Index() {
         onClick={() => router.push("/settings")}
         className="absolute top-6 right-4 lg:top-8 lg:right-8 cursor-pointer hover:opacity-50"
       />
-      
+
       <div className="flex flex-row gap-2 w-full items-center justify-center">
         <h1 className="text-2xl text-center lg:text-3xl font-extrabold tracking-tight">
-        {greeting}, {user?.username}
-        </h1> 
+          {greeting}, {user?.username}
+        </h1>
       </div>
 
       <div>
-        <span className="text-md font-semibold ml-2 dark:text-muted-foreground">Popular</span>
+        <span className="text-md font-semibold ml-2 dark:text-muted-foreground">
+          Popular
+        </span>
         <TrendingSearchCarousel />
       </div>
       <div>
         <div className="flex flex-col">
-          <span className="text-md font-semibold ml-2 dark:text-muted-foreground">Recent Webs</span>{" "}
-          <Link
-            href={"/webs"}
-            className="ml-2 text-violet-400 hover:underline"
-          >
+          <span className="text-md font-semibold ml-2 dark:text-muted-foreground">
+            Recent Webs
+          </span>{" "}
+          <Link href={"/webs"} className="ml-2 text-violet-400 hover:underline">
             View All
           </Link>
         </div>

@@ -90,7 +90,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"
-            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground py-4 rounded-md`}
+            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground py-4 rounded-lg`}
             onClick={() => handleButtonClick("/home")}
           >
             <div
@@ -121,7 +121,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"
-            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground  py-4 rounded-md`}
+            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground py-4 rounded-lg`}
             onClick={() => router.push("/explore")}
           >
             <div
@@ -152,7 +152,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"
-            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none  py-4 rounded-md`}
+            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none  py-4 rounded-lg`}
             onClick={() => handleButtonClick("/webs")}
           >
             <div
@@ -184,7 +184,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"
-            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none  py-4 rounded-md`}
+            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none  py-4 rounded-lg`}
             onClick={() => handleButtonClick("/chat")}
           >
             <div
@@ -217,7 +217,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div className="px-2">
               <SidebarMenuButton
                 size="sm"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none py-4 rounded-md"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none py-4 rounded-lg"
               >
                 <div className="w-full bg-transparent hover:bg-transparent p-0 flex flex-row gap-2">
                   <div className="flex items-center rounded-lg bg-none text-muted-foreground">
@@ -230,10 +230,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   </div>
                 </div>
                 <div className="flex flex-row gap-1 items-center text-muted-foreground dark:text-muted-foreground">
-                  <span className="foreground text-md rounded-md font-bold flex items-center border p-1 px-[7px]">
+                  <span className="foreground text-md rounded-lg font-bold flex items-center border p-1 px-[7px]">
                     ⌘
                   </span>
-                  <span className="foreground text-md rounded-md font-bold flex items-center border p-1 px-[7px]">
+                  <span className="foreground text-md rounded-lg font-bold flex items-center border p-1 px-[7px]">
                     X
                   </span>
                 </div>
@@ -245,7 +245,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton
               onClick={() => setOpen(true)}
               size="sm"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none py-4 rounded-md"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none py-4 rounded-lg"
             >
               <div className="w-full bg-transparent hover:bg-transparent p-0 flex flex-row gap-2">
                 <div className="flex items-center rounded-lg bg-none text-muted-foreground">

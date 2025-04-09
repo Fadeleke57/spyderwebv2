@@ -75,8 +75,8 @@ function UserWebSearch() {
           value={query}
           onChange={handleInputChange}
           onFocus={() => setIsSearchActive(true)}
-          placeholder="Search for webs..."
-          className="w-full py-3 px-6 caret-violet-500"
+          placeholder="Search for your webs..."
+          className="w-full pl-3 caret-violet-500"
         />
         {isLoading && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -90,11 +90,7 @@ function UserWebSearch() {
           {searchResults && searchResults.length > 0 ? (
             <div className="space-y-1 truncate wrap">
               {searchResults.map((web: any) => (
-                <Link
-                  key={web.id}
-                  href={`/web/${web.id}`}
-                  className="block"
-                >
+                <Link key={web.id} href={`/web/${web.id}`} className="block">
                   <Button
                     variant="ghost"
                     className="w-full justify-start text-left items-start text-sm flex flex-col h-fit dark:hover:bg-muted truncate"
@@ -115,9 +111,7 @@ function UserWebSearch() {
           ) : (
             query &&
             !isLoading && (
-              <p className="p-2 text-sm text-muted-foreground">
-                No webs found
-              </p>
+              <p className="p-2 text-sm text-muted-foreground">No webs found</p>
             )
           )}
         </div>
