@@ -10,12 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Web } from "@/types/web";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import {
-  IterationCcw,
-  EllipsisIcon,
-  EyeOff,
-  Bookmark,
-} from "lucide-react";
+import { IterationCcw, EllipsisIcon, EyeOff, Bookmark } from "lucide-react";
 import { useGetAllImagesForWeb, useLikeWeb, useUnlikeWeb } from "@/hooks/webs";
 import UserAvatar from "../utility/UserAvatar";
 import {
@@ -40,6 +35,7 @@ import { PublicUser } from "@/types/user";
 import { ImageModal } from "../utility/ImageModal";
 import { SkeletonCard } from "../utility/SkeletonCard";
 import { AnimatedStarButton } from "./AnimatedStar";
+import { formatText } from "@/lib/utils";
 
 export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
   const [webLikedCount, setWebLikedCount] = useState(web.likes.length);
@@ -178,7 +174,7 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
     return null;
   }
 
-  if (imagesLoading || webOwnerLoading || iteratedFromLoading) {
+  if (webOwnerLoading || iteratedFromLoading) {
     return <SkeletonCard />;
   }
 
@@ -207,36 +203,38 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
       href={`/web/${web.webId}`}
       className="flex flex-col hover:cursor-pointer"
     >
-      <Card className="w-full relative mx-auto min-h-[80px] border-none bg-background hover:bg-muted py-6 border-b-2">
-        <div className="absolute top-0 left-0 w-full flex justify-between items-center px-4">
-          <div className="flex flex-row items-center mt-3">
+      <Card className="w-full relative mx-auto min-h-[80px] bg-background hover:bg-muted p-6 pb-3 pt-4 rounded-none lg:rounded-xl">
+        <div className="flex flex-row gap-2 w-full">
+          <div>
             <UserAvatar
               userId={web?.userId}
-              width={20}
-              height={20}
-              className="w-[25px] h-[25px]"
+              width={30}
+              height={30}
+              className="w-[30px] h-[30px]"
             />
-            <div className="ml-2 text-slate-500 flex flex-col align-center">
-              <div className="flex flex-row items-center">
-                {webOwnerLoading ? (
-                  <Skeleton className="h-3 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
-                ) : (
-                  <p className="text-xs text-slate-600 dark:text-foreground font-semibold">
-                    {webOwner?.username}
+          </div>
+          <div className={`w-full flex flex-col gap-2`}>
+            <div className="flex flex-row justify-between w-full">
+              <div className="flex flex-col">
+                <div className="flex flex-row items-center">
+                  {webOwnerLoading ? (
+                    <Skeleton className="h-3 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
+                  ) : (
+                    <p className="text-[.8rem] text-muted-foreground dark:text-foreground font-semibold">
+                      {webOwner?.username}
+                    </p>
+                  )}
+                  <p className="ml-2 text-sm text-muted-foreground dark:text-violet-400 font-semibold flex items-center pt-[2px]">
+                    *
                   </p>
-                )}
-                <p className="ml-2 text-xs text-slate-600 dark:text-foreground font-semibold">
-                  *
-                </p>
-                <p className="ml-2 text-xs text-slate-600 dark:text-foreground font-semibold">
-                  {web?.updated
-                    ? formatDistanceToNow(new Date(web.updated), {
-                        addSuffix: true,
-                      })
-                    : "Unknown date"}
-                </p>
-              </div>
-              <div className="">
+                  <p className="ml-2 text-xs text-muted-foreground font-normal">
+                    {web?.updated
+                      ? formatDistanceToNow(new Date(web.updated), {
+                          addSuffix: true,
+                        })
+                      : "Unknown date"}
+                  </p>
+                </div>
                 {iteratedFrom ? (
                   <p className="text-xs text-muted-foreground font-normal">
                     Iterated From{" "}
@@ -248,104 +246,112 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
                   <Skeleton className="h-3 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
                 ) : null}
               </div>
+
+              <div className="-mt-2">
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger className="rounded-full hover:bg-slate-300 dark:hover:bg-violet-400/70 p-2 border-none focus:outline-none text-muted-foreground dark:text-foreground">
+                    <EllipsisIcon onClick={handleStopPropagation} />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent onClick={handleStopPropagation}>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={handleSaveWeb}
+                    >
+                      <Bookmark
+                        size={16}
+                        className={`mr-2 ${webSaved && "fill-foreground"}`}
+                      />
+                      {webSaved ? "Unsave" : "Save"}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={handleHideWeb}
+                    >
+                      <EyeOff size={16} className="mr-2" />
+                      Hide
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+
+            <div
+              className={`flex flex-col gap-2 ${!web.iteratedFrom && "-mt-4"}`}
+            >
+              <CardHeader className="overflow-hidden p-0 m-0">
+                <CardTitle className="break-words hover:cursor-pointer mt-2 text-md leading-tight hyphens-auto text-foreground ">
+                  {web.name}
+                </CardTitle>
+                <CardDescription className="hyphens-auto mb-8 max-w-6xl text-muted-foreground">
+                  {formatText(web.description, 500)}
+                </CardDescription>
+              </CardHeader>
+
+              {images.length > 0 && (
+                <>
+                  <ScrollArea className="w-full flex flex-row">
+                    <div className="flex-1 w-full max-h-[400px] overflow-hidden mb-2 rounded-lg -ml-1 ">
+                      <Image
+                        height={300}
+                        width={500}
+                        src={images[0]}
+                        alt={web.name}
+                        className="rounded-xl w-full border h-auto object-cover"
+                        onClick={(e) => handleImageClick(e, images[0])}
+                      />
+                    </div>
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
+                  <ImageModal
+                    isOpen={showImageModal}
+                    setIsOpen={setShowImageModal}
+                    onClose={() => setShowImageModal(false)}
+                    imageUrl={selectedImage}
+                    title={web.name}
+                    description={web.description}
+                  />
+                </>
+              )}
+            </div>
+            <div className="-ml-1 flex flex-row items-center justify-between">
+              <div className="flex flex-row space-x-1">
+                <div className="flex flex-row items-center space-x-1">
+                  <AnimatedStarButton
+                    isStarred={webLiked}
+                    count={webLikedCount}
+                    onStarClick={handleLikeWeb}
+                  />
+                </div>
+                <div
+                  className="flex flex-row items-center space-x-1 text-muted-foreground rounded-full hover:bg-green-300/10 hover:text-green-500 dark:hover:bg-green-400/10 p-1 transition ease-in"
+                  onClick={handleIterateWeb}
+                >
+                  <p
+                    className={`text-sm ${
+                      webIterated ? "text-green-500 dark:text-green-300" : ""
+                    }`}
+                  >
+                    {webIterationsCount}
+                  </p>
+                  <IterationCcw
+                    className={`${
+                      webIterated ? "text-green-500 dark:text-green-400" : ""
+                    }`}
+                    size={14}
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                created{" "}
+                {web?.created
+                  ? formatDistanceToNow(new Date(web.created), {
+                      addSuffix: true,
+                    })
+                  : "Unknown date"}
+              </p>
             </div>
           </div>
-          <div>
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger className="rounded-full hover:bg-slate-300 dark:hover:bg-gray-700 p-2 border-none focus:outline-none text-muted-foreground dark:text-foreground">
-                <EllipsisIcon onClick={handleStopPropagation} />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent onClick={handleStopPropagation}>
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={handleSaveWeb}
-                >
-                  <Bookmark
-                    size={16}
-                    className={`mr-2 ${webSaved && "fill-foreground"}`}
-                  />
-                  {webSaved ? "Unsave" : "Save"}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={handleHideWeb}
-                >
-                  <EyeOff size={16} className="mr-2" />
-                  Hide
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </div>
-        <CardHeader className="overflow-hidden">
-          <CardTitle className="break-words hover:cursor-pointer mt-2 text-lg leading-tight hyphens-auto text-foreground">
-            {web.name}
-          </CardTitle>
-          <CardDescription className="hyphens-auto mb-8 max-w-6xl text-muted-foreground">
-            {web.description}
-          </CardDescription>
-        </CardHeader>
-
-        {images.length > 0 && (
-          <>
-            <ScrollArea className="w-full flex flex-row px-4">
-              <div className="flex-1 w-full max-h-[300px] overflow-hidden mb-2 rounded-md ">
-                <Image
-                  height={300}
-                  width={500}
-                  src={images[0]}
-                  alt={web.name}
-                  className="rounded-md w-full border h-auto object-cover"
-                  onClick={(e) => handleImageClick(e, images[0])}
-                  style={{ maxHeight: "1000px" }}
-                />
-              </div>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-            <ImageModal
-              isOpen={showImageModal}
-              setIsOpen={setShowImageModal}
-              onClose={() => setShowImageModal(false)}
-              imageUrl={selectedImage}
-              title={web.name}
-              description={web.description}
-            />
-          </>
-        )}
-
-        <CardContent />
-        <div className="absolute bottom-4 left-6 flex flex-row space-x-1">
-          <div className="flex flex-row items-center space-x-1">
-            <AnimatedStarButton
-              isStarred={webLiked}
-              count={webLikedCount}
-              onStarClick={handleLikeWeb}
-            />
-          </div>
-          <div
-            className="flex flex-row items-center space-x-1 text-muted-foreground rounded-full hover:bg-green-300/10 hover:text-green-500 dark:hover:bg-green-400/10 p-1 transition ease-in"
-            onClick={handleIterateWeb}
-          >
-            <p
-              className={`text-sm ${
-                webIterated ? "text-green-500 dark:text-green-300" : ""
-              }`}
-            >
-              {webIterationsCount}
-            </p>
-            <IterationCcw
-              className={`${
-                webIterated ? "text-green-500 dark:text-green-400" : ""
-              }`}
-              size={14}
-            />
-          </div>
-        </div>
-        <p className="text-xs text-muted-foreground absolute bottom-4 right-6">
-          {web?.created
-            ? formatDistanceToNow(new Date(web.created), { addSuffix: true })
-            : "Unknown date"}
-        </p>
       </Card>
       <IterateModal
         web={web}

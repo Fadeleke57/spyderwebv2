@@ -2,7 +2,7 @@ from neo4j import GraphDatabase
 from src.core.config import settings
 from neo4j import Record, Session
 from typing import Dict, Any, List, Tuple
-from src.models.source import Source
+from src.models.index import Source
 from src.lib.logger.index import logger
 
 
@@ -332,8 +332,12 @@ class Neo4jDBService:
             "end_id": end_node_id,
             "props": properties or {},
         }
-        result = self.execute_query(query, params)
-        return result[0]["c"] if result else None
+        try:
+            result = self.execute_query(query, params)
+        except Exception:
+            logger.error("Error creating conntection")
+        finally:
+            return result[0]["c"] if result else None
 
     def update_connection(
         self,

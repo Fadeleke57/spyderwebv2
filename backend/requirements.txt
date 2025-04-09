@@ -7,16 +7,14 @@ pydantic-settings
 passlib[bcrypt] 
 fastapi-login 
 aiohttp
-dnspython
 python-multipart
-nltk
 pinecone
 openai
 boto3
-bs4
 requests
 youtube_transcript_api
 pydantic-to-typescript>=2
 firecrawl
 pymupdf4llm
 stripe
+google-genai

@@ -6,9 +6,10 @@ export interface PublicUser {
   profile_picture_url?: string;
   bio: string;
   disabled: boolean;
-  analytics: {};
   websHidden: string[];
   websSaved: string[];
+  accountStatus: "pro" | "free" | "beta" | "trial";
+  caps: UsageCaps;
 }
 
 export type UpdateUser = {
@@ -25,4 +26,13 @@ export interface Search {
 }
 export interface Analytics {
   searches: Search[];
+}
+
+export interface UsageCaps {
+  maxWebs: number;
+  maxSourcesPerWeb: number;
+  maxConnections: number;
+  maxChatTokens: number;
+  fileSizeLimit: number;
+  webFileSizeLimit: number;
 }

@@ -315,7 +315,7 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
     if (!isOwner || (mode === "preview" && localContent?.trim())) {
       return (
         <div className="prose dark:prose-invert max-w-none whitespace-pre-wrap break-words">
-          <ReactMarkdown components={MarkdownComponents}>
+          <ReactMarkdown components={MarkdownComponents} className="whitespace-pre-wrap">
             {localContent || ""}
           </ReactMarkdown>
         </div>
@@ -329,7 +329,7 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
         value={localContent}
         placeholder="Start writing in markdown...click outside to preview"
         rows={20}
-        className={`w-full h-full bg-transparent p-0 text-base leading-relaxed resize-none focus:outline-none border-none bg-none ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground`}
+        className={`w-full h-full bg-transparent p-0 text-base leading-relaxed resize-none focus:outline-none border-none bg-none ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-foreground whitespace-pre-wrap break-words`}
         onChange={handleLocalContentChange}
         onFocus={() => setMode("edit")}
         onBlur={() => setMode("preview")}

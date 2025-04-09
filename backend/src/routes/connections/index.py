@@ -1,18 +1,16 @@
-from fastapi import APIRouter, Depends
-from src.routes.auth.oauth2 import manager
-from fastapi import APIRouter, Depends
 import uuid
 from pytz import UTC
-from src.utils.exceptions import check_user
 from datetime import datetime
+from fastapi import APIRouter, Depends
+from fastapi.exceptions import HTTPException
+from src.routes.auth.oauth2 import manager
+from src.utils.exceptions import check_user
 from src.models.connection import (
-    Connections,
     CreateConnection,
     UpdateConnection,
     Connection,
 )
 from src.db.neo4j import client as neo4jClient
-from fastapi.exceptions import HTTPException
 from src.lib.logger.index import logger
 
 router = APIRouter()
@@ -69,28 +67,24 @@ def get_connection(web_id: str, connection_id: str):
 def create_connection(connection_data: CreateConnection, user=Depends(manager)):
     check_user(user)
 
+    connection = {
+        "connectionId": str(uuid.uuid4()),
+        "fromSourceId": connection_data.fromSourceId,
+        "toSourceId": connection_data.toSourceId,
+        "webId": connection_data.webId,
+        "description": connection_data.description,
+        "created": datetime.now(UTC),
+        "updated": datetime.now(UTC),
+    }
     try:
-        connection = {
-            "connectionId": str(uuid.uuid4()),
-            "fromSourceId": connection_data.fromSourceId,
-            "toSourceId": connection_data.toSourceId,
-            "webId": connection_data.webId,
-            "data.description": connection_data.data.get("description"),
-            "created": datetime.now(UTC),
-            "updated": datetime.now(UTC),
-        }
-        try:
-            neo4jClient.create_connection_between_sources(
-                connection_data.fromSourceId, connection_data.toSourceId, connection
-            )
-        except Exception as e:
-            logger.error(str(e))
-            raise HTTPException(status_code=500, detail=str(e))
-
-        return {"result": connection}
+        neo4jClient.create_connection_between_sources(
+            connection_data.fromSourceId, connection_data.toSourceId, connection
+        )
     except Exception as e:
-        logger.info(str(e))
+        logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
+
+    return {"result": connection}
 
 
 @router.patch("/update/{connection_id}")  # TODO

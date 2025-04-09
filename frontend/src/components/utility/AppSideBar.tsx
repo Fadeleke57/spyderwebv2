@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
-import slogo from "@/assets/s_logo.jpg";
+import slogo from "@/assets/slogonobg.png";
 import { NavUser } from "@/components/utility/NavUser";
 import {
   Sidebar,
@@ -10,7 +10,6 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenuButton,
-  SidebarRail,
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
@@ -58,7 +57,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   return (
-    <Sidebar collapsible="icon" {...props} className="flex justify-center">
+    <Sidebar
+      collapsible="icon"
+      {...props}
+      className="flex justify-center p-0 border-l-none h-screen"
+    >
       <SidebarHeader>
         <div className="flex flex-col items-end justify-center">
           <div className="w-full flex items-center justify-between rounded-full">
@@ -68,7 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               onClick={() => router.push("/explore")}
               deactive
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground rounded-full">
+              <div className="flex flex-row aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground rounded-full">
                 <Image
                   src={slogo}
                   alt="logo"
@@ -78,8 +81,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   priority
                 />
               </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold text-3xl text-black dark:text-foreground tracking-tighter">
+              <div className="flex-1 text-left text-sm leading-tight flex items-start border-red">
+                <span className="-mt-1 truncate font-semibold text-3xl text-black dark:text-foreground tracking-tighter">
                   spydr
                 </span>
               </div>
@@ -92,7 +95,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"
-            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground  py-4 rounded-md`}
+            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground py-4 rounded-lg`}
             onClick={() => handleButtonClick("/home")}
           >
             <div
@@ -108,7 +111,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span
-                className={`truncate text-lg ${
+                className={`truncate text-xl ${
                   selectedButton === "home"
                     ? "text-muted-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
@@ -123,7 +126,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"
-            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground  py-4 rounded-md`}
+            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground py-4 rounded-lg`}
             onClick={() => router.push("/explore")}
           >
             <div
@@ -139,7 +142,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span
-                className={`truncate text-lg ${
+                className={`truncate text-xl ${
                   selectedButton === "explore"
                     ? "text-muted-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
@@ -154,7 +157,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"
-            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none  py-4 rounded-md`}
+            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none  py-4 rounded-lg`}
             onClick={() => handleButtonClick("/webs")}
           >
             <div
@@ -170,7 +173,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span
-                className={`truncate text-lg ${
+                className={`truncate text-xl ${
                   selectedButton === "webs"
                     ? "text-muted-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
@@ -182,28 +185,60 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuButton>
           <SidebarIndicator show={selectedButton === "webs"} />
         </div>
+        {/*
+        <div className="relative px-2">
+          <SidebarMenuButton
+            size="sm"
+            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none  py-4 rounded-lg`}
+            onClick={() => handleButtonClick("/chat")}
+          >
+            <div
+              className={`flex flex-row gap-2 items-center rounded-lg bg-none text-sidebar-primary-foreground`}
+            >
+              <Brain
+                className={`size-5 ${
+                  selectedButton === "chat"
+                    ? "text-muted-foreground dark:text-foreground font-semibold"
+                    : "text-muted-foreground"
+                }`}
+              />
+            </div>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span
+                className={`truncate text-xl ${
+                  selectedButton === "chat"
+                    ? "text-muted-foreground dark:text-foreground font-semibold"
+                    : "text-muted-foreground"
+                }`}
+              >
+                Charlotte AI
+              </span>
+            </div>
+          </SidebarMenuButton>
+          <SidebarIndicator show={selectedButton === "chat"} />
+        </div>*/}
         {user ? (
           <NewWebModal>
             <div className="px-2">
               <SidebarMenuButton
                 size="sm"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none py-4 rounded-md"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none py-4 rounded-lg"
               >
                 <div className="w-full bg-transparent hover:bg-transparent p-0 flex flex-row gap-2">
                   <div className="flex items-center rounded-lg bg-none text-muted-foreground">
                     <CirclePlus className="size-5" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate text-lg text-muted-foreground dark:text-muted-foreground">
+                    <span className="truncate text-xl text-muted-foreground dark:text-muted-foreground">
                       Create
                     </span>
                   </div>
                 </div>
                 <div className="flex flex-row gap-1 items-center text-muted-foreground dark:text-muted-foreground">
-                  <span className="foreground text-md rounded-md font-bold flex items-center border p-1 px-[7px]">
+                  <span className="foreground text-md rounded-lg font-bold flex items-center border p-1 px-[7px]">
                     ⌘
                   </span>
-                  <span className="foreground text-md rounded-md font-bold flex items-center border p-1 px-[7px]">
+                  <span className="foreground text-md rounded-lg font-bold flex items-center border p-1 px-[7px]">
                     X
                   </span>
                 </div>
@@ -215,14 +250,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton
               onClick={() => setOpen(true)}
               size="sm"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none py-4 rounded-md"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none py-4 rounded-lg"
             >
               <div className="w-full bg-transparent hover:bg-transparent p-0 flex flex-row gap-2">
                 <div className="flex items-center rounded-lg bg-none text-muted-foreground">
                   <CirclePlus className="size-5" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate text-lg text-muted-foreground dark:text-muted-foreground">
+                  <span className="truncate text-xl text-muted-foreground dark:text-muted-foreground">
                     Create
                   </span>
                 </div>
@@ -249,7 +284,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
         <NavUser />
       </SidebarFooter>
-      <SidebarRail></SidebarRail>
       {open && (
         <AuthModal
           type="login"

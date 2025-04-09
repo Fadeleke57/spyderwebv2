@@ -1,11 +1,9 @@
-from src.models.web import Web
-from src.models.connection import Connection
-from fastapi import HTTPException
+from typing import List
+from uuid import uuid4
+from src.models.index import Web, Connection
 from src.db.neo4j import client as neo4jClient
 from src.lib.pinecone.index import client as pineconeClient
 from src.lib.logger.index import logger
-from typing import List
-from uuid import uuid4
 
 
 class WebService:

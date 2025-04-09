@@ -28,6 +28,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import Link from "next/link";
 import spydrLogo from "@/assets/spydr_icon.svg";
 import Image from "next/image";
+import sLogo from "@/assets/slogonobg.png";
 
 const emailSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -156,8 +157,9 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
       });
     }
   };
-
+  const [registerLoading, setRegisterLoading] = useState(false);
   const onRegisterSubmit = async (data: RegisterSubmission) => {
+    setRegisterLoading(true);
     try {
       const response = await api.post("/auth/register", {
         email: data.email,
@@ -182,6 +184,7 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
         variant: "destructive",
       });
     }
+    setRegisterLoading(false);
   };
 
   return (
@@ -192,9 +195,8 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
       >
         <DialogClose />
         <div className="flex flex-col items-center justify-center">
-          <Image src={spydrLogo} className="w-16 h-16 mb-4" alt="Spydr Logo"/>
+          <Image src={sLogo} className="w-16 h-16 mb-4 rotate-45" alt="Spydr Logo" />
           <DialogTitle className="text-center text-xl font-semibold">
-            
             {isExistingUser && step !== "email"
               ? "Welcome back"
               : "A New Age of Ideation"}
@@ -203,8 +205,8 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
             {isExistingUser && step === "email"
               ? "Enter your email or continue with Google"
               : step === "auth" && isExistingUser
-              ? "Login to continue to your account"
-              : "Join the community"}
+                ? "Login to continue to your account"
+                : "Join the community"}
           </DialogDescription>
         </div>
 
@@ -378,8 +380,13 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
                   )}
                 />
 
-                <Button variant="secondary" type="submit" className="w-full">
-                  Create Account
+                <Button
+                  disabled={registerLoading}
+                  variant="secondary"
+                  type="submit"
+                  className="w-full"
+                >
+                  {registerLoading ? "Loading..." : "Create Account"}
                 </Button>
 
                 <Button
