@@ -71,8 +71,9 @@ async def process_file(
         sourceId = str(uuid4())
         if file_type == "pdf":
             object_name = f"files/{user_id}/{web_id}/document/{uuid4()}_{file.filename.replace(' ', '_')}"
-            # upload to S3
-            s3_bucket.upload_file(temp_path, object_name)
+            
+            s3_bucket.upload_file(temp_path, object_name)# upload to S3
+
             sourceToInsert: Source = {
                 "sourceId": sourceId,
                 "webId": web_id,
@@ -88,11 +89,8 @@ async def process_file(
 
             background_tasks.add_task(
                 sourceService.embed_and_upsert_pdf,
-                sourceId,
-                temp_path,
-                web_id,
-                object_name,
-                file.filename,
+                file_path=temp_path,
+                source=sourceToInsert
             )
 
         elif file_type in {"txt", "md"}:
@@ -100,6 +98,7 @@ async def process_file(
                 text_content = f.read()
 
                 filename = (" ".join(file.filename.split(".")[:-1])).replace("%22", " ")
+
                 sourceToInsert: Source = {
                     "sourceId": sourceId,
                     "webId": web_id,
@@ -112,16 +111,17 @@ async def process_file(
                     "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
                     "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
                 }
+
             os.remove(temp_path)
+
             background_tasks.add_task(
                 sourceService.embed_and_upsert_note,
-                sourceId,
+                source=sourceToInsert,
                 text=text_content,
-                web_id=web_id,
-                title=filename,
             )
 
         neo4jClient.create_node("source", sourceToInsert)
+
         Webs.update_one(
             {"webId": web_id, "userId": user_id},
             {
@@ -129,6 +129,7 @@ async def process_file(
                 "$set": {"updated": datetime.now(UTC)},
             },
         )
+
         return sourceToInsert
 
     except Exception as e:
@@ -243,7 +244,9 @@ def add_website(
     try:
 
         try:
+
             title, md = firecrawlClient.run_scrape(str(url.url))
+
         except Exception as e:
             logger.error(str(e))
             raise HTTPException(
@@ -251,6 +254,7 @@ def add_website(
             )
 
         sourceId = str(uuid4())
+
         sourceToInsert = {
             "sourceId": sourceId,
             "webId": web_id,
@@ -265,10 +269,11 @@ def add_website(
         }
 
         background_tasks.add_task(
-            sourceService.embed_and_upsert_website, sourceId, md, web_id, url.url, title
+            sourceService.embed_and_upsert_website, source=sourceToInsert, md=md
         )
 
         neo4jClient.create_node("source", sourceToInsert)
+
         Webs.update_one(
             {"webId": web_id, "userId": user["id"]},
             {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
@@ -339,6 +344,7 @@ def upload_note(
     """
     check_user(user)
     sourceId = str(uuid4())
+
     sourceToInsert = {
         "sourceId": sourceId,
         "webId": web_id,
@@ -354,10 +360,8 @@ def upload_note(
 
     background_tasks.add_task(
         sourceService.embed_and_upsert_note,
-        sourceId,
-        note.content,
-        web_id,
-        title=note.title,
+        source=sourceToInsert,
+        text=note.content,
     )
 
     try:
@@ -381,6 +385,7 @@ def add_youtube(
     try:
         info = get_video_info(video_id)
         title, description = info["title"], info["description"]
+
         try:
             transcripts = get_video_transcript(video_id)
 
@@ -392,29 +397,29 @@ def add_youtube(
         url = f"https://www.youtube.com/watch?v={video_id}"
 
         sourceId = str(uuid4())
+
         sourceToInsert = {
             "sourceId": sourceId,
             "webId": web_id,
             "userId": user["id"],
             "name": title,
             "content": description,
-            "url": f"https://www.youtube.com/watch?v={video_id}",
+            "url": url,
             "type": "youtube",
             "size": 300000,
             "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         }
 
-        background_tasks.add_task(
-            sourceService.embed_and_upsert_youtube,
-            sourceId,
-            transcripts,
-            web_id,
-            url,
-            title,
-        )
+        if transcripts:
+            background_tasks.add_task(
+                sourceService.embed_and_upsert_youtube,
+                sourceToInsert,
+                transcripts,
+            )
 
         neo4jClient.create_node("source", sourceToInsert)
+
         Webs.update_one(
             {"webId": web_id, "userId": user["id"]},
             {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
@@ -451,7 +456,9 @@ def update_note(
             for key, value in updateNotePayload.model_dump(exclude_none=True).items()
         }
         update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+
         result = neo4jClient.update_source(source_id=source_id, properties=update_data)
+
         if result:
             return {"result": "Note updated"}
         else:

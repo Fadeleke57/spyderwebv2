@@ -105,7 +105,7 @@ function Index() {
       </Head>
       <div className="flex flex-col">
         <header
-          className={`sticky top-0 z-10 flex ${loading ? "animate-pulse" : ""} ${web && web.iteratedFrom ? "h-[90px]" : "h-[80px]"} items-center justify-between gap-1 border-b bg-background px-4`}
+          className={`sticky top-0 z-10 flex ${loading && "animate-pulse"} h-[70px] items-center justify-between gap-1 border-b bg-background px-4`}
         >
           <div className="flex flex-col z-40 items-center justify-start mb-3 lg:mb-0  max-w-[210px] lg:max-w-2xl">
             {loading || webOwnerLoading ? (
@@ -115,35 +115,10 @@ function Index() {
                 <Button
                   variant={"link"}
                   onClick={() => router.back()}
-                  className="flex items-center gap-2 p-0 h-fit w-fit font-semibold text-violet-400"
+                  className="flex items-center gap-2 p-0 h-fit w-fit text-md font-semibold text-violet-400"
                 >
                   <ArrowLeft strokeWidth={4} className="h-4 w-4" /> Back
                 </Button>
-                <div className="flex items-center gap-2">
-                  <UserAvatar userId={web?.userId} height={28} width={28} />
-                  <div className="flex flex-col gap-0">
-                    <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
-                      {webOwner?.username || ""}{" "}
-                    </h1>
-                    {web?.iteratedFrom ? (
-                      <p className="text-xs font-normal text-muted-foreground">
-                        Iterated From{" "}
-                        <span className="font-semibold text-violet-400 dark:text-violet-400">
-                          @{iteratedFromUser?.username}
-                        </span>
-                      </p>
-                    ) : (
-                      ""
-                    )}
-
-                    <span className="text-xs text-muted-foreground font-normal m-0">
-                      {web?.updated &&
-                        formatDistanceToNow(new Date(web.updated + "Z"), {
-                          addSuffix: true,
-                        })}
-                    </span>
-                  </div>
-                </div>
               </div>
             )}
           </div>
@@ -220,6 +195,31 @@ function Index() {
               className="relative h-[calc(90vh-18px)] hidden flex-col items-start gap-8 md:flex"
               x-chunk="dashboard-03-chunk-0"
             >
+              <div className="flex items-center gap-2 px-3">
+                <UserAvatar userId={web?.userId} height={28} width={28} />
+                <div className="flex flex-col gap-0">
+                  <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
+                    {webOwner?.username || ""}{" "}
+                  </h1>
+                  {web?.iteratedFrom ? (
+                    <p className="text-xs font-normal text-muted-foreground">
+                      Iterated From{" "}
+                      <span className="font-semibold text-violet-400 dark:text-violet-400">
+                        @{iteratedFromUser?.username}
+                      </span>
+                    </p>
+                  ) : (
+                    ""
+                  )}
+
+                  <span className="text-xs text-muted-foreground font-normal m-0">
+                    {web?.updated &&
+                      formatDistanceToNow(new Date(web.updated + "Z"), {
+                        addSuffix: true,
+                      })}
+                  </span>
+                </div>
+              </div>
               {web && isOwner ? (
                 <WebForm web={web} user={user ? user : null} />
               ) : web ? (

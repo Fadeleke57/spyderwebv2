@@ -9,7 +9,11 @@ import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./genui/weather";
 import { Message } from "ai";
 import SimpleTooltip from "../utility/SimpleTooltip";
-import ReferencesComponent from "./genui/graphcontext";
+import ReferencesComponent, {
+  formatLinkwithTimeStamp,
+  ReferenceMetadata,
+} from "./genui/graphcontext";
+import { url } from "inspector";
 
 const UserMessage = ({ message }: { message: Message }) => {
   return (
@@ -69,6 +73,14 @@ const AssistantMessage = ({
       }, 2000);
     } catch (error) {
       console.error("Failed to copy!", error);
+    }
+  };
+
+  const handleReferenceClick = (reference: ReferenceMetadata) => {
+    if (reference.url && reference.type != "pdf document") {
+      const url = formatLinkwithTimeStamp(reference.url, reference.startTime);
+      window.open(url, "_blank");
+      return;
     }
   };
 
@@ -175,7 +187,10 @@ const AssistantMessage = ({
                         <Weather weatherAtLocation={result} />
                       )}
                       {toolName === "get_graph_context" && (
-                        <ReferencesComponent context={result.context} />
+                        <ReferencesComponent
+                          context={result.context}
+                          onReferenceClick={handleReferenceClick}
+                        />
                       )}
                     </div>
                   );

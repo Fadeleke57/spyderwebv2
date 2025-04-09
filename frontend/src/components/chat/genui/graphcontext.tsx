@@ -1,35 +1,65 @@
 import React from "react";
 import { Card } from "@/components/ui/card";
 import FaviconDisplay from "@/components/utility/FaviconDisplay";
-import { FileText, Youtube, FileType, Clock, Calendar } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import Link from "next/link";
+import {
+  FileText,
+  Youtube,
+  FileType,
+  Clock,
+  Calendar,
+  FileIcon,
+  Globe,
+} from "lucide-react";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
-// Type definitions to match your data structure
-interface ChunkMetadata {
-  chunkCount?: number;
-  chunkIndex?: number;
-  end_time?: number;
+export interface ReferenceMetadata {
+  // Common fields
   sourceId?: string;
-  start_time?: number;
+  webId?: string;
   text?: string;
   timestamp?: string;
   type?: string;
   url?: string;
-  id?: string;
+  chunkIndex?: number;
+  chunkCount?: number;
+
+  // Website specific
+  websiteTitle?: string;
+
+  // YouTube specific
+  videoTitle?: string;
+  videoDescription?: string;
+  startTime?: number;
+  endTime?: number;
+
+  // Document specific
+  documentTitle?: string;
+  pageNumber?: number;
+  pdfSize?: number;
+
+  // Note specific
+  noteTitle?: string;
 }
 
 interface ReferencesComponentProps {
-  context?: ChunkMetadata[];
-  maxHeight?: string;
-  onReferenceClick?: (reference: ChunkMetadata) => void;
+  context?: ReferenceMetadata[];
+  onReferenceClick?: (reference: ReferenceMetadata) => void;
 }
+
+export const formatLinkwithTimeStamp = (url: string, startTime?: number) => {
+  if (!startTime) return url;
+
+  const videoId = url.split("v=")[1];
+  return `https://www.youtube.com/watch?v=${videoId}&t=${startTime}`;
+};
 
 const ReferencesComponent: React.FC<ReferencesComponentProps> = ({
   context = [],
-  maxHeight = "200px",
   onReferenceClick,
 }) => {
+  // If no references, don't render anything
+  if (context.length === 0) return null;
+
   // Format timestamp to a readable date
   const formatDate = (dateString?: string) => {
     if (!dateString) return "";
@@ -43,21 +73,32 @@ const ReferencesComponent: React.FC<ReferencesComponentProps> = ({
   // Format video timestamp (seconds) to MM:SS format
   const formatVideoTime = (seconds?: number) => {
     if (seconds === undefined) return "";
+    const hours = Math.floor(seconds / 3600);
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+    return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   // Get icon based on reference type
-  const getTypeIcon = (type?: string) => {
-    switch (type?.toLowerCase()) {
-      case "youtube":
+  const getTypeIcon = (reference: ReferenceMetadata) => {
+    const type = reference.type?.toLowerCase();
+
+    if (reference.url && !type?.includes("youtube") && !type?.includes("pdf")) {
+      return (
+        <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
+          <Globe className="w-4 h-4 text-emerald-500" />
+        </div>
+      );
+    }
+
+    switch (type) {
+      case "youtube video":
         return (
           <div className="w-6 h-6 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
             <Youtube className="w-4 h-4 text-red-500" />
           </div>
         );
-      case "pdf":
+      case "pdf document":
         return (
           <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
             <FileType className="w-4 h-4 text-blue-500" />
@@ -69,8 +110,18 @@ const ReferencesComponent: React.FC<ReferencesComponentProps> = ({
             <FileText className="w-4 h-4 text-amber-500" />
           </div>
         );
+      case "website":
+        return (
+          <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
+            <Globe className="w-4 h-4 text-emerald-500" />
+          </div>
+        );
       default:
-        return null;
+        return (
+          <div className="w-6 h-6 bg-gray-100 dark:bg-gray-900/30 rounded-full flex items-center justify-center">
+            <FileIcon className="w-4 h-4 text-muted-foreground" />
+          </div>
+        );
     }
   };
 
@@ -92,78 +143,97 @@ const ReferencesComponent: React.FC<ReferencesComponentProps> = ({
     return text.substring(0, maxLength) + "...";
   };
 
-  // Get a time indicator for the reference
-  const getTimeIndicator = (reference: ChunkMetadata) => {
-    if (
-      reference.start_time !== undefined &&
-      reference.end_time !== undefined
-    ) {
-      return (
-        <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-          <Clock className="w-3 h-3" />
-          <span>
-            {formatVideoTime(reference.start_time)} -{" "}
-            {formatVideoTime(reference.end_time)}
-          </span>
-        </div>
-      );
+  // Get reference title based on type
+  const getReferenceTitle = (reference: ReferenceMetadata) => {
+    const type = reference.type?.toLowerCase();
+
+    if (type === "youtube video") return reference.videoTitle;
+    if (type === "pdf document") return reference.documentTitle;
+    if (type === "note") return reference.noteTitle;
+    if (type === "website")
+      return reference.websiteTitle || getDomain(reference.url);
+
+    return getDomain(reference.url) || "Reference";
+  };
+
+  // Get source descriptor (domain, page number, timestamp)
+  const getSourceDescriptor = (reference: ReferenceMetadata) => {
+    const type = reference.type?.toLowerCase();
+
+    if (type === "youtube video" && reference.startTime !== undefined) {
+      return null;
     }
 
-    if (reference.timestamp) {
-      return (
-        <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-          <Calendar className="w-3 h-3" />
-          <span>{formatDate(reference.timestamp)}</span>
-        </div>
-      );
+    if (type === "pdf document" && reference.pageNumber) {
+      return `Page ${reference.pageNumber}`;
     }
 
-    return null;
+    if (reference.url) {
+      return getDomain(reference.url);
+    }
+
+    return type || "Source";
   };
 
   return (
-    <div className="w-full">
-      <Card className="bg-background p-2">
-        <div className="text-sm font-medium mb-2 px-2">References</div>
-        <ScrollArea className={`h-[${maxHeight}]`}>
-          {context.map((reference) => (
-            <div
-              key={reference.id || reference.sourceId}
-              className="rounded-md p-2 hover:bg-muted cursor-pointer transition-colors"
+    <div className="w-full mt-3">
+      <div className="text-sm text-foreground dark:text-foreground mb-2 flex items-center">
+        <span className="mr-2">Sources</span>
+        <span className="text-xs bg-background px-1.5 py-0.5 rounded-full">
+          {context.length}
+        </span>
+      </div>
+
+      <ScrollArea className="w-full">
+        <div className="flex gap-2 pb-4">
+          {context.map((reference, index) => (
+            <Card
+              key={reference.sourceId || index}
+              className="bg-background p-3 flex flex-col min-w-[220px] max-w-[220px] hover:shadow-md transition-shadow hover:bg-muted transition-all duration-300 ease-in-out cursor-pointer"
               onClick={() => onReferenceClick?.(reference)}
             >
               <div className="flex items-start gap-2">
                 {reference.url ? (
                   <FaviconDisplay url={reference.url} />
                 ) : (
-                  getTypeIcon(reference.type)
+                  getTypeIcon(reference)
                 )}
 
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between w-full">
-                    <div className="text-xs font-medium max-w-[50px]">
-                      {reference.url
-                        ? <Link href={reference.url} className="hover:underline hover:text-violet-400" target="_blank">{getDomain(reference.url)}</Link>
-                        : reference.type?.toLocaleLowerCase()}
-                    </div>
-                    <div>{getTimeIndicator(reference)}</div>
+                  <div
+                    className="text-xs font-medium mb-1 line-clamp-1"
+                    title={getReferenceTitle(reference)}
+                  >
+                    {getReferenceTitle(reference)}
                   </div>
 
-                  <div className="text-xs mt-1 line-clamp-2 text-gray-700 dark:text-gray-300">
+                  <div className="flex items-center justify-between w-full mb-1.5">
+                    {reference.type?.toLowerCase() !== "youtube video" && (
+                      <div className="text-xs text-muted-fored dark:text-muted-foreground">
+                        {getSourceDescriptor(reference)}
+                      </div>
+                    )}
+
+                    {reference.type?.toLowerCase() === "youtube video" &&
+                      reference.endTime !== undefined && (
+                        <div className="text-xs text-muted-foreground dark:text-muted-foreground">
+                          {formatVideoTime(reference.startTime)} -{" "}
+                          {formatVideoTime(reference.endTime)}
+                        </div>
+                      )}
+                  </div>
+
+                  <div className="text-xs text-muted-foreground dark:text-foreground line-clamp-2">
                     {getTextPreview(reference.text)}
                   </div>
+
                 </div>
               </div>
-            </div>
+            </Card>
           ))}
-
-          {context.length === 0 && (
-            <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
-              No references available
-            </div>
-          )}
-        </ScrollArea>
-      </Card>
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
     </div>
   );
 };

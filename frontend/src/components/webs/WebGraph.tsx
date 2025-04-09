@@ -590,7 +590,9 @@ function WebGraph({
           webId={webId}
         />
       )}
-      <SpydrAI />
+      <div className="absolute bottom-4 right-4">
+        <SpydrAI />
+      </div>
     </div>
   );
 }

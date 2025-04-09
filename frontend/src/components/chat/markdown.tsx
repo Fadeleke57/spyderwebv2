@@ -7,8 +7,36 @@ import { Button } from "../ui/button";
 import { Check, Copy } from "lucide-react";
 import SimpleTooltip from "../utility/SimpleTooltip";
 
-const CodeBlock = ({ className, match, children, ...props }: any) => {
+const languageColors: Record<string, string> = {
+  python: "bg-zinc-700 text-green-400",
+  javascript: "bg-zinc-700 text-yellow-300",
+  typescript: "bg-zinc-700 text-blue-400",
+  jsx: "bg-zinc-700 text-blue-300",
+  tsx: "bg-zinc-700 text-blue-300",
+  html: "bg-zinc-700 text-orange-400",
+  css: "bg-zinc-700 text-blue-400",
+  json: "bg-zinc-700 text-yellow-200",
+  // Add more languages as needed
+};
+
+// Default color for languages not in the map
+const defaultLanguageColor = "bg-zinc-700 text-gray-300";
+
+interface CodeBlockProps {
+  className?: string;
+  match: RegExpExecArray | null;
+  children: React.ReactNode;
+  [key: string]: any;
+}
+
+const CodeBlock: React.FC<CodeBlockProps> = ({
+  className,
+  match,
+  children,
+  ...props
+}) => {
   const [isCopied, setIsCopied] = useState(false);
+  const language = match?.[1] || "text";
 
   const handleCopy = () => {
     const code = typeof children === "string" ? children : String(children);
@@ -17,35 +45,44 @@ const CodeBlock = ({ className, match, children, ...props }: any) => {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  const languageColorClass = languageColors[language] || defaultLanguageColor;
+
   return (
-    <div className="relative group">
-      <ScrollArea className="w-full">
+    <div className="relative group my-4 bg-zinc-900 rounded-md">
+      {/* Language badge */}
+
+      <ScrollArea className="w-full rounded-lg overflow-hidden">
+        <div className="absolute top-2 left-0 -translate-y-1/2 px-3 py-1 rounded-md text-xs font-mono">
+          <span className={`px-3 py-1 rounded-md ${languageColorClass}`}>
+            {language}
+          </span>
+        </div>
         <pre
           {...props}
-          className={`${className} text-sm w-full bg-zinc-100 p-3 rounded-lg mt-2 dark:bg-zinc-800`}
+          className={`${className} text-sm w-full bg-zinc-900 rounded-lg mt-1 pt-10 pb-4 px-4 overflow-x-auto`}
         >
-          <code className={match[1]}>{children}</code>
+          <code className={`language-${language} font-mono`}>{children}</code>
         </pre>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
 
-      <SimpleTooltip content="Copy">
-      <Button
-        size="sm"
-        onClick={handleCopy}
-        className="absolute -bottom-4 right-2 h-fit w-fit p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-      >
-        <div className="relative w-4 h-4">
-          <Copy
-            size={16}
-            className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-0 scale-50" : "opacity-100 scale-100"}`}
-          />
-          <Check
-            size={16}
-            className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
-          />
-        </div>
-      </Button>
+      <SimpleTooltip content={isCopied ? "Copied!" : "Copy"}>
+        <Button
+          size="sm"
+          onClick={handleCopy}
+          className="absolute top-2 right-2 h-fit w-fit p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        >
+          <div className="relative w-4 h-4">
+            <Copy
+              size={16}
+              className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-0 scale-50" : "opacity-100 scale-100"}`}
+            />
+            <Check
+              size={16}
+              className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
+            />
+          </div>
+        </Button>
       </SimpleTooltip>
     </div>
   );
@@ -170,5 +207,5 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
 
 export const Markdown = memo(
   NonMemoizedMarkdown,
-  (prevProps, nextProps) => prevProps.children === nextProps.children,
+  (prevProps, nextProps) => prevProps.children === nextProps.children
 );

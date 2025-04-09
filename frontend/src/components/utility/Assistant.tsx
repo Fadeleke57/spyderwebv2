@@ -88,6 +88,7 @@ const SpydrAI = () => {
     useConfigureChat();
   const router = useRouter();
   const { webId } = router.query;
+
   console.log("webId", webId);
   const isMobile = useIsMobile();
 
@@ -147,9 +148,9 @@ const SpydrAI = () => {
         <DrawerTrigger asChild>
           <Button
             variant={"link"}
-            className={`fixed bottom-6 right-6 p-0 m-0 w-10 h-10 bg-background rounded-full ${open ? "opacity-0" : ""}`}
+            className={`fixed bottom-9 right-20 p-0 m-0 w-10 h-10 bg-background rounded-full ${open && "opacity-0"}`}
           >
-            <Charlotte width={14} height={14} activeEyes={!isMobile} />
+            <Charlotte width={16} height={16} activeEyes={false} />
           </Button>
         </DrawerTrigger>
         <DrawerContent className="h-[85dvh] max-h-[600px] bg-background/70 border-zinc-800 backdrop-blur-md rounded-t-xl">
@@ -160,13 +161,13 @@ const SpydrAI = () => {
   }
 
   return (
-    <div className="fixed z-50 bottom-20 lg:bottom-6 right-6 lg:right-16">
+    <div className="fixed z-50 bottom-20 lg:bottom-6 lg:right-20">
       <Popover open={open} onOpenChange={setOpen}>
         <SimpleTooltip content="Chat with Charlotte AI">
           <PopoverTrigger asChild className="bg-zinc-800">
             <Button
               variant={"link"}
-              className={`p-0 m-0 w-10 h-10 bg-background rounded-full ${open ? "opacity-0" : ""}`}
+              className={`p-0 m-0 w-10 h-10 bg-background rounded-full ${open && "opacity-0"}`}
             >
               <Charlotte width={16} height={16} activeEyes={!isMobile} />
             </Button>

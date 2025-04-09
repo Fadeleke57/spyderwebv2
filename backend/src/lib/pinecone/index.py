@@ -2,17 +2,81 @@ from pinecone import Pinecone
 from src.core.config import settings
 from datetime import datetime
 from pytz import UTC
-from typing import List, Dict, Any, Literal, Optional
+from typing import Dict, Any, Literal, Optional
 import re
 import time
 from src.lib.logger.index import logger
 from src.agents.autolinking_engine.autolinker import engine as autolinker
+from src.models.index import Source
 
 
 class PineconeClient:
     def __init__(self):
         self.client = Pinecone(api_key=settings.pinecone_api_key)
         self.index = self.client.Index(name=settings.pinecone_index_name)
+
+    @staticmethod
+    def _generate_source_chunk_metadata(source : Dict[str, Any], chunk, index: int, number_of_chunks: int, page_number : Optional[int] = None) -> Dict[str, Any]: # for youtube video chunk is an object of "text" and "start_time" and "end_time"
+        type = source["type"]
+
+        if type == "website":
+
+            metadata = {
+                "sourceId": source["sourceId"],
+                "webId" : source["webId"],
+                "websiteTitle": source["name"],
+                "chunkIndex": index,
+                "chunkCount": number_of_chunks,
+                "type": "website",
+                "url": source["url"],
+                "text": chunk,
+                "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            }
+
+        elif type == "youtube":
+
+            metadata = {
+                "sourceId": source["sourceId"],
+                "videoTitle": source["name"],
+                "videoDescription": source["content"],
+                "startTime": chunk["start_time"],
+                "endTime": chunk["end_time"],
+                "chunkIndex": index,
+                "chunkCount": number_of_chunks,
+                "type": "youtube video",
+                "url": source["url"],
+                "text": chunk["text"],
+                "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            }
+
+        elif type == "document":
+
+            metadata = {
+                "documentTitle": source["name"],
+                "sourceId": source["sourceId"],
+                "pageNumber": page_number,
+                "chunkIndex": index,
+                "chunkCount": number_of_chunks,
+                "type": "pdf document",
+                "url": source["url"],
+                "text": chunk,
+                "pdfSize": source["size"],
+                "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            }
+
+        elif type == "note":
+
+            metadata = {
+                "noteTitle": source["name"],
+                "sourceId": source["sourceId"],
+                "chunkIndex": index,
+                "chunkCount": number_of_chunks,
+                "type": type,
+                "text": chunk,
+                "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            }
+
+        return metadata
 
     @staticmethod
     def _map_type_to_batch_size(type: Literal["website", "youtube", "document"]) -> int:
@@ -32,66 +96,6 @@ class PineconeClient:
         elif type == "document":
             return 50
         return 40
-
-    """
-        @staticmethod
-        def _map_type_to_metadata(
-            type: Literal["website", "youtube", "document", "note"],
-            chunks: list,
-            source_id: str,
-            index: int,
-            chunk: str,
-            title: str,
-            url: Optional[str] = None,
-        ) -> Dict[str, Any]:
-            chunk_count = len(chunks)
-
-            if type == "website":
-                metadata = {
-                    "sourceId": source_id,
-                    "chunkIndex": index,
-                    "chunkCount": chunk_count,
-                    "type": type,
-                    "url": str(url) if url else None,
-                    "text": chunk[:1000],
-                    "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-                }
-            elif type == "youtube":
-                chunk_text = chunk["text"]
-                metadata = {
-                    "sourceId": source_id,
-                    "chunkIndex": index,
-                    "chunkCount": chunk_count,
-                    "type": type,
-                    "url": str(url) if url else None,
-                    "text": chunk_text[:1000],
-                    "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-                    "start_time": chunks[index]["start_time"],
-                    "end_time": chunks[index]["end_time"],
-                }
-                chunk = chunk_text
-            elif type == "document":
-                metadata = {
-                    "sourceId": source_id,
-                    "chunkIndex": index,
-                    "chunkCount": chunk_count,
-                    "type": type,
-                    "url": str(url) if url else None,
-                    "text": chunk[:1000],
-                    "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-                }
-            elif type == "note":
-                metadata = {
-                    "sourceId": source_id,
-                    "chunkIndex": index,
-                    "chunkCount": chunk_count,
-                    "type": type,
-                    "name": title,
-                    "text": chunk[:1000],
-                    "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-                }
-            return metadata
-    """
 
     def run_semantic_web_search(
         self, query: str, filter: Dict[str, Any] = {}, limit: int = 10
@@ -287,29 +291,11 @@ class PineconeClient:
 
         return chunks
 
-    """
-        def _embed_chunk(self, chunk: str) -> list[float]:
-            try:
-                embedding_response = self.client.inference.embed(
-                    model="multilingual-e5-large",
-                    inputs=[chunk],
-                    parameters={"input_type": "passage", "truncate": "END"},
-                )
-                embedding = embedding_response.data[0].values
-                return embedding
-            except Exception as e:
-                logger.error(f"Error embedding chunk: {e}")
-                return None
-    """
-
     def embed_and_upsert_to_pinecone(
         self,
-        source_id: str,
-        chunks: list,
-        web_id: str,
-        type: str,
-        url: Optional[str] = None,
-        title: Optional[str] = None,
+        source: Source,
+        chunks: list[str],
+        page_number: Optional[int] = None,
     ):
         """
         Embed text chunks using Pinecone's embedding service and upsert them directly.
@@ -322,57 +308,20 @@ class PineconeClient:
         Returns:
             dict: Pinecone API response
         """
+        source_id = source["sourceId"]
+        web_id = source["webId"]
+
         vectors = []
         autolinker.configure(web_id, source_id)
+        num_chunks = len(chunks)
 
         for i, chunk in enumerate(chunks):
-            chunk_id = f"{source_id}:chunk{i}"
+
+            chunk_id = f"{source_id}:chunk{i}:page{page_number}" if page_number else f"{source_id}:chunk{i}"
             logger.info(f"Uploading chunk: {chunk_id}")
 
-            if type == "website":
-                metadata = {
-                    "sourceId": source_id,
-                    "chunkIndex": i,
-                    "chunkCount": len(chunks),
-                    "type": type,
-                    "url": str(url) if url else None,
-                    "text": chunk[:1000],
-                    "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-                }
-            elif type == "youtube":
-                chunk_text = chunk["text"]
-                metadata = {
-                    "sourceId": source_id,
-                    "chunkIndex": i,
-                    "chunkCount": len(chunks),
-                    "type": type,
-                    "url": str(url) if url else None,
-                    "text": chunk_text[:1000],
-                    "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-                    "start_time": chunks[i]["start_time"],
-                    "end_time": chunks[i]["end_time"],
-                }
-                chunk = chunk_text
-            elif type == "document":
-                metadata = {
-                    "sourceId": source_id,
-                    "chunkIndex": i,
-                    "chunkCount": len(chunks),
-                    "type": type,
-                    "url": str(url) if url else None,
-                    "text": chunk[:1000],
-                    "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-                }
-            elif type == "note":
-                metadata = {
-                    "sourceId": source_id,
-                    "chunkIndex": i,
-                    "chunkCount": len(chunks),
-                    "type": type,
-                    "name": title,
-                    "text": chunk[:1000],
-                    "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-                }
+            metadata = self._generate_source_chunk_metadata(source=source, chunk=chunk, index=i, number_of_chunks=num_chunks, page_number=page_number)
+            chunk = chunk["text"] if source["type"] == "youtube" else chunk
 
             embeddings = self.client.inference.embed(
                 model="multilingual-e5-large",

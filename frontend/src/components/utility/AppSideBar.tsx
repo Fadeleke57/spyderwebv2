@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@/context/UserContext";
-import slogo from "@/assets/s_logo.jpg";
+import slogo from "@/assets/slogonobg.png";
 import { NavUser } from "@/components/utility/NavUser";
 import {
   Sidebar,
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { Brain, CirclePlus, Home, LayoutGrid, Waypoints } from "lucide-react";
+import { CirclePlus, Home, LayoutGrid, Waypoints } from "lucide-react";
 import { NewWebModal } from "../webs/NewWebModal";
 import { AuthModal } from "../auth/AuthModal";
 
@@ -56,7 +56,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   return (
-    <Sidebar collapsible="icon" {...props} className="flex justify-center p-0 border-l-none h-screen">
+    <Sidebar
+      collapsible="icon"
+      {...props}
+      className="flex justify-center p-0 border-l-none h-screen"
+    >
       <SidebarHeader>
         <div className="flex flex-col items-end justify-center">
           <div className="w-full flex items-center justify-between rounded-full">
@@ -66,7 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               onClick={() => router.push("/explore")}
               deactive
             >
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground rounded-full">
+              <div className="flex flex-row aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground rounded-full">
                 <Image
                   src={slogo}
                   alt="logo"
@@ -76,8 +80,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   priority
                 />
               </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold text-3xl text-black dark:text-foreground tracking-tighter">
+              <div className="flex-1 text-left text-sm leading-tight flex items-start border-red">
+                <span className="-mt-1 truncate font-semibold text-3xl text-black dark:text-foreground tracking-tighter">
                   spydr
                 </span>
               </div>
