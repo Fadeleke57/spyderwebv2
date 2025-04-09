@@ -38,7 +38,7 @@ function SettingsTabs() {
   }
 
   return (
-    <div className="px-6 lg:px-0 py-6 py-14 max-w-[950px] mx-auto">
+    <div className="px-6 lg:px-8 py-6 py-14 mx-auto">
       <Head>
         <title>{`settings - ${tab ?? ""}`}</title>
         <meta name="description" content={"Learn more about spydr"} />

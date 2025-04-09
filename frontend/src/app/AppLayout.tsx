@@ -50,10 +50,10 @@ export default function AppLayout({
     return (
       <div
         className={cn(
-          "min-h-screen bg-background font-sans antialiased flex flex-col relative"
+          "min-h-screen bg-background pt-[75px] font-sans antialiased flex flex-col relative"
         )}
       >
-        <div className="fixed bottom-0 z-50 h-[75px] w-[101vw] border-b bg-background dark:bg-background flex flex-row items-center justify-between px-5 border">
+        <div className="fixed top-0 z-50 h-[75px] w-[101vw] border-b bg-background dark:bg-background flex flex-row items-center justify-between px-5 border">
           <Link href="/explore">
             <Image
               src={slogo}

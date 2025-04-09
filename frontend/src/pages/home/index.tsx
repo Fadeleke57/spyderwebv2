@@ -18,7 +18,7 @@ function Index() {
   const greeting = getTimeBasedGreeting("America/New_York");
 
   return (
-    <div className="flex flex-col gap-12 lg:gap-20 p-6 pt-16 pb-36 lg:p-16 min-h-screen overflow-x-hidden w-full mx-auto">
+    <div className="flex flex-col gap-12 lg:gap-16 p-6 pt-16 pb-36 lg:py-16 px-8 min-h-screen overflow-x-hidden w-full mx-auto">
       <Head>
         <title>{"home - spydr"}</title>
         <meta name="description" content={"Welcome to spydr"} />

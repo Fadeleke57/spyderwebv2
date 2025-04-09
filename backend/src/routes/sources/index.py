@@ -406,7 +406,12 @@ def add_youtube(
         }
 
         background_tasks.add_task(
-            sourceService.embed_and_upsert_youtube, sourceId, transcripts, web_id, url, title
+            sourceService.embed_and_upsert_youtube,
+            sourceId,
+            transcripts,
+            web_id,
+            url,
+            title,
         )
 
         neo4jClient.create_node("source", sourceToInsert)

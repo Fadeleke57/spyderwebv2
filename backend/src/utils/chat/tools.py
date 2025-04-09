@@ -2,6 +2,7 @@ import requests
 from src.lib.pinecone.index import client as pineconeClient
 from src.lib.logger.index import logger
 
+
 def get_current_weather(latitude, longitude):
     # Format the URL with proper parameter substitution
     url = f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto"
@@ -32,7 +33,9 @@ def get_graph_context(
         filter = {"sourceId": {"$in": sources}}
 
     try:
-        logger.info(f"Fetching graph context for webId: {webId}, with filter: {filter}, and query: {query}")
+        logger.info(
+            f"Fetching graph context for webId: {webId}, with filter: {filter}, and query: {query}"
+        )
         context = pineconeClient.run_remantic_source_search(
             webId=webId, query=query, filter=filter, limit=10
         )

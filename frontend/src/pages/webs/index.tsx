@@ -195,7 +195,7 @@ function Index() {
   };
 
   return (
-    <div className="flex lg:min-h-screen justify-center flex-col w-full lg:px-16">
+    <div className="flex lg:min-h-screen justify-center flex-col w-full lg:px-8">
       <Head>
         <title>{"webs - spydr"}</title>
         <meta name="description" content={"Welcome to spydr"} />

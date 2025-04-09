@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useOnClickOutside } from "@/hooks/general";
-import { formatText } from "@/lib/utils";
+import { cn, formatText } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const HighlightedText = ({
@@ -25,7 +25,7 @@ const HighlightedText = ({
   const parts = text.split(new RegExp(`(${highlight})`, "gi"));
 
   return (
-    <span className={className}>
+    <span className={cn("truncate w-full", className)}>
       {parts.map((part, index) =>
         part.toLowerCase() === highlight.toLowerCase() ? (
           <span key={index} className="text-violet-400 font-medium">
@@ -86,9 +86,9 @@ function UserWebSearch() {
       </div>
 
       {isSearchActive && (
-        <div className="absolute top-full z-50 mt-2 w-fit rounded-lg border bg-background p-2 shadow-lg min-w-full">
+        <div className="absolute top-full z-50 mt-2 w-[120%] max-h-[500px] rounded-lg border bg-background p-2 shadow-lg min-w-full overflow-y-auto overflow-x-hidden">
           {searchResults && searchResults.length > 0 ? (
-            <div className="space-y-1">
+            <div className="space-y-1 truncate wrap">
               {searchResults.map((web: any) => (
                 <Link
                   key={web.id}
@@ -97,7 +97,7 @@ function UserWebSearch() {
                 >
                   <Button
                     variant="ghost"
-                    className="w-full justify-start text-left items-start text-sm flex flex-col h-fit dark:hover:bg-muted"
+                    className="w-full justify-start text-left items-start text-sm flex flex-col h-fit dark:hover:bg-muted truncate"
                   >
                     <HighlightedText
                       text={formatText(web.name, isMobile ? 40 : 55)}

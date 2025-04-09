@@ -35,6 +35,7 @@ import { PublicUser } from "@/types/user";
 import { ImageModal } from "../utility/ImageModal";
 import { SkeletonCard } from "../utility/SkeletonCard";
 import { AnimatedStarButton } from "./AnimatedStar";
+import { formatText } from "@/lib/utils";
 
 export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
   const [webLikedCount, setWebLikedCount] = useState(web.likes.length);
@@ -202,7 +203,7 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
       href={`/web/${web.webId}`}
       className="flex flex-col hover:cursor-pointer"
     >
-      <Card className="w-full relative mx-auto min-h-[80px] bg-background hover:bg-muted p-4 pb-2 rounded-none lg:rounded-xl">
+      <Card className="w-full relative mx-auto min-h-[80px] bg-background hover:bg-muted p-6 pb-3 pt-4 rounded-none lg:rounded-xl">
         <div className="flex flex-row gap-2 w-full">
           <div>
             <UserAvatar
@@ -274,26 +275,28 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
               </div>
             </div>
 
-            <div className={`flex flex-col gap-2 ${!web.iteratedFrom && "-mt-4"}`}>
+            <div
+              className={`flex flex-col gap-2 ${!web.iteratedFrom && "-mt-4"}`}
+            >
               <CardHeader className="overflow-hidden p-0 m-0">
                 <CardTitle className="break-words hover:cursor-pointer mt-2 text-md leading-tight hyphens-auto text-foreground ">
                   {web.name}
                 </CardTitle>
                 <CardDescription className="hyphens-auto mb-8 max-w-6xl text-muted-foreground">
-                  {web.description}
+                  {formatText(web.description, 500)}
                 </CardDescription>
               </CardHeader>
 
               {images.length > 0 && (
                 <>
                   <ScrollArea className="w-full flex flex-row">
-                    <div className="flex-1 w-full max-h-[400px] overflow-hidden mb-2 rounded-md ">
+                    <div className="flex-1 w-full max-h-[400px] overflow-hidden mb-2 rounded-lg -ml-1 ">
                       <Image
                         height={300}
                         width={500}
                         src={images[0]}
                         alt={web.name}
-                        className="rounded-lg w-full border h-auto object-cover"
+                        className="rounded-xl w-full border h-auto object-cover"
                         onClick={(e) => handleImageClick(e, images[0])}
                       />
                     </div>

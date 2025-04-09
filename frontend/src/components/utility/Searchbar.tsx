@@ -116,7 +116,7 @@ const SearchBar = ({
   };
 
   return (
-    <div ref={searchRef} className="relative w-full">
+    <div ref={searchRef} className="relative w-full lg:w-[calc(100%)]">
       <div className="relative">
         <SearchInput
           value={query}

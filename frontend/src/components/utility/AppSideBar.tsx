@@ -10,7 +10,6 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenuButton,
-  SidebarRail,
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
@@ -91,7 +90,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"
-            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground  py-4 rounded-md`}
+            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground py-4 rounded-md`}
             onClick={() => handleButtonClick("/home")}
           >
             <div
@@ -107,7 +106,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span
-                className={`truncate text-lg ${
+                className={`truncate text-xl ${
                   selectedButton === "home"
                     ? "text-muted-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
@@ -138,7 +137,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span
-                className={`truncate text-lg ${
+                className={`truncate text-xl ${
                   selectedButton === "explore"
                     ? "text-muted-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
@@ -169,7 +168,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span
-                className={`truncate text-lg ${
+                className={`truncate text-xl ${
                   selectedButton === "webs"
                     ? "text-muted-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
@@ -201,7 +200,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span
-                className={`truncate text-lg ${
+                className={`truncate text-xl ${
                   selectedButton === "chat"
                     ? "text-muted-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
@@ -225,7 +224,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <CirclePlus className="size-5" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate text-lg text-muted-foreground dark:text-muted-foreground">
+                    <span className="truncate text-xl text-muted-foreground dark:text-muted-foreground">
                       Create
                     </span>
                   </div>
@@ -253,7 +252,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <CirclePlus className="size-5" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate text-lg text-muted-foreground dark:text-muted-foreground">
+                  <span className="truncate text-xl text-muted-foreground dark:text-muted-foreground">
                     Create
                   </span>
                 </div>

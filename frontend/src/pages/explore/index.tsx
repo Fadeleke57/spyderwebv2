@@ -59,7 +59,7 @@ function Index() {
   };
 
   return (
-    <div>
+    <div className="">
       <ScrollArea className="flex flex-1 flex-col gap-4 w-full lg:h-[calc(108.9vh-64px)] relative">
         <Head>
           <title>{title}</title>
@@ -74,7 +74,7 @@ function Index() {
           />
         </Head>
         <div></div>
-        <div className="p-4 lg:px-16 border-b-2 relative lg:sticky lg:top-0 bg-background lg:z-50 -ml-2">
+        <div className="p-4 lg:px-8 lg:border-b-2 relative lg:sticky lg:top-0 bg-background lg:z-50 flex justify-end">
           {!user && isMobile && (
             <Button
               className="w-full mb-2"
@@ -91,7 +91,7 @@ function Index() {
           )}
           <SearchBar onSearch={handleSearch} initialQuery={query} />
         </div>
-        <div className="w-full h-full lg:px-16 pt-2 pb-10 flex flex-row gap-6 relative">
+        <div className="w-full h-full lg:px-8 lg:pt-6 pb-10 flex flex-row gap-6 relative">
           <div className="w-full flex flex-col lg:gap-1">
             {error && <ExplorePageErrorCard />}
             {isLoading ? (
