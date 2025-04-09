@@ -120,6 +120,7 @@ async def auth_callback(code: str):
                 "tags": [],
                 "likes": [],
                 "iterations": [],
+                "showcase": True,
             }
         )
         sourceId = str(uuid.uuid4())
@@ -221,6 +222,7 @@ def register(user: CreateUser):
             "tags": [],
             "likes": [],
             "iterations": [],
+            "showcase": True,
         }
     )
 

@@ -7,8 +7,10 @@ import Link from "next/link";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { User } from "lucide-react";
+import sLogo from "@/assets/slogonobg.png";
 import SpydrAI from "@/components/utility/Assistant";
 import { getTimeBasedGreeting } from "@/lib/utils";
+import Image from "next/image";
 
 function Index() {
   const { user } = useUser();
@@ -18,7 +20,7 @@ function Index() {
   const greeting = getTimeBasedGreeting("America/New_York");
 
   return (
-    <div className="flex flex-col gap-12 lg:gap-16 p-6 pt-16 pb-36 lg:py-16 px-8 min-h-screen overflow-x-hidden w-full mx-auto">
+    <div className="flex flex-col gap-12 lg:gap-16 p-6 pt-16 pb-36 lg:py-16 px-16 min-h-screen overflow-x-hidden w-full mx-auto">
       <Head>
         <title>{"home - spydr"}</title>
         <meta name="description" content={"Welcome to spydr"} />
@@ -37,6 +39,7 @@ function Index() {
       />
 
       <div className="flex flex-row gap-2 w-full items-center justify-center">
+        <Image src={sLogo} alt="spydr logo" className="w-12 h-12" />
         <h1 className="text-2xl text-center lg:text-3xl font-extrabold tracking-tight">
           {greeting}, {user?.username}
         </h1>

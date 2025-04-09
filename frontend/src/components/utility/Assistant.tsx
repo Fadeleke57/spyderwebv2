@@ -168,7 +168,7 @@ const SpydrAI = () => {
               variant={"link"}
               className={`p-0 m-0 w-10 h-10 bg-background rounded-full ${open ? "opacity-0" : ""}`}
             >
-              <Charlotte width={14} height={14} activeEyes={!isMobile} />
+              <Charlotte width={16} height={16} activeEyes={!isMobile} />
             </Button>
           </PopoverTrigger>
         </SimpleTooltip>

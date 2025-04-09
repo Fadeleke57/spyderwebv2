@@ -217,7 +217,7 @@ export default function Charlotte({
           className="overflow-visible"
         >
           {/* simple circle body */}
-          <circle cx="0" cy="0" r="35" fill="#a78bfa" />
+          <circle cx="0" cy="0" r="35" fill="#8B75CF" />
 
           {/* eyes */}
           {renderEyes()}

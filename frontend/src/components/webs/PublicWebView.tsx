@@ -74,7 +74,7 @@ function PublicWebView({ web }: { web: Web }) {
         <div>
           <div className="flex flex-col space-y-2">
             <div className="flex flex-row items-center justify-between">
-              <small className="text-sm font-medium leading-none text-violet-500 dark:text-violet-400">
+              <small className="text-sm font-semibold leading-none text-violet-500 dark:text-violet-400">
                 {web?.visibility === "Private" ? "Private" : "Public"}
               </small>
               <div className="flex flex-row items-center space-x-2">

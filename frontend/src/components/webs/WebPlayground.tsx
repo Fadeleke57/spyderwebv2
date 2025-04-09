@@ -237,13 +237,13 @@ function WebPlayground({
           }  top-3`}
         >
           {isOwner && <WebSettingsModal refetchWeb={refetch} web={web} />}
-          <Badge variant="outline" className={`border dark:border-violet-400`}>
+          <Badge variant="outline" className={`border dark:border-violet-400/70`}>
             {web?.sourceIds?.length || 0} sources added
           </Badge>
         </div>
 
         <div
-          className={`absolute bottom-4 w-full px-3 cursor-pointer z-10 flex flex-row-reverse items-center justify-between`}
+          className={`absolute bottom-${web.iteratedFrom ? 6 : 4} w-full px-3 cursor-pointer z-70 flex flex-row-reverse items-center justify-between`}
         >
           <TooltipProvider delayDuration={100}>
             <Tooltip>
@@ -267,7 +267,7 @@ function WebPlayground({
                   </Button>
                 )}
               </TooltipTrigger>
-              <TooltipContent className="z-24">
+              <TooltipContent className="z-99">
                 <p>{isExpanded ? "Collapse view" : "Expand view"}</p>
               </TooltipContent>
             </Tooltip>
@@ -351,7 +351,7 @@ function WebPlayground({
                       <DropdownMenuTrigger asChild>
                         <Button
                           size={"icon"}
-                          className="dark:bg-violet-500 dark:hover:bg-violet-400 rounded-full p-1 h-fit w-fit"
+                          className="dark:bg-violet-400/80 dark:hover:bg-violet-400 rounded-full p-1 h-fit w-fit"
                         >
                           <Plus
                             strokeWidth={3}

@@ -13,6 +13,7 @@ export interface Web {
   iterations: string[];
   iteratedFrom?: string;
   enableAIConnections?: boolean;
+  showcase?: boolean;
 }
 
 export interface UpdateWeb {

@@ -41,7 +41,12 @@ const nextConfig = {
         protocol: "https",
         hostname: "*.duckduckgo.com",
         pathname: "/**",
-      }
+      },
+      {
+        protocol: "https",
+        hostname: "*.spydr.dev",
+        pathname: "/**",
+      },
     ],
   },
   devIndicators: {
