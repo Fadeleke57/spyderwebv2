@@ -2,7 +2,6 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.db.index import lifespan
-<<<<<<< HEAD
 from src.routes.auth.index import router as auth_router
 from src.routes.user.index import router as user_router
 from src.routes.webs.index import router as webs_router
@@ -14,7 +13,6 @@ from src.routes.payment.index import router as payment_router
 import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from src.jobs.credit_reset import reset_monthly_credits
-=======
 from src.routes.index import (
     auth_router,
     user_router,
@@ -25,7 +23,6 @@ from src.routes.index import (
     process_router,
     payment_router
 )
->>>>>>> eceb79d54e3f3d40c3cfaee3feef0df6c3edb6b4
 
 logging.basicConfig(level=logging.ERROR)
 

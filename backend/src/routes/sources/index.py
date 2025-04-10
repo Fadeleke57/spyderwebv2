@@ -90,7 +90,8 @@ async def process_file(
             background_tasks.add_task(
                 sourceService.embed_and_upsert_pdf,
                 file_path=temp_path,
-                source=sourceToInsert
+                source=sourceToInsert,
+                user_id=user_id
             )
 
         elif file_type in {"txt", "md"}:
@@ -269,7 +270,10 @@ def add_website(
         }
 
         background_tasks.add_task(
-            sourceService.embed_and_upsert_website, source=sourceToInsert, md=md
+            sourceService.embed_and_upsert_website,
+            source=sourceToInsert,
+            md=md,
+            user_id=user["id"]
         )
 
         neo4jClient.create_node("source", sourceToInsert)
@@ -416,6 +420,7 @@ def add_youtube(
                 sourceService.embed_and_upsert_youtube,
                 sourceToInsert,
                 transcripts,
+                user["id"]
             )
 
         neo4jClient.create_node("source", sourceToInsert)
