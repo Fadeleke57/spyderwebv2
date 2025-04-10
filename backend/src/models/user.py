@@ -2,7 +2,8 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 from src.db.mongodb import get_collection
-
+from src.constants.credits import PLAN_CREDITS
+from pytz import UTC
 
 Users = get_collection("users")
 
@@ -30,6 +31,9 @@ class User(BaseModel):  # user
     profile_picture_url: str
     websHidden: Optional[list[str]]
     websSaved: Optional[list[str]]
+    credits: int = PLAN_CREDITS["free"]  # Add initial credits
+    subscription_plan: str = "free"
+    last_credits_reset: datetime = datetime.now(UTC)
 
 
 class CreateUser(BaseModel):  # creating user

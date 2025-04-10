@@ -22,6 +22,7 @@ from datetime import datetime
 from pytz import UTC
 from src.utils.auth import generate_username
 from src.db.neo4j import client as neo4jClient
+from src.utils.credits import PLAN_CREDITS
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -106,6 +107,9 @@ async def auth_callback(code: str):
                 "updated": datetime.now(UTC),
                 "websHidden": [],
                 "websSaved": [],
+                "credits": PLAN_CREDITS["free"],  # Add initial credits
+                "subscription_plan": "free",
+                "last_credits_reset": datetime.now(UTC)
             }
         )
         webId = str(uuid.uuid4())
@@ -207,6 +211,9 @@ def register(user: CreateUser):
         "updated": datetime.now(UTC),
         "websHidden": [],
         "websSaved": [],
+        "credits": PLAN_CREDITS["free"],  # Add initial credits
+        "subscription_plan": "free",
+        "last_credits_reset": datetime.now(UTC)
     }
     Users.insert_one(user_data)
 
