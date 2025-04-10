@@ -10,7 +10,9 @@
   ],
   "host_permissions": [
     "http://localhost:3000/*",
-    "http://localhost:8000/*"
+    "http://localhost:8000/*",
+    "https://spydr.dev/*",
+    "https://vercel.spydr.dev/*"
   ],
   "background": {
     "service_worker": "background.js"
