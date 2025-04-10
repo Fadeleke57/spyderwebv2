@@ -10,6 +10,7 @@ from src.routes.index import (
     connections_router,
     chat_router,
     process_router,
+    payment_router
 )
 
 logging.basicConfig(level=logging.ERROR)
