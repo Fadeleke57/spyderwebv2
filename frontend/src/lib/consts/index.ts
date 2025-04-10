@@ -1,5 +1,8 @@
 import { WebTag } from "@/types/web";
 
+export const SHOWCASE_IMAGE =
+  "https://www.spydr.dev/_next/image?url=https%3A%2F%2Fd1jh2f1w3pfli.cloudfront.net%2Ffiles%2F8f05ff19-ab84-47ba-bd02-bed09c405981%2Fb2a3ccf8-cd84-44d3-8b28-bfb17aa94631%2Fimages%2FChatGPT_Image_Apr_6_2025_09_59_35_PM.png&w=1080&q=75";
+
 export const colorOptions = [
   "#5ea4ff",
   "#ff6f61",

@@ -93,34 +93,18 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
         </Head>
 
         <UserProvider>
-          {getLayout(
-            <>
-              <Analytics />
-              {/* show blank screen with toast when offline */}
-              {isOnline ? (
+          <div className="max-w-[1400px] mx-auto">
+            {getLayout(
+              <>
+                <Analytics />
                 <div className={`${fontSans.className}`}>
                   <Component {...pageProps} />
                   <Toaster />
                   <SonnerToaster />
                 </div>
-              ) : (
-                <div
-                  className={`${fontSans.className} h-full w-full flex items-center justify-center bg-background`}
-                >
-                  <div className="text-center">
-                    <h2 className="text-xl font-semibold mb-2">
-                      No Internet Connection
-                    </h2>
-                    <p className="text-muted-foreground">
-                      Please check your connection and try again.
-                    </p>
-                  </div>
-                  <Toaster />
-                  <SonnerToaster />
-                </div>
-              )}
-            </>
-          )}
+              </>
+            )}
+          </div>
         </UserProvider>
       </QueryClientProvider>
     </ThemeProvider>

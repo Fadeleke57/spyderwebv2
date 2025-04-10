@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional, List, Any
 from enum import Enum
+from src.db.mongodb import get_collection
 
 
 class ClientAttachment(BaseModel):
@@ -30,5 +31,12 @@ class ClientMessage(BaseModel):
     toolInvocations: Optional[List[ToolInvocation]] = None
 
 
+class SaveMessagePayload(BaseModel):
+    messages: List[ClientMessage]
+
+
 class Request(BaseModel):
     messages: List[ClientMessage]
+
+
+Chats = get_collection("chats")

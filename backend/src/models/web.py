@@ -22,6 +22,7 @@ class Web(BaseModel):
     iterations: list[str]
     imageKeys: Optional[list[str]]
     enableAIConnections: Optional[bool]
+    showCase: Optional[bool]
 
 
 class CreateWeb(BaseModel):

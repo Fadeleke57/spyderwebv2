@@ -24,6 +24,7 @@ import {
 } from "@/lib/utils";
 import SourceTooltip from "./SourceToolTip";
 import { Connection } from "@/types/connection";
+import SpydrAI from "../utility/Assistant";
 
 interface GraphProps {
   isOwner: boolean;
@@ -261,7 +262,7 @@ function WebGraph({
       .data(links)
       .join("line")
       .style("stroke", "#ccc")
-      .style("stroke-width", 2)
+      .style("stroke-width", 3.5)
       .style("opacity", 0);
 
     const linkForce = d3
@@ -378,11 +379,11 @@ function WebGraph({
             : 0.2;
         })
         .style("stroke-width", (l: any) => {
-          if (!isHovering) return 1;
+          if (!isHovering) return 3.5;
           return l.source.sourceId === d.sourceId ||
             l.target.sourceId === d.sourceId
-            ? 3
-            : 1;
+            ? 4
+            : 3.5;
         })
         .style("stroke", (l: any) => {
           if (!isHovering) return "#ccc";
@@ -459,7 +460,7 @@ function WebGraph({
 
           d3.select(this)
             .attr("stroke", mapThemetoHoverNodeColor(theme))
-            .attr("stroke-width", 2);
+            .attr("stroke-width", 3.5);
         });
 
       if (!shouldUseTspans) {
@@ -563,7 +564,7 @@ function WebGraph({
         <div ref={trashRef} className="absolute left-3 top-3 cursor-pointer">
           <TooltipProvider delayDuration={100}>
             <Tooltip>
-              <TooltipTrigger className="p-0 m-0 bg-red-600 dark:bg-violet-500 dark:hover:bg-violet-400 rounded-full p-2">
+              <TooltipTrigger className="p-0 m-0 bg-red-600 dark:bg-transparent dark:hover:bg-red-500 rounded-full p-2 transition-colors ease-in">
                 <Trash size={20} className="text-white dark:text-foreground" />
               </TooltipTrigger>
               <TooltipContent>
@@ -589,6 +590,9 @@ function WebGraph({
           webId={webId}
         />
       )}
+      <div className="absolute bottom-4 right-4">
+        <SpydrAI />
+      </div>
     </div>
   );
 }

@@ -64,7 +64,7 @@ export function ProjectsCarousel() {
                   key={index}
                   className="basis-11/12 lg:basis-1/3 p-0"
                 >
-                  <Card className="h-full p-2 border-none">
+                  <Card className="h-full p-2 border-none bg-transparent">
                     <Skeleton className="w-full h-full rounded-lg" />
                   </Card>
                 </CarouselItem>

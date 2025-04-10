@@ -2,27 +2,21 @@ from pydantic import BaseModel
 from typing import Optional
 from typing_extensions import TypedDict
 from datetime import datetime
-from src.db.mongodb import get_collection
-
-Connections = get_collection("connections")
-
-
-class ConnectionData(TypedDict):
-    description: str
 
 
 class Connection(BaseModel):
     connectionId: str
     webId: str
-    data: ConnectionData
+    description: str
     fromSourceId: str
     toSourceId: str
     created: datetime
     updated: datetime
+    aiGenerated: Optional[bool] = False
 
 
 class CreateConnection(BaseModel):
-    data: ConnectionData
+    description: str
     fromSourceId: str
     toSourceId: str
     webId: str

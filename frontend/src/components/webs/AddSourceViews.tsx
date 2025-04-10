@@ -2,15 +2,20 @@ import { ArrowBigRight, Upload } from "lucide-react";
 import React, { useState, useRef } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Switch } from "../ui/switch";
+import { Label } from "../ui/label";
 
 function UploadFile({
   handleFileUpload,
+  setParseObsidianLinks,
 }: {
   handleFileUpload: (files: FileList | null) => void;
+  setParseObsidianLinks: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
+  const [isParsingObsidianLinks, setIsParsingObsidianLinks] = useState(false);
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -37,16 +42,16 @@ function UploadFile({
 
     //handle directory and file drops
     const items = Array.from(e.dataTransfer.items);
-    
+
     //filter for acceptable file types
-    const acceptedFileTypes = ['.md', '.txt', '.pdf'];
-    const isAcceptedFile = (file: File) => 
-      acceptedFileTypes.some(type => file.name.toLowerCase().endsWith(type));
-    
+    const acceptedFileTypes = [".md", ".txt", ".pdf"];
+    const isAcceptedFile = (file: File) =>
+      acceptedFileTypes.some((type) => file.name.toLowerCase().endsWith(type));
+
     //handle both files and folders
     if (items.length > 0) {
       const fileList: File[] = [];
-      
+
       //process entries recursively to handle folders
       const processEntry = async (entry: any) => {
         if (entry.isFile) {
@@ -56,7 +61,7 @@ function UploadFile({
               resolve(file);
             });
           });
-          
+
           if (isAcceptedFile(file)) {
             fileList.push(file);
           }
@@ -68,19 +73,19 @@ function UploadFile({
               resolve(entries);
             });
           });
-          
+
           // process all entries in the directory
           for (const childEntry of entries) {
             await processEntry(childEntry);
           }
         }
       };
-      
+
       //process all dropped items
       for (const item of items) {
-        if (item.kind === 'file') {
+        if (item.kind === "file") {
           const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
-          
+
           if (entry) {
             await processEntry(entry);
           } else {
@@ -92,11 +97,11 @@ function UploadFile({
           }
         }
       }
-      
+
       if (fileList.length > 0) {
         // convert array to FileList-like object
         const dataTransfer = new DataTransfer();
-        fileList.forEach(file => dataTransfer.items.add(file));
+        fileList.forEach((file) => dataTransfer.items.add(file));
         handleFileUpload(dataTransfer.files);
       }
     } else if (e.dataTransfer.files.length > 0) {
@@ -109,7 +114,9 @@ function UploadFile({
     <div className="flex flex-col gap-6">
       <div
         className={`w-full h-full bg-muted p-10 rounded-xl border-dashed border-2 transition-colors duration-300 ${
-          isDragging ? "border-muted-foreground bg-violet-100" : "border-slate-400 dark:border-muted-foreground"
+          isDragging
+            ? "border-muted-foreground bg-violet-100"
+            : "border-slate-400 dark:border-muted-foreground"
         }`}
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
@@ -123,7 +130,7 @@ function UploadFile({
                 <Upload size={24} color="white" className="cursor-pointer" />
               </div>
             </label>
-            
+
             {/*hidden input for file selection */}
             <input
               ref={fileInputRef}
@@ -134,7 +141,7 @@ function UploadFile({
               className="hidden focus-visible:none focus:outline-none"
               onChange={(e) => handleFileUpload(e.target.files)}
             />
-            
+
             {/*hidden input for folder selection */}
             <input
               ref={folderInputRef}
@@ -151,23 +158,37 @@ function UploadFile({
               Upload sources
             </h3>
             <p className="text-md text-muted-foreground text-center">
-              Drag and drop or{" "}
-              <button 
+              Drag and drop folders or{" "}
+              <button
                 onClick={() => fileInputRef.current?.click()}
                 className="text-violet-500 cursor-pointer hover:underline"
               >
                 choose files
-              </button>
-              {" "} or {" "}
-              <button 
-                onClick={() => folderInputRef.current?.click()}
-                className="text-violet-500 cursor-pointer hover:underline"
-              >
-                upload folder
-              </button>
+              </button>{" "}
             </p>
           </div>
         </div>
+      </div>
+      <div className="flex flex-row items-center space-x-2">
+        <div className="space-y-1">
+          <Label
+            htmlFor="link-parsing"
+            className="font-medium flex items-center"
+          ></Label>
+          <p className="text-sm text-muted-foreground">
+            Uploading an Obsidian Vault? Check here to preserve the links.
+          </p>
+        </div>
+        <Switch
+          className="border"
+          id="link-parsing"
+          defaultChecked={false}
+          checked={isParsingObsidianLinks}
+          onCheckedChange={(checked) => {
+            setIsParsingObsidianLinks(checked);
+            setParseObsidianLinks(checked);
+          }}
+        />
       </div>
     </div>
   );

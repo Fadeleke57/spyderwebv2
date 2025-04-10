@@ -1,3 +1,4 @@
+import { toast } from "@/components/ui/use-toast";
 import api from "@/lib/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -149,6 +150,10 @@ export const useDeleteSource = () => {
     onSuccess: (_, sourceId) => {
       queryClient.invalidateQueries({ queryKey: ["sources"] });
       queryClient.invalidateQueries({ queryKey: ["source", sourceId] });
+      toast({
+        title: "Source deleted",
+        description: "Source has been deleted successfully",
+      });
     },
   });
 };

@@ -1,15 +1,10 @@
-from fastapi import APIRouter, Depends
-from src.routes.auth.oauth2 import manager
 import re
-from src.db.mongodb import (
-    get_collection,
-    get_item_by_id,
-    clear_search_history,
-)
+from fastapi import APIRouter, Depends
+from fastapi.exceptions import HTTPException
+from src.routes.auth.oauth2 import manager
+from src.lib.logger.index import logger
 from src.utils.exceptions import check_user
 from src.models.user import User, UpdateUser, Users
-from fastapi.exceptions import HTTPException
-from src.lib.logger.index import logger
 
 router = APIRouter()
 
@@ -23,21 +18,6 @@ def get_search_history(user: User = Depends(manager)):
         return {"result": analytics["searches"]}
     except Exception as e:
         logger.error(f"Error getting search history: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.delete("/search/history")
-def delete_search_history(user: User = Depends(manager)):
-    check_user(user)
-    try:
-        user = Users.find_one({"id": user["id"]})
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
-        clear_search_history(user["email"])
-
-        return {"result": "Search history deleted"}
-    except Exception as e:
-        logger.error(f"Error deleting search history: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -87,7 +67,6 @@ def edit_user(updates: UpdateUser, user: User = Depends(manager)):
 def hide_web(webId: str, user: User = Depends(manager)):
     check_user(user)
     try:
-        Users = get_collection("users")
         Users.update_one({"id": user["id"]}, {"$addToSet": {"websHidden": webId}})
         return {"result": True}
 
@@ -100,7 +79,6 @@ def hide_web(webId: str, user: User = Depends(manager)):
 def unhide_web(webId: str, user: User = Depends(manager)):
     check_user(user)
     try:
-        Users = get_collection("users")
         Users.update_one({"id": user["id"]}, {"$pull": {"websHidden": webId}})
         return {"result": True}
     except Exception as e:
@@ -112,7 +90,6 @@ def unhide_web(webId: str, user: User = Depends(manager)):
 def save_web(webId: str, user: User = Depends(manager)):
     check_user(user)
     try:
-        Users = get_collection("users")
         Users.update_one({"id": user["id"]}, {"$addToSet": {"websSaved": webId}})
         return {"result": True}
 
@@ -125,7 +102,6 @@ def save_web(webId: str, user: User = Depends(manager)):
 def unsave_web(webId: str, user: User = Depends(manager)):
     check_user(user)
     try:
-        Users = get_collection("users")
         Users.update_one({"id": user["id"]}, {"$pull": {"websSaved": webId}})
         return {"result": True}
 

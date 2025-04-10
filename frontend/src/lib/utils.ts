@@ -122,14 +122,13 @@ export const handleLinkedInWebView = () => {
   return false;
 };
 
-
 /**
  * Checks if the current browser is Safari.
- * 
+ *
  * This function determines whether the user's browser is Safari by checking
  * the user agent string. It excludes cases where the browser is Chrome,
  * despite potentially identifying as Safari.
- * 
+ *
  * @returns {boolean} True if the browser is Safari, false otherwise.
  */
 
@@ -335,19 +334,19 @@ export const formatDate = (
 export function getTimeBasedGreeting(timezone: string): string {
   // Use provided time or current time
   const currentTime = new Date();
-  
+
   // Create date with user's timezone
   const options: Intl.DateTimeFormatOptions = {
     timeZone: timezone,
-    hour: 'numeric',
-    hour12: false
+    hour: "numeric",
+    hour12: false,
   };
-  
+
   // Get hour in 24-hour format for the specified timezone
-  const formatter = new Intl.DateTimeFormat('en-US', options);
+  const formatter = new Intl.DateTimeFormat("en-US", options);
   const formattedTime = formatter.format(currentTime);
   const hour = parseInt(formattedTime, 10);
-  
+
   // Determine appropriate greeting based on hour
   if (hour >= 5 && hour < 12) {
     return "Good morning";
@@ -372,3 +371,14 @@ export function getTimeBasedGreeting(timezone: string): string {
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 export const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 export const ALLOWED_GIF_TYPES = ["image/gif"];
+
+export const mapToolNameToBreadcrumb = (toolName: string) => {
+  switch (toolName) {
+    case "get_current_weather":
+      return "Taking a look outside...";
+    case "get_graph_context":
+      return "Crawling your web...";
+    default:
+      return "Thinking...";
+  }
+};

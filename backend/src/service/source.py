@@ -1,42 +1,46 @@
-from src.models.source import Source
-from src.models.connection import Connection
+import os
+import re
+import pymupdf4llm
+from typing import List
+from uuid import uuid4
 from datetime import datetime
 from fastapi import HTTPException
+from src.models.index import Source, Connection, create_process, update_process
 from src.db.neo4j import client as neo4jClient
 from src.lib.pinecone.index import client as pineconeClient
 from src.lib.logger.index import logger
-from typing import List
-from uuid import uuid4
-from src.models.process import create_process, update_process
-import re
-import pymupdf4llm
-import os
 
 
 class SourceService:
     def __init__(self):
         pass
 
-    def embed_and_upsert_website(self, sourceId, md, web_id, url):
-        """ """
+    def embed_and_upsert_website(self, source : Source, md: str):
+
         try:
+
             chunks = pineconeClient.chunk_clean_text(md)
+
             results = pineconeClient.embed_and_upsert_to_pinecone(
-                sourceId, chunks, web_id, type="website", url=url
+                source, chunks
             )
+
             logger.info(f"Pinecone results: {results}")
+
         except Exception as e:
             logger.error(f"Error processing Pinecone embeddings: {e}")
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
 
-    def embed_and_upsert_youtube(
-        self, sourceId: str, transcripts, web_id: str, url: str
-    ):
-        """ """
+    def embed_and_upsert_youtube(self, source: Source, transcripts: List[str]):
+        if not source or not transcripts:
+            raise HTTPException(
+                status_code=404, detail="Source item not created or found"
+            )
+
         try:
             chunks = pineconeClient.chunk_youtube_transcript(transcripts)
             results = pineconeClient.embed_and_upsert_to_pinecone(
-                sourceId, chunks, web_id, type="youtube", url=url
+                source, chunks
             )
             logger.info(f"Pinecone results: {results}")
         except Exception as e:
@@ -44,31 +48,40 @@ class SourceService:
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
 
     def embed_and_upsert_pdf(
-        self, sourceId: str, file_path: str, web_id: str, url: str
+        self, file_path: str, source: Source
     ):
-        """ """
         try:
-            md = pymupdf4llm.to_markdown(file_path)
+
+            # extract Markdown for each page as a list of dictionaries
+            data = pymupdf4llm.to_markdown(file_path, page_chunks=True) #returns a list
+
             os.remove(file_path)
-            chunks = pineconeClient.chunk_clean_text(
-                md, chunk_size=1000, chunk_overlap=100
-            )
-            results = pineconeClient.embed_and_upsert_to_pinecone(
-                sourceId, chunks, web_id, type="document", url=url
-            )
+            if not data:
+                logger.info("No text found in PDF")
+                return
+            
+            for index, page_data in enumerate(data):
+                page_number = index + 1
+
+                chunks = pineconeClient.chunk_clean_text(
+                    text=page_data["text"], chunk_size=1000, chunk_overlap=100
+                )
+
+                results = pineconeClient.embed_and_upsert_to_pinecone(source=source, chunks=chunks, page_number=page_number)
+
             logger.info(f"Pinecone results: {results}")
+
         except Exception as e:
             logger.error(f"Error processing Pinecone embeddings: {e}")
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
 
-    def embed_and_upsert_note(self, sourceId: str, text, web_id, title, type="note"):
+    def embed_and_upsert_note(self, source : Source, text: str):
         try:
             chunks = pineconeClient.chunk_clean_text(
                 text=text, chunk_size=300, chunk_overlap=50
             )
-            results = pineconeClient.embed_and_upsert_to_pinecone(
-                sourceId, chunks, web_id, type=type, title=title
-            )
+            results = pineconeClient.embed_and_upsert_to_pinecone(source, chunks)
+
             logger.info(f"Pinecone results: {results}")
         except Exception as e:
             logger.error(f"Error processing Pinecone embeddings: {e}")
@@ -169,6 +182,7 @@ class SourceService:
 
             update_process(
                 job_id=connection_proccess_id,
+                description="Completed parsing Obsidian links",
                 status="completed",
                 percentage=100,
                 closeModal=True,
@@ -179,6 +193,7 @@ class SourceService:
             update_process(
                 job_id=connection_proccess_id,
                 status="failed",
+                description="Failed to parse Obsidian links",
                 percentage=0,
                 error=str(e),
             )

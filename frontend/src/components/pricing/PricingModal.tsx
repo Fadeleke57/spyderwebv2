@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Check, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "sonner"
 import { useUser } from "@/context/UserContext";
 
 interface PricingModalProps {

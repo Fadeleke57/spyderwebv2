@@ -139,7 +139,7 @@ export function ProfileForm({
               <div className="space-y-0.5">
                 <FormLabel>Avatar</FormLabel>
                 <FormDescription>
-                  Feel free to change your avatar.
+                  The ability to change your avatar is coming soon!
                 </FormDescription>
               </div>
               <FormControl>
