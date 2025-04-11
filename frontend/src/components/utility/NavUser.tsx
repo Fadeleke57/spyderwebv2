@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  BadgeCheck,
-  Ellipsis,
-  LogOut,
-  Settings,
-} from "lucide-react";
+import { BadgeCheck, Ellipsis, LogOut, Settings } from "lucide-react";
 
 import {
   DropdownMenu,

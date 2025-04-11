@@ -19,6 +19,7 @@ import { CirclePlus, Home, LayoutGrid, Waypoints } from "lucide-react";
 import { NewWebModal } from "../webs/NewWebModal";
 import { AuthModal } from "../auth/AuthModal";
 import { ResourceUsage } from "./ResourceUsage";
+import { useResourceUsage } from "@/hooks/usage";
 
 const SidebarIndicator = ({ show }: { show: boolean }) => {
   const { state } = useSidebar();
@@ -34,6 +35,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser();
   const [selectedButton, setSelectedButton] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const { data: usage, isLoading } = useResourceUsage();
 
   useEffect(() => {
     if (router.pathname.startsWith("/home")) {
@@ -275,12 +277,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         className="mb-2 relative"
       >
         <div className="px-2 mb-4">
-          <ResourceUsage
-            storageUsed={2.5 * 1024 * 1024 * 1024} // 2.5GB
-            storageLimit={5 * 1024 * 1024 * 1024} // 5GB
-            computationUsed={750}
-            computationLimit={1000}
-          />
+          {isLoading ? (
+            <div className="animate-pulse">Loading usage...</div>
+          ) : (
+            <ResourceUsage
+              storageUsed={usage?.storage.used || 0}
+              storageLimit={usage?.storage.limit || 0}
+              computationUsed={usage?.computation.used || 0}
+              computationLimit={usage?.computation.limit || 0}
+            />
+          )}
         </div>
         <NavUser />
       </SidebarFooter>

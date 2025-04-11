@@ -50,6 +50,7 @@ import { useRouter } from "next/router";
 import DeleteModal from "./DeleteModal";
 import AuthModal from "../auth/AuthModal";
 import { useUser } from "@/context/UserContext";
+import { PricingModal } from "@/components/pricing/PricingModal";
 
 type viewType = "chat" | "history";
 
@@ -228,6 +229,8 @@ const CharlotteChatInterface = ({
   console.log("user", user);
   const token = localStorage.getItem("token") || "";
 
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
+
   const {
     messages,
     handleSubmit,
@@ -245,6 +248,42 @@ const CharlotteChatInterface = ({
     onFinish: (_, { usage }) => {
       const { promptTokens, completionTokens, totalTokens } = usage;
       setSaveTrigger(true);
+    },
+    onError: (error) => {
+      setMessages((currentMessages) => {
+        // Parse error message if it's a JSON string
+        let errorDetail = error.message;
+        try {
+          if (error.message.includes('{"detail":')) {
+            const parsed = JSON.parse(error.message);
+            errorDetail = parsed.detail;
+          }
+        } catch (e) {
+          errorDetail = error.message;
+        }
+
+        // Check for 402 error in either the status or the error message
+        const is402Error = errorDetail.includes("Insufficient credits");
+
+        if (is402Error) {
+          setIsPricingModalOpen(true);
+        }
+
+        const errorMessage = {
+          id: Date.now().toString(),
+          role: "assistant" as const,
+          content: is402Error
+            ? "✨ Hey there! Looks like you've been having some great conversations with Charlotte! You've reached your monthly chat limit - upgrade your plan to keep the conversation going!"
+            : error.message.includes("Too many requests")
+              ? "🌟 Whoa, you're moving fast! Give me a quick moment to catch up and try again."
+              : `⚠️ Oops! Something unexpected happened: ${errorDetail}`,
+          error: true,
+        };
+
+        return [...currentMessages, errorMessage];
+      });
+
+      stop();
     },
     api: environment.api_url + "/chat",
     headers: {
@@ -527,6 +566,8 @@ const CharlotteChatInterface = ({
           </div>
         </div>
       )}
+
+      <PricingModal open={isPricingModalOpen} setOpen={setIsPricingModalOpen} />
     </div>
   );
 };

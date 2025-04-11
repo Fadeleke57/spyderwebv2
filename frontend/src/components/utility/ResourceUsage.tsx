@@ -2,7 +2,6 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Zap } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { PricingModal } from "@/components/pricing/PricingModal";
 
@@ -23,15 +22,28 @@ export function ResourceUsage({
   const isCollapsed = state === "collapsed";
   const [showPricing, setShowPricing] = useState(false);
 
-  const storagePercentage = (storageUsed / storageLimit) * 100;
-  const computationPercentage = (computationUsed / computationLimit) * 100;
+  // Ensure we have valid numbers and calculate percentages safely
+  const storagePercentage = Math.min(
+    ((storageUsed || 0) / (storageLimit || 1)) * 100,
+    100
+  );
+  const computationPercentage = Math.min(
+    ((computationUsed || 0) / (computationLimit || 1)) * 100,
+    100
+  );
 
-  const formatBytes = (bytes: number) => {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+  const formatStorage = (mb: number) => {
+    if (!mb || mb === 0) return "0 MB";
+
+    // For storage limit, it's already in MB but needs to be shown in GB
+    if (mb > 1000) {
+      // If more than 1000 MB
+      const gb = mb / 1024;
+      return `${Math.round(gb)} GB`; // Round to whole GB for cleaner display
+    }
+
+    // For smaller values, show in MB with 1 decimal
+    return `${mb.toFixed(1)} MB`;
   };
 
   const handleUpgradeClick = () => {
@@ -67,7 +79,7 @@ export function ResourceUsage({
                 Storage
               </span>
               <span className="text-xs text-muted-foreground">
-                {formatBytes(storageUsed)} / {formatBytes(storageLimit)}
+                {formatStorage(storageUsed)} / {formatStorage(storageLimit)}
               </span>
             </div>
             <Progress value={storagePercentage} className="h-1.5" />
@@ -80,11 +92,19 @@ export function ResourceUsage({
                 Computation
               </span>
               <span className="text-xs text-muted-foreground">
-                {computationUsed} / {computationLimit}
+                {computationUsed || 0} / {computationLimit || 0}
               </span>
             </div>
             <Progress value={computationPercentage} className="h-1.5" />
           </div>
+
+          {computationPercentage >= 100 && (
+            <div className="flex items-center justify-center px-2 py-1.5 bg-violet-500/5 rounded-md border border-violet-500/10">
+              <span className="text-xs font-medium text-violet-500">
+                Autolinking disabled
+              </span>
+            </div>
+          )}
 
           {/* Upgrade Button */}
           <Button
@@ -93,7 +113,7 @@ export function ResourceUsage({
             onClick={handleUpgradeClick}
           >
             <Zap className="w-3 h-3 mr-1" />
-            Upgrade to Pro
+            Upgrade
           </Button>
         </div>
       </div>

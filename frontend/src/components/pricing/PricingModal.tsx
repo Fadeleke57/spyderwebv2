@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Check, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { toast } from "sonner"
+import { toast } from "sonner";
 import { useUser } from "@/context/UserContext";
 
 interface PricingModalProps {
@@ -32,7 +32,7 @@ const tiers: PricingTier[] = [
     name: "Free",
     price: "0",
     description: "Perfect for personal notes",
-    features: ["15 GB Storage", "100 AI Credits"],
+    features: ["15 GB Storage", "100 AI Credits", "Charlotte AI Access"],
     cta: "Get Started",
     highlighted: false,
   },
@@ -41,22 +41,28 @@ const tiers: PricingTier[] = [
     monthlyPrice: "10",
     yearlyPrice: "8",
     description: "For power users who write a lot",
-    features: ["50 GB Storage", "1,000 AI Credits", "Autolinker Access"],
-    cta: "Start Free Trial",
+    features: [
+      "50 GB Storage",
+      "1,000 AI Credits",
+      "Charlotte AI Access",
+      "AI Autolinker Access",
+    ],
+    cta: "Unlock Basic",
     highlighted: true,
   },
   {
     name: "Pro",
-    monthlyPrice: "30",
-    yearlyPrice: "25",
-    description: "For teams and heavy AI users",
+    monthlyPrice: "50",
+    yearlyPrice: "40",
+    description: "For heavy AI users",
     features: [
       "200 GB Storage",
       "5,000 AI Credits",
+      "Charlotte AI Access",
       "Autolinker Access",
       "DeepResearch Agent (coming soon)",
     ],
-    cta: "Start Free Trial",
+    cta: "Unlock Pro",
     highlighted: false,
   },
 ];
@@ -137,8 +143,7 @@ export function PricingModal({ open, setOpen }: PricingModalProps) {
           </DialogTitle>
           <div className="flex flex-col items-center gap-2 mt-2">
             <p className="text-sm text-center text-muted-foreground">
-              All paid plans include a 14-day free trial. No credit card
-              required.
+              Unlock Your Web Experience
             </p>
             <div className="flex items-center gap-3 mt-2 bg-muted/50 p-1 rounded-full">
               <button

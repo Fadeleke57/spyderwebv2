@@ -107,7 +107,12 @@ async def auth_callback(code: str):
                 "websSaved": [],
                 "credits": PLAN_CREDITS["free"],  # Add initial credits
                 "subscription_plan": "free",
-                "last_credits_reset": datetime.now(UTC)
+                "last_credits_reset": datetime.now(UTC),
+                "storage_used": 0.0,  # Storage used in mb
+                "storage_last_calculated": datetime.now(UTC)
+                "is_yearly": False,
+                "created_at": datetime.now(UTC),
+                "updated_at": datetime.now(UTC)
             }
         )
         webId = str(uuid.uuid4())
@@ -212,7 +217,12 @@ def register(user: CreateUser):
         "websSaved": [],
         "credits": PLAN_CREDITS["free"],  # Add initial credits
         "subscription_plan": "free",
-        "last_credits_reset": datetime.now(UTC)
+        "last_credits_reset": datetime.now(UTC),
+        "storage_used": 0.0,  # Storage used in bytes
+        "storage_last_calculated": datetime.now(UTC),
+        "is_yearly": False,
+        "created_at": datetime.now(UTC),
+        "updated_at": datetime.now(UTC)
     }
     Users.insert_one(user_data)
 

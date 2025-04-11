@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     neo4j_password: str
     fastapi_env: str
     fastapi_secret_key: str
+    fastapi_api_url: str
     oauth2_client_id: str
     oauth2_client_secret: str
     oauth2_redirect_uri: str

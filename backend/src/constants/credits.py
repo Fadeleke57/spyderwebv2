@@ -7,7 +7,7 @@ PLAN_CREDITS = {
 
 # Cost per operation
 OPERATION_COSTS = {
-    "autolinker": 1,
+    "autolinker": 3,
     "chatbot": 1,
     "deepresearch": 5
 }
