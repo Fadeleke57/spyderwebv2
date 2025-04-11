@@ -243,7 +243,7 @@ function WebPlayground({
         </div>
 
         <div
-          className={`absolute bottom-${web.iteratedFrom ? 6 : 4} w-full px-3 cursor-pointer z-70 flex flex-row-reverse items-center justify-between`}
+          className={`absolute bottom-4 w-full px-3 cursor-pointer z-70 flex flex-row-reverse items-center justify-between`}
         >
           <TooltipProvider delayDuration={100}>
             <Tooltip>
