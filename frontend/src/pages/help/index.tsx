@@ -216,11 +216,15 @@ function Index() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
       >
-        <Tabs defaultValue="gettingStarted" className="w-full">
-          <TabsList className="w-full max-w-md mx-auto grid grid-cols-3 mb-8">
-            <TabsTrigger value="gettingStarted">Getting Started</TabsTrigger>
-            <TabsTrigger value="coreWorkflows">Core Workflows</TabsTrigger>
-            <TabsTrigger value="advancedFeatures">
+        <Tabs defaultValue="gettingStarted" className="w-full h-fit">
+          <TabsList className="w-full max-w-md mx-auto flex flex-col lg:flex-row mb-12 lg:mb-8 h-fit">
+            <TabsTrigger value="gettingStarted" className="truncate p-4 lg:p-2 w-full">
+              Getting Started
+            </TabsTrigger>
+            <TabsTrigger value="coreWorkflows" className="truncate p-4 lg:p-2 w-full">
+              Core Workflows
+            </TabsTrigger>
+            <TabsTrigger value="advancedFeatures" className="truncate p-4 lg:p-2 w-full">
               Advanced Features
             </TabsTrigger>
           </TabsList>
