@@ -16,7 +16,7 @@ from src.routes.index import (
     payment_router,
 )
 
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(lifespan=lifespan)
 
