@@ -6,7 +6,7 @@ from neo4j import GraphDatabase
 class MongoScriptsClient:
     def __init__(self):
         self.client = MongoClient(settings.mongo_url)
-        self.database = settings.mongo_initdb_root_database
+        self.database = self.client[settings.mongo_initdb_root_database]
     
     def _get_collection(self, name : str):
         return self.database[name]

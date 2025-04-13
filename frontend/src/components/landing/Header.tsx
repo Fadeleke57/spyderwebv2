@@ -29,18 +29,19 @@ function Header() {
         <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 dark:text-white">
           The new way to news.
         </p>
-        <h1 className="text-5xl lg:text-9xl tracking-tight max-w-xs lg:max-w-full mb-2 sm:mb-4 font-extrabold lg:font-bold dark:text-white">
+          
+        <h1 className="relative text-5xl lg:text-9xl tracking-tight max-w-xs lg:max-w-full mb-2 sm:mb-4 font-extrabold lg:font-bold dark:text-white">
           Welcome to the{" "}
           <TypingAnimation
             className="text-violet-400 text-5xl sm:text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tigh italic"
             text="Web."
-          />
+          /><span className="absolute top-4 right-28 text-violet-400/80 text-sm tracking-normal font-semibold">BETA</span>
         </h1>
         <p className="leading-7 mt-4 text-base sm:text-lg font-medium max-w-full lg:max-w-xl mx-0 text-muted-foreground dark:text-white">
           Learn. Create. Connect. Share.{" "}
           <span className="hidden md:inline lg:inline">
-            Curate your deep dives with AI and turn them into starting points for
-            discovery.
+            Curate your deep dives with AI and turn them into starting points
+            for discovery.
           </span>
         </p>{" "}
         {/* Would be funny to add a prompt here "With AI ofc!"*/}

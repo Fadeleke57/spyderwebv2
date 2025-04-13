@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spydr Web Clipper</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="web-selector">
+        <div class="web-selector-header">
+          <h3>
+            <img src="slogonobg.png" alt="Spyder Icon" />
+            Spydr Web Clipper
+          </h3>
+        </div>
+        <!-- Single dropdown with fuzzy search -->
+        <div class="dropdown-container">
+          <input
+            type="text"
+            id="dropdownInput"
+            placeholder="Select a web..."
+            autocomplete="off"
+          />
+          <div class="dropdown-list scrollbar-custom" id="dropdownList">
+            <!-- Items will be dynamically added -->
+          </div>
+        </div>
+
+        <div class="detected-box">
+          <p id="detectedType">Detecting...</p>
+        </div>
+
+        <button id="saveButton" class="primary-button">Save</button>
+      </div>
+
+      <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <p id="loadingMessage">Saving to Spyder...</p>
+      </div>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
