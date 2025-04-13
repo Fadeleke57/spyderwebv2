@@ -16,14 +16,22 @@ class PineconeClient:
         self.index = self.client.Index(name=settings.pinecone_index_name)
 
     @staticmethod
-    def _generate_source_chunk_metadata(source : Dict[str, Any], chunk, index: int, number_of_chunks: int, page_number : Optional[int] = None) -> Dict[str, Any]: # for youtube video chunk is an object of "text" and "start_time" and "end_time"
+    def _generate_source_chunk_metadata(
+        source: Dict[str, Any],
+        chunk,
+        index: int,
+        number_of_chunks: int,
+        page_number: Optional[int] = None,
+    ) -> Dict[
+        str, Any
+    ]:  # for youtube video chunk is an object of "text" and "start_time" and "end_time"
         type = source["type"]
 
         if type == "website":
 
             metadata = {
                 "sourceId": source["sourceId"],
-                "webId" : source["webId"],
+                "webId": source["webId"],
                 "websiteTitle": source["name"],
                 "chunkIndex": index,
                 "chunkCount": number_of_chunks,
@@ -295,7 +303,7 @@ class PineconeClient:
         self,
         source: Source,
         chunks: list[str],
-        user_id: str = None,
+        user_id: str,
         page_number: Optional[int] = None,
     ):
         """
@@ -316,10 +324,11 @@ class PineconeClient:
 
         vectors = []
         should_run_autolinker = False
-        
+
         if user_id:
             from src.utils.credits import deduct_credits
             import asyncio
+
             # Check if user has enough credits for autolinker
             success, _ = asyncio.run(deduct_credits(user_id, "autolinker"))
             if success:
@@ -329,15 +338,19 @@ class PineconeClient:
         num_chunks = len(chunks)
 
         for i, chunk in enumerate(chunks):
-            chunk_id = f"{source_id}:chunk{i}:page{page_number}" if page_number else f"{source_id}:chunk{i}"
+            chunk_id = (
+                f"{source_id}:chunk{i}:page{page_number}"
+                if page_number
+                else f"{source_id}:chunk{i}"
+            )
             logger.info(f"Uploading chunk: {chunk_id}")
 
             metadata = self._generate_source_chunk_metadata(
-                source=source, 
-                chunk=chunk, 
-                index=i, 
-                number_of_chunks=num_chunks, 
-                page_number=page_number
+                source=source,
+                chunk=chunk,
+                index=i,
+                number_of_chunks=num_chunks,
+                page_number=page_number,
             )
             chunk = chunk["text"] if source["type"] == "youtube" else chunk
 

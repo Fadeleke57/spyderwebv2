@@ -20,6 +20,7 @@ import { NewWebModal } from "../webs/NewWebModal";
 import { AuthModal } from "../auth/AuthModal";
 import { ResourceUsage } from "./ResourceUsage";
 import { useResourceUsage } from "@/hooks/usage";
+import { Skeleton } from "../ui/skeleton";
 
 const SidebarIndicator = ({ show }: { show: boolean }) => {
   const { state } = useSidebar();
@@ -35,7 +36,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser();
   const [selectedButton, setSelectedButton] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const { data: usage, isLoading } = useResourceUsage();
+  const {
+    data: usage,
+    isLoading: usageLoading,
+    isError: usageError,
+  } = useResourceUsage(user?.id);
 
   useEffect(() => {
     if (router.pathname.startsWith("/home")) {
@@ -276,18 +281,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         hideWhen={user ? null : "collapsed"}
         className="mb-2 relative"
       >
-        <div className="px-2 mb-4">
-          {isLoading ? (
-            <div className="animate-pulse">Loading usage...</div>
-          ) : (
-            <ResourceUsage
-              storageUsed={usage?.storage.used || 0}
-              storageLimit={usage?.storage.limit || 0}
-              computationUsed={usage?.computation.used || 0}
-              computationLimit={usage?.computation.limit || 0}
-            />
-          )}
-        </div>
+        {user && (
+          <div className="px-2 mb-4">
+            {usageLoading ? (
+              <Skeleton className="h-32 w-full rounded-xl" />
+            ) : (
+              <ResourceUsage
+                storageUsed={usage?.storage.used || 0}
+                storageLimit={usage?.storage.limit || 0}
+                computationUsed={usage?.computation.used || 0}
+                computationLimit={usage?.computation.limit || 0}
+              />
+            )}
+            {usageError && <div>Something went wrong</div>}
+          </div>
+        )}
         <NavUser />
       </SidebarFooter>
       {open && (

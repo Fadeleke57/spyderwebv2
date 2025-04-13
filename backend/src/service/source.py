@@ -15,15 +15,13 @@ class SourceService:
     def __init__(self):
         pass
 
-    def embed_and_upsert_website(self, source : Source, md: str):
+    def embed_and_upsert_website(self, source: Source, md: str):
 
         try:
 
             chunks = pineconeClient.chunk_clean_text(md)
 
-            results = pineconeClient.embed_and_upsert_to_pinecone(
-                source, chunks
-            )
+            results = pineconeClient.embed_and_upsert_to_pinecone(source=source, chunks=chunks, user_id=source["userId"])
 
             logger.info(f"Pinecone results: {results}")
 
@@ -39,27 +37,25 @@ class SourceService:
 
         try:
             chunks = pineconeClient.chunk_youtube_transcript(transcripts)
-            results = pineconeClient.embed_and_upsert_to_pinecone(
-                source, chunks
-            )
+            results = pineconeClient.embed_and_upsert_to_pinecone(source=source, chunks=chunks, user_id=source["userId"])
             logger.info(f"Pinecone results: {results}")
         except Exception as e:
             logger.error(f"Error processing Pinecone embeddings: {e}")
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
 
-    def embed_and_upsert_pdf(
-        self, file_path: str, source: Source
-    ):
+    def embed_and_upsert_pdf(self, file_path: str, source: Source):
         try:
 
             # extract Markdown for each page as a list of dictionaries
-            data = pymupdf4llm.to_markdown(file_path, page_chunks=True) #returns a list
+            data = pymupdf4llm.to_markdown(
+                file_path, page_chunks=True
+            )  # returns a list
 
             os.remove(file_path)
             if not data:
                 logger.info("No text found in PDF")
                 return
-            
+
             for index, page_data in enumerate(data):
                 page_number = index + 1
 
@@ -67,7 +63,9 @@ class SourceService:
                     text=page_data["text"], chunk_size=1000, chunk_overlap=100
                 )
 
-                results = pineconeClient.embed_and_upsert_to_pinecone(source=source, chunks=chunks, page_number=page_number)
+                results = pineconeClient.embed_and_upsert_to_pinecone(
+                    source=source, chunks=chunks, user_id=source["userId"], page_number=page_number
+                )
 
             logger.info(f"Pinecone results: {results}")
 
@@ -75,12 +73,12 @@ class SourceService:
             logger.error(f"Error processing Pinecone embeddings: {e}")
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
 
-    def embed_and_upsert_note(self, source : Source, text: str):
+    def embed_and_upsert_note(self, source: Source, text: str):
         try:
             chunks = pineconeClient.chunk_clean_text(
                 text=text, chunk_size=300, chunk_overlap=50
             )
-            results = pineconeClient.embed_and_upsert_to_pinecone(source, chunks)
+            results = pineconeClient.embed_and_upsert_to_pinecone(source=source, chunks=chunks, user_id=source["userId"])
 
             logger.info(f"Pinecone results: {results}")
         except Exception as e:
@@ -119,7 +117,7 @@ class SourceService:
                         connectionToInsert = {
                             "connectionId": connection_id,
                             "webId": web_id,
-                            "data.description": "Mentioned in note",
+                            "description": "Obsidian reference",
                             "fromSourceId": source["sourceId"],
                             "toSourceId": target_id,
                             "created": datetime.now(),
@@ -156,7 +154,7 @@ class SourceService:
                         connectionToInsert = {
                             "connectionId": connection_id,
                             "webId": web_id,
-                            "data.description": "Mentioned in note",
+                            "description": "Obsidian reference",
                             "fromSourceId": source["sourceId"],
                             "toSourceId": target_id,
                             "created": datetime.now(),

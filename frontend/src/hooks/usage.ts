@@ -1,13 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
 
-export function useResourceUsage() {
+export function useResourceUsage(userId?: string) {
   return useQuery({
-    queryKey: ['resourceUsage'],
+    queryKey: ["resourceUsage"],
     queryFn: async () => {
-      const response = await api.get('/users/usage');
+      const response = await api.get("/users/usage");
       return response.data;
     },
+    enabled: !!userId,
   });
 }
-
