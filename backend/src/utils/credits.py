@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 from src.models.user import Users
 from src.db.mongodb import get_collection
@@ -62,3 +62,33 @@ async def get_user_credits(user_id: str) -> Optional[int]:
         return user.get("credits", 0) if user else None
     except Exception:
         return None
+
+async def update_user_plan(user_id: str, tier: str, is_yearly: bool) -> tuple[bool, Optional[str]]:
+    """
+    Update a user's plan and reset their credits.
+    Returns (success, error_message)
+    """
+    try:
+        now = datetime.now(UTC)
+        
+        # Update user's subscription plan, credits, and yearly status
+        result = Users.update_one(
+            {"id": user_id},
+            {
+                "$set": {
+                    "subscription_plan": tier,
+                    "credits": PLAN_CREDITS[tier],
+                    "is_yearly": is_yearly,
+                    "last_credits_reset": now,
+                    "updated_at": now
+                }
+            }
+        )
+        
+        if result.modified_count == 0:
+            return False, "User not found"
+            
+        return True, None
+        
+    except Exception as e:
+        return False, str(e)

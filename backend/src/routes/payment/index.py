@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import stripe
 import os
 from dotenv import load_dotenv
+from src.routes.auth.oauth2 import manager
+from src.models.user import User
+from src.utils.credits import update_user_plan
+from src.lib.logger.index import logger
 
 # Load environment variables
 load_dotenv()
@@ -148,4 +152,79 @@ async def stripe_webhook(request: Request):
         return {"status": "success"}
     
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e)) 
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/success")
+async def handle_payment_success(
+    session_id: str,
+    background_tasks: BackgroundTasks,
+    user: User = Depends(manager)
+):
+    """Handle successful payment and plan upgrade"""
+    try:
+        # Get the session details from Stripe
+        session = stripe.checkout.Session.retrieve(session_id)
+        
+        # Get the client reference ID to ensure it matches the user
+        if session.client_reference_id != user["id"]:
+            raise HTTPException(status_code=403, detail="Unauthorized")
+            
+        # Extract plan details from metadata
+        tier = session.metadata.get('tier', 'basic')  # default to basic if not specified
+        is_yearly = session.metadata.get('is_yearly', 'false').lower() == 'true'
+        
+        # Update the user's plan in background
+        success, error = await update_user_plan(
+            user_id=user["id"],
+            tier=tier,
+            is_yearly=is_yearly
+        )
+        
+        if not success:
+            logger.error(f"Failed to update plan for user {user['id']}: {error}")
+            raise HTTPException(status_code=500, detail="Failed to update plan")
+            
+        return {
+            "status": "success",
+            "message": "Plan updated successfully",
+            "plan": {
+                "tier": tier,
+                "is_yearly": is_yearly
+            }
+        }
+        
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error in payment success: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/failure")
+async def handle_payment_failure(
+    session_id: str,
+    user: User = Depends(manager)
+):
+    """Handle failed payment"""
+    try:
+        # Get the session details from Stripe
+        session = stripe.checkout.Session.retrieve(session_id)
+        
+        # Get the client reference ID to ensure it matches the user
+        if session.client_reference_id != user["id"]:
+            raise HTTPException(status_code=403, detail="Unauthorized")
+            
+        # Log the failure
+        logger.error(f"Payment failed for user {user['id']}, session {session_id}")
+        
+        return {
+            "status": "error",
+            "message": "Payment failed. Please try again or contact support."
+        }
+        
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error in payment failure: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e)) 

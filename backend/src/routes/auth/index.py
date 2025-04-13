@@ -109,7 +109,7 @@ async def auth_callback(code: str):
                 "subscription_plan": "free",
                 "last_credits_reset": datetime.now(UTC),
                 "storage_used": 0.0,  # Storage used in mb
-                "storage_last_calculated": datetime.now(UTC)
+                "storage_last_calculated": datetime.now(UTC),
                 "is_yearly": False,
                 "created_at": datetime.now(UTC),
                 "updated_at": datetime.now(UTC)
