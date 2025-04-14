@@ -60,7 +60,7 @@ function Index() {
           }`}
         />
       </Head>
-      <div className="mt-10 z-20 max-w-4xl mx-auto py-12 flex flex-col gap-8">
+      <div className="px-8 lg:px-0 mt-10 z-20 max-w-4xl mx-auto py-12 flex flex-col gap-8">
         <motion.div
           variants={staggerContainer}
           initial="hidden"
@@ -86,8 +86,8 @@ function Index() {
 
           <motion.p variants={fadeInItem}>
             Spydr empowers innovators, researchers, and learners to build upon
-            each other's knowledge by creating an interconnected layer of human
-            insight across the digital world. We're democratizing innovation by
+            each other&apos;s knowledge by creating an interconnected layer of human
+            insight across the digital world. We&apos;re democratizing innovation by
             enabling users to create, connect, and share webs of knowledge
             through semantic linking of diverse content - from documents to
             videos, websites to personal notes. Our mission is to break down the
@@ -104,7 +104,7 @@ function Index() {
             className="border w-full p-4 rounded-md"
           >
             We envision a future in which no one has to start from scratch,
-            where knowledge builds upon knowledge, and where humanity's
+            where knowledge builds upon knowledge, and where humanity&apos;s
             collective intelligence becomes more than the sum of its parts.
           </motion.div>
 
@@ -138,7 +138,7 @@ function Index() {
           </motion.ul>
 
           <motion.p variants={fadeInItem}>
-            At Spydr, we're not just building a tool - we're creating an
+            At Spydr, we&apos;re not just building a tool - we&apos;re creating an
             annotative layer over the Internet ecosystem that transforms how
             people learn, ideate, and innovate together.
           </motion.p>

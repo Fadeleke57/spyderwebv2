@@ -14,7 +14,7 @@ const AnimatedHeader = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
     >
-      <h1 className="scroll-m-20 lg:text-4xl font-extrabold tracking-tight lg:text-5xl text-foreground mb-14">
+      <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-foreground mb-14">
         The Beginnings of an Annotated Internet
       </h1>
     </motion.div>
@@ -64,7 +64,7 @@ function Index() {
         <Image src={BGImage} alt="bg" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black opacity-50"></div>
       </div>
-      <div className="-mt-44 z-20 max-w-4xl mx-auto py-12 flex flex-col gap-8">
+      <div className="-mt-52 lg:-mt-44 px-8 lg:px-0 z-20 max-w-4xl mx-auto py-12 flex flex-col gap-8">
         <AnimatedHeader />
 
         <motion.div
@@ -90,9 +90,9 @@ function Index() {
             className="ml-6 list-disc [&>li]:mt-2"
           >
             <li>
-              <strong>Ads and SEO</strong> - A "pay-to-play" system dominated by
-              large corporations and creators manipulating SEO to serve their
-              interests, not users&apos;.
+              <strong>Ads and SEO</strong> - A &ldquo;pay-to-play&rdquo; system
+              dominated by large corporations and creators manipulating SEO to
+              serve their interests, not users&apos;.
             </li>
             <li>
               <strong>AI Overviews</strong> - While promising, AI often provides{" "}
@@ -146,7 +146,8 @@ function Index() {
 
           <motion.p variants={fadeInItem}>
             Spydr is pioneering an annotative layer for the internet that shifts
-            the focus from "what" users search for to "why."
+            the focus from &ldquo;what&rdquo; users search for to
+            &ldquo;why.&rdquo;
             <br></br>
             <br></br>No more ads. No more SEO manipulation. No more content
             driven by metrics like clicks or backlinks. Imagine an internet
@@ -230,8 +231,8 @@ function Index() {
             <li>
               <strong>In-House Discussion and Search Platform: </strong> Spydr
               fosters a community-driven approach to search by allowing users to
-              create and publish "webs," or mind maps, for their research or
-              exploration.
+              create and publish &ldquo;webs,&rdquo; or mind maps, for their
+              research or exploration.
             </li>
             <li>
               <strong>External Annotated Web Tool:</strong> With a browser

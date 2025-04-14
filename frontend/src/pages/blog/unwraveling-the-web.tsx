@@ -1,10 +1,10 @@
 import PublicLayout from "@/app/PublicLayout";
 import Head from "next/head";
 import Image from "next/image";
-import Link from "next/link";
 import React, { ReactElement } from "react";
 import BGImage from "@/assets/blackbox.webp";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 const AnimatedHeader = () => {
   return (
@@ -14,8 +14,8 @@ const AnimatedHeader = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
     >
-      <h1 className="scroll-m-20 lg:text-4xl font-extrabold tracking-tight lg:text-5xl text-foreground mb-14">
-        Unwraveling the Modern Web
+      <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-foreground mb-14">
+        Unraveling the Web: Structuring AI in a Fragmented Digital Landscape
       </h1>
     </motion.div>
   );
@@ -51,20 +51,14 @@ function Index() {
         <title>{"about - spydr"}</title>
         <meta name="description" content={"Learn more about spydr"} />
         <link rel="icon" href="/favicon.ico" />
-        <meta property="og:title" content={"about - spydr"} />
-        <meta property="og:description" content={"Learn more about spydr"} />
-        <meta
-          property="og:url"
-          content={`${
-            typeof window !== "undefined" ? window.location.href : ""
-          }`}
-        />
       </Head>
+
       <div className="w-full relative h-[60vh] rounded-3xl">
         <Image src={BGImage} alt="bg" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black opacity-50"></div>
+        <div className="absolute inset-0 bg-black opacity-50" />
       </div>
-      <div className="-mt-44 z-20 max-w-4xl mx-auto py-12 flex flex-col gap-8">
+
+      <div className="-mt-60 px-8 lg:px-0 z-20 max-w-4xl mx-auto py-6 flex flex-col gap-8">
         <AnimatedHeader />
 
         <motion.div
@@ -73,191 +67,207 @@ function Index() {
           animate="show"
           className="flex flex-col gap-8"
         >
+          <motion.p variants={fadeInItem}>
+            In the ever-expanding digital landscape, the internet serves as a
+            vast repository of human knowledge and expression. This repository
+            is as diverse and fragmented as its contributors, ranging from
+            academic research to blog entries and outspoken tweets. As AI models
+            grow in complexity, they learn from this rich tapestry of data.
+            However, the inherently unstructured nature of this information
+            poses unique challenges to Large Language Models (LLMs), which are
+            often described as &ldquo;black boxes&rdquo; due to their cryptic
+            decision-making processes.
+          </motion.p>
+
           <motion.h2
             variants={fadeInItem}
-            className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0"
+            className="text-3xl font-semibold tracking-tight border-b pb-2"
           >
-            <span className="">The Model For Search is Inherently Flawed</span>
+            The Challenge of Fragmented Thought
           </motion.h2>
 
           <motion.p variants={fadeInItem}>
-            The internet&#39;s current search standard is hindered by two major
-            issues:
-          </motion.p>
-
-          <motion.ul
-            variants={fadeInItem}
-            className="ml-6 list-disc [&>li]:mt-2"
-          >
-            <li>
-              <strong>Ads and SEO</strong> - A "pay-to-play" system dominated by
-              large corporations and creators manipulating SEO to serve their
-              interests, not users&apos;.
-            </li>
-            <li>
-              <strong>AI Overviews</strong> - While promising, AI often provides{" "}
-              <Link
-                className="underline text-blue-500"
-                href="https://www.blindfiveyearold.com/its-goog-enough"
-                target="_blank"
-              >
-                &lsquo;good enough&rsquo;
-              </Link>{" "}
-              answers, missing nuances in web data and undermining original
-              content creators. This model is unsustainable and risks degrading
-              the quality of online information.
-            </li>
-          </motion.ul>
-
-          <motion.p variants={fadeInItem}>
-            Google Search has become a cluttered ecosystem where ads overshadow
-            organic results, prioritizing revenue over usability. Similarly,
-            AI-powered answer engines, such as{" "}
+            Given the internet&apos;s multitude of information sources—some
+            insightful, others increasingly trivial—LLM outputs can suffer from
+            entropic uncertainty. Anthropic’s introduction to this idea,{" "}
             <Link
-              href="https://www.perplexity.ai/"
-              className="underline text-blue-500"
-              target="_blank"
+              href={"https://www.youtube.com/watch?v=Bj9BD2D3DzA"}
+              className="hover:underline text-violet-400/80"
             >
-              Perplexity.ai
+              <em>
+                &ldquo;Tracing the thoughts of a large language model&rdquo;
+              </em>
             </Link>
-            , while innovative, risk devaluing discussion-promoted sites by
-            reducing incentives to contribute to these sources. As AI is only as
-            good as the data it&#39;s trained on, this creates a feedback loop
-            where users rely on AI for answers, and AI relies on users for data.
-            Eventually, this feedback loop degrades both the user experience and
-            the AI ecosystem.
+            , emphasizes this challenge, shedding light on how, in the absence
+            of a clear reasoning path or chain, an LLM may generate responses as
+            erratic as the data it consumes.
           </motion.p>
 
-          <motion.h2
-            variants={fadeInItem}
-            className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0"
-          >
-            <span className="">Introducing a New Context Layer</span>
-          </motion.h2>
-
-          <motion.blockquote
-            variants={fadeInItem}
-            className="mt-6 border-l-2 pl-6 italic"
-          >
-            &ldquo;SEO&rdquo; is about understanding the USER. How do they
-            search? And what is the intent behind those searches?<br></br>AJ
-            Kohn - Digital Marketer and Start-Up Advisor.
-          </motion.blockquote>
-
           <motion.p variants={fadeInItem}>
-            Spydr is pioneering an annotative layer for the internet that shifts
-            the focus from "what" users search for to "why."
-            <br></br>
-            <br></br>No more ads. No more SEO manipulation. No more content
-            driven by metrics like clicks or backlinks. Imagine an internet
-            where looking for information doesn&apos;t mean hours or days of
-            useless information. Every website and article is{" "}
-            <a
-              className="underline text-blue-500"
-              href="https://www.productboard.com/blog/how-medium-highlights-feature-changed-publishing/?"
-              target="_blank"
-            >
-              tagged and annotated
-            </a>{" "}
-            by users just like you, with the same goal as you - finding quality
-            answers. Think of it as a comment section for the entire web, with
-            limitless applications. AI companies training models on internet
-            data would gain not only the content of a webpage but also an
-            additional layer of nuanced, human-driven insights as a precursor to
-            semantics. Researchers filtering through articles could benefit from
-            the collective foresight of hundreds of contributors before them.
-          </motion.p>
-
-          <motion.h2
-            variants={fadeInItem}
-            className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0"
-          >
-            How Spydr Works
-          </motion.h2>
-
-          <motion.p variants={fadeInItem}>
-            Inspired by online discussion platform,{" "}
+            A similar observation was made by a popular X (formerly Twitter)
+            engineer, Yacine M. Specifically,{" "}
             <Link
-              href="https://www.reddit.com/"
-              target="_blank"
-              className="underline text-blue-500"
+              href={"https://x.com/yacineMTB/status/1907630325506744514"}
+              className="hover:underline text-violet-400/80"
             >
-              Reddit
+              <em>
+                &ldquo;KACHE on <em>LLMs as internet simulacra</em>&rdquo;
+              </em>
             </Link>
-            , and Medium&apos;s{" "}
+            , where he writes:
+            <blockquote className="mt-6 border-l-2 pl-6 italic">
+              &ldquo;The internet has it all. Every human, baring their soul,
+              behavioural patterns that they don&apos;t even notice themselves,
+              all online. And the machine munches through it—it reads about our
+              dreams, our code, our lives, our aspirations, our struggles. It
+              models us. It learns about us. Humans, it learns, fall on a pretty
+              wide distribution. Some of us are the tails. Exceptional, for
+              better or worse. But the majority make up the swamp that is the
+              middle. The predictable. The less entropic.&rdquo;
+            </blockquote>
+            <p className="mt-4">
+              While the internet captures a broad spectrum of human experience—
+              from unrefined writings to technical documentation—this diversity
+              can result in unpredictably variable LLM outputs. This
+              unpredictability can foster creativity but also complicate the
+              reliability of AI-generated content.
+            </p>
+          </motion.p>
+
+          <motion.h2
+            variants={fadeInItem}
+            className="text-3xl font-semibold tracking-tight border-b pb-2"
+          >
+            Grounding Through Reasoning Chains
+          </motion.h2>
+
+          <motion.p variants={fadeInItem}>
+            Despite these challenges, innovations like reasoning chains offer a
+            promising pathway to more structured, coherent AI responses. By
+            anchoring AI outputs to specified chains of thought—essentially,
+            targeted pathways through connected sources—we can reduce disarray
+            from fragmented data.
+          </motion.p>
+
+          <motion.p variants={fadeInItem}>
+            Roy Fielding&apos;s dissertation on web architecture, as mentioned
+            in Jon Udell&apos;s{" "}
             <Link
+              className="hover:underline text-violet-400/80"
               href={
-                "https://help.medium.com/hc/en-us/articles/214406358-About-highlights"
+                "https://blog.jonudell.net/2017/05/05/weaving-the-annotated-web/"
               }
-              target="_blank"
-              className="underline text-blue-500"
             >
-              highlight feature
+              <em>&ldquo;Weaving the annotated web&rdquo;</em>
             </Link>
-            {", "}
-            Spydr plans to make search a community-driven process. Whether that
-            be looking for reputable informtion for a research project or just
-            looking for your newest sofa. Instead of working in isolation, you
-            can reuse and expand on the work of others. Spydr allows you to
-            start with a private mind map, called a &apos;web&apos; of what you
-            are looking for. As you traverse either Spydr or the web, you can
-            collect and add information such as notes, youtube videos,
-            documents, and websites to your web. You can then share your web
-            with others, and even publish it for others to explore and build
-            upon.
+            , exemplifies how highlighted and annotated source material can
+            guide understanding. Furthermore, it reflects how AI models, when
+            grounded in specified thought trajectories, can deliver outputs with
+            improved fidelity and context.
           </motion.p>
-
-          <motion.p variants={fadeInItem}>
-            Outside of Spydr, through the use of an extension, you can
-            anonymously highlight and tag content from any site you visit or add
-            it to a web. Other people can then view your highlights and see what
-            you were looking for and if you were successful. In Spydr, you can
-            also find a published web and use it as a jumping off point for
-            whatever you&apos;d like to explore.
-          </motion.p>
-
-          <motion.h3
-            variants={fadeInItem}
-            className="scroll-m-20 text-2xl font-semibold tracking-tight"
-          >
-            Features
-          </motion.h3>
-
-          <motion.ul
-            variants={fadeInItem}
-            className="ml-6 list-disc [&>li]:mt-2"
-          >
-            <li>
-              <strong>In-House Discussion and Search Platform: </strong> Spydr
-              fosters a community-driven approach to search by allowing users to
-              create and publish "webs," or mind maps, for their research or
-              exploration.
-            </li>
-            <li>
-              <strong>External Annotated Web Tool:</strong> With a browser
-              extension, users can anonymously highlight, tag, and comment on
-              content from any website. Others visiting the same page can view
-              these highlights, gaining insights from the contributor&apos;s
-              annotations and assessing the quality of the content.
-            </li>
-          </motion.ul>
 
           <motion.h2
             variants={fadeInItem}
-            className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0"
+            className="text-3xl font-semibold tracking-tight border-b pb-2"
           >
-            Democratizing How Information is Gathered and Shared
+            The Role of Spydr in Transforming Digital Interaction
           </motion.h2>
 
           <motion.p variants={fadeInItem}>
-            We stand at the brink of redefining how humanity interacts with
-            knowledge. The future of information is either dictated by
-            algorithms and clickbait or reclaimed by empowered individuals
-            collaborating to build a smarter, annotated web. Over the next
-            decade, the question isn&apos;t whether we can access data, but
-            whether we can trust it. Our mission is to arm people with the tools
-            to elevate their understanding, democratize discovery, and create an
-            internet that amplifies human insight rather than commodifies it.
+            Enter Spydr, a platform that embodies the vision of structuring
+            knowledge in a fragmented digital world. At its core, Spydr allows
+            users to start with a private mind map, called a &ldquo;web&rdquo;,
+            as a foundation for their exploratory experience. This mind map
+            gives users the ability to manually—or through the autolinker
+            feature—create logical connections between sources. Charlotte, your
+            helpful AI assistant, understands more than just flat insertions of
+            data in these spaces. She understands the structure and flow of the
+            context between data, making interactions with larger, more complex
+            webs easier. As users traverse either their own web or webs found on
+            their feed, they collect and incorporate diverse forms of
+            information, including notes, YouTube videos, documents, websites,
+            and eventually social media posts, into their personal webs.
+          </motion.p>
+
+          <motion.p variants={fadeInItem}>
+            Spydr hones in on knowledge democratization through its
+            collaborative essence. Users can share their webs with peers or
+            publish them, enabling others to explore and build upon shared
+            foundations. This feature not only democratizes access to structured
+            information but also transforms how digital interactions and
+            information discoveries can be mapped and utilized collaboratively.
+          </motion.p>
+
+          <motion.p variants={fadeInItem}>
+            One of the standout features of Spydr is its capability for
+            fine-grained context switching. With Charlotte, the AI chat
+            interface, users can seamlessly hop from one web to another,
+            instantly gaining and retaining context. For instance, you might
+            move from a web about{" "}
+            <Link
+              href={"https://nextjs.org/docs"}
+              target="_blank"
+              className="hover:underline text-violet-400/80"
+            >
+              Next.js documentation
+            </Link>{" "}
+            to one discussing the{" "}
+            <Link
+              href={"https://sdk.vercel.ai/docs/introduction"}
+              className="hover:underline text-violet-400/80"
+              target="_blank"
+            >
+              Vercel AI SDK.
+            </Link>{" "}
+            Charlotte retains the conversation flow and context from the first
+            web while integrating the specific details and connections from the
+            second, ensuring a coherent and informed dialogue at all times.
+          </motion.p>
+
+          <motion.h2
+            variants={fadeInItem}
+            className="text-3xl font-semibold tracking-tight border-b pb-2"
+          >
+            Unraveling Complexity for Reliable Outputs
+          </motion.h2>
+
+          <motion.p variants={fadeInItem}>
+            The endeavor to create an annotated internet is not just about
+            enhancing human understanding—it&apos;s also about equipping AI
+            models to handle information more reliably. By structuring and
+            linking knowledge webs like those facilitated by Spydr, we break
+            down barriers between ideation and reliability in innovation.
+          </motion.p>
+
+          <motion.p variants={fadeInItem}>
+            Spydr&apos;s annotative approach enables a transparent layer of
+            human insight interwoven across the digital sphere, allowing both
+            LLMs and users to navigate the intricacies of knowledge with greater
+            certainty and accuracy.
+          </motion.p>
+
+          <motion.h2
+            variants={fadeInItem}
+            className="text-3xl font-semibold tracking-tight border-b pb-2"
+          >
+            Closing Thoughts
+          </motion.h2>
+
+          <motion.p variants={fadeInItem}>
+            In essence, the way forward demands a deeper commitment to grounding
+            AI reasoning in structured knowledge pathways. This involves not
+            merely selecting reliable content but also bolstering AI&apos;s
+            capacity to discern and connect varying data with human insight. As
+            we untangle the complex digital web, we empower LLMs not just with
+            information but with the requisite context to transcend simple
+            output generation, facilitating the creation of insights that are as
+            trustworthy as they are enlightening.
+          </motion.p>
+
+          <motion.p variants={fadeInItem}>
+            Together, we embrace an annotative web, transforming the digital
+            landscape into one where both humans and machines collaboratively
+            learn, innovate, and thrive.
           </motion.p>
         </motion.div>
       </div>

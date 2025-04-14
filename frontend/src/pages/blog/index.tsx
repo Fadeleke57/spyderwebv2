@@ -9,16 +9,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 
 const blogPosts = [
-  {
+    {
     id: 1,
-    title: "The Beginnings of an Annotated Internet",
-    category: "Product",
-    readTime: "3 min read",
-    image: questionMark,
-    url: "/blog/the-beginnings-of-an-annotated-internet",
-  },
-  {
-    id: 2,
     title: "Unwraveling the Modern Web",
     category: "Release",
     readTime: "4 min read",
@@ -26,10 +18,18 @@ const blogPosts = [
     url: "/blog/unwraveling-the-web",
   },
   {
+    id: 2,
+    title: "The Beginnings of an Annotated Internet",
+    category: "Theory",
+    readTime: "3 min read",
+    image: questionMark,
+    url: "/blog/the-beginnings-of-an-annotated-internet",
+  },
+  {
     id: 3,
     title: "Our mission statement",
-    category: "Developer",
-    readTime: "4 min read",
+    category: "Writing",
+    readTime: "1 min read",
     image: spydrblacklogo,
     url: "/blog/mission-statement",
   },
