@@ -5,6 +5,7 @@ from src.models.index import Webs, Web, Users, User
 
 available_models = ["gpt-4o", "gpt-4", "gpt-3.5-turbo", "gpt-3.5-turbo-16k"]
 
+
 class OpenAIClient:
     def __init__(self):
         logger.info("OPENAI CLIENT INITIALIZED")

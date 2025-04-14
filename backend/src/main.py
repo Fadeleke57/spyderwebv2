@@ -17,6 +17,7 @@ from src.routes.index import (
 
 logging.basicConfig(level=logging.INFO)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Start up
@@ -25,45 +26,45 @@ async def lifespan(app: FastAPI):
     yield
     # Shut down
 
+
 async def check_and_reset_credits():
     """Check and reset credits for users daily"""
     from src.models.user import Users
     from datetime import datetime, timedelta
     from pytz import UTC
     from src.lib.logger.index import logger
-    
+
     try:
         now = datetime.now(UTC)
-        
+
         # Find users who need credit reset
-        users_to_reset = Users.find({
-            "$or": [
-                # Monthly users who haven't been reset in 30 days
-                {
-                    "is_yearly": False,
-                    "last_credits_reset": {
-                        "$lte": now - timedelta(days=30)
-                    }
-                },
-                # Yearly users who haven't been reset in 365 days
-                {
-                    "is_yearly": True,
-                    "last_credits_reset": {
-                        "$lte": now - timedelta(days=365)
-                    }
-                }
-            ]
-        })
-        
+        users_to_reset = Users.find(
+            {
+                "$or": [
+                    # Monthly users who haven't been reset in 30 days
+                    {
+                        "is_yearly": False,
+                        "last_credits_reset": {"$lte": now - timedelta(days=30)},
+                    },
+                    # Yearly users who haven't been reset in 365 days
+                    {
+                        "is_yearly": True,
+                        "last_credits_reset": {"$lte": now - timedelta(days=365)},
+                    },
+                ]
+            }
+        )
+
         async for user in users_to_reset:
             try:
                 await reset_user_credits(user["id"])
                 logger.info(f"Reset credits for user {user['id']}")
             except Exception as e:
                 logger.error(f"Failed to reset credits for user {user['id']}: {str(e)}")
-                
+
     except Exception as e:
         logger.error(f"Error in credit reset task: {str(e)}")
+
 
 app = FastAPI(lifespan=lifespan)
 
@@ -96,9 +97,11 @@ app.include_router(chat_router, prefix="/chat")
 app.include_router(process_router, prefix="/processes")
 app.include_router(payment_router, prefix="/payment")
 
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Web!"}
+
 
 @app.get("/health")
 def health():

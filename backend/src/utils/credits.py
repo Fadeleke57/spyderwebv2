@@ -12,19 +12,19 @@ async def reset_user_credits(user_id: str) -> bool:
         user = Users.find_one({"id": user_id})
         if not user:
             return False
-        
+
         plan = user.get("subscription_plan", "free")
         credits = PLAN_CREDITS.get(plan, PLAN_CREDITS["free"])
-        
+
         Users.update_one(
             {"id": user_id},
             {
                 "$set": {
                     "credits": credits,
                     "last_credits_reset": datetime.now(UTC),
-                    "updated_at": datetime.now(UTC)
+                    "updated_at": datetime.now(UTC),
                 }
-            }
+            },
         )
         return True
     except Exception as e:
@@ -40,23 +40,20 @@ async def deduct_credits(user_id: str, operation: str) -> tuple[bool, Optional[s
     try:
         cost = OPERATION_COSTS.get(operation, 1)
         user = Users.find_one({"id": user_id})
-        
+
         if not user:
             return False, "User not found"
-        
+
         current_credits = user.get("credits", 0)
-        
+
         if current_credits < cost:
             return False, "Insufficient credits"
-        
+
         Users.update_one(
             {"id": user_id},
-            {
-                "$inc": {"credits": -cost},
-                "$set": {"updated_at": datetime.now(UTC)}
-            }
+            {"$inc": {"credits": -cost}, "$set": {"updated_at": datetime.now(UTC)}},
         )
-        
+
         return True, None
     except Exception as e:
         return False, str(e)
@@ -70,14 +67,17 @@ async def get_user_credits(user_id: str) -> Optional[int]:
     except Exception:
         return None
 
-async def update_user_plan(user_id: str, tier: str, is_yearly: bool) -> tuple[bool, Optional[str]]:
+
+async def update_user_plan(
+    user_id: str, tier: str, is_yearly: bool
+) -> tuple[bool, Optional[str]]:
     """
     Update a user's plan and reset their credits.
     Returns (success, error_message)
     """
     try:
         now = datetime.now(UTC)
-        
+
         # Update user's subscription plan and related fields
         result = Users.update_one(
             {"id": user_id},
@@ -87,15 +87,15 @@ async def update_user_plan(user_id: str, tier: str, is_yearly: bool) -> tuple[bo
                     "credits": PLAN_CREDITS[tier],
                     "is_yearly": is_yearly,
                     "last_credits_reset": now,
-                    "updated_at": now
+                    "updated_at": now,
                 }
-            }
+            },
         )
-        
+
         if result.modified_count == 0:
             return False, "User not found"
-            
+
         return True, None
-        
+
     except Exception as e:
         return False, str(e)
