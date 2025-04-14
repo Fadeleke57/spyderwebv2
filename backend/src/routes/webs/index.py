@@ -741,7 +741,18 @@ def get_web_contributors(web_id: str, user=Depends(manager.optional)):
         for iteration in web["iterations"]:
             user = Users.find_one({"id": iteration}, {"_id": 0})
             if user:
-                contributers.append(user)
+                publicUser = {
+                    "id": user["id"],
+                    "username": user["username"],
+                    "email": user["email"],
+                    "bio": user["bio"],
+                    "full_name": user["full_name"],
+                    "disabled": user["disabled"],
+                    "websHidden": user["websHidden"],
+                    "websSaved": user["websSaved"],
+                    "subscription_plan": user["subscription_plan"],
+                }
+                contributers.append(publicUser)
 
         return {"result": contributers}
 

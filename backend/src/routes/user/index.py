@@ -40,7 +40,19 @@ def get_user(userId: str, userMakingRequest: User = Depends(manager.optional)):
         if not requestedUser:
             return {"result": None}
 
-        return {"result": requestedUser}
+        publicUser = {
+            "id": requestedUser["id"],
+            "username": requestedUser["username"],
+            "email": requestedUser["email"],
+            "bio": requestedUser["bio"],
+            "full_name": requestedUser["full_name"],
+            "disabled": requestedUser["disabled"],
+            "websHidden": requestedUser["websHidden"],
+            "websSaved": requestedUser["websSaved"],
+            "subscription_plan": requestedUser["subscription_plan"],
+        }
+
+        return {"result": publicUser}
     except Exception as e:
         logger.error(f"Error getting user: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

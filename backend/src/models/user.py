@@ -53,7 +53,11 @@ def create_user(create_user_data: CreateUser):
             username=create_user_data.username,
             full_name=create_user_data.username,
             email=create_user_data.email,
-            hashed_password=get_password_hash(create_user_data.password) if create_user_data.password else "",
+            hashed_password=(
+                get_password_hash(create_user_data.password)
+                if create_user_data.password
+                else ""
+            ),
             disabled=False,
             profile_picture_url=create_user_data.profile_picture_url or "",
         )

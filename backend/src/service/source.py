@@ -21,7 +21,9 @@ class SourceService:
 
             chunks = pineconeClient.chunk_clean_text(md)
 
-            results = pineconeClient.embed_and_upsert_to_pinecone(source=source, chunks=chunks, user_id=source["userId"])
+            results = pineconeClient.embed_and_upsert_to_pinecone(
+                source=source, chunks=chunks, user_id=source["userId"]
+            )
 
             logger.info(f"Pinecone results: {results}")
 
@@ -37,7 +39,9 @@ class SourceService:
 
         try:
             chunks = pineconeClient.chunk_youtube_transcript(transcripts)
-            results = pineconeClient.embed_and_upsert_to_pinecone(source=source, chunks=chunks, user_id=source["userId"])
+            results = pineconeClient.embed_and_upsert_to_pinecone(
+                source=source, chunks=chunks, user_id=source["userId"]
+            )
             logger.info(f"Pinecone results: {results}")
         except Exception as e:
             logger.error(f"Error processing Pinecone embeddings: {e}")
@@ -64,7 +68,10 @@ class SourceService:
                 )
 
                 results = pineconeClient.embed_and_upsert_to_pinecone(
-                    source=source, chunks=chunks, user_id=source["userId"], page_number=page_number
+                    source=source,
+                    chunks=chunks,
+                    user_id=source["userId"],
+                    page_number=page_number,
                 )
 
             logger.info(f"Pinecone results: {results}")
@@ -78,7 +85,9 @@ class SourceService:
             chunks = pineconeClient.chunk_clean_text(
                 text=text, chunk_size=300, chunk_overlap=50
             )
-            results = pineconeClient.embed_and_upsert_to_pinecone(source=source, chunks=chunks, user_id=source["userId"])
+            results = pineconeClient.embed_and_upsert_to_pinecone(
+                source=source, chunks=chunks, user_id=source["userId"]
+            )
 
             logger.info(f"Pinecone results: {results}")
         except Exception as e:

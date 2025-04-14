@@ -282,8 +282,19 @@ def get_current_user(user=Depends(manager)):
             logging.error("User not found in /auth/me")
             raise HTTPException(status_code=401, detail="Unauthorized")
         user["_id"] = str(user["_id"])
-        logging.debug(f"User found in /auth/me: {user}")
-        return user
+        publicUser = {
+            "id": user["id"],
+            "username": user["username"],
+            "email": user["email"],
+            "bio": user["bio"],
+            "full_name": user["full_name"],
+            "disabled": user["disabled"],
+            "websHidden": user["websHidden"],
+            "websSaved": user["websSaved"],
+            "subscription_plan": user["subscription_plan"],
+        }
+        logging.debug(f"User found in /auth/me: {publicUser}")
+        return publicUser
     except Exception as e:
         logging.error(f"Exception in /auth/me: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
