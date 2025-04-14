@@ -1,5 +1,4 @@
 import Link from "next/link";
-import HyperText from "@/components/magicui/hyper-text";
 
 function Footer() {
   return (
@@ -26,7 +25,7 @@ function Footer() {
             </small>
           </Link>
           <Link
-            href="/help"
+            href="#"
             className="inline p-0 decoration-none dark:hover:text-muted-foreground hover:text-slate-700"
           >
             <small className="text-sm font-medium leading-none">Support</small>
