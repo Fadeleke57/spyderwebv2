@@ -186,7 +186,7 @@ function Index() {
         </h1>
         <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
           Watch these step-by-step video tutorials to learn how to make the most
-          of our app's features
+          of our app&apos;s features
         </p>
       </motion.div>
 
@@ -218,13 +218,22 @@ function Index() {
       >
         <Tabs defaultValue="gettingStarted" className="w-full h-fit">
           <TabsList className="w-full max-w-md mx-auto flex flex-col lg:flex-row mb-12 lg:mb-8 h-fit">
-            <TabsTrigger value="gettingStarted" className="truncate p-4 lg:p-2 w-full">
+            <TabsTrigger
+              value="gettingStarted"
+              className="truncate p-4 lg:p-2 w-full"
+            >
               Getting Started
             </TabsTrigger>
-            <TabsTrigger value="coreWorkflows" className="truncate p-4 lg:p-2 w-full">
+            <TabsTrigger
+              value="coreWorkflows"
+              className="truncate p-4 lg:p-2 w-full"
+            >
               Core Workflows
             </TabsTrigger>
-            <TabsTrigger value="advancedFeatures" className="truncate p-4 lg:p-2 w-full">
+            <TabsTrigger
+              value="advancedFeatures"
+              className="truncate p-4 lg:p-2 w-full"
+            >
               Advanced Features
             </TabsTrigger>
           </TabsList>
@@ -297,7 +306,8 @@ function Index() {
       >
         <h2 className="text-2xl font-bold mb-4">Need more help?</h2>
         <p className="text-muted-foreground mb-6">
-          Can't find what you're looking for? Reach out to our support team.
+          Can&apos;t find what you&apos;re looking for? Reach out to our support
+          team.
         </p>
         <button className="bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-2 rounded-md font-medium">
           Contact Support
