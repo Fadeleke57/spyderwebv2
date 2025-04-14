@@ -1,20 +1,12 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Check,
-  ChevronsUpDown,
-  MonitorCog,
-  Moon,
-  Sun,
-  AlertTriangle,
-} from "lucide-react";
+import { MonitorCog, Moon, Sun, AlertTriangle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 
-import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,14 +20,6 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
   Form,
   FormControl,
   FormDescription,
@@ -45,11 +29,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -57,21 +36,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PublicUser } from "@/types/user";
-import { useEditUser } from "@/hooks/user";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/router";
-
-const languages = [
-  { label: "English", value: "en" },
-  { label: "French", value: "fr" },
-  { label: "German", value: "de" },
-  { label: "Spanish", value: "es" },
-  { label: "Portuguese", value: "pt" },
-  { label: "Russian", value: "ru" },
-  { label: "Japanese", value: "ja" },
-  { label: "Korean", value: "ko" },
-  { label: "Chinese", value: "zh" },
-] as const;
+import { PricingModal } from "../pricing/PricingModal";
 
 const accountFormSchema = z.object({
   name: z
@@ -98,12 +65,11 @@ type AccountFormValues = z.infer<typeof accountFormSchema>;
 export function AccountForm({ user }: { user: PublicUser }) {
   const [mounted, setMounted] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { mutateAsync: editUser, isPending, error } = useEditUser();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const { logout } = useUser();
   const [showPricingModal, setShowPricingModal] = useState(false);
-
+  console.log(user);
   const handleLogout = async () => {
     await logout();
     router.push("/explore");
@@ -154,7 +120,8 @@ export function AccountForm({ user }: { user: PublicUser }) {
   };
 
   const handleUpgradeClick = () => {
-    if (user?.accountStatus === "free") {
+    console.log("user plan", user?.subscription_plan);
+    if (user?.subscription_plan === "free") {
       setShowPricingModal(true);
     }
   };
@@ -248,74 +215,6 @@ export function AccountForm({ user }: { user: PublicUser }) {
 
         <FormField
           control={form.control}
-          name="language"
-          disabled
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between space-y-0">
-              <div className="space-y-0.5">
-                <FormLabel>Language</FormLabel>
-                <FormDescription>
-                  This is the language that will be used in app.<br></br>{" "}
-                  Multiple languages coming soon!
-                </FormDescription>
-              </div>
-              <Popover>
-                <PopoverTrigger disabled asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className={cn(
-                        "w-[200px] justify-between",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value
-                        ? languages.find(
-                            (language) => language.value === field.value
-                          )?.label
-                        : "Select language"}
-                      <ChevronsUpDown className="h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-[100px] p-0">
-                  <Command>
-                    <CommandInput disabled placeholder="Search language..." />
-                    <CommandList>
-                      <CommandEmpty>No language found.</CommandEmpty>
-                      <CommandGroup>
-                        {languages.map((language) => (
-                          <CommandItem
-                            value={language.label}
-                            key={language.value}
-                            onSelect={() => {
-                              form.setValue("language", language.value);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                language.value === field.value
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                            {language.label}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="theme"
           render={({ field }) => (
             <FormItem className="flex flex-row items-center justify-between space-y-0">
@@ -326,7 +225,7 @@ export function AccountForm({ user }: { user: PublicUser }) {
                 </FormDescription>
               </div>
               <div className="flex gap-2">
-                {user.accountStatus !== "free" && (
+                {user.subscription_plan !== "free" && (
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="destructive" size="sm">
@@ -373,18 +272,9 @@ export function AccountForm({ user }: { user: PublicUser }) {
 
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-medium">Account Status</h2>
-            <p className="text-sm text-muted-foreground">
-              {user?.accountStatus === "pro"
-                ? "You're on the Pro plan with unlimited access"
-                : user?.accountStatus === "beta"
-                  ? "You're on the Beta plan with unlimited access"
-                  : user?.accountStatus === "trial"
-                    ? "You're on a trial period"
-                    : "You're on the Free plan with limited access"}
-            </p>
+            <h2 className="text-sm font-medium mb-1">Account Status</h2>
           </div>
-          {user?.accountStatus === "free" && (
+          {user?.subscription_plan === "free" && (
             <Button
               onClick={handleUpgradeClick}
               className="bg-gradient-to-r from-violet-500 to-violet-600 text-white hover:from-violet-600 hover:to-violet-700"
@@ -394,6 +284,7 @@ export function AccountForm({ user }: { user: PublicUser }) {
           )}
         </div>
       </form>
+      <PricingModal open={showPricingModal} setOpen={setShowPricingModal} />
     </Form>
   );
 }

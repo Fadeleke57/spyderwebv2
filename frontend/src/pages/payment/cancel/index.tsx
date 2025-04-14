@@ -15,10 +15,7 @@ export default function PaymentCancelPage() {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button asChild>
-            <Link href="/pricing">Return to Pricing</Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link href="/contact">Contact Support</Link>
+            <Link href="/settings">Return to Pricing</Link>
           </Button>
         </div>
       </div>
