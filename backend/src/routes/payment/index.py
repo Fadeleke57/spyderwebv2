@@ -195,22 +195,22 @@ async def stripe_webhook(request: Request):
         logger.error(f"Error processing webhook: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
+class SuccessPaymentPayload(BaseModel):
+    session_id: str
+
 @router.post("/success")
 async def handle_payment_success(
-    request: Request,
+    request: SuccessPaymentPayload,
     background_tasks: BackgroundTasks,
     user: User = Depends(manager)
 ):
     """Handle successful payment and plan upgrade"""
     try:
         logger.info("Success endpoint called")
-        logger.info(f"Request headers: {request.headers}")
-        logger.info(f"Request query params: {request.query_params}")
 
-        # Get session_id from query params
-        session_id = request.query_params.get("session_id")
+        session_id = request.session_id
         if not session_id:
-            logger.error("No session_id provided in query params")
+            logger.error("No session_id provided in payload")
             return JSONResponse(
                 status_code=400,
                 content={"detail": "No session_id provided"}
