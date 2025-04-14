@@ -268,7 +268,8 @@ function Index() {
                 ))}
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
-                <Button
+                {/**
+                 * <Button
                   size="sm"
                   variant="outline"
                   className="h-8 gap-1 dark:hover:bg-muted dark:hover:text-foreground"
@@ -278,6 +279,8 @@ function Index() {
                     Export
                   </span>
                 </Button>
+                 * 
+                 */}
                 <NewWebModal>
                   <Button size="sm" className="h-8 gap-1">
                     <PlusCircle className="h-3.5 w-3.5" />

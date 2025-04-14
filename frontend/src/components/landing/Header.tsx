@@ -26,22 +26,24 @@ function Header() {
   return (
     <div className="flex flex-col gap-4 lg:flex-row items-center justify-between">
       <div className="relative mb-6 sm:mb-8 w-full lg:max-w-[44rem]">
-        <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 dark:text-white">
-          The new way to news.
+        <p className="text-xs sm:text-sm text-slate-500 mb-3 sm:mb-4 dark:text-white italic">
+          Breaking the Black Box
         </p>
-          
         <h1 className="relative text-5xl lg:text-9xl tracking-tight max-w-xs lg:max-w-full mb-2 sm:mb-4 font-extrabold lg:font-bold dark:text-white">
           Welcome to the{" "}
           <TypingAnimation
-            className="text-violet-400 text-5xl sm:text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tigh italic"
+            className="text-violet-400/80 text-5xl sm:text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tigh italic"
             text="Web."
-          /><span className="absolute top-4 right-28 text-violet-400/80 text-sm tracking-normal font-semibold">BETA</span>
+          />
+          <span className="absolute top-0 right-0 lg:top-4 lg:right-28 text-violet-400/80 text-sm tracking-normal font-semibold">
+            BETA
+          </span>
         </h1>
         <p className="leading-7 mt-4 text-base sm:text-lg font-medium max-w-full lg:max-w-xl mx-0 text-muted-foreground dark:text-white">
           Learn. Create. Connect. Share.{" "}
           <span className="hidden md:inline lg:inline">
-            Curate your deep dives with AI and turn them into starting points
-            for discovery.
+            Let AI curate your deep dives and turn them into starting points for
+            discovery.
           </span>
         </p>{" "}
         {/* Would be funny to add a prompt here "With AI ofc!"*/}
@@ -55,7 +57,7 @@ function Header() {
           <GSAPButton
             label="If you're new"
             classname="text-sm font-medium"
-            onClick={() => router.push("/about")}
+            onClick={() => router.push("/blog")}
           />
         </div>
       </div>
@@ -98,14 +100,14 @@ function Header() {
                   By signing up, you agree to our{" "}
                   <Link
                     href="/about/terms-of-service"
-                    className="dark:text-violet-400"
+                    className="dark:text-violet-400/80"
                   >
                     Terms of Service
                   </Link>{" "}
                   and{" "}
                   <Link
                     href="/about/privacy-policy"
-                    className="dark:text-violet-400"
+                    className="dark:text-violet-400/80"
                   >
                     Privacy Policy
                   </Link>

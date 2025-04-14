@@ -116,7 +116,7 @@ const GSAPButton = ({
     >
       <span
         ref={flairRef}
-        className={`absolute inset-0 pointer-events-none scale-0 origin-[0_0] will-change-transform before:absolute before:w-[170%] before:aspect-square before:bg-violet-400 before:rounded-full before:left-0 before:top-0 before:transform before:-translate-x-1/2 before:-translate-y-1/2 before:pointer-events-none`}
+        className={`absolute inset-0 pointer-events-none scale-0 origin-[0_0] will-change-transform before:absolute before:w-[170%] before:aspect-square before:bg-violet-400/80 before:rounded-full before:left-0 before:top-0 before:transform before:-translate-x-1/2 before:-translate-y-1/2 before:pointer-events-none`}
       />
       <span
         className={cn(

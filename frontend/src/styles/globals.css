@@ -173,8 +173,10 @@
 
 ::-moz-selection {
   background: #a78bfa;
+  color: #fff;
 }
 
 ::selection {
   background: #a78bfa;
+  color: #fff;
 }

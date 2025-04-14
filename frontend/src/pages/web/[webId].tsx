@@ -128,7 +128,7 @@ function Index() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="relative inline-flex items-center justify-center">
-                      <div className="absolute rounded-full bg-violet-400/30 animate-pulse w-6 h-6 blur-sm"></div>
+                      <div className="absolute rounded-full bg-violet-400/0 animate-pulse w-6 h-6 blur-sm"></div>
                       <div className="absolute rounded-full bg-violet-400/20 animate-pulse w-8 h-8 blur-md"></div>
                       <div className="relative rounded-full bg-violet-400 w-4 h-4 flex items-center justify-center z-10"></div>
                     </div>
@@ -139,7 +139,7 @@ function Index() {
                     ) : (
                       <p>
                         {" "}
-                        <span className="text-violet-400 font-semibold">
+                        <span className="text-violet-400/80 font-semibold">
                           {webOwner?.username}{" "}
                         </span>{" "}
                         enabled AI connections
@@ -204,7 +204,7 @@ function Index() {
                   {web?.iteratedFrom ? (
                     <p className="text-xs font-normal text-muted-foreground">
                       Iterated From{" "}
-                      <span className="font-semibold text-violet-400 dark:text-violet-400">
+                      <span className="font-semibold text-violet-400/80 dark:text-violet-400/80">
                         @{iteratedFromUser?.username}
                       </span>
                     </p>
