@@ -27,6 +27,7 @@ from src.utils.auth import generate_username
 from src.db.neo4j import client as neo4jClient
 from src.utils.credits import PLAN_CREDITS
 from src.utils.exceptions import check_user
+from src.lib.logger.index import logger
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -91,15 +92,13 @@ async def auth_callback(code: str):
     token_data = await get_google_token(code)
     user_data, profile_picture_url = await get_google_user(token_data["access_token"])
     email = user_data["email"]
-
     user = Users.find_one({"email": email})
-
+    new_web_id = None
     if not user:
         # create a new user
         create_user_data = CreateUser(
             username=generate_username(),
             email=email,
-            profile_picture_url=profile_picture_url,
         )
         user_id = create_user(create_user_data)
 
@@ -114,15 +113,14 @@ async def auth_callback(code: str):
             enableAIConnections=False,
             showcase=False,
         )
-        web_id = create_web(create_web_data, user_id)
-
+        new_web_id = create_web(create_web_data, user_id)
         # create the default welcome source node
         now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
         source_id = str(uuid.uuid4())
 
         source_to_insert = {
             "sourceId": source_id,
-            "webId": web_id,
+            "webId": new_web_id,
             "userId": user_id,
             "name": "Welcome to Spydr!",
             "content": (
@@ -144,11 +142,17 @@ async def auth_callback(code: str):
 
         neo4jClient.create_node("source", source_to_insert)
 
+        # attach source ID to the web in Mongo
+        Webs.update_one(
+            {"webId": new_web_id, "userId": user_id},
+            {"$push": {"sourceIds": source_id}, "$set": {"updated": datetime.now(UTC)}},
+        )
+
     access_token = manager.create_access_token(
         data={"sub": email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     response = RedirectResponse(
-        url=f"{settings.next_url}/auth/google-callback?token={access_token}&email={email}&name={user_data['name']}&newuser=yes"
+        url=f"""{settings.next_url}/auth/google-callback?token={access_token}&email={email}&name={user_data['name']}&newuser={"true" if not user else ""}&newwebid={new_web_id if new_web_id else ""}""",
     )
     manager.set_cookie(response, access_token)
     return response
@@ -254,6 +258,7 @@ def register(create_user_data: CreateUser):
 
     response = JSONResponse(
         content={
+            "new_web_id": web_id,
             "msg": "User registered successfully",
             "access_token": access_token,
             "token_type": "bearer",

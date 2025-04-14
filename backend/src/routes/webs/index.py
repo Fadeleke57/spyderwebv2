@@ -638,7 +638,7 @@ def iterate_web(
             name=iteratePayload.name,
             description=iteratePayload.description,
             visibility="Private",
-            tags=web_to_iterate.tags,
+            tags=web_to_iterate.get("tags", []),
             sourceIds=[],  # will update this after Neo4j step
             imageKeys=[],
             enableAIConnections=False,

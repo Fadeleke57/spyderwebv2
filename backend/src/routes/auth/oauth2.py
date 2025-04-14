@@ -13,7 +13,7 @@ SECRET_KEY = settings.fastapi_secret_key
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-manager = LoginManager(SECRET_KEY, token_url="/auth/token", use_cookie=True)
+manager = LoginManager(secret=SECRET_KEY, token_url="/auth/token", use_cookie=True)
 manager.cookie_name = "access_token"
 
 

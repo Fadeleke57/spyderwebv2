@@ -23,8 +23,9 @@ import { Button } from "../ui/button";
 import { AuthModal } from "../auth/AuthModal";
 import { useState } from "react";
 import UserAvatar from "./UserAvatar";
+
 export function NavUser() {
-  const { isMobile } = useSidebar();
+  const { isMobile, state } = useSidebar();
   const [open, setOpen] = useState(false);
   const { user, logout } = useUser();
   const router = useRouter();
@@ -63,7 +64,7 @@ export function NavUser() {
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger asChild className={`${state === "collapsed" && "ml-1"}`}>
             <SidebarMenuButton size="lg" isActive={false}>
               <UserAvatar userId={user.id} />
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -72,7 +73,7 @@ export function NavUser() {
                   {user.email}
                 </span>
               </div>
-              <Ellipsis className="ml-auto size-4" />
+              <Ellipsis className={`ml-auto size-4 ${state === "collapsed" && "hidden"}`} />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent

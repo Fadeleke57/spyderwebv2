@@ -83,8 +83,6 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
   const [userEmail, setUserEmail] = useState("");
   const [isExistingUser, setIsExistingUser] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
-  const isMobile = useIsMobile();
   const { mutateAsync: doesEmailExist } = useCheckEmailExists();
 
   const emailForm = useForm({
@@ -176,7 +174,8 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
           description: "Registration successful!",
         });
         setOpen(false);
-        window.location.href = "/home";
+        const demoWebId = response.data.new_web_id;
+        window.location.href = `/web/${demoWebId}?ref=register`;
       }
     } catch (error: any) {
       toast({
