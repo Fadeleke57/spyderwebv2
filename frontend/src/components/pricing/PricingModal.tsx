@@ -9,7 +9,7 @@ import { Check, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useUser } from "@/context/UserContext";
+import { useCreateCheckoutSession } from "@/hooks/usage";
 
 interface PricingModalProps {
   open: boolean;
@@ -70,59 +70,29 @@ const tiers: PricingTier[] = [
 export function PricingModal({ open, setOpen }: PricingModalProps) {
   const [isYearly, setIsYearly] = useState(false);
   const [isLoading, setIsLoading] = useState<string | null>(null);
-
-  const { user } = useUser();
+  const { mutateAsync: createCheckoutSession } = useCreateCheckoutSession();
 
   const calculateYearlyPrice = (monthlyPrice: string) => {
-    return (parseFloat(monthlyPrice) * 12).toString();
+    return (parseFloat(monthlyPrice) * 0.8 * 12).toString();
   };
 
   const handleSubscribe = async (tier: PricingTier) => {
     try {
       setIsLoading(tier.name);
-
-      // Map tier name to backend tier ID
       const tierId = tier.name.toLowerCase();
+      const payload = {
+        tier: tierId,
+        is_yearly: isYearly,
+      };
+      const data = await createCheckoutSession(payload);
 
-      // Get the API URL from environment variables or use a default
-      const apiUrl =
-        process.env.NEXT_PUBLIC_LOCAL_API_URL || "http://localhost:8000";
-
-      console.log("Using API URL:", apiUrl);
-
-      // Call the backend to create a checkout session
-      const response = await fetch(
-        `${apiUrl}/payment/create-checkout-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            tier: tierId,
-            is_yearly: isYearly,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const data = await response.json();
-        console.error("Error response:", data);
-        throw new Error(data.detail || "Failed to create checkout session");
-      }
-
-      const data = await response.json();
-
-      // If it's a free tier, just close the modal
       if (tierId === "free") {
         setOpen(false);
         toast.success("You are now on the Free plan!");
         return;
       }
-
-      // Redirect to Stripe Checkout
       if (data.url) {
+        // redirect to Stripe Checkout
         window.location.href = data.url;
       } else {
         throw new Error("No checkout URL returned");
