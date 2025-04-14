@@ -46,10 +46,6 @@ def get_user(userId: str, userMakingRequest: User = Depends(manager.optional)):
             "email": requestedUser["email"],
             "bio": requestedUser["bio"],
             "full_name": requestedUser["full_name"],
-            "disabled": requestedUser["disabled"],
-            "websHidden": requestedUser["websHidden"],
-            "websSaved": requestedUser["websSaved"],
-            "subscription_plan": requestedUser["subscription_plan"],
         }
 
         return {"result": publicUser}
