@@ -11,11 +11,11 @@ import { motion } from "framer-motion";
 const blogPosts = [
     {
     id: 1,
-    title: "Unwraveling the Modern Web",
+    title: "Unraveling the Modern Web",
     category: "Release",
     readTime: "4 min read",
     image: blackbox,
-    url: "/blog/unwraveling-the-web",
+    url: "/blog/unraveling-the-web",
   },
   {
     id: 2,
