@@ -3,7 +3,6 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import stripe
-import os
 from dotenv import load_dotenv
 from src.routes.auth.oauth2 import manager
 from src.models.user import User
@@ -49,8 +48,8 @@ PRICING_TIERS = {
         ],
         "cta": "Unlock Basic",
         "highlighted": True,
-        "stripe_monthly_price_id": os.getenv("STRIPE_BASIC_MONTHLY_PRICE_ID"),
-        "stripe_yearly_price_id": os.getenv("STRIPE_BASIC_YEARLY_PRICE_ID"),
+        "stripe_monthly_price_id": settings.stripe_basic_monthly_price_id,
+        "stripe_yearly_price_id": settings.stripe_basic_yearly_price_id,
     },
     "pro": {
         "name": "Pro",
@@ -70,8 +69,8 @@ PRICING_TIERS = {
         ],
         "cta": "Unlock Pro",
         "highlighted": False,
-        "stripe_monthly_price_id": os.getenv("STRIPE_PRO_MONTHLY_PRICE_ID"),
-        "stripe_yearly_price_id": os.getenv("STRIPE_PRO_YEARLY_PRICE_ID"),
+        "stripe_monthly_price_id": settings.stripe_pro_monthly_price_id,
+        "stripe_yearly_price_id": settings.stripe_pro_yearly_price_id,
     },
 }
 
@@ -150,8 +149,8 @@ async def create_checkout_session(request: CheckoutRequest, user: User = Depends
                 },
             ],
             mode="subscription",
-            success_url=f"{os.getenv('NEXT_URL')}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{os.getenv('NEXT_URL')}/payment/cancel",
+            success_url=f"{settings.next_url}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{settings.next_url}/payment/cancel",
             client_reference_id=user['id'],
             metadata={
                 'tier': request.tier,
@@ -178,7 +177,7 @@ async def stripe_webhook(request: Request):
     try:
         logger.info("Received webhook event")
         event = stripe.Webhook.construct_event(
-            payload, sig_header, os.getenv("STRIPE_WEBHOOK_SECRET")
+            payload=payload, sig_header=sig_header, secret=settings.stripe_webhook_secret
         )
         
         logger.info(f"Webhook event type: {event.type}")
