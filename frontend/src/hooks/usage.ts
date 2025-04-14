@@ -34,3 +34,19 @@ export function useCreateCheckoutSession() {
     },
   });
 }
+
+type paymentPayload = {
+  session_id: string;
+};
+
+export function useProcessPayment() {
+  return useMutation({
+    mutationFn: async (payload: paymentPayload) => {
+      const response = await api.post("/payment/success", payload);
+      return response.data;
+    },
+    onError: (err: any) => {
+      console.error(err);
+    },
+  });
+}

@@ -4,52 +4,26 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useProcessPayment } from "@/hooks/usage";
 
 export default function PaymentSuccessPage() {
   const router = useRouter();
   const { session_id } = router.query;
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const {
+    mutateAsync: processSuccessPayment,
+    isPending: isProcessing,
+    error: paymentError,
+  } = useProcessPayment();
 
   useEffect(() => {
     const processPayment = async () => {
       if (!session_id || typeof session_id !== "string") return;
 
       try {
-        const apiUrl =
-          process.env.NEXT_PUBLIC_LOCAL_API_URL || "http://localhost:8000";
-        const response = await fetch(
-          `${apiUrl}/payment/success?session_id=${encodeURIComponent(session_id)}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            credentials: "include",
-          }
-        );
-
-        console.log("Response status:", response.status);
-        console.log(
-          "Response headers:",
-          Object.fromEntries(response.headers.entries())
-        );
-
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          const text = await response.text();
-          console.error("Received non-JSON response:", text);
-          throw new Error("Server returned an invalid response");
-        }
-
-        const data = await response.json();
+        const data = await processSuccessPayment({ session_id });
         console.log("Response data:", data);
-
-        if (!response.ok) {
-          throw new Error(data.detail || "Failed to process payment");
-        }
-
         toast.success("Your subscription has been activated!");
         setIsLoading(false);
       } catch (err: any) {
@@ -64,7 +38,7 @@ export default function PaymentSuccessPage() {
       console.log("Processing payment for session:", session_id);
       processPayment();
     }
-  }, [session_id]);
+  }, [session_id, processSuccessPayment]);
 
   if (error) {
     return (
