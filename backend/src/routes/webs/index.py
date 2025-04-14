@@ -747,10 +747,6 @@ def get_web_contributors(web_id: str, user=Depends(manager.optional)):
                     "email": user["email"],
                     "bio": user["bio"],
                     "full_name": user["full_name"],
-                    "disabled": user["disabled"],
-                    "websHidden": user["websHidden"],
-                    "websSaved": user["websSaved"],
-                    "subscription_plan": user["subscription_plan"],
                 }
                 contributers.append(publicUser)
 
