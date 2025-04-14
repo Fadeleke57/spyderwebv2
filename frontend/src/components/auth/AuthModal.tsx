@@ -1,3 +1,5 @@
+/// <reference types="chrome" />
+
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -169,7 +171,6 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
 
       if (response.status === 201) {
         localStorage.setItem("token", response.data.access_token);
-
         toast({
           title: "Success",
           description: "Registration successful!",

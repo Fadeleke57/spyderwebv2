@@ -1,7 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, ChevronsUpDown, MonitorCog, Moon, Sun } from "lucide-react";
+import {
+  Check,
+  ChevronsUpDown,
+  MonitorCog,
+  Moon,
+  Sun,
+  AlertTriangle,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
@@ -10,6 +17,16 @@ import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
 import {
   Command,
   CommandEmpty,
@@ -80,14 +97,66 @@ type AccountFormValues = z.infer<typeof accountFormSchema>;
 
 export function AccountForm({ user }: { user: PublicUser }) {
   const [mounted, setMounted] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { mutateAsync: editUser, isPending, error } = useEditUser();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
   const { logout } = useUser();
+  const [showPricingModal, setShowPricingModal] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     router.push("/explore");
+  };
+
+  const handleDeleteSubscription = async () => {
+    try {
+      setIsDeleting(true);
+      const apiUrl =
+        process.env.NEXT_PUBLIC_LOCAL_API_URL || "http://localhost:8000";
+      const response = await fetch(`${apiUrl}/payment/cancel-subscription`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include",
+      });
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server returned an invalid response");
+      }
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.detail || "Failed to cancel subscription");
+      }
+
+      toast({
+        title: "Success",
+        description: data.message || "Subscription cancelled successfully",
+        variant: "default",
+      });
+
+      // Refresh the page to update the user's plan
+      router.reload();
+    } catch (err: any) {
+      console.error("Error cancelling subscription:", err);
+      toast({
+        title: "Error",
+        description: err.message || "Failed to cancel subscription",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleUpgradeClick = () => {
+    if (user?.accountStatus === "free") {
+      setShowPricingModal(true);
+    }
   };
 
   const defaultValues: Partial<AccountFormValues> = {
@@ -256,11 +325,74 @@ export function AccountForm({ user }: { user: PublicUser }) {
                   You are logged in as {user.username}
                 </FormDescription>
               </div>
-              <Button onClick={handleLogout}>Sign Out</Button>
+              <div className="flex gap-2">
+                {user.accountStatus !== "free" && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="destructive" size="sm">
+                        Delete Subscription
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                          <AlertTriangle className="h-5 w-5 text-destructive" />
+                          Cancel Subscription
+                        </DialogTitle>
+                        <DialogDescription>
+                          Are you sure you want to cancel your subscription? You
+                          will lose access to premium features at the end of
+                          your billing period.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant="outline">
+                            No, keep my subscription
+                          </Button>
+                        </DialogClose>
+                        <Button
+                          variant="destructive"
+                          onClick={handleDeleteSubscription}
+                          disabled={isDeleting}
+                        >
+                          {isDeleting
+                            ? "Cancelling..."
+                            : "Yes, cancel subscription"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
+                <Button onClick={handleLogout}>Sign Out</Button>
+              </div>
               <FormMessage />
             </FormItem>
           )}
         />
+
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-medium">Account Status</h2>
+            <p className="text-sm text-muted-foreground">
+              {user?.accountStatus === "pro"
+                ? "You're on the Pro plan with unlimited access"
+                : user?.accountStatus === "beta"
+                  ? "You're on the Beta plan with unlimited access"
+                  : user?.accountStatus === "trial"
+                    ? "You're on a trial period"
+                    : "You're on the Free plan with limited access"}
+            </p>
+          </div>
+          {user?.accountStatus === "free" && (
+            <Button
+              onClick={handleUpgradeClick}
+              className="bg-gradient-to-r from-violet-500 to-violet-600 text-white hover:from-violet-600 hover:to-violet-700"
+            >
+              Upgrade Plan
+            </Button>
+          )}
+        </div>
       </form>
     </Form>
   );

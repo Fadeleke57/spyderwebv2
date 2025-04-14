@@ -98,20 +98,21 @@ export function PricingModal({ open, setOpen }: PricingModalProps) {
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
           body: JSON.stringify({
             tier: tierId,
             is_yearly: isYearly,
-            user_id: user?.id,
           }),
         }
       );
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const data = await response.json();
         console.error("Error response:", data);
         throw new Error(data.detail || "Failed to create checkout session");
       }
+
+      const data = await response.json();
 
       // If it's a free tier, just close the modal
       if (tierId === "free") {

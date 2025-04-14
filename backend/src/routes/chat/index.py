@@ -48,9 +48,7 @@ def configure_chat(webId: str):
 
 @router.post("/")
 async def handle_chat_data(
-    request: Request, 
-    user: User = Depends(manager), 
-    protocol: str = Query("data")
+    request: Request, user: User = Depends(manager), protocol: str = Query("data")
 ):
     """
     Handle incoming chat data from a user.
@@ -67,38 +65,37 @@ async def handle_chat_data(
         HTTPException: If an error occurs during processing, a 500 status code is raised.
     """
     check_user(user)
-    
+
     # Check credits before processing
     current_credits = await get_user_credits(user["id"])
     chat_cost = OPERATION_COSTS.get("chatbot", 1)
-    
+
     if current_credits is None:
         raise HTTPException(status_code=500, detail="Error checking credits")
-        
+
     if current_credits < chat_cost:
         # Return a 402 Payment Required status with a clear message
         raise HTTPException(
             status_code=402,  # Payment Required
-            detail="Insufficient credits. Please wait for monthly reset or upgrade your plan."
+            detail="Insufficient credits. Please wait for monthly reset or upgrade your plan.",
         )
-    
+
     try:
         # Deduct credits if sufficient
         success, error = await deduct_credits(user["id"], "chatbot")
         if not success:
             raise HTTPException(status_code=400, detail=error)
-        
+
         # Process the chat as normal
         messages = request.messages
         openai_messages = convert_to_openai_messages(messages)
-        
+
         response = StreamingResponse(
-            stream_text(openai_messages, protocol),
-            media_type="text/event-stream"
+            stream_text(openai_messages, protocol), media_type="text/event-stream"
         )
         response.headers["x-vercel-ai-data-stream"] = "v1"
         return response
-        
+
     except Exception as e:
         logger.error(f"Error handling chat: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

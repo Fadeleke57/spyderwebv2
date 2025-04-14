@@ -1,9 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
 from src.models.user import Users
 from src.db.mongodb import get_collection
 from pytz import UTC
 from src.constants.credits import PLAN_CREDITS, OPERATION_COSTS
+
 
 async def reset_user_credits(user_id: str) -> bool:
     """Reset a user's credits based on their subscription plan."""
@@ -20,7 +21,8 @@ async def reset_user_credits(user_id: str) -> bool:
             {
                 "$set": {
                     "credits": credits,
-                    "last_credits_reset": datetime.now(UTC)
+                    "last_credits_reset": datetime.now(UTC),
+                    "updated_at": datetime.now(UTC)
                 }
             }
         )
@@ -28,6 +30,7 @@ async def reset_user_credits(user_id: str) -> bool:
     except Exception as e:
         print(f"Error resetting credits for user {user_id}: {str(e)}")
         return False
+
 
 async def deduct_credits(user_id: str, operation: str) -> tuple[bool, Optional[str]]:
     """
@@ -48,12 +51,16 @@ async def deduct_credits(user_id: str, operation: str) -> tuple[bool, Optional[s
         
         Users.update_one(
             {"id": user_id},
-            {"$inc": {"credits": -cost}}
+            {
+                "$inc": {"credits": -cost},
+                "$set": {"updated_at": datetime.now(UTC)}
+            }
         )
         
         return True, None
     except Exception as e:
         return False, str(e)
+
 
 async def get_user_credits(user_id: str) -> Optional[int]:
     """Get the current credit balance for a user."""
@@ -71,7 +78,7 @@ async def update_user_plan(user_id: str, tier: str, is_yearly: bool) -> tuple[bo
     try:
         now = datetime.now(UTC)
         
-        # Update user's subscription plan, credits, and yearly status
+        # Update user's subscription plan and related fields
         result = Users.update_one(
             {"id": user_id},
             {

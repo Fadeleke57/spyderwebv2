@@ -36,7 +36,7 @@ class AutoLinkerEngine:
         web_to_autolink: Web = Webs.find_one({"webId": webId})
         if not web_to_autolink:
             raise ValueError("Web not found!")
-        self.enabled = web_to_autolink["enableAIConnections"]
+        self.enabled = web_to_autolink.get("enableAIConnections", False)
 
     def run(self):
         logger.info(f"Running AutoLinkerEngine...")
@@ -62,7 +62,9 @@ class AutoLinkerEngine:
                 _, embedding, metadata = vector
 
                 # find top candidates
-                raw_candidates = cs.find_top_candidates(embedding=embedding, threshold=0.8)
+                raw_candidates = cs.find_top_candidates(
+                    embedding=embedding, threshold=0.8
+                )
 
                 if not raw_candidates:
                     logger.info("No candidates found..Shutting down...")

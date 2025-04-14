@@ -11,10 +11,11 @@ from src.utils.storage import calculate_storage_usage
 router = APIRouter()
 
 STORAGE_LIMITS = {
-    "free": 15000,     
-    "basic": 50000,    
-    "pro": 200000,   
+    "free": 15000,
+    "basic": 50000,
+    "pro": 200000,
 }
+
 
 @router.get("/search/history")
 def get_search_history(user: User = Depends(manager)):
@@ -128,6 +129,7 @@ def check_email(email: str):
         logger.error(f"Error checking email: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/usage")
 async def get_usage(user: User = Depends(manager)):
     """Get user's resource usage"""
@@ -135,25 +137,20 @@ async def get_usage(user: User = Depends(manager)):
         user_data = Users.find_one({"id": user["id"]})
         if not user_data:
             raise HTTPException(status_code=404, detail="User not found")
-        
+
         plan = user_data.get("subscription_plan", "free")
         credits_used = PLAN_CREDITS[plan] - user_data.get("credits", 0)
         credits_limit = PLAN_CREDITS[plan]
-        
+
         # Get storage values directly from user_data
         storage_used = user_data.get("storage_used", 0)
         storage_limit = STORAGE_LIMITS[plan]
-        
+
         return {
-            "storage": {
-                "used": storage_used,
-                "limit": storage_limit
-            },
-            "computation": {
-                "used": credits_used,
-                "limit": credits_limit
-            }
+            "storage": {"used": storage_used, "limit": storage_limit},
+            "computation": {"used": credits_used, "limit": credits_limit},
         }
+
     except Exception as e:
         logger.error(f"Error getting usage for user {user['id']}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

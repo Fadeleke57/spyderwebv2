@@ -11,12 +11,18 @@ from src.routes.auth.oauth2 import (
     get_google_token,
     get_google_user,
     manager,
-    get_password_hash,
     verify_password,
     get_user,
 )
 from src.core.config import settings
-from src.models.index import Webs, Users, User, CreateUser
+from src.models.index import (
+    Webs,
+    Users,
+    CreateUser,
+    CreateWeb,
+    create_user,
+    create_web,
+)
 from src.utils.auth import generate_username
 from src.db.neo4j import client as neo4jClient
 from src.utils.credits import PLAN_CREDITS
@@ -78,10 +84,9 @@ async def auth_callback(code: str):
     """
     Handle the OAuth2 callback from Google.
 
-    This endpoint is used to handle the OAuth2 callback from Google. It will take the authorization code from the query parameter and exchange it for an access token. The access token will then be used to load the user from the database, and if the user does not exist, create a new one. The user will be redirected to the Next.js app with an access token in the query parameter.
-
-    :param code: The authorization code from Google
-    :return: A RedirectResponse to the Next.js app with an access token in the query parameter
+    Takes the authorization code, exchanges it for an access token,
+    retrieves user info from Google, checks if the user exists,
+    and creates a user, a default web, and a source node if not.
     """
     token_data = await get_google_token(code)
     user_data, profile_picture_url = await get_google_user(token_data["access_token"])
@@ -90,68 +95,60 @@ async def auth_callback(code: str):
     user = Users.find_one({"email": email})
 
     if not user:
-        userId = str(uuid.uuid4())
-        Users.insert_one(
-            {
-                "id": userId,
-                "username": generate_username(),
-                "full_name": user_data["name"],
-                "email": user_data["email"],
-                "hashed_password": None,  # no password for google registrations
-                "disabled": False,
-                "profile_picture_url": profile_picture_url,
-                "analytics": {"searches": []},
-                "created": datetime.now(UTC),
-                "updated": datetime.now(UTC),
-                "websHidden": [],
-                "websSaved": [],
-                "credits": PLAN_CREDITS["free"],  # Add initial credits
-                "subscription_plan": "free",
-                "last_credits_reset": datetime.now(UTC),
-                "storage_used": 0.0,  # Storage used in mb
-                "storage_last_calculated": datetime.now(UTC),
-                "is_yearly": False,
-                "created_at": datetime.now(UTC),
-                "updated_at": datetime.now(UTC)
-            }
+        # create a new user
+        create_user_data = CreateUser(
+            username=generate_username(),
+            email=email,
+            profile_picture_url=profile_picture_url,
         )
-        webId = str(uuid.uuid4())
-        Webs.insert_one(
-            {
-                "webId": str(uuid.uuid4()),
-                "name": "Welcome to Spydr!",
-                "description": "This is your first web! Create a new web to get started.",
-                "userId": userId,
-                "articleIds": [],
-                "created": datetime.now(),
-                "updated": datetime.now(),
-                "visibility": "Private",
-                "tags": [],
-                "likes": [],
-                "iterations": [],
-                "showcase": True,
-            }
+        user_id = create_user(create_user_data)
+
+        # create a new welcome web for the user
+        create_web_data = CreateWeb(
+            name="Welcome to Spydr!",
+            description="This is your first web! Create a new web to get started.",
+            visibility="Private",
+            tags=[],
+            sourceIds=[],
+            imageKeys=[],
+            enableAIConnections=False,
+            showcase=False,
         )
-        sourceId = str(uuid.uuid4())
-        sourceToInsert = {
-            "sourceId": sourceId,
-            "webId": webId,
-            "userId": userId,
+        web_id = create_web(create_web_data, user_id)
+
+        # create the default welcome source node
+        now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+        source_id = str(uuid.uuid4())
+
+        source_to_insert = {
+            "sourceId": source_id,
+            "webId": web_id,
+            "userId": user_id,
             "name": "Welcome to Spydr!",
-            "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new web or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your web.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your web with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other webs and start from there.\n### Have fun!",
+            "content": (
+                "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n"
+                "### To get started\n"
+                "1. Create a new web or edit this one and add your first source.\n"
+                "2. You can then add notes, articles, and other content to your web.\n"
+                "3. Click on entities to view/edit their content.\n"
+                "4. Once you are done, you can share your web with others or leave it private to control who can access it.\n"
+                "5. Outside of your knowledge base, you can also hop into other webs and start from there.\n"
+                "### Have fun!"
+            ),
             "url": None,
             "type": "note",
             "size": None,
-            "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-            "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            "created": now,
+            "updated": now,
         }
-        neo4jClient.create_node("source", sourceToInsert)
+
+        neo4jClient.create_node("source", source_to_insert)
 
     access_token = manager.create_access_token(
         data={"sub": email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     response = RedirectResponse(
-        url=f"{settings.next_url}/auth/google-callback?token={access_token}&email={email}&name={user_data['name']}"
+        url=f"{settings.next_url}/auth/google-callback?token={access_token}&email={email}&name={user_data['name']}&newuser=yes"
     )
     manager.set_cookie(response, access_token)
     return response
@@ -171,101 +168,88 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
     user = Users.find_one({"email": data.username})
     if not user or not verify_password(data.password, user["hashed_password"]):
         raise InvalidCredentialsException
+
     access_token = manager.create_access_token(
         data={"sub": data.username},
         expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
+
     response = JSONResponse(content={"access_token": access_token}, status_code=200)
     manager.set_cookie(response, access_token)
+
     return response
 
 
 @router.post("/register")
-def register(user: CreateUser):
+def register(create_user_data: CreateUser):
     """
     Register a new user.
 
-    This endpoint is used to register a new user. It takes a `CreateUser` object in the request body and verifies the email and password. If the email is not already registered, a new user is created and a new web is created for the user. The user is then returned in the response body.
-
-    :param user: The user to register
-    :return: A JSONResponse with a success message
+    This endpoint registers a new user, creates a default welcome web and
+    a source node. It returns an access token for immediate login.
     """
-
-    if Users.find_one({"email": user.email}):
+    if Users.find_one({"email": create_user_data.email}):
         raise HTTPException(
             status_code=400, detail="There is already an account with this email."
         )
-    if Users.find_one({"username": user.username}):
+    if Users.find_one({"username": create_user_data.username}):
         raise HTTPException(
             status_code=400, detail="There is already an account with this username."
         )
 
-    hashed_password = get_password_hash(user.password)
-    userId = str(uuid.uuid4())
-    user_data = {
-        "id": userId,
-        "username": user.username,
-        "full_name": user.username,
-        "email": user.email,
-        "hashed_password": hashed_password,
-        "disabled": False,
-        "profile_picture_url": None,
-        "analytics": {"searches": []},
-        "created": datetime.now(UTC),
-        "updated": datetime.now(UTC),
-        "websHidden": [],
-        "websSaved": [],
-        "credits": PLAN_CREDITS["free"],  # Add initial credits
-        "subscription_plan": "free",
-        "last_credits_reset": datetime.now(UTC),
-        "storage_used": 0.0,  # Storage used in bytes
-        "storage_last_calculated": datetime.now(UTC),
-        "is_yearly": False,
-        "created_at": datetime.now(UTC),
-        "updated_at": datetime.now(UTC)
-    }
-    Users.insert_one(user_data)
+    # create the user
+    user_id = create_user(create_user_data)
 
-    webId = str(uuid.uuid4())
-    Webs.insert_one(
-        {
-            "webId": webId,
-            "name": "Welcome to Spydr!",
-            "description": "This is your first web! Create a new web to get started.",
-            "userId": userId,
-            "created": datetime.now(UTC),
-            "updated": datetime.now(UTC),
-            "visibility": "Private",
-            "tags": [],
-            "likes": [],
-            "iterations": [],
-            "showcase": True,
-        }
+    # create their default web
+    create_web_data = CreateWeb(
+        name="Welcome to Spydr!",
+        description="This is your first web! Create a new web to get started.",
+        visibility="Private",
+        tags=[],
+        sourceIds=[],
+        imageKeys=[],
+        enableAIConnections=False,
+        showcase=True,
     )
+    web_id = create_web(create_web_data, user_id)
 
-    sourceId = str(uuid.uuid4())
-    sourceToInsert = {
-        "sourceId": sourceId,
-        "webId": webId,
-        "userId": userId,
+    # create welcome source node
+    now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+    source_id = str(uuid.uuid4())
+    source_to_insert = {
+        "sourceId": source_id,
+        "webId": web_id,
+        "userId": user_id,
         "name": "How to use Spydr (click me!)",
-        "content": "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n ### To get started\n1. Create a new web or edit this one and add your first source.\n2. You can then add notes, articles, and other content to your web.\n3. Click on entities to view/edit their content.\n4. Once you are done, you can share your web with others or leave it private to control who can access it.\n5. Outside of your knowledge base, you can also hop into other webs and start from there.\n### Have fun!",
+        "content": (
+            "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n"
+            "### To get started\n"
+            "1. Create a new web or edit this one and add your first source.\n"
+            "2. You can then add notes, articles, and other content to your web.\n"
+            "3. Click on entities to view/edit their content.\n"
+            "4. Once you are done, you can share your web with others or leave it private to control who can access it.\n"
+            "5. Outside of your knowledge base, you can also hop into other webs and start from there.\n"
+            "### Have fun!"
+        ),
         "url": None,
         "type": "note",
         "size": None,
-        "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-        "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        "created": now,
+        "updated": now,
     }
 
-    neo4jClient.create_node("source", sourceToInsert)
+    neo4jClient.create_node("source", source_to_insert)
 
+    # attach source ID to the web in Mongo
     Webs.update_one(
-        {"webId": webId, "userId": userId},
-        {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
+        {"webId": web_id, "userId": user_id},
+        {"$push": {"sourceIds": source_id}, "$set": {"updated": datetime.now(UTC)}},
     )
 
+    # create access token
     access_token = manager.create_access_token(
-        data={"sub": user.email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        data={"sub": create_user_data.email},
+        expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
 
     response = JSONResponse(
