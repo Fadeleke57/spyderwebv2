@@ -9,11 +9,7 @@ import {
 import { Web } from "@/types/web";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import {
-  useGetAllImagesForWeb,
-  useLikeWeb,
-  useUnlikeWeb,
-} from "@/hooks/webs";
+import { useGetAllImagesForWeb, useLikeWeb, useUnlikeWeb } from "@/hooks/webs";
 import UserAvatar from "../utility/UserAvatar";
 import { useFetchUserById } from "@/hooks/user";
 import { IterateModal } from "../utility/IterateModal";
@@ -38,8 +34,9 @@ export function SearchResultCard({
   const { data: webOwner, isLoading: webOwnerLoading } = useFetchUserById(
     web.userId
   );
-  const { data: imageUrls, isLoading: imagesLoading } =
-    useGetAllImagesForWeb(web.webId);
+  const { data: imageUrls, isLoading: imagesLoading } = useGetAllImagesForWeb(
+    web.webId
+  );
   const { data: iteratedFromUser, isLoading: iteratedFromLoading } =
     useFetchUserById(web.iteratedFrom || "");
   const [webIterationsCount, setWebIterationsCount] = useState(

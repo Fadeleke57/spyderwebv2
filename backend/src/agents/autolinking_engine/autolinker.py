@@ -62,7 +62,9 @@ class AutoLinkerEngine:
                 _, embedding, metadata = vector
 
                 # find top candidates
-                raw_candidates = cs.find_top_candidates(embedding=embedding, threshold=0.8)
+                raw_candidates = cs.find_top_candidates(
+                    embedding=embedding, threshold=0.8
+                )
 
                 if not raw_candidates:
                     logger.info("No candidates found..Shutting down...")

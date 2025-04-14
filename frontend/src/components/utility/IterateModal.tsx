@@ -39,8 +39,9 @@ export function IterateModal({
   const router = useRouter();
   const isMobile = useIsMobile();
 
-  const { mutateAsync: iterateWeb, isPending: isIterating } =
-    useIterateWeb(web.webId);
+  const { mutateAsync: iterateWeb, isPending: isIterating } = useIterateWeb(
+    web.webId
+  );
   const { user } = useUser();
   const [formData, setFormData] = useState({
     name: web.name,
@@ -113,8 +114,8 @@ export function IterateModal({
               Iterate Web
             </DrawerTitle>
             <DrawerDescription className="text-left">
-              An iteration is a copy of someone else&apos;s web. Iterating a
-              web allows you to freely branch off in your own style without
+              An iteration is a copy of someone else&apos;s web. Iterating a web
+              allows you to freely branch off in your own style without
               affecting the original project.
             </DrawerDescription>
           </DrawerHeader>
@@ -152,7 +153,9 @@ export function IterateModal({
             <div className="flex flex-col gap-2">
               <label htmlFor="with-connections" className="text-sm font-medium">
                 Include connections?
-                <span className="ml-2 rounded-xl bg-violet-400 px-2 py-1 text-white text-xs">PRO</span>
+                <span className="ml-2 rounded-xl bg-violet-400 px-2 py-1 text-white text-xs">
+                  PRO
+                </span>
               </label>
               <Switch
                 disabled
@@ -239,12 +242,16 @@ export function IterateModal({
             />
           </div>
 
+          <div>
+            <label className="text-sm font-medium text-muted-foreground">Support for copying connections coming soon.</label>
+          </div>
+          {/* TODO:
           <div className="flex flex-col gap-2">
             <label htmlFor="with-connections" className="text-sm font-medium">
               Include connections?
               <Badge className="ml-2 bg-violet-400 text-foreground">PRO</Badge>
             </label>
-            {/* TODO: implement this */}
+             implement this 
             <Switch
               disabled
               id="with-connections"
@@ -258,7 +265,7 @@ export function IterateModal({
               }
             />
           </div>
-
+*/}
           <div className="flex gap-2 mt-4">
             <Button
               className="w-[100px]"

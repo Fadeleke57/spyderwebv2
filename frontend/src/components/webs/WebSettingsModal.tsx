@@ -66,9 +66,13 @@ function WebSettingsModal({
                 className="text-sm font-medium flex items-center"
               >
                 AI Connections <Orbit size={16} className="ml-2" />
-                <Badge className="ml-2 bg-violet-400 text-foreground">
+                {/**
+                 * 
+                 *  <Badge className="ml-2 bg-violet-400 text-foreground">
                   PRO
                 </Badge>
+                 */}
+               
               </Label>
               <a className="text-xs text-gray-500">
                 Allow AI to connect to and interact with this web
