@@ -8,7 +8,7 @@ export interface PublicUser {
   disabled: boolean;
   websHidden: string[];
   websSaved: string[];
-  accountStatus: "pro" | "free" | "beta" | "trial";
+  subscription_plan: "pro" | "basic" | "free";
   caps: UsageCaps;
 }
 

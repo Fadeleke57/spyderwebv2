@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     neo4j_password: str
     fastapi_env: str
     fastapi_secret_key: str
+    fastapi_api_url: str
     oauth2_client_id: str
     oauth2_client_secret: str
     oauth2_redirect_uri: str
@@ -27,6 +28,13 @@ class Settings(BaseSettings):
     cloudfront_domain: str
     youtube_api_key: str
     firecrawl_api_key: str
+    stripe_secret_key: str
+    stripe_publishable_key: str
+    stripe_webhook_secret: str
+    stripe_basic_monthly_price_id: str
+    stripe_basic_yearly_price_id: str
+    stripe_pro_monthly_price_id: str
+    stripe_pro_yearly_price_id: str
 
     class Config:
         env_file = f".env"

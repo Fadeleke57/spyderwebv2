@@ -8,6 +8,11 @@ from src.lib.logger.index import logger
 from src.lib.openai.index import client as openaiClient
 from src.utils.chat.prompt import convert_to_openai_messages, stream_text
 from src.models.index import Request, User, Chats
+from src.utils.credits import deduct_credits, get_user_credits
+from src.constants.credits import OPERATION_COSTS
+from src.models.user import Users
+import json
+import uuid
 
 router = APIRouter()
 
@@ -41,7 +46,7 @@ def configure_chat(webId: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/")  # handle query
+@router.post("/")
 async def handle_chat_data(
     request: Request, user: User = Depends(manager), protocol: str = Query("data")
 ):
@@ -60,12 +65,40 @@ async def handle_chat_data(
         HTTPException: If an error occurs during processing, a 500 status code is raised.
     """
     check_user(user)
-    messages = request.messages
-    openai_messages = convert_to_openai_messages(messages)
 
-    response = StreamingResponse(stream_text(openai_messages, protocol))
-    response.headers["x-vercel-ai-data-stream"] = "v1"
-    return response
+    # Check credits before processing
+    current_credits = await get_user_credits(user["id"])
+    chat_cost = OPERATION_COSTS.get("chatbot", 1)
+
+    if current_credits is None:
+        raise HTTPException(status_code=500, detail="Error checking credits")
+
+    if current_credits < chat_cost:
+        # Return a 402 Payment Required status with a clear message
+        raise HTTPException(
+            status_code=402,  # Payment Required
+            detail="Insufficient credits. Please wait for monthly reset or upgrade your plan.",
+        )
+
+    try:
+        # Deduct credits if sufficient
+        success, error = await deduct_credits(user["id"], "chatbot")
+        if not success:
+            raise HTTPException(status_code=400, detail=error)
+
+        # Process the chat as normal
+        messages = request.messages
+        openai_messages = convert_to_openai_messages(messages)
+
+        response = StreamingResponse(
+            stream_text(openai_messages, protocol), media_type="text/event-stream"
+        )
+        response.headers["x-vercel-ai-data-stream"] = "v1"
+        return response
+
+    except Exception as e:
+        logger.error(f"Error handling chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/{chatId}/save")

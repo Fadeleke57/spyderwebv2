@@ -69,7 +69,7 @@ docker-compose.override.yml
 docker-compose.yml
 
 .DS_Store
+node_modules
 
-# Environments
+# Environment -----------------------------------------------------------------
 /spy/
-

@@ -8,13 +8,14 @@ const GoogleCallback = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    const { token, email, name } = router.query;
-
+    const { token, email, name, newuser, newwebid } = router.query;
+    let redirectToWeb = null;
+    if (newwebid) {
+      redirectToWeb = `/web/${newwebid}?ref=${newuser ? "register" : "login"}`;
+    }
     if (token && email && name) {
       localStorage.setItem("token", token as string);
-      window.location.href = isMobile
-        ? "/webs?login-source=welcomeback"
-        : "/home?login-source=welcomeback";
+      window.location.href = redirectToWeb || "/home";
     }
   }, [router.query, router, isMobile]);
 

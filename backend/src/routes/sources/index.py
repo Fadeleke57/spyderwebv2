@@ -71,8 +71,8 @@ async def process_file(
         sourceId = str(uuid4())
         if file_type == "pdf":
             object_name = f"files/{user_id}/{web_id}/document/{uuid4()}_{file.filename.replace(' ', '_')}"
-            
-            s3_bucket.upload_file(temp_path, object_name)# upload to S3
+
+            s3_bucket.upload_file(temp_path, object_name)  # upload to S3
 
             sourceToInsert: Source = {
                 "sourceId": sourceId,
@@ -90,7 +90,7 @@ async def process_file(
             background_tasks.add_task(
                 sourceService.embed_and_upsert_pdf,
                 file_path=temp_path,
-                source=sourceToInsert
+                source=sourceToInsert,
             )
 
         elif file_type in {"txt", "md"}:
@@ -269,7 +269,9 @@ def add_website(
         }
 
         background_tasks.add_task(
-            sourceService.embed_and_upsert_website, source=sourceToInsert, md=md
+            sourceService.embed_and_upsert_website,
+            source=sourceToInsert,
+            md=md,
         )
 
         neo4jClient.create_node("source", sourceToInsert)
@@ -506,9 +508,13 @@ def delete_source(source_id: str, user=Depends(manager)):
             return {"result": "Web not found"}
 
         try:
-            pineconeClient.index.delete(
-                ids=[source_id], namespace=affected_web["webId"]
+            result = pineconeClient.index.delete(
+                ids=[source_id],
+                namespace=affected_web["webId"],
+                filter={"sourceId": source_id},
             )
+            if result == {}:
+                logger.info(f"Source {source_id} deleted from Pinecone")
         except:
             logger.info("Pinecone namespace not found...Skipping embeddings deletion")
 

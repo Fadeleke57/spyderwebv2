@@ -19,17 +19,17 @@ from src.models.index import (
     CreateWeb,
     UpdateWeb,
     IterateWeb,
-    Sources,
-    Source,
     User,
     Users,
     Search,
     Searches,
+    create_web,
 )
 from src.lib.logger.index import logger
 from src.core.config import settings
 from src.lib.pinecone.index import client as pineconeClient
 from src.service.web import service as webService
+from copy import deepcopy
 
 router = APIRouter()
 
@@ -198,7 +198,7 @@ def get_user_liked_webs(user: User = Depends(manager)):
 
 
 @router.post("/create")
-def create_web(
+def create_web_endpoint(
     createWebPayload: CreateWeb,
     background_tasks: BackgroundTasks,
     user=Depends(manager),
@@ -219,28 +219,15 @@ def create_web(
     """
     check_user(user)
     try:
-        webId = str(uuid.uuid4())
-        web_to_insert: Web = {
-            "webId": webId,
-            "name": createWebPayload.name,
-            "description": createWebPayload.description,
-            "userId": user["id"],
-            "sourceIds": createWebPayload.sourceIds or [],
-            "created": datetime.now(UTC),
-            "updated": datetime.now(UTC),
-            "visibility": createWebPayload.visibility,
-            "tags": createWebPayload.tags or [],
-            "likes": [],
-            "iterations": [],
-            "imageKeys": [],
-            "enableAIConnections": createWebPayload.enableAIConnections,
-        }
 
-        background_tasks.add_task(webService.emebd_and_upsert_web, web_to_insert)
+        web_id = create_web(createWebPayload, user["id"])
 
-        # mongo insert
-        Webs.insert_one(web_to_insert)
-        return {"result": webId}
+        web_document = Webs.find_one({"webId": web_id, "userId": user["id"]})
+
+        pinecone_document = web_document
+        background_tasks.add_task(webService.emebd_and_upsert_web, web_document)
+
+        return {"result": web_id}
 
     except Exception as e:
         logger.error(f"Error creating web: {str(e)}")
@@ -347,7 +334,7 @@ def get_web_images(web_id: str):
         HTTPException: If there is an error while generating URLs, raises a 500 error.
     """
     try:
-        web = Webs.find_one({"webId": web_id})
+        web: Web = Webs.find_one({"webId": web_id})
         if not web:
             raise HTTPException(status_code=404, detail=f"Web not found!")
 
@@ -487,8 +474,9 @@ def get_web_by_id(webId: str, user=Depends(manager.optional)):
     """
     if user:
         check_user(user)
+
     try:
-        web = Webs.find_one({"webId": webId}, {"_id": 0})
+        web: Web = Webs.find_one({"webId": webId}, {"_id": 0})
 
         if not web or (
             web["visibility"] == "Private"
@@ -535,7 +523,6 @@ def like_web(web_id: str, user=Depends(manager)):
 
     except Exception as e:
         logger.error(f"Error liking web: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/unlike/{web_id}")
@@ -568,19 +555,18 @@ def unlike_web(web_id: str, user=Depends(manager)):
 
     except Exception as e:
         logger.error(f"Error unliking web: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/saved/user")
 def get_user_saved_webs(user=Depends(manager)):
     check_user(user)
     try:
+
         result = Webs.find({"webId": {"$in": user["websSaved"]}}, {"_id": 0})
         return {"result": result}
 
     except Exception as e:
         logger.error(f"Error getting user saved webs: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.patch("/add/tag/{web_id}/{tag}")
@@ -597,12 +583,12 @@ def add_tag(web_id: str, tag: str, user=Depends(manager)):
 
     except Exception as e:
         logger.error(f"Error adding tag: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.patch("/remove/tag/{web_id}/{tag}")
 def remove_tag(web_id: str, tag: str, user=Depends(manager)):
     check_user(user)
+
     try:
 
         formatted_tag = tag.lower()
@@ -610,6 +596,7 @@ def remove_tag(web_id: str, tag: str, user=Depends(manager)):
             {"webId": web_id, "userId": user["id"]},
             {"$pull": {"tags": formatted_tag}},
         )
+
         return {"result": True}
 
     except Exception as e:
@@ -627,64 +614,76 @@ def iterate_web(
     """
     Iterate over a given web and create a new web with the same sources but with a new name and description.
 
-    Args:
-        web_id (str): The ID of the web to iterate over.
-        iteratePayload (IterateWeb): The payload containing the new name and description for the new web.
-        user (User): The user making the request.
-
-    Returns:
-        dict: A JSON response containing the ID of the newly created web.
-
-    Raises:
-        HTTPException: If the web is not found, raises a 404 error.
+    Steps:
+    1. Look up the original web and user.
+    2. Create a new web (generates a new webId).
+    3. Copy sources from the original web to the new one via Neo4j.
+    4. Update the new web in Mongo with the new sourceIds and iteration info.
+    5. Queue embedding task.
     """
     check_user(user)
+
     try:
+        # get original web + owner
+        web_to_iterate: Web = Webs.find_one({"webId": web_id})
+        if not web_to_iterate:
+            raise HTTPException(status_code=404, detail="Original web not found")
 
-        webToIterate = Webs.find_one({"webId": web_id})
-        associatedUser = Users.find_one({"id": webToIterate["userId"]}, {"_id": 0})
+        associated_user = Users.find_one({"id": web_to_iterate["userId"]}, {"_id": 0})
+        if not associated_user:
+            raise HTTPException(status_code=404, detail="Owner not found")
 
-        if not webToIterate or not associatedUser:
-            raise HTTPException(status_code=404, detail="Web or owner not found")
+        # create a new web first to generate a new webId
+        create_web_payload = CreateWeb(
+            name=iteratePayload.name,
+            description=iteratePayload.description,
+            visibility="Private",
+            tags=web_to_iterate.get("tags", []),
+            sourceIds=[],  # will update this after Neo4j step
+            imageKeys=[],
+            enableAIConnections=False,
+            showcase=False,
+        )
+        new_web_id = create_web(create_web_payload, user["id"])
 
-        newWebId = str(uuid.uuid4())
-
+        # copy sources in Neo4j to the new web
         try:
-            newWebId, newSourceIds = neo4jClient.copy_sources_to_new_web(
+            _, new_source_ids = neo4jClient.copy_sources_to_new_web(
                 original_web_id=web_id,
-                new_web_id=newWebId,
+                new_web_id=new_web_id,
                 new_user_id=user["id"],
                 with_connections=iteratePayload.withConnections,
             )
         except Exception as e:
-            logger.error(str(e))
-            raise HTTPException(status_code=500, detail=str(e))
+            logger.error(f"Neo4j copy error: {str(e)}")
+            raise HTTPException(status_code=500, detail="Error copying sources")
 
-        web_to_insert: Web = {
-            "webId": newWebId,
-            "name": iteratePayload.name,
-            "description": iteratePayload.description,
-            "userId": user["id"],
-            "sourceIds": newSourceIds,
-            "created": datetime.now(UTC),
-            "updated": datetime.now(UTC),
-            "visibility": "Private",
-            "tags": webToIterate["tags"],
-            "iteratedFrom": associatedUser["id"],
-            "likes": [],
-            "iterations": [],
-        }
+        # update new web in MongoDB with sourceIds and iteratedFrom
+        Webs.update_one(
+            {"webId": new_web_id},
+            {
+                "$set": {
+                    "sourceIds": new_source_ids,
+                    "iteratedFrom": associated_user["id"],
+                    "updated": datetime.now(UTC),
+                }
+            },
+        )
 
-        background_task.add_task(webService.emebd_and_upsert_web, web_to_insert)
-
-        Webs.insert_one(web_to_insert)
-        Webs.find_one_and_update(
-            {"webId": webToIterate["webId"]},
+        Webs.update_one(
+            {"webId": web_id},
             {"$push": {"iterations": user["id"]}},
         )
-        return {"result": newWebId}
+
+        # queue embedding
+        web_doc = Webs.find_one({"webId": new_web_id})
+        if web_doc:
+            background_task.add_task(webService.emebd_and_upsert_web, web_doc)
+
+        return {"result": new_web_id}
 
     except Exception as e:
+        logger.error(f"Error iterating web: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error iterating web: {str(e)}")
 
 

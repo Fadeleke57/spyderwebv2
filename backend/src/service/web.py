@@ -1,7 +1,4 @@
-from typing import List
-from uuid import uuid4
-from src.models.index import Web, Connection
-from src.db.neo4j import client as neo4jClient
+from src.models.index import Web
 from src.lib.pinecone.index import client as pineconeClient
 from src.lib.logger.index import logger
 
@@ -21,10 +18,15 @@ class WebService:
 
             del pincone_insert["_id"]
 
-            pincone_insert["created"] = str(
-                web_payload["created"]
-            )  # data object not allowed in pinecone
+            # date object not allowed in pinecone
+            pincone_insert["created"] = str(web_payload["created"])
             pincone_insert["updated"] = str(web_payload["updated"])
+
+            # remove all null values
+            for key, value in pincone_insert.items():
+                if value is None:
+                    pincone_insert[key] = "None"
+
             embedding_data = [(web_payload["webId"], vectors, pincone_insert)]
             pineconeClient.index.upsert(
                 vectors=embedding_data,
