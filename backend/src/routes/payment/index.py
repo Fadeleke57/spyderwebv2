@@ -8,19 +8,14 @@ from dotenv import load_dotenv
 from src.routes.auth.oauth2 import manager
 from src.models.user import User
 from src.utils.credits import update_user_plan, reset_user_credits
+from src.core.config import settings
 from src.lib.logger.index import logger
-from src.db.mongodb import get_collection
+from src.models.index import Users
 
-# Load environment variables
-load_dotenv()
-
-# Initialize Stripe and MongoDB
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-users_collection = get_collection("users")
+stripe.api_key = settings.stripe_secret_key
 
 router = APIRouter()
 
-# Define pricing tiers
 PRICING_TIERS = {
     "free": {
         "name": "Free",
@@ -109,7 +104,7 @@ async def create_checkout_session(request: CheckoutRequest, user: User = Depends
             )
             customer_id = customer.id
             # Save customer ID to user
-            users_collection.update_one(
+            Users.update_one(
                 {"id": user['id']},
                 {"$set": {"stripe_customer_id": customer_id}}
             )
@@ -177,14 +172,15 @@ async def create_checkout_session(request: CheckoutRequest, user: User = Depends
 async def stripe_webhook(request: Request):
     """Handle Stripe webhooks"""
     payload = await request.body()
+    logger.info(f"Received webhook payload: {payload}")
     sig_header = request.headers.get("stripe-signature")
-
+    logger.info(f"Received Stripe signature: {sig_header}")
     try:
         logger.info("Received webhook event")
         event = stripe.Webhook.construct_event(
             payload, sig_header, os.getenv("STRIPE_WEBHOOK_SECRET")
         )
-
+        
         logger.info(f"Webhook event type: {event.type}")
         logger.debug(f"Full event data: {event}")
 
@@ -193,7 +189,7 @@ async def stripe_webhook(request: Request):
             session = event.data.object
             logger.info(f"Checkout completed for session: {session.id}")
             logger.debug(f"Session data: {session}")
-
+        logger.info("Webhook processed successfully")
         return {"status": "success"}
 
     except Exception as e:
