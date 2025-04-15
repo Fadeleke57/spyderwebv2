@@ -29,6 +29,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import MobileWebView from "@/components/webs/MobileWebForm";
+import { useConfigureChat } from "@/hooks/chats";
 
 function Index() {
   const router = useRouter();
@@ -57,12 +58,21 @@ function Index() {
     useFetchUserById(web?.iteratedFrom ? web?.iteratedFrom : "");
 
   const { user } = useUser();
+
   const isOwner = user?.id === webOwner?.id;
 
   const title = loading ? "Loading..." : web?.name || "Web Details";
   const description = loading
     ? "Fetching web details..."
     : web?.description || "View and explore web details.";
+
+  const { mutateAsync: configureCharlotte } = useConfigureChat();
+
+  useEffect(() => {
+    if (webId) {
+      configureCharlotte(webId as string);
+    }
+  }, [webId, configureCharlotte, router]);
 
   if (error) {
     return (
