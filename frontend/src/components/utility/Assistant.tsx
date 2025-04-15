@@ -100,13 +100,13 @@ const SpydrAI = () => {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [previouslySelectedChat, setPreviouslySelectedChat] = useState<
     string | null
-  >(null);
+    >(null);
+  
   const { mutateAsync: configureCharlotte, isPending: isConfiguring } =
     useConfigureChat();
+  
   const router = useRouter();
   const { webId } = router.query;
-
-  console.log("webId", webId);
   const isMobile = useIsMobile();
 
   const mapViewToComponent = () => {
@@ -157,7 +157,7 @@ const SpydrAI = () => {
     if (webId) {
       configureCharlotte(webId as string);
     }
-  }, [webId, router]);
+  }, [webId, router, configureCharlotte]);
 
   if (isMobile) {
     return (

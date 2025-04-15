@@ -17,6 +17,8 @@ export const useConfigureChat = () => {
         variant: "destructive",
       });
     },
+    retry: true,
+    retryDelay: 4000,
   });
 };
 
