@@ -220,7 +220,7 @@ export function ProfileForm({
                 <Input
                   disabled
                   className="w-full"
-                  placeholder="shadcn"
+                  placeholder="Enter your email..."
                   {...field}
                 />
               </FormControl>
