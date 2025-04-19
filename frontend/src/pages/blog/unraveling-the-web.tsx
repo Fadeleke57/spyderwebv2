@@ -87,9 +87,9 @@ function Index() {
           </motion.h2>
 
           <motion.p variants={fadeInItem}>
-            Given the internet&apos;s multitude of information sources—some
-            insightful, others increasingly trivial—LLM outputs can suffer from
-            entropic uncertainty. Anthropic’s introduction to this idea,{" "}
+            Given the internet&apos;s multitude of information sources, some
+            insightful, others increasingly trivial, LLM outputs can suffer from
+            entropic uncertainty. Anthropic&apos;s introduction to this idea,{" "}
             <Link
               href={"https://www.youtube.com/watch?v=Bj9BD2D3DzA"}
               className="hover:underline text-violet-400/80"
@@ -126,8 +126,8 @@ function Index() {
               middle. The predictable. The less entropic.&rdquo;
             </blockquote>
             <p className="mt-4">
-              While the internet captures a broad spectrum of human experience—
-              from unrefined writings to technical documentation—this diversity
+              While the internet captures a broad spectrum of human experience,
+              from unrefined writings to technical documentation,this diversity
               can result in unpredictably variable LLM outputs. This
               unpredictability can foster creativity but also complicate the
               reliability of AI-generated content.
@@ -144,9 +144,9 @@ function Index() {
           <motion.p variants={fadeInItem}>
             Despite these challenges, innovations like reasoning chains offer a
             promising pathway to more structured, coherent AI responses. By
-            anchoring AI outputs to specified chains of thought—essentially,
-            targeted pathways through connected sources—we can reduce disarray
-            from fragmented data.
+            anchoring AI outputs to specified chains of thought, which are
+            essentially, targeted pathways through connected sources, we can
+            reduce disarray from fragmented data.
           </motion.p>
 
           <motion.p variants={fadeInItem}>
@@ -162,8 +162,9 @@ function Index() {
             </Link>
             , exemplifies how highlighted and annotated source material can
             guide understanding. Furthermore, it reflects how AI models, when
-            grounded in specified thought trajectories, can deliver outputs with
-            improved fidelity and context.
+            grounded in specified thought trajectories (rather than considering
+            sources as one-off entities), can deliver outputs with improved fidelity
+            and context.
           </motion.p>
 
           <motion.h2
@@ -174,12 +175,12 @@ function Index() {
           </motion.h2>
 
           <motion.p variants={fadeInItem}>
-            Enter Spydr, a platform that embodies the vision of structuring
+            Spydr is a platform that embodies the vision of structuring
             knowledge in a fragmented digital world. At its core, Spydr allows
             users to start with a private mind map, called a &ldquo;web&rdquo;,
             as a foundation for their exploratory experience. This mind map
-            gives users the ability to manually—or through the autolinker
-            feature—create logical connections between sources. Charlotte, your
+            gives users the ability to manually (or through the autolinker
+            feature) create logical connections between sources. Charlotte, your
             helpful AI assistant, understands more than just flat insertions of
             data in these spaces. She understands the structure and flow of the
             context between data, making interactions with larger, more complex
@@ -196,6 +197,11 @@ function Index() {
             foundations. This feature not only democratizes access to structured
             information but also transforms how digital interactions and
             information discoveries can be mapped and utilized collaboratively.
+            Think of a traditional webpage, with each {"<a></a>"} tags referencing
+            new pages for the user to travel to. As webs are published, a new level of
+            linking on the internet that supersedes the traditional internet
+            landscape is formed. The applications of this new layer are almost
+            limitless.
           </motion.p>
 
           <motion.p variants={fadeInItem}>
@@ -233,7 +239,7 @@ function Index() {
 
           <motion.p variants={fadeInItem}>
             The endeavor to create an annotated internet is not just about
-            enhancing human understanding—it&apos;s also about equipping AI
+            enhancing human understanding; it&apos;s also about equipping AI
             models to handle information more reliably. By structuring and
             linking knowledge webs like those facilitated by Spydr, we break
             down barriers between ideation and reliability in innovation.
