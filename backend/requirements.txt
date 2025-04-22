@@ -14,7 +14,7 @@ boto3
 requests
 youtube_transcript_api
 pydantic-to-typescript>=2
-firecrawl
+firecrawl>=2.1.2
 pymupdf4llm
 stripe
 google-genai
