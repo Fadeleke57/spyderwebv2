@@ -48,7 +48,7 @@ function Index() {
   return (
     <div className="min-h-screen flex flex-col">
       <Head>
-        <title>{"about - spydr"}</title>
+        <title>{"mission statement - spydr"}</title>
         <meta name="description" content={"Learn more about spydr"} />
         <link rel="icon" href="/favicon.ico" />
         <meta property="og:title" content={"about - spydr"} />
