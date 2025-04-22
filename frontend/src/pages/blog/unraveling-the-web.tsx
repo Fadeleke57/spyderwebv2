@@ -48,7 +48,7 @@ function Index() {
   return (
     <div className="min-h-screen flex flex-col">
       <Head>
-        <title>{"about - spydr"}</title>
+        <title>{"unraveling the web - spydr"}</title>
         <meta name="description" content={"Learn more about spydr"} />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -163,8 +163,8 @@ function Index() {
             , exemplifies how highlighted and annotated source material can
             guide understanding. Furthermore, it reflects how AI models, when
             grounded in specified thought trajectories (rather than considering
-            sources as one-off entities), can deliver outputs with improved fidelity
-            and context.
+            sources as one-off entities), can deliver outputs with improved
+            fidelity and context.
           </motion.p>
 
           <motion.h2
@@ -189,21 +189,6 @@ function Index() {
             information, including notes, YouTube videos, documents, websites,
             and eventually social media posts, into their personal webs.
           </motion.p>
-
-          <motion.p variants={fadeInItem}>
-            Spydr hones in on knowledge democratization through its
-            collaborative essence. Users can share their webs with peers or
-            publish them, enabling others to explore and build upon shared
-            foundations. This feature not only democratizes access to structured
-            information but also transforms how digital interactions and
-            information discoveries can be mapped and utilized collaboratively.
-            Think of a traditional webpage, with each {"<a></a>"} tags referencing
-            new pages for the user to travel to. As webs are published, a new level of
-            linking on the internet that supersedes the traditional internet
-            landscape is formed. The applications of this new layer are almost
-            limitless.
-          </motion.p>
-
           <motion.p variants={fadeInItem}>
             One of the standout features of Spydr is its capability for
             fine-grained context switching. With Charlotte, the AI chat
@@ -228,6 +213,23 @@ function Index() {
             Charlotte retains the conversation flow and context from the first
             web while integrating the specific details and connections from the
             second, ensuring a coherent and informed dialogue at all times.
+          </motion.p>
+
+          <motion.p variants={fadeInItem}>
+            Spydr hones in on knowledge democratization through an emphasis on
+            collaboration. Users can share their webs with peers or publish
+            them, enabling others to explore and build upon shared foundations.
+            This feature not only democratizes access to structured information
+            but also transforms how digital interactions and information
+            discoveries can be mapped and utilized collaboratively. Think of a
+            traditional webpage, where each {"<a></a>"} tag references a new
+            page on the internet for a user to travel to. The goal here is to
+            create a new level of linking on top the internet that supersedes
+            the traditional internet structure. This layer maps out human
+            thinking processes to the content we consume everyday, allowing for
+            a deeper, richer understanding of the world. The applications of
+            this new layer are almost limitless, but most notable in AI
+            inference and search.
           </motion.p>
 
           <motion.h2

@@ -7,9 +7,10 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import Head from "next/head";
 
 const blogPosts = [
-    {
+  {
     id: 1,
     title: "Unraveling the Modern Web",
     category: "Release",
@@ -88,6 +89,19 @@ function Index() {
 
   return (
     <div className="min-h-screen">
+      <Head>
+        <title>{"blog - spydr"}</title>
+        <meta name="description" content={"Learn more about spydr"} />
+        <link rel="icon" href="/favicon.ico" />
+        <meta property="og:title" content={"about - spydr"} />
+        <meta property="og:description" content={"Learn more about spydr"} />
+        <meta
+          property="og:url"
+          content={`${
+            typeof window !== "undefined" ? window.location.href : ""
+          }`}
+        />
+      </Head>
       <div className="max-w-7xl mx-auto px-8 sm:px-10 p-16">
         <motion.div
           className="mb-16 lg:my-16 py-0 flex flex-col space-y-4 max-w-xl"
