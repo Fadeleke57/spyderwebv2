@@ -29,7 +29,7 @@ from src.lib.logger.index import logger
 from src.core.config import settings
 from src.lib.pinecone.index import client as pineconeClient
 from src.service.web import service as webService
-from copy import deepcopy
+from src.routes.chat.index import configure_chat
 
 router = APIRouter()
 
@@ -485,6 +485,7 @@ def get_web_by_id(webId: str, user=Depends(manager.optional)):
         ):
             raise HTTPException(status_code=404, detail="Item not found")
         else:
+            _ = configure_chat(webId=webId)
             return {"result": web}
 
     except Exception as e:

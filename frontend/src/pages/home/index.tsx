@@ -8,7 +8,6 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { User } from "lucide-react";
 import sLogo from "@/assets/slogonobg.png";
-import SpydrAI from "@/components/utility/Assistant";
 import { getTimeBasedGreeting } from "@/lib/utils";
 import Image from "next/image";
 
@@ -63,7 +62,6 @@ function Index() {
 
         <ProjectsCarousel />
       </div>
-      <SpydrAI />
     </div>
   );
 }

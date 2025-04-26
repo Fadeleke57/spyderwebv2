@@ -10,9 +10,6 @@ from src.utils.chat.prompt import convert_to_openai_messages, stream_text
 from src.models.index import Request, User, Chats
 from src.utils.credits import deduct_credits, get_user_credits
 from src.constants.credits import OPERATION_COSTS
-from src.models.user import Users
-import json
-import uuid
 
 router = APIRouter()
 

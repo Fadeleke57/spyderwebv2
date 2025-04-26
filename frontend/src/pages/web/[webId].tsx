@@ -72,7 +72,7 @@ function Index() {
     if (webId) {
       configureCharlotte(webId as string);
     }
-  }, []);
+  }, [webId, configureCharlotte]);
 
   if (error) {
     return (

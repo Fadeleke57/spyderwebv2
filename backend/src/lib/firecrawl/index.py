@@ -1,6 +1,7 @@
 from src.core.config import settings
 from firecrawl import FirecrawlApp
 
+
 class FireCrawlClient:
     def __init__(self):
         self.app = FirecrawlApp(settings.firecrawl_api_key)
@@ -17,7 +18,8 @@ class FireCrawlClient:
             tuple[str, str]: A tuple containing the title and content of the
             webpage as markdown.
         """
-        r = self.app.scrape_url(url, formats=['markdown'])
-        return r.metadata.get('title', None), r.markdown
+        r = self.app.scrape_url(url, formats=["markdown"])
+        return r.metadata.get("title", None), r.markdown
+
 
 client = FireCrawlClient()

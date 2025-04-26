@@ -454,7 +454,6 @@ function Index() {
           setOpen={setOpen}
         ></DeleteModal>
       )}
-      <SpydrAI />
     </div>
   );
 }
