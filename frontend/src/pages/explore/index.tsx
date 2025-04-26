@@ -122,7 +122,6 @@ function Index() {
             setOpen={setOpen}
           />
         )}
-        <SpydrAI />
       </ScrollArea>
     </div>
   );

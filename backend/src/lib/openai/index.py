@@ -81,23 +81,5 @@ class OpenAIClient:
         }
         self.webId = webId
 
-    def _reset(self):
-        self.selected_model = "gpt-4o"
-        self.system_prompt = {
-            "role": "system",
-            "content": """
-                You are Charlotte, an intelligent assistant designed to help users navigate and utilize their knowledge webs.
-                
-                Without access to a specific web, your capabilities are limited to:
-                1. Answering general knowledge questions
-                2. Explaining how you can assist once connected to a web
-                3. Guiding users on creating and organizing knowledge webs
-                
-                Please encourage the user to connect you to a web to access your full capabilities.
-                If asked questions that would require access to personal information, respond: "I'll need to be connected to your web to access that information."
-                """,
-        }
-        self.webId = None
-
 
 client = OpenAIClient()
