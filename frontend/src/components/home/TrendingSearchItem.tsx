@@ -4,8 +4,11 @@ import { formatText } from "@/lib/utils";
 import { Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/router";
+import { useIsMobile } from "@/hooks/use-mobile";
 function TrendingSearchItem({ web }: { web: Web }) {
   const router = useRouter();
+  const isMobile = useIsMobile();
+
   return (
     <div className="p-1">
       <Card

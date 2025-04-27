@@ -5,7 +5,6 @@ import { WebCard } from "@/components/explore/WebCard";
 import { Web } from "@/types/web";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/router";
 import { useUser } from "@/context/UserContext";
 import Head from "next/head";
 import useMediaQuery from "@/hooks/general";
@@ -13,7 +12,6 @@ import { AuthModal } from "@/components/auth/AuthModal";
 import SearchBar from "@/components/utility/Searchbar";
 import { Loader } from "lucide-react";
 import PopularWebsCard from "@/components/explore/PopularWebsCard";
-import SpydrAI from "@/components/utility/Assistant";
 import ExplorePageErrorCard from "@/components/utility/ExplorePageErrorCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -74,7 +72,7 @@ function Index() {
           />
         </Head>
         <div></div>
-        <div className="p-4 lg:px-8 lg:border-b-2 relative lg:sticky lg:top-0 bg-background lg:z-50 flex justify-end">
+        <div className="p-4 flex flex-col lg:px-8 lg:border-b-2 relative lg:sticky lg:top-0 bg-background lg:z-50 flex justify-end">
           {!user && isMobile && (
             <Button
               className="w-full mb-2"

@@ -207,6 +207,7 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
         <div className="flex flex-row gap-2 w-full">
           <div>
             <UserAvatar
+              username={webOwner?.username}
               userId={web?.userId}
               width={30}
               height={30}

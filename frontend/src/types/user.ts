@@ -8,8 +8,10 @@ export interface PublicUser {
   disabled: boolean;
   websHidden: string[];
   websSaved: string[];
+  websPinned: string[];
   subscription_plan: "pro" | "basic" | "free";
   caps: UsageCaps;
+  created_at: string;
 }
 
 export type UpdateUser = {

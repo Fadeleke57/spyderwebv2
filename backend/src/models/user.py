@@ -25,6 +25,7 @@ class User(BaseModel):
     profile_picture_url: Optional[str] = None
     websHidden: list[str] = []
     websSaved: list[str] = []
+    websPinned: list[str] = []
     credits: int = PLAN_CREDITS["free"]
     subscription_plan: str = "free"
     last_credits_reset: datetime = Field(default_factory=lambda: datetime.now(UTC))

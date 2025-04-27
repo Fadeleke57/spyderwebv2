@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { CirclePlus, Home, LayoutGrid, Waypoints } from "lucide-react";
+import { CirclePlus, Home, LayoutGrid, User, Waypoints } from "lucide-react";
 import { NewWebModal } from "../webs/NewWebModal";
 import { AuthModal } from "../auth/AuthModal";
 import { ResourceUsage } from "./ResourceUsage";
@@ -47,13 +47,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       setSelectedButton("home");
     } else if (router.pathname.startsWith("/explore")) {
       setSelectedButton("explore");
-    } else if (router.pathname.startsWith("/webs")) {
-      setSelectedButton("webs");
+    } else if (user && router.asPath.startsWith(`/user/${user.username}`)) {
+      setSelectedButton("user");
     } else {
       setSelectedButton(null);
     }
   }, [router.pathname]);
-
+  console.log(`${user?.username}`);
+  console.log(router.pathname);
   const handleButtonClick = (route: string) => {
     if (!user) {
       setOpen(true);
@@ -165,14 +166,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuButton
             size="sm"
             className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none  py-4 rounded-lg`}
-            onClick={() => handleButtonClick("/webs")}
+            onClick={() => handleButtonClick(`/user/${user?.username}`)}
           >
             <div
               className={`flex flex-row gap-2 items-center rounded-lg bg-none text-sidebar-primary-foreground`}
             >
-              <Waypoints
+              <User
                 className={`size-5 ${
-                  selectedButton === "webs"
+                  selectedButton === "user"
                     ? "text-muted-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
                 }`}
@@ -181,16 +182,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span
                 className={`truncate text-xl ${
-                  selectedButton === "webs"
+                  selectedButton === "user"
                     ? "text-muted-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
                 }`}
               >
-                Webs
+                Profile
               </span>
             </div>
           </SidebarMenuButton>
-          <SidebarIndicator show={selectedButton === "webs"} />
+          <SidebarIndicator show={selectedButton === "user"} />
         </div>
         {/*
         <div className="relative px-2">

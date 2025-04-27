@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import { Web, UpdateWeb } from "@/types/web";
+import { UpdateWeb } from "@/types/web";
 import {
   useInfiniteQuery,
   useMutation,
@@ -69,28 +69,18 @@ export const useFetchSavedWebs = () => {
 
 export const useUploadImageToWeb = () => {
   return useMutation({
-    mutationFn: async ({
-      webId,
-      files,
-    }: {
-      webId: string;
-      files: File[];
-    }) => {
+    mutationFn: async ({ webId, files }: { webId: string; files: File[] }) => {
       const formData = new FormData();
 
       files.forEach((file) => {
         formData.append("files", file);
       });
 
-      const { data } = await api.post(
-        `/webs/upload/image/${webId}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const { data } = await api.post(`/webs/upload/image/${webId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       return data.imageUrls;
     },
@@ -161,10 +151,11 @@ export function useFetchPublicWebs() {
   return useInfiniteQuery({
     queryKey: ["webs", "public"],
     queryFn: async ({ pageParam = null }) => {
-      const response = await api.get("/webs/all/public", {
+      const response = await api.get("/webs/all", {
         params: {
           cursor: pageParam,
           limit: 10,
+          visibility: "Public",
         },
       });
       return response.data;
@@ -173,6 +164,31 @@ export function useFetchPublicWebs() {
     getNextPageParam: (lastPage, pages) => {
       return lastPage.nextCursor;
     },
+  });
+}
+
+export function useFetchProfileWebs(
+  userId: string,
+  visibility: string | null = null
+) {
+  return useInfiniteQuery({
+    queryKey: ["webs", "profile", userId],
+    queryFn: async ({ pageParam = null }) => {
+      const response = await api.get("/webs/all", {
+        params: {
+          cursor: pageParam,
+          limit: 10,
+          userId: userId,
+          visibility,
+        },
+      });
+      return response.data;
+    },
+    initialPageParam: null,
+    getNextPageParam: (lastPage, pages) => {
+      return lastPage.nextCursor;
+    },
+    enabled: !!userId,
   });
 }
 
@@ -239,9 +255,7 @@ export function useAddTagToWeb(webId: string) {
 export function useRemoveTagFromWeb(webId: string) {
   return useMutation({
     mutationFn: async (tag: string) => {
-      const response = await api.patch(
-        `/webs/remove/tag/${webId}/${tag}`
-      );
+      const response = await api.patch(`/webs/remove/tag/${webId}/${tag}`);
       return response.data.result;
     },
     onSuccess: () => {},
@@ -308,5 +322,3 @@ export function useFetchContributers(webId: string) {
     },
   });
 }
-
-

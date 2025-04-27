@@ -39,12 +39,11 @@ import { NewWebModal } from "@/components/webs/NewWebModal";
 import Head from "next/head";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Web } from "@/types/web";
-import { ComboBoxResponsive } from "@/components/utility/ResponsiveComobox";
 import DeleteModal from "@/components/utility/DeleteModal";
 import { useUser } from "@/context/UserContext";
 import { toast } from "@/components/ui/use-toast";
 import UserWebSearch from "@/components/webs/UserWebSearch";
-import SpydrAI from "@/components/utility/Assistant";
+import UserAvatar from "@/components/utility/UserAvatar";
 
 function Index() {
   const { user, logout } = useUser();
@@ -215,23 +214,12 @@ function Index() {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="overflow-hidden rounded-full dark:bg-muted dark:hover:text-foreground dark:border"
-              >
-                {user?.id ? (
-                  <Image
-                    src={`https://robohash.org/${user.id}?size=300x300`}
-                    width={36}
-                    height={36}
-                    alt="Avatar"
-                    className="rounded-full"
-                  />
-                ) : (
-                  <Skeleton className="w-[36px] h-[36px] rounded-full" />
-                )}
-              </Button>
+              <UserAvatar
+                userId={user?.id}
+                username={user?.username}
+                width={36}
+                height={36}
+              />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>

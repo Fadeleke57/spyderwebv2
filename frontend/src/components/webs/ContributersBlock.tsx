@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import UserAvatar from "../utility/UserAvatar";
 
 function ContributorsBlock({ webId, count }: { webId: string; count: number }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,11 +58,11 @@ function ContributorsBlock({ webId, count }: { webId: string; count: number }) {
     <Tooltip key={contributor.id} delayDuration={100}>
       <TooltipTrigger>
         <div className="relative w-10 h-10 rounded-full overflow-hidden cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all">
-          <Image
-            src={`https://robohash.org/${contributor.id}?size=300x300`}
-            alt={contributor.username || "Contributor"}
-            fill
-            className="object-cover"
+          <UserAvatar
+            userId={contributor.id}
+            username={contributor.username}
+            height={32}
+            width={32}
           />
         </div>
       </TooltipTrigger>

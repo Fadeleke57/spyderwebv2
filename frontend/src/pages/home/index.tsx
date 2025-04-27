@@ -19,7 +19,7 @@ function Index() {
   const greeting = getTimeBasedGreeting("America/New_York");
 
   return (
-    <div className="flex flex-col gap-12 lg:gap-16 p-6 pt-16 pb-36 lg:py-16 px-16 min-h-screen overflow-x-hidden w-full mx-auto">
+    <div className="flex flex-col gap-12 lg:gap-16 p-6 pt-16 pb-36 lg:py-16 lg:px-16 min-h-screen overflow-x-hidden w-full mx-auto">
       <Head>
         <title>{"home - spydr"}</title>
         <meta name="description" content={"Welcome to spydr"} />
@@ -33,11 +33,11 @@ function Index() {
         />
       </Head>
       <User
-        onClick={() => router.push("/settings")}
+        onClick={() => router.push(`/user/${user?.username}`)}
         className="absolute top-6 right-4 lg:top-8 lg:right-8 cursor-pointer hover:opacity-50"
       />
 
-      <div className="flex flex-row gap-2 w-full items-center justify-center">
+      <div className="flex flex-col lg:flex-row gap-2 w-full items-center justify-center">
         <Image src={sLogo} alt="spydr logo" className="w-12 h-12" />
         <h1 className="text-2xl text-center lg:text-3xl font-extrabold tracking-tight">
           {greeting}, {user?.username}

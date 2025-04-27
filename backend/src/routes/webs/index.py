@@ -34,7 +34,7 @@ from src.routes.chat.index import configure_chat
 router = APIRouter()
 
 s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
-s3 = boto3.client("s3")
+s3_session_client = boto3.client("s3")
 
 
 @router.get("/all/user")
@@ -103,8 +103,14 @@ def get_user_webs(
         raise HTTPException(status_code=500, detail=f"Error fetching webs {e}")
 
 
-@router.get("/all/public")
-async def get_public_webs(limit: int = 20, cursor: str = None):
+@router.get("/all")
+async def get_webs(
+    limit: int = 20,
+    cursor: str = None,
+    visibility=None,
+    userId=None,
+    userMakingRequest=Depends(manager.optional),
+):
     """
     Retrieve public webs with cursor-based pagination.
 
@@ -120,8 +126,21 @@ async def get_public_webs(limit: int = 20, cursor: str = None):
     dict
         Dictionary containing webs and next cursor
     """
+    authorized = False
+    if userMakingRequest:
+        check_user(userMakingRequest)
+        if userMakingRequest["id"] == userId:
+            authorized = True
     try:
-        query = {"visibility": "Public"}
+        query = {}
+        if visibility:
+            query["visibility"] = visibility
+        if (
+            userId
+        ):  # if userId was specified, we're looking for profile webs that fit the scope of the user making the request
+            query["userId"] = userId
+            if not authorized:
+                query["visibility"] = "Public"
 
         if cursor:
             query["updated"] = {"$lt": datetime.fromisoformat(cursor)}
@@ -129,6 +148,7 @@ async def get_public_webs(limit: int = 20, cursor: str = None):
         webs_list = list(
             Webs.find(query, {"_id": 0}).sort("updated", -1).limit(limit + 1)
         )
+        total_webs = Webs.count_documents(query)
 
         has_next_page = len(webs_list) > limit
         next_cursor = None
@@ -137,7 +157,7 @@ async def get_public_webs(limit: int = 20, cursor: str = None):
             webs_list = webs_list[:-1]
             next_cursor = webs_list[-1]["updated"]
 
-        return {"result": webs_list, "nextCursor": next_cursor}
+        return {"result": webs_list, "nextCursor": next_cursor, "total": total_webs}
 
     except Exception as e:
         logger.error(f"Error fetching webs: {e}")
@@ -310,7 +330,7 @@ def delete_image(web_id: str, image_name: str, user=Depends(manager)):
         if result.modified_count == 0:
             raise HTTPException(status_code=404, detail="Web not found")
 
-        s3.delete_object(Bucket=s3_bucket.bucket_name, Key=filepath)
+        s3_session_client.delete_object(Bucket=s3_bucket.bucket_name, Key=filepath)
         return {"result": True}
 
     except Exception as e:
@@ -391,7 +411,7 @@ def delete_web(webId: str, user=Depends(manager)):
         logger.info(f"Sources {webId} attached to web deleted from Neo4j")
 
         images_path = f"files/{user['id']}/{webId}/images"
-        pages = s3.get_paginator("list_objects_v2").paginate(
+        pages = s3_session_client.get_paginator("list_objects_v2").paginate(
             Bucket=s3_bucket.bucket_name, Prefix=images_path
         )
         delete_keys = []
@@ -400,7 +420,7 @@ def delete_web(webId: str, user=Depends(manager)):
                 for obj in page["Contents"]:
                     delete_keys.append({"Key": obj["Key"]})
         if delete_keys:
-            s3.delete_objects(
+            s3_session_client.delete_objects(
                 Bucket=s3_bucket.bucket_name, Delete={"Objects": delete_keys}
             )
             logger.info(f"Deleted {len(delete_keys)} images from S3 for web {webId}")

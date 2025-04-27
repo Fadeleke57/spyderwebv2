@@ -6,7 +6,7 @@ import { useUser } from "@/context/UserContext";
 import WebPlayground from "@/components/webs/WebPlayground";
 import WebForm from "@/components/webs/WebForm";
 import PublicWebView from "@/components/webs/PublicWebView";
-import { useFetchUserById } from "@/hooks/user";
+import { useFetchUserById, usePinWeb, useUnpinWeb } from "@/hooks/user";
 import { formatDistanceToNow } from "date-fns";
 import ShareDialog from "@/components/utility/ShareButton";
 import UserAvatar from "@/components/utility/UserAvatar";
@@ -16,7 +16,7 @@ import {
 } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
 import { Web } from "@/types/web";
-import { ArrowLeft, IterationCcw } from "lucide-react";
+import { ArrowLeft, IterationCcw, Pin, PinOff } from "lucide-react";
 import { IterateModal } from "@/components/utility/IterateModal";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/tooltip";
 import MobileWebView from "@/components/webs/MobileWebForm";
 import { useConfigureChat } from "@/hooks/chats";
+import { toast } from "@/components/ui/use-toast";
 
 function Index() {
   const router = useRouter();
@@ -42,6 +43,13 @@ function Index() {
   } = useFetchWebById(webId as string);
 
   const [web, setWeb] = React.useState<Web | null>(webData || null);
+
+  const { mutateAsync: pinWeb, isPending: pinLoading } = usePinWeb(
+    webId as string
+  );
+  const { mutateAsync: unpinWeb, isPending: unpinLoading } = useUnpinWeb(
+    webId as string
+  );
   const [showIterateModal, setShowIterateModal] = React.useState(false);
   const [authModalOpen, setAuthModalOpen] = React.useState(false);
   useEffect(() => {
@@ -58,6 +66,17 @@ function Index() {
     useFetchUserById(web?.iteratedFrom ? web?.iteratedFrom : "");
 
   const { user } = useUser();
+  console.log("user", user);
+  const [isPinned, setPinned] = React.useState(
+    user?.websPinned?.includes(webId as string) || false
+  );
+
+  // Update isPinned state when user data changes
+  useEffect(() => {
+    if (user) {
+      setPinned(user.websPinned?.includes(webId as string) || false);
+    }
+  }, [user, webId]);
 
   const isOwner = user?.id === webOwner?.id;
 
@@ -73,6 +92,39 @@ function Index() {
       configureCharlotte(webId as string);
     }
   }, [webId, configureCharlotte]);
+
+  // Handle pin/unpin action
+  const handlePinToggle = async () => {
+    if (!user) {
+      setAuthModalOpen(true);
+      return;
+    }
+
+    try {
+      if (isPinned) {
+        await unpinWeb();
+        setPinned(false);
+        toast({
+          title: "Web unpinned",
+          description: "The web has been removed from your pinned collection",
+        });
+      } else {
+        await pinWeb();
+        setPinned(true);
+        toast({
+          title: "Web pinned",
+          description: "The web has been added to your pinned collection",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update pinned status",
+        variant: "destructive",
+      });
+      console.error("Failed to toggle pin status:", error);
+    }
+  };
 
   if (error) {
     return (
@@ -160,38 +212,66 @@ function Index() {
               </TooltipProvider>
             )}
             {web && <MobileWebView web={web} user={user ? user : null} />}
-
-            {user && web && webOwner ? (
-              <IterateModal
-                open={showIterateModal}
-                setIsOpen={setShowIterateModal}
-                web={web}
-              >
-                <Button
-                  disabled={
-                    web.iterations.includes(user?.id || "") ||
-                    webOwner.id === user?.id
-                  }
-                  size="sm"
-                  variant={"outline"}
-                >
-                  <span className="hidden md:inline lg:inline">Iterate </span>
-                  <IterationCcw
-                    className="md:ml-2 lg:ml-2"
-                    size={16}
-                    onClick={() => setShowIterateModal(true)}
-                  />
-                </Button>
-              </IterateModal>
-            ) : (
+            {webOwner?.id === user?.id && (
               <Button
                 size="sm"
                 variant={"outline"}
-                onClick={() => setAuthModalOpen(true)}
+                onClick={handlePinToggle}
+                disabled={pinLoading || unpinLoading}
+                className={
+                  isPinned
+                    ? "bg-violet-400/30 border-violet-200 hover:bg-violet-400/40"
+                    : ""
+                }
               >
-                <span className="hidden md:inline lg:inline">Iterate </span>
-                <IterationCcw className="md:ml-2 lg:ml-2" size={16} />
+                {isPinned ? (
+                  <>
+                    <PinOff className="mr-2" size={16} />
+                    Unpin
+                  </>
+                ) : (
+                  <>
+                    <Pin className="mr-2" size={16} />
+                    Pin
+                  </>
+                )}
               </Button>
+            )}
+            {user && web && webOwner ? (
+              <>
+                <IterateModal
+                  open={showIterateModal}
+                  setIsOpen={setShowIterateModal}
+                  web={web}
+                >
+                  <Button
+                    disabled={
+                      web.iterations.includes(user?.id || "") ||
+                      webOwner.id === user?.id
+                    }
+                    size="sm"
+                    variant={"outline"}
+                  >
+                    <span className="hidden md:inline lg:inline">Iterate </span>
+                    <IterationCcw
+                      className="md:ml-2 lg:ml-2"
+                      size={16}
+                      onClick={() => setShowIterateModal(true)}
+                    />
+                  </Button>
+                </IterateModal>
+              </>
+            ) : (
+              <>
+                <Button
+                  size="sm"
+                  variant={"outline"}
+                  onClick={() => setAuthModalOpen(true)}
+                >
+                  <span className="hidden md:inline lg:inline">Iterate </span>
+                  <IterationCcw className="md:ml-2 lg:ml-2" size={16} />
+                </Button>
+              </>
             )}
 
             <ShareDialog link={`${window.location.origin}/web/${webId}`} />
@@ -206,7 +286,12 @@ function Index() {
               x-chunk="dashboard-03-chunk-0"
             >
               <div className="flex items-center gap-2 px-3">
-                <UserAvatar userId={web?.userId} height={28} width={28} />
+                <UserAvatar
+                  username={webOwner?.username}
+                  userId={web?.userId}
+                  height={28}
+                  width={28}
+                />
                 <div className="flex flex-col gap-0">
                   <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
                     {webOwner?.username || ""}{" "}

@@ -7,7 +7,7 @@ from datetime import datetime
 class MongoScriptsClient:
     def __init__(self):
         self.client = MongoClient("")
-        self.database = self.client[""]
+        self.database = self.client["storage"]
     
     def _get_collection(self, name : str):
         return self.database[name]
@@ -70,6 +70,7 @@ def update_users_with_defaults():
         "profile_picture_url": None,
         "websHidden": [],
         "websSaved": [],
+        "websPinned": [],
         "imageKeys": [],
         "credits": 100,  # or settings.PLAN_CREDITS["free"] if dynamic
         "subscription_plan": "free",
@@ -92,13 +93,11 @@ def update_users_with_defaults():
             if key not in user:
                 print(f"Added {key} to {user['username']}")
                 updates[key] = default_value
-
-            updates["credits"] = 100 # hard require free plan credits for now
             
         for key in attrs_to_remove:
             if key in user:
                 print(f"Removed {key} from {user['username']}")
-                del user[key]
+                updates[key] = { "$unset": True }
 
         if updates:
             updates["updated_at"] = datetime.now(UTC)
