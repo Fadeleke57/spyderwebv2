@@ -4,7 +4,7 @@ import { AppSidebar } from "@/components/utility/AppSideBar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SIDEBAR_COOKIE_NAME } from "@/components/ui/sidebar";
 import useMediaQuery from "@/hooks/general";
-import { ChartNoAxesGantt, CirclePlus, Home, LayoutGrid } from "lucide-react";
+import { CirclePlus, Home, LayoutGrid, User } from "lucide-react";
 import { NewWebModal } from "@/components/webs/NewWebModal";
 import { useRouter } from "next/router";
 import slogo from "@/assets/s_logo.jpg";
@@ -19,7 +19,6 @@ export default function AppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const isSidebarOpen = localStorage.getItem(SIDEBAR_COOKIE_NAME) === "true";
-  const pathname = usePathname();
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const { user } = useUser();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -35,13 +34,13 @@ export default function AppLayout({
 
   const isActivePage = (path: string) => {
     if (path === "/explore") {
-      return pathname === "/explore";
+      return router.asPath.startsWith("/explore");
     }
-    if (path === "/webs") {
-      return pathname?.startsWith("/webs") && pathname !== "/webs/new";
+    if (path === "/user") {
+      return user && router.asPath.startsWith(`/user/${user.username}`);
     }
     if (path === "/home") {
-      return pathname === "/home";
+      return router.asPath.startsWith("/home");
     }
     return false;
   };
@@ -94,12 +93,12 @@ export default function AppLayout({
               </div>
             </div>
 
-            <div onClick={() => handleButtonClick("/webs")}>
+            <div onClick={() => handleButtonClick(`/user/${user?.username}`)}>
               <div className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none">
-                <ChartNoAxesGantt
+                <User
                   className={cn(
                     "size-5",
-                    isActivePage("/webs")
+                    isActivePage("/user")
                       ? "text-primary"
                       : "text-slate-500 dark:text-foreground"
                   )}
@@ -107,12 +106,12 @@ export default function AppLayout({
                 <span
                   className={cn(
                     "text-xs font-semibold",
-                    isActivePage("/webs")
+                    isActivePage("/user")
                       ? "text-primary"
                       : "text-slate-500 dark:text-foreground"
                   )}
                 >
-                  Webs
+                  Profile
                 </span>
                 <div
                   className={cn(

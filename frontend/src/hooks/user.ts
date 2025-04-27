@@ -117,13 +117,26 @@ export function useFetchUserById(userId: string) {
       const data = await response.data.result;
       return data;
     },
+    enabled: !!userId,
+  });
+}
+
+export function useFetchUserByUsername(username: string) {
+  return useQuery({
+    queryKey: ["user", username],
+    queryFn: async () => {
+      if (!username) return null;
+      const response = await api.get(`/users/username/${username}`);
+      const data = await response.data.result;
+      return data;
+    },
+    enabled: !!username,
   });
 }
 
 export function useEditUser() {
   return useMutation({
     mutationFn: async (updates: UpdateUser) => {
-      console.log("payload was ", updates);
       const response = await api.patch(`/users/edit/`, updates, {
         headers: { "Content-Type": "application/json" },
       });
@@ -190,6 +203,44 @@ export function useSaveWeb(webId: string) {
   });
 }
 
+export function usePinWeb(webId: string) {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.patch(`/users/pin/web/${webId}`);
+      const data = await response.data.result;
+      return data;
+    },
+    onError: (err: any) => {
+      console.error(err);
+    },
+  });
+}
+
+export function useUnpinWeb(webId: string) {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.patch(`/users/unpin/web/${webId}`);
+      const data = await response.data.result;
+      return data;
+    },
+    onError: (err: any) => {
+      console.error(err);
+    },
+  });
+}
+
+export function useFetchPinnedWebs(userId: string) {
+  return useQuery({
+    queryKey: ["user", "pinned", "webs"],
+    queryFn: async () => {
+      const response = await api.get(`/users/pinned/webs/${userId}`);
+      const data = await response.data.result;
+      return data;
+    },
+    enabled: !!userId,
+  });
+}
+
 export function useUnsaveWeb(webId: string) {
   return useMutation({
     mutationFn: async () => {
@@ -200,5 +251,17 @@ export function useUnsaveWeb(webId: string) {
     onError: (err: any) => {
       console.error(err);
     },
+  });
+}
+
+export function useFetchSavedWebs(userId: string) {
+  return useQuery({
+    queryKey: ["user", "saved", "webs"],
+    queryFn: async () => {
+      const response = await api.get(`/users/saved/webs/${userId}`);
+      const data = await response.data.result;
+      return data;
+    },
+    enabled: !!userId,
   });
 }

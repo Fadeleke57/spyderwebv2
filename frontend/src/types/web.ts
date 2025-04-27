@@ -14,6 +14,7 @@ export interface Web {
   iteratedFrom?: string;
   enableAIConnections?: boolean;
   showcase?: boolean;
+  pinned?: boolean;
 }
 
 export interface UpdateWeb {

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useOnClickOutside } from "@/hooks/general";
 import { cn, formatText } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ScrollArea } from "../ui/scroll-area";
 
 const HighlightedText = ({
   text,
@@ -86,7 +87,7 @@ function UserWebSearch() {
       </div>
 
       {isSearchActive && (
-        <div className="absolute top-full z-50 mt-2 w-[120%] max-h-[500px] rounded-lg border bg-background p-2 shadow-lg min-w-full overflow-y-auto overflow-x-hidden">
+        <div className="absolute top-full border z-50 mt-2 w-full max-h-[400px] rounded-lg border bg-background p-2 shadow-lg overflow-y-scroll">
           {searchResults && searchResults.length > 0 ? (
             <div className="space-y-1 truncate wrap">
               {searchResults.map((web: any) => (

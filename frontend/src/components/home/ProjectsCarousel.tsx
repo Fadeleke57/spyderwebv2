@@ -7,7 +7,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { CopyPlus } from "lucide-react";
+import { CopyPlus, Lock } from "lucide-react";
 import { useFetchUserWebs } from "@/hooks/webs";
 import { formatText } from "@/lib/utils";
 import { useRouter } from "next/router";
@@ -77,7 +77,11 @@ export function ProjectsCarousel() {
                 >
                   <div className="p-1 cursor-pointer">
                     <Card className="">
-                      <CardContent className="flex aspect-square items-center justify-center p-10">
+                      <CardContent className="relative flex aspect-square items-center justify-center p-10">
+                        <small className="absolute text-muted-foreground top-4 right-4 flex flex-row items-center">
+                          {web.visibility}{" "}
+                          {web.visibility === "Private" && <Lock className="ml-2" size={14} />}
+                        </small>
                         <div className="w-full flex flex-col overflow-hidden hyphens-auto break-words">
                           <h1 className="text-xl font-semibold hyphens-auto">
                             {formatText(web.name, 50)}

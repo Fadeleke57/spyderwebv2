@@ -64,7 +64,10 @@ export function NavUser() {
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild className={`${state === "collapsed" && "ml-1"}`}>
+          <DropdownMenuTrigger
+            asChild
+            className={`${state === "collapsed" && "ml-1"}`}
+          >
             <SidebarMenuButton size="lg" isActive={false}>
               <UserAvatar userId={user.id} />
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -73,7 +76,9 @@ export function NavUser() {
                   {user.email}
                 </span>
               </div>
-              <Ellipsis className={`ml-auto size-4 ${state === "collapsed" && "hidden"}`} />
+              <Ellipsis
+                className={`ml-auto size-4 ${state === "collapsed" && "hidden"}`}
+              />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -84,7 +89,7 @@ export function NavUser() {
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <UserAvatar userId={user.id} />
+                <UserAvatar username={user.username} userId={user.id} />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
                     {user.username}

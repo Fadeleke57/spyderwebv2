@@ -291,6 +291,8 @@ def get_current_user(user=Depends(manager)):
             "disabled": user["disabled"],
             "websHidden": user["websHidden"],
             "websSaved": user["websSaved"],
+            "websPinned": user["websPinned"],
+            "created_at": user["created_at"],
             "subscription_plan": user["subscription_plan"],
         }
         logging.debug(f"User found in /auth/me: {publicUser}")
