@@ -6,7 +6,7 @@ from datetime import datetime
 
 class MongoScriptsClient:
     def __init__(self):
-        self.client = MongoClient("mongodb+srv://fadeleke:IJerctTHeQraO5U7@spystorage.0w3ujn9.mongodb.net/")
+        self.client = MongoClient("")
         self.database = self.client["storage"]
     
     def _get_collection(self, name : str):
