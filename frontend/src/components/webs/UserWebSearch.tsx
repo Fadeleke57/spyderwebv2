@@ -87,7 +87,7 @@ function UserWebSearch() {
       </div>
 
       {isSearchActive && (
-        <div className="absolute top-full border z-50 mt-2 w-full max-h-[400px] rounded-lg border bg-background p-2 shadow-lg overflow-y-scroll">
+        <div className="absolute top-full border z-50 mt-2 w-1/2 max-h-[400px] rounded-lg border bg-background p-2 shadow-lg overflow-y-scroll no-scrollbar">
           {searchResults && searchResults.length > 0 ? (
             <div className="space-y-1 truncate wrap">
               {searchResults.map((web: any) => (
