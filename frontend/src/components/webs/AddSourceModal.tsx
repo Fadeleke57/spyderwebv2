@@ -17,7 +17,7 @@ import { Drawer, DrawerContent, DrawerHeader } from "../ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "../ui/skeleton";
 
-type ConfigGraphModalProps = {
+type AddSourceModalProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
   config: CreateWeb;
@@ -47,7 +47,7 @@ export default function AddSourceModal({
   handleFileUpload,
   isFileUploading,
   setParseObsidianLinks,
-}: ConfigGraphModalProps) {
+}: AddSourceModalProps) {
   const isMobile = useIsMobile();
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
