@@ -21,14 +21,6 @@ import {
   useFileUpload,
   useUploadNote,
 } from "@/hooks/sources";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 
 import WebDataModal from "./WebDataModal";
 
@@ -58,6 +50,7 @@ import { toast } from "../ui/use-toast";
 import ProcessModal from "@/components/webs/ProcessModal";
 import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
 import SimpleTooltip from "../utility/SimpleTooltip";
+import SearchSourceModal from "./SearchSourceModal";
 
 const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
 
@@ -237,7 +230,10 @@ function WebPlayground({
           }  top-3`}
         >
           {isOwner && <WebSettingsModal refetchWeb={refetch} web={web} />}
-          <Badge variant="outline" className={`border dark:border-violet-400/70`}>
+          <Badge
+            variant="outline"
+            className={`border dark:border-violet-400/70`}
+          >
             {web?.sourceIds?.length || 0} sources added
           </Badge>
         </div>
@@ -273,54 +269,14 @@ function WebPlayground({
             </Tooltip>
           </TooltipProvider>
 
-          <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={searchDialogOpen}
-                      className="rounded-full p-0 px-[10px] m-0"
-                    >
-                      <Search size={20} />
-                    </Button>
-                  </DialogTrigger>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Search sources</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <DialogContent className="lg:max-w-2xl no-scrollbar">
-              <DialogTitle hidden className="pl-4"></DialogTitle>
-              <Command className="bg-transparent no-scrollbar">
-                <CommandInput
-                  placeholder="Search sources..."
-                  className="bg-transparent"
-                />
-                <CommandList>
-                  <CommandEmpty>
-                    No sources found. <span>Create one?</span>
-                  </CommandEmpty>
-                  <CommandGroup>
-                    {sources?.map((source: Source, id: number) => (
-                      <CommandItem
-                        key={id}
-                        className="cursor-pointer items-start"
-                        onSelect={() => handleSourceClick(source.sourceId)}
-                        value={`${source.name}${id}`}
-                      >
-                        {mapSourceToIcon(source.type, 16)}
-                        {source.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </DialogContent>
-          </Dialog>
+          {fetchedSources && (
+            <SearchSourceModal
+              open={searchDialogOpen}
+              setOpen={setSearchDialogOpen}
+              sources={fetchedSources}
+              handleSourceClick={handleSourceClick}
+            ></SearchSourceModal>
+          )}
         </div>
         {isOwner &&
         (web?.sourceIds?.length === undefined ||
@@ -412,92 +368,95 @@ function WebPlayground({
             </AddSourceModal>
           </div>
         ) : null}
-        {isOwner && web?.sourceIds?.length === 0 && !isFileUploading && (
-          <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/4 flex flex-col items-center gap-1 text-center min-w-[300px]">
-            <h3 className="text-2xl font-bold tracking-tight">
-              Add your first source
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Drag and drop or click below to start collecting information to
-              add your web.
-            </p>
-            <div className="flex flex-wrap gap-2 whitespace-nowrap mt-2 justify-center">
-              {" "}
-              <AddSourceModal
-                open={isAddSourceModalOpen}
-                setOpen={setIsAddSourceModalOpen}
-                setSelectedSourceId={setSelectedSourceId}
-                setIsWebDataModalOpen={setIsWebDataModalOpen}
-                web={web}
-                config={config}
-                setConfig={setConfig}
-                refreshSources={refetchSources}
-                refreshWeb={refetch}
-                view={webSearchModalView}
-                handleFileUpload={handleFileUpload}
-                isFileUploading={isFileUploading}
-                setParseObsidianLinks={setParseObsidianLinks}
-              >
-                <DropdownMenu onOpenChange={handleDropdownOpenChange}>
-                  <DropdownMenuTrigger asChild>
-                    <Button className="rounded-full h-8">
-                      <Plus
-                        strokeWidth={3}
-                        size={16}
-                        className={`mr-2 rotate-${addIconOrientation} transition-transform ease-in`}
-                      />
-                      Create
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    side="bottom"
-                    sideOffset={5}
-                    className="w-40 right-0"
-                  >
-                    <DropdownMenuGroup>
-                      <DialogTrigger
-                        asChild
-                        onClick={() => handleDropdownButtonClick("website")}
-                      >
-                        <DropdownMenuItem className="cursor-pointer">
-                          <Link size={16} className="mr-2" />
-                          <span>Website</span>
-                        </DropdownMenuItem>
-                      </DialogTrigger>
-                      <DialogTrigger
-                        asChild
-                        onClick={() => handleDropdownButtonClick("default")}
-                      >
-                        <DropdownMenuItem className="cursor-pointer">
-                          <File size={16} className="mr-2" />
-                          <span>File</span>
-                        </DropdownMenuItem>
-                      </DialogTrigger>
+        {isOwner &&
+          web?.sourceIds &&
+          web?.sourceIds?.length === 0 &&
+          !isFileUploading && (
+            <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/4 flex flex-col items-center gap-1 text-center min-w-[300px]">
+              <h3 className="text-2xl font-bold tracking-tight">
+                Add your first source
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Drag and drop or click below to start collecting information to
+                add your web.
+              </p>
+              <div className="flex flex-wrap gap-2 whitespace-nowrap mt-2 justify-center">
+                {" "}
+                <AddSourceModal
+                  open={isAddSourceModalOpen}
+                  setOpen={setIsAddSourceModalOpen}
+                  setSelectedSourceId={setSelectedSourceId}
+                  setIsWebDataModalOpen={setIsWebDataModalOpen}
+                  web={web}
+                  config={config}
+                  setConfig={setConfig}
+                  refreshSources={refetchSources}
+                  refreshWeb={refetch}
+                  view={webSearchModalView}
+                  handleFileUpload={handleFileUpload}
+                  isFileUploading={isFileUploading}
+                  setParseObsidianLinks={setParseObsidianLinks}
+                >
+                  <DropdownMenu onOpenChange={handleDropdownOpenChange}>
+                    <DropdownMenuTrigger asChild>
+                      <Button className="rounded-full h-8">
+                        <Plus
+                          strokeWidth={3}
+                          size={16}
+                          className={`mr-2 rotate-${addIconOrientation} transition-transform ease-in`}
+                        />
+                        Create
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      side="bottom"
+                      sideOffset={5}
+                      className="w-40 right-0"
+                    >
+                      <DropdownMenuGroup>
+                        <DialogTrigger
+                          asChild
+                          onClick={() => handleDropdownButtonClick("website")}
+                        >
+                          <DropdownMenuItem className="cursor-pointer">
+                            <Link size={16} className="mr-2" />
+                            <span>Website</span>
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                        <DialogTrigger
+                          asChild
+                          onClick={() => handleDropdownButtonClick("default")}
+                        >
+                          <DropdownMenuItem className="cursor-pointer">
+                            <File size={16} className="mr-2" />
+                            <span>File</span>
+                          </DropdownMenuItem>
+                        </DialogTrigger>
 
-                      <DropdownMenuItem
-                        className="cursor-pointer"
-                        onClick={() => handleCreateEmptyNote()}
-                      >
-                        <Notebook size={16} className="mr-2" />
-                        <span>Note</span>
-                      </DropdownMenuItem>
-
-                      <DialogTrigger
-                        asChild
-                        onClick={() => handleDropdownButtonClick("youtube")}
-                      >
-                        <DropdownMenuItem className="cursor-pointer">
-                          <Youtube size={16} className="mr-2" />
-                          <span>Youtube</span>
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onClick={() => handleCreateEmptyNote()}
+                        >
+                          <Notebook size={16} className="mr-2" />
+                          <span>Note</span>
                         </DropdownMenuItem>
-                      </DialogTrigger>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </AddSourceModal>
+
+                        <DialogTrigger
+                          asChild
+                          onClick={() => handleDropdownButtonClick("youtube")}
+                        >
+                          <DropdownMenuItem className="cursor-pointer">
+                            <Youtube size={16} className="mr-2" />
+                            <span>Youtube</span>
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </AddSourceModal>
+              </div>
             </div>
-          </div>
-        )}
+          )}
         <div className="flex-1" />
         <WebGraph
           isOwner={isOwner || false}

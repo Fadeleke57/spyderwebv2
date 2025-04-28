@@ -95,6 +95,10 @@ const config = {
             transform: "rotate(-360deg)",
           },
         },
+        fadeIn: {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -105,6 +109,7 @@ const config = {
         "spin-reverse": "spin-reverse 1s linear infinite",
         "spin-reverse-slow": "spin-reverse 2s linear infinite",
         "spin-reverse-fast": "spin-reverse 0.5s linear infinite",
+        fadeIn: "fadeIn 0.3s ease-out",
       },
     },
   },
