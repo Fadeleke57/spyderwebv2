@@ -128,7 +128,10 @@ export function ProfileForm({
     if (user?.bio) {
       form.setValue("bio", user.bio);
     }
-  }, [user?.username, user?.bio, form]);
+    if (user?.full_name) {
+      form.setValue("fullname", user.full_name)
+    }
+  }, [user?.username, user?.bio, user?.full_name, form]);
 
   return (
     <Form {...form}>

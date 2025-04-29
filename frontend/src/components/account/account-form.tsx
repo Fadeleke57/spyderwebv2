@@ -241,7 +241,7 @@ export function AccountForm({ user }: { user: PublicUser }) {
                 {user.subscription_plan[0].toUpperCase() +
                   user.subscription_plan.slice(1)}
               </span>{" "}
-              plan
+              Plan
             </p>
           </div>
           {user?.subscription_plan && (
