@@ -10,7 +10,7 @@ export function SkeletonCard() {
 
 export function SkeletonUserCard() {
   return (
-    <div className="flex flex-row space-x-4 items-center justify-center">
+    <div className="flex flex-row space-x-4 items-center justify-start">
       <div>
         <Skeleton className="h-8 w-8 rounded-full" />
       </div>
