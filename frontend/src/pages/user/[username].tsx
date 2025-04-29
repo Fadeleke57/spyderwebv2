@@ -131,7 +131,7 @@ function UserProfile() {
       {/* Profile header - Full Width for Mobile */}
       <div className="p-4 border-b">
         <div className="flex flex-col mb-4">
-          <div className="flex items-center gap-4">
+          <div className="flex lg:items-center gap-4">
             <UserAvatar
               username={user.username}
               userId={user.id}
@@ -144,7 +144,7 @@ function UserProfile() {
               userId={user.id}
               width={48}
               height={48}
-              className="md:hidden"
+              className="md:hidden -ml-4"
             />
             <div>
               <h1 className="text-xl md:text-2xl font-bold">
@@ -247,7 +247,7 @@ function UserProfile() {
                 <GitFork size={16} className="mr-2 hidden md:inline" />
                 Webs{" "}
                 <span className="ml-2 bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
-                  {webCount}
+                  {websLoading ? "..." :  webCount}
                 </span>
               </TabsTrigger>
               <TabsTrigger
@@ -271,7 +271,10 @@ function UserProfile() {
           </div>
 
           <div className="px-4 md:px-0">
-            <TabsContent value="overview" className="mt-4 md:mt-6">
+            <TabsContent
+              value="overview"
+              className="mt-4 md:mt-6 data-[state=active]:animate-fadeIn"
+            >
               {pinnedWebs && pinnedWebs.length > 0 ? (
                 <div className="space-y-4">
                   <h2 className="text-base md:text-lg font-medium flex items-center gap-2">
@@ -361,7 +364,10 @@ function UserProfile() {
               )}
             </TabsContent>
 
-            <TabsContent value="webs" className="mt-4 md:mt-6">
+            <TabsContent
+              value="webs"
+              className="mt-4 md:mt-6 data-[state=active]:animate-fadeIn"
+            >
               {isOwner && (
                 <div className="border-b pb-4 mb-4">
                   <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-0">
@@ -468,7 +474,10 @@ function UserProfile() {
               </div>
             </TabsContent>
 
-            <TabsContent value="packages" className="mt-4 md:mt-6">
+            <TabsContent
+              value="packages"
+              className="mt-4 md:mt-6 data-[state=active]:animate-fadeIn"
+            >
               <div className="text-center py-12">
                 <h3 className="font-medium">Collections coming soon</h3>
                 <p className="text-muted-foreground text-sm mt-1">
@@ -477,7 +486,10 @@ function UserProfile() {
               </div>
             </TabsContent>
 
-            <TabsContent value="stars" className="mt-4 md:mt-6">
+            <TabsContent
+              value="stars"
+              className="mt-4 md:mt-6 data-[state=active]:animate-fadeIn"
+            >
               <div className="text-center py-12">
                 <h3 className="font-medium">Saved webs coming soon</h3>
                 <p className="text-muted-foreground text-sm mt-1">
