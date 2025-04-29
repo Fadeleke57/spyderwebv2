@@ -225,44 +225,6 @@ export function AccountForm({ user }: { user: PublicUser }) {
                 </FormDescription>
               </div>
               <div className="flex gap-2">
-                {user.subscription_plan !== "free" && (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="destructive" size="sm">
-                        Delete Subscription
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                          <AlertTriangle className="h-5 w-5 text-destructive" />
-                          Cancel Subscription
-                        </DialogTitle>
-                        <DialogDescription>
-                          Are you sure you want to cancel your subscription? You
-                          will lose access to premium features at the end of
-                          your billing period.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <DialogClose asChild>
-                          <Button variant="outline">
-                            No, keep my subscription
-                          </Button>
-                        </DialogClose>
-                        <Button
-                          variant="destructive"
-                          onClick={handleDeleteSubscription}
-                          disabled={isDeleting}
-                        >
-                          {isDeleting
-                            ? "Cancelling..."
-                            : "Yes, cancel subscription"}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                )}
                 <Button onClick={handleLogout}>Sign Out</Button>
               </div>
               <FormMessage />
@@ -273,14 +235,59 @@ export function AccountForm({ user }: { user: PublicUser }) {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-sm font-medium mb-1">Account Status</h2>
+            <p className="text-sm text-muted-foreground">
+              You are on the{" "}
+              <span className="text-violet-400/80">
+                {user.subscription_plan[0].toUpperCase() +
+                  user.subscription_plan.slice(1)}
+              </span>{" "}
+              Plan
+            </p>
           </div>
-          {user?.subscription_plan === "free" && (
-            <Button
-              onClick={handleUpgradeClick}
-              className="bg-gradient-to-r from-violet-500 to-violet-600 text-white hover:from-violet-600 hover:to-violet-700"
-            >
-              Upgrade Plan
-            </Button>
+          {user?.subscription_plan && (
+            <div className="flex flex-row gap-2">
+              {user.subscription_plan !== "free" && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>Cancel Subscription</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5 text-destructive" />
+                        Cancel Subscription
+                      </DialogTitle>
+                      <DialogDescription>
+                        Are you sure you want to cancel your subscription? You
+                        will lose access to premium features at the end of your
+                        billing period.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">
+                          No, keep my subscription
+                        </Button>
+                      </DialogClose>
+                      <Button
+                        variant="destructive"
+                        onClick={handleDeleteSubscription}
+                        disabled={isDeleting}
+                      >
+                        {isDeleting
+                          ? "Cancelling..."
+                          : "Yes, cancel subscription"}
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              )}
+              {user.subscription_plan === "free" && (
+                <Button onClick={handleUpgradeClick} variant={"secondary"}>
+                  Upgrade Plan
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </form>

@@ -34,13 +34,14 @@ const profileFormSchema = z.object({
       message: "Username must not be longer than 20 characters.",
     })
     .regex(/^[a-zA-Z0-9_]+$/, {
-      message: "Username can only contain letters, numbers, and underscores.",
+      message: "Display name can only contain letters, numbers, and underscores.",
     }),
   email: z
     .string({
       required_error: "Please select an email to display.",
     })
     .email(),
+  fullname: z.string(), 
   bio: z.string().max(160).min(4).optional(),
   avatar: z.string().optional(),
 });
@@ -63,6 +64,7 @@ export function ProfileForm({
     username: user?.username || "",
     email: user?.email || "",
     bio: user?.bio || "",
+    fullname: user?.full_name || "",
   };
 
   const form = useForm<ProfileFormValues>({
@@ -77,7 +79,7 @@ export function ProfileForm({
     const newUsername = form.getValues("username");
     try {
       await editUser({ username: newUsername });
-      await refetch();
+      refetch();
       setIsEditingUsername(false);
     } catch (error: any) {
       toast({
@@ -98,7 +100,7 @@ export function ProfileForm({
     const newBio = form.getValues("bio");
     try {
       await editUser({ bio: newBio });
-      await refetch();
+      refetch();
       setIsEditingBio(false);
     } catch (error: any) {
       toast({
@@ -126,11 +128,14 @@ export function ProfileForm({
     if (user?.bio) {
       form.setValue("bio", user.bio);
     }
-  }, [user?.username, user?.bio, form]);
+    if (user?.full_name) {
+      form.setValue("fullname", user.full_name)
+    }
+  }, [user?.username, user?.bio, user?.full_name, form]);
 
   return (
     <Form {...form}>
-      <form className="space-y-8">
+      <form className="space-y-8 pb-10">
         <FormField
           control={form.control}
           name="avatar"
@@ -156,11 +161,35 @@ export function ProfileForm({
         />
         <FormField
           control={form.control}
-          name="username"
+          name="fullname"
           render={({ field }) => (
             <FormItem className="w-full px-4">
               <div className="flex items-center justify-between">
                 <FormLabel>Username</FormLabel>
+              </div>
+              <div className="flex gap-2">
+                <FormControl>
+                  <Input
+                    className="w-full"
+                    disabled={true}
+                    {...field}
+                  />
+                </FormControl>
+              </div>
+              <FormDescription>
+                This is your username. It cannot be changed.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="username"
+          render={({ field }) => (
+            <FormItem className="w-full px-4">
+              <div className="flex items-center justify-between">
+                <FormLabel>Display Name</FormLabel>
                 {!isEditingUsername && (
                   <Button
                     type="button"
