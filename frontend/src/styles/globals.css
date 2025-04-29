@@ -11,42 +11,106 @@
     scrollbar-width: none;
   }
 
+  .no-scroll-bg::-webkit-scrollbar {
+    width: 8px;
+    background-color: transparent; /* Makes the scrollbar area transparent */
+  }
+
+  .no-scroll-bg::-webkit-scrollbar-track {
+    width: 8px;
+    background-color: transparent; /* Makes the track (background) transparent */
+  }
+
+  .no-scroll-bg:hover::-webkit-scrollbar-thumb {
+    transition: all 1s ease-in-out;
+    width: 8px;
+    background-color: rgba(107, 108, 109, 0.45); /* Semi-transparent thumb */
+    border-radius: 10px;
+  }
+
   @keyframes ping-scale {
-    0% { transform: scale(0); opacity: 0.7; }
-    50% { transform: scale(1.5); opacity: 0.3; }
-    100% { transform: scale(2); opacity: 0; }
+    0% {
+      transform: scale(0);
+      opacity: 0.7;
+    }
+    50% {
+      transform: scale(1.5);
+      opacity: 0.3;
+    }
+    100% {
+      transform: scale(2);
+      opacity: 0;
+    }
   }
 
   @keyframes star-pop {
-    0% { transform: scale(1); }
-    40% { transform: scale(1.4); }
-    70% { transform: scale(0.9); }
-    100% { transform: scale(1); }
+    0% {
+      transform: scale(1);
+    }
+    40% {
+      transform: scale(1.4);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+    }
   }
 
   @keyframes star-fly-1 {
-    0% { transform: translate(0, 0); opacity: 1; }
-    100% { transform: translate(-8px, -12px); opacity: 0; }
+    0% {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-8px, -12px);
+      opacity: 0;
+    }
   }
 
   @keyframes star-fly-2 {
-    0% { transform: translate(0, 0); opacity: 1; }
-    100% { transform: translate(10px, -8px); opacity: 0; }
+    0% {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(10px, -8px);
+      opacity: 0;
+    }
   }
 
   @keyframes star-fly-3 {
-    0% { transform: translate(0, 0); opacity: 1; }
-    100% { transform: translate(-10px, 5px); opacity: 0; }
+    0% {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-10px, 5px);
+      opacity: 0;
+    }
   }
 
   @keyframes star-fly-4 {
-    0% { transform: translate(0, 0); opacity: 1; }
-    100% { transform: translate(12px, 7px); opacity: 0; }
+    0% {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(12px, 7px);
+      opacity: 0;
+    }
   }
 
   @keyframes star-fly-5 {
-    0% { transform: translate(0, 0); opacity: 1; }
-    100% { transform: translate(0, -15px); opacity: 0; }
+    0% {
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(0, -15px);
+      opacity: 0;
+    }
   }
 
   .animate-ping-scale {
@@ -120,7 +184,7 @@
     --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 0 1% 19%; /* Light grey/white */;
+    --muted: 0 1% 19%; /* Light grey/white */
     --muted-foreground: 0 0% 59%;
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
@@ -165,7 +229,8 @@
   * {
     @apply border-border;
   }
-  body,html {
+  body,
+  html {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
   }
