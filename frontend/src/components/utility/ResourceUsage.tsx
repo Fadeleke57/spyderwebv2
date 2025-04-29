@@ -70,15 +70,15 @@ export function ResourceUsage({
 
   return (
     <>
-      <div className="p-3 bg-card rounded-lg border border-border shadow-sm">
+      <div className="p-3 bg-card rounded-lg border border-border shadow-sm font-semibold">
         <div className="space-y-3">
           {/* Storage Section */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-medium text-muted-foreground">
+              <span className="text-xs text-foreground">
                 Storage
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-foreground">
                 {formatStorage(storageUsed)} / {formatStorage(storageLimit)}
               </span>
             </div>
@@ -88,10 +88,10 @@ export function ResourceUsage({
           {/* Computation Section */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-medium text-muted-foreground">
+              <span className="text-xs font-medium text-foreground">
                 Computation
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-foreground">
                 {computationUsed || 0} / {computationLimit || 0}
               </span>
             </div>
@@ -108,12 +108,11 @@ export function ResourceUsage({
 
           {/* Upgrade Button */}
           <Button
-            className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white shadow-sm transition-all duration-200 hover:shadow-purple-500/20 text-xs py-1 h-7"
+            className="w-full text-foreground shadow-sm transition-all duration-200 hover:shadow-violet-500/20 text-xs py-1 h-7"
             size="sm"
             onClick={handleUpgradeClick}
           >
-            <Zap className="w-3 h-3 mr-1" />
-            Upgrade
+            Upgrade Now
           </Button>
         </div>
       </div>

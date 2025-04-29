@@ -16,8 +16,7 @@ mongo_client = MongoScriptsClient()
 Users = mongo_client._get_collection("users")
 Webs = mongo_client._get_collection("webs")
 Sources = mongo_client._get_collection("sources")
-
-"""
+ 
 class PineconeScriptsClient:
     def __init__(self):
         self.client = Pinecone(api_key=settings.pinecone_api_key)
@@ -33,7 +32,6 @@ class PineconeScriptsClient:
         return embeddings
 
 pinecone_client = PineconeScriptsClient()
-"""
 
 def update_webs_with_defaults():
     required_defaults = {
@@ -106,7 +104,7 @@ def update_users_with_defaults():
 
     print(f"✅ Updated {update_count} user(s) with missing fields.")
 
-"""
+
 class Neo4jScriptsClient:
 
     def __init__(self):
@@ -121,7 +119,21 @@ class Neo4jScriptsClient:
             return [record.data() for record in result]
 
 neo4j_client = Neo4jScriptsClient()
-"""
+
+def sync_metadata():
+    reuslt = neo4j_client.execute_query(
+        """
+        MATCH (s:source)
+        RETURN s
+        """,
+    )
+    sources = [record["s"] for record in reuslt]
+
+    for source in sources:
+        if source["type"] == "website":
+            websiteTitle = source["name"] 
+
+
 
 
 if __name__ == "__main__":
