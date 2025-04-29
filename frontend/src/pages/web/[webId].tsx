@@ -31,13 +31,14 @@ import {
 import MobileWebView from "@/components/webs/MobileWebForm";
 import { useConfigureChat } from "@/hooks/chats";
 import { toast } from "@/components/ui/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function Index() {
   const router = useRouter();
   const { webId } = router.query;
   const {
     data: webData,
-    isLoading: loading,
+    isLoading: webLoading,
     error,
     refetch,
   } = useFetchWebById(webId as string);
@@ -66,12 +67,11 @@ function Index() {
     useFetchUserById(web?.iteratedFrom ? web?.iteratedFrom : "");
 
   const { user } = useUser();
-  
+
   const [isPinned, setPinned] = React.useState(
     user?.websPinned?.includes(webId as string) || false
   );
 
-  // Update isPinned state when user data changes
   useEffect(() => {
     if (user) {
       setPinned(user.websPinned?.includes(webId as string) || false);
@@ -80,9 +80,9 @@ function Index() {
 
   const isOwner = user?.id === webOwner?.id;
 
-  const title = loading ? "Loading..." : web?.name || "Web Details";
-  const description = loading
-    ? "Fetching web details..."
+  const title = webLoading ? "Loading..." : web?.name || "Web Details";
+  const description = webLoading
+    ? "Getting web details..."
     : web?.description || "View and explore web details.";
 
   const { mutateAsync: configureCharlotte } = useConfigureChat();
@@ -93,7 +93,6 @@ function Index() {
     }
   }, [webId, configureCharlotte]);
 
-  // Handle pin/unpin action
   const handlePinToggle = async () => {
     if (!user) {
       setAuthModalOpen(true);
@@ -167,22 +166,18 @@ function Index() {
       </Head>
       <div className="flex flex-col">
         <header
-          className={`sticky top-0 z-10 flex ${loading && "animate-pulse"} h-[70px] items-center justify-between gap-1 border-b bg-background px-4`}
+          className={`sticky top-0 z-10 flex ${webLoading && "animate-pulse"} h-[70px] items-center justify-between gap-1 border-b bg-background px-4`}
         >
           <div className="flex flex-col z-40 items-center justify-start mb-3 lg:mb-0  max-w-[210px] lg:max-w-2xl">
-            {loading || webOwnerLoading ? (
-              <SkeletonUserCard />
-            ) : (
-              <div className="flex flex-col gap-2">
-                <Button
-                  variant={"link"}
-                  onClick={() => router.back()}
-                  className="flex items-center gap-2 p-0 h-fit w-fit text-md font-semibold text-violet-400/80"
-                >
-                  <ArrowLeft strokeWidth={4} className="h-4 w-4" /> Back
-                </Button>
-              </div>
-            )}
+            <div className="flex flex-col gap-2">
+              <Button
+                variant={"link"}
+                onClick={() => router.back()}
+                className="flex items-center gap-2 p-0 h-fit w-fit text-md font-semibold text-violet-400/80"
+              >
+                <ArrowLeft strokeWidth={4} className="h-4 w-4" /> Back
+              </Button>
+            </div>
           </div>
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
             {webOwner && web?.enableAIConnections && (
@@ -211,7 +206,7 @@ function Index() {
                 </Tooltip>
               </TooltipProvider>
             )}
-            {web && <MobileWebView web={web} user={user ? user : null} />}
+            {web && <MobileWebView web={web} user={user || null} />}
             {webOwner?.id === user?.id && (
               <Button
                 size="sm"
@@ -278,8 +273,11 @@ function Index() {
           </div>
         </header>
         <div className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3 overflow-hidden scrollbar-none">
-          {loading ? (
-            <SkeletonTextCard />
+          {webLoading ? (
+            <div className="flex flex-col gap-4 justify-start">
+              <SkeletonUserCard />
+              <SkeletonTextCard />
+            </div>
           ) : (
             <ScrollArea
               className="relative h-[calc(90vh-18px)] hidden flex-col items-start gap-8 md:flex"
@@ -315,11 +313,10 @@ function Index() {
                   </span>
                 </div>
               </div>
-              {web && isOwner ? (
-                <WebForm web={web} user={user ? user : null} />
-              ) : web ? (
-                <PublicWebView web={web} />
-              ) : null}
+
+              {web && isOwner && <WebForm web={web} user={user || null} />}
+              {web && !isOwner && <PublicWebView web={web} />}
+
               {webId && web && web.iterations.length > 0 && (
                 <>
                   <Separator className="my-4" />
@@ -331,15 +328,12 @@ function Index() {
               )}
             </ScrollArea>
           )}
-          {loading ? (
-            <div className="flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 lg:col-span-2"></div>
-          ) : web ? (
-            <WebPlayground
-              web={web}
-              user={user ? user : null}
-              refetch={refetch}
-            />
-          ) : null}
+          {!web && (
+            <Skeleton className="flex h-full lg:h-[calc(90vh-18px)] flex-col rounded-xl lg:col-span-2"></Skeleton>
+          )}
+          {web && (
+            <WebPlayground web={web} user={user || null} refetch={refetch} />
+          )}
         </div>
       </div>
       <AuthModal

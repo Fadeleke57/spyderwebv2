@@ -33,12 +33,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { mapSourceToIcon } from "../utility/Icons";
 import {
   Tooltip,
   TooltipContent,
@@ -49,7 +45,6 @@ import WebSettingsModal from "./WebSettingsModal";
 import { toast } from "../ui/use-toast";
 import ProcessModal from "@/components/webs/ProcessModal";
 import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
-import SimpleTooltip from "../utility/SimpleTooltip";
 import SearchSourceModal from "./SearchSourceModal";
 
 const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
@@ -220,7 +215,7 @@ function WebPlayground({
       className={`${
         isExpanded
           ? "absolute inset-0 z-50 h-[100dvh] w-full bg-neutral-800"
-          : "h-full min-h-[50vh] flex-col lg:col-span-2 bg-muted/50 rounded-xl"
+          : "h-full flex-col lg:col-span-2 bg-muted/50 rounded-xl"
       }`}
     >
       <div className="relative h-full w-full">
