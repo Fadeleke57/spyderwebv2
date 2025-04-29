@@ -72,7 +72,7 @@ function Index() {
           />
         </Head>
         <div></div>
-        <div className="p-4 flex flex-col lg:px-8 lg:border-b-2 relative lg:sticky lg:top-0 bg-background lg:z-50 flex justify-end">
+        <div className="p-4 flex flex-col lg:px-8 lg:border-b-2 relative lg:sticky lg:-top-4 bg-background lg:z-50 flex justify-end">
           {!user && isMobile && (
             <Button
               className="w-full mb-2"
