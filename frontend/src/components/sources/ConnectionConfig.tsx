@@ -27,12 +27,6 @@ import { ChevronsUpDown, CirclePlus, Loader2, OrbitIcon } from "lucide-react";
 import { Connection } from "@/types/connection";
 import { ScrollArea } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
 
 function ConnectionsConfig({
   webId,
@@ -107,7 +101,7 @@ function ConnectionsConfig({
             <PopoverContent className="w-[500px]">
               <Command>
                 <CommandInput placeholder="Search sources..." />
-                <CommandList>
+                <CommandList className="no-scroll-bg">
                   <CommandEmpty>
                     No sources found. <span>Create one?</span>
                   </CommandEmpty>
