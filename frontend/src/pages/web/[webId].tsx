@@ -66,7 +66,7 @@ function Index() {
     useFetchUserById(web?.iteratedFrom ? web?.iteratedFrom : "");
 
   const { user } = useUser();
-  console.log("user", user);
+  
   const [isPinned, setPinned] = React.useState(
     user?.websPinned?.includes(webId as string) || false
   );

@@ -26,6 +26,13 @@ import { mapSourceToIcon } from "../utility/Icons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Separator } from "../ui/separator";
 import { ScrollArea } from "../ui/scroll-area";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../ui/drawer";
 
 type SearchSourceModalProps = {
   open: boolean;
@@ -34,12 +41,127 @@ type SearchSourceModalProps = {
   handleSourceClick: (sourceId: string) => void;
 };
 
+const tabs = [
+  {
+    label: "Files",
+    value: "document",
+    placeholder: "Search files...",
+    type: "document",
+  },
+  {
+    label: "Links",
+    value: "website",
+    placeholder: "Search links...",
+    type: "website",
+  },
+  {
+    label: "YouTube",
+    value: "youtube",
+    placeholder: "Search YouTube videos...",
+    type: "youtube",
+  },
+  {
+    label: "Notes",
+    value: "note",
+    placeholder: "Search notes...",
+    type: "note",
+  },
+];
+
 function SearchSourceModal({
   open,
   setOpen,
   sources,
   handleSourceClick,
 }: SearchSourceModalProps) {
+  const isMobile = useIsMobile();
+
+  const content = (
+    <Tabs defaultValue="document">
+      <TabsList className="bg-transparent w-full md:w-auto">
+        {tabs.map(({ label, value }) => (
+          <TabsTrigger
+            key={value}
+            value={value}
+            className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+          >
+            {label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+
+      {tabs.map(({ value, placeholder, type }) => (
+        <TabsContent
+          key={value}
+          value={value}
+          className="data-[state=active]:animate-fadeIn"
+        >
+          <Command className="bg-transparent no-scrollbar">
+            <CommandInput
+              placeholder={placeholder}
+              className="bg-transparent"
+            />
+            <CommandList className="h-[50dvh] no-scroll-bg">
+              <CommandEmpty>
+                No {type}s found. <span>Add one?</span>
+              </CommandEmpty>
+              <CommandGroup>
+                {sources &&
+                  sources
+                    .filter((source) => source.type === type)
+                    .map((source: Source, id: number) => (
+                      <CommandItem
+                        key={id}
+                        className="cursor-pointer items-start"
+                        onSelect={() => handleSourceClick(source.sourceId)}
+                        value={`${source.name}${id}`}
+                      >
+                        {mapSourceToIcon(source.type, 16)}
+                        <span className="ml-2">{source.name}</span>
+                      </CommandItem>
+                    ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </TabsContent>
+      ))}
+    </Tabs>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={setOpen}>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DrawerTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={open}
+                  className="rounded-full p-0 px-[10px] m-0"
+                >
+                  <Search size={20} />
+                </Button>
+              </DrawerTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Search sources</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <DrawerContent className="lg:max-w-2xl no-scrollbar h-[70dvh]">
+          {" "}
+          <DrawerTitle className="flex items-center p-4">
+            <Search size={16} className="mr-2"></Search>Search Sources
+          </DrawerTitle>
+          <Separator className="my-2" />
+          <div className="p-4">{content}</div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <TooltipProvider>
@@ -67,168 +189,7 @@ function SearchSourceModal({
           <Search size={16} className="mr-2"></Search>Search Sources
         </DialogTitle>
         <Separator className="my-2" />
-        <ScrollArea className="h-[70dvh]">
-          <Tabs defaultValue="document">
-            <TabsList className="bg-transparent w-full md:w-auto">
-              <TabsTrigger
-                value="document"
-                className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
-              >
-                Files
-              </TabsTrigger>
-              <TabsTrigger
-                value="website"
-                className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
-              >
-                Links
-              </TabsTrigger>
-              <TabsTrigger
-                value="youtube"
-                className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
-              >
-                YouTube
-              </TabsTrigger>
-              <TabsTrigger
-                value="note"
-                className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
-              >
-                Notes
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent
-              value="document"
-              className="data-[state=active]:animate-fadeIn"
-            >
-              <Command className="bg-transparent no-scrollbar">
-                <CommandInput
-                  placeholder="Search files..."
-                  className="bg-transparent"
-                />
-                <CommandList>
-                  <CommandEmpty>
-                    No files found. <span>Add one?</span>
-                  </CommandEmpty>
-                  <CommandGroup>
-                    {sources &&
-                      sources
-                        .filter((source) => source.type === "document")
-                        .map((source: Source, id: number) => (
-                          <CommandItem
-                            key={id}
-                            className="cursor-pointer items-start"
-                            onSelect={() => handleSourceClick(source.sourceId)}
-                            value={`${source.name}${id}`}
-                          >
-                            {mapSourceToIcon(source.type, 16)}
-                            <span className="ml-2">{source.name}</span>
-                          </CommandItem>
-                        ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </TabsContent>
-
-            <TabsContent
-              value="website"
-              className="data-[state=active]:animate-fadeIn"
-            >
-              <Command className="bg-transparent no-scrollbar">
-                <CommandInput
-                  placeholder="Search links..."
-                  className="bg-transparent"
-                />
-                <CommandList>
-                  <CommandEmpty>
-                    No links found. <span>Add one?</span>
-                  </CommandEmpty>
-                  <CommandGroup>
-                    {sources &&
-                      sources
-                        .filter((source) => source.type === "website")
-                        .map((source: Source, id: number) => (
-                          <CommandItem
-                            key={id}
-                            className="cursor-pointer items-start"
-                            onSelect={() => handleSourceClick(source.sourceId)}
-                            value={`${source.name}${id}`}
-                          >
-                            {mapSourceToIcon(source.type, 16)}
-                            <span className="ml-2">{source.name}</span>
-                          </CommandItem>
-                        ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </TabsContent>
-
-            <TabsContent
-              value="youtube"
-              className="data-[state=active]:animate-fadeIn"
-            >
-              <Command className="bg-transparent no-scrollbar">
-                <CommandInput
-                  placeholder="Search YouTube videos..."
-                  className="bg-transparent"
-                />
-                <CommandList>
-                  <CommandEmpty>
-                    No videos found. <span>Add one?</span>
-                  </CommandEmpty>
-                  <CommandGroup>
-                    {sources &&
-                      sources
-                        .filter((source) => source.type === "youtube")
-                        .map((source: Source, id: number) => (
-                          <CommandItem
-                            key={id}
-                            className="cursor-pointer items-start"
-                            onSelect={() => handleSourceClick(source.sourceId)}
-                            value={`${source.name}${id}`}
-                          >
-                            {mapSourceToIcon(source.type, 16)}
-                            <span className="ml-2">{source.name}</span>
-                          </CommandItem>
-                        ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </TabsContent>
-
-            <TabsContent
-              value="note"
-              className="data-[state=active]:animate-fadeIn"
-            >
-              <Command className="bg-transparent no-scrollbar">
-                <CommandInput
-                  placeholder="Search notes..."
-                  className="bg-transparent"
-                />
-                <CommandList>
-                  <CommandEmpty>
-                    No notes found. <span>Add one?</span>
-                  </CommandEmpty>
-                  <CommandGroup>
-                    {sources &&
-                      sources
-                        .filter((source) => source.type === "note")
-                        .map((source: Source, id: number) => (
-                          <CommandItem
-                            key={id}
-                            className="cursor-pointer items-start"
-                            onSelect={() => handleSourceClick(source.sourceId)}
-                            value={`${source.name}${id}`}
-                          >
-                            {mapSourceToIcon(source.type, 16)}
-                            <span className="ml-2">{source.name}</span>
-                          </CommandItem>
-                        ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </TabsContent>
-          </Tabs>
-        </ScrollArea>
+        {content}
       </DialogContent>
     </Dialog>
   );
