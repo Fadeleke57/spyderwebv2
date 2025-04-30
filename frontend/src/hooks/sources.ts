@@ -231,3 +231,40 @@ export const useUploadImageToSource = () => {
     },
   });
 };
+
+export const useUploadVoiceNote = (webId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (blob: Blob) => {
+      const formData = new FormData();
+      formData.append('file', new File([blob], 'voice-note.webm', { type: 'audio/webm' }));
+
+      const response = await api.post(
+        `/sources/upload/voice-note/${webId}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      return response.data.result;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['sources', webId] });
+      // Invalidate this specific source if it exists in cache
+      if (data && data.id) {
+        queryClient.invalidateQueries({ queryKey: ['source', data.id] });
+      }
+    },
+    onError: (error: any) => {
+      console.error('Voice note upload failed:', error);
+      toast({
+        variant: "destructive",
+        title: "Error uploading voice note",
+        description: "Please try again",
+      });
+    },
+  });
+};
