@@ -3,6 +3,7 @@ from pinecone import Pinecone, ServerlessSpec
 from neo4j import GraphDatabase
 from pytz import UTC
 from datetime import datetime
+import time
 
 class MongoScriptsClient:
     def __init__(self):
@@ -15,12 +16,11 @@ class MongoScriptsClient:
 mongo_client = MongoScriptsClient()
 Users = mongo_client._get_collection("users")
 Webs = mongo_client._get_collection("webs")
-Sources = mongo_client._get_collection("sources")
  
 class PineconeScriptsClient:
     def __init__(self):
-        self.client = Pinecone(api_key=settings.pinecone_api_key)
-        self.index = self.client.Index(name=settings.pinecone_index_name)
+        self.client = Pinecone(api_key="")
+        self.index = self.client.Index(name="")
     
     def generate_embeddings(self, name: str, description: str, header_weight: int = 3) -> any:
         weighted_input = (name + ' ') * header_weight + description
@@ -108,7 +108,7 @@ def update_users_with_defaults():
 class Neo4jScriptsClient:
 
     def __init__(self):
-        self.driver = GraphDatabase.driver(settings.neo4j_uri, auth=(settings.neo4j_username, settings.neo4j_password))
+        self.driver = GraphDatabase.driver("", auth=("neo4j", ""))
 
     def close(self):
         self.driver.close()
@@ -120,22 +120,68 @@ class Neo4jScriptsClient:
 
 neo4j_client = Neo4jScriptsClient()
 
-def sync_metadata():
-    reuslt = neo4j_client.execute_query(
-        """
-        MATCH (s:source)
-        RETURN s
-        """,
-    )
-    sources = [record["s"] for record in reuslt]
+def sync_pinecone_source_metadata():
+    for web in Webs.find():
+        webId = web["webId"]
+        print(f"Processing web {webId}")
 
-    for source in sources:
-        if source["type"] == "website":
-            websiteTitle = source["name"] 
+        # 1. list all Pinecone IDs
+        all_ids = []
+        for ids_chunk in pinecone_client.index.list(namespace=webId):
+            all_ids.extend(ids_chunk)
+        print(f"Found {len(all_ids)} vectors in this web")
 
-
+        # 2. Fetch metadata in batches
+        batch_size = 100
+        for i in range(0, len(all_ids), batch_size):
+            batch_ids = all_ids[i:i+batch_size]
+            fetch_response = pinecone_client.index.fetch(ids=batch_ids, namespace=webId)
+            
+            for vid, record in fetch_response.vectors.items():
+                metadata = record.metadata
+                print("Metadata for", vid, ":", metadata)
+                sourceId = metadata.get("sourceId")
+                
+                # 3. Query Neo4j
+                result = neo4j_client.execute_query(
+                    "MATCH (s:source) WHERE s.sourceId=$sourceId RETURN s",
+                    parameters={"sourceId": sourceId}
+                )
+                sources = [record["s"] for record in result]
+                source = result[0]["s"] if sources else None
+                
+                if not source:
+                    print(f"Source {sourceId} not found. Skipping {vid} and deleting from Pinecone.")
+                    pinecone_client.index.delete(ids=[vid], namespace=webId)
+                    continue
+                
+                print("Found source for ", vid, ":", source)
+                # 4. Prepare metadata update
+                new_meta = {}
+                if metadata["type"] == "website":
+                    new_meta["websiteTitle"] = source["name"]
+                elif metadata["type"] in ["youtube", "youtube video"]:
+                    new_meta.update({"youtubeTitle": source["name"], "type": "youtube video"})
+                elif metadata["type"] in ["document", "pdf document"]:
+                    new_meta["documentTitle"] = source["name"]
+                elif metadata["type"] == "note":
+                    new_meta["noteTitle"] = source["name"]
+                else:
+                    print(f"Unrecognized type: {metadata['type']}")
+                    continue
+                
+                # 5. Update metadata WITHOUT affecting vectors
+                pinecone_client.index.update(
+                    id=vid,
+                    set_metadata=new_meta,
+                    namespace=webId
+                )
+            time.sleep(0.5)
+        print(f"Completed web {webId}")
+    print("All webs processed!")
 
 
 if __name__ == "__main__":
     #update_webs_with_defaults()
-    update_users_with_defaults()
+    #update_users_with_defaults()
+    sync_pinecone_source_metadata()
