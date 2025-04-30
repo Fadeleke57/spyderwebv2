@@ -147,10 +147,12 @@ class SourceService:
             ids_to_delete = []
             for i in range(0, len(all_ids), batch_size):
                 batch_ids = all_ids[i:i+batch_size]
-                fetch_response = pineconeClient.index.fetch(ids=batch_ids, namespace=source["webId"])
+                fetch_response = pineconeClient.index.fetch(ids=batch_ids, namespace=source["webId"]) # update to query with metadata filtering in the future for faster fetches
 
                 for vid, record in fetch_response.vectors.items():
                     metadata = record.metadata
+                    if not metadata:
+                        continue
                     embedding_sourceId = metadata.get("sourceId")
 
                     if embedding_sourceId == source["sourceId"]:
@@ -158,10 +160,15 @@ class SourceService:
 
             logger.info(f"Deleting {len(ids_to_delete)} embeddings")
 
-            pineconeClient.index.delete(
-                ids=ids_to_delete,
-                namespace=source["webId"],
-            )
+            try:
+                if ids_to_delete:
+                    pineconeClient.index.delete(
+                        ids=ids_to_delete,
+                        namespace=source["webId"],
+                    )
+            except Exception as e:
+                logger.error(f"Error deleting embeddings: {e}")
+                return False
 
             logger.info("Deleted note chunks successfully")
             return True
