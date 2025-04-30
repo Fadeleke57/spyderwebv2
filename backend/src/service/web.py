@@ -14,7 +14,9 @@ class WebService:
             vectors = pineconeClient.generate_web_embeddings(
                 web_payload["name"], web_payload["description"]
             )
-            pincone_insert = web_payload.copy()  # create copy so we don't modify the original
+            pincone_insert = (
+                web_payload.copy()
+            )  # create copy so we don't modify the original
 
             del pincone_insert["_id"]
 
@@ -57,7 +59,7 @@ class WebService:
                 pineconeClient.index.update(
                     id=web_id,
                     values=vectors,
-                    set_metadata=updatePayload, # update metadata
+                    set_metadata=updatePayload,  # update metadata
                     namespace="webs",
                 )
             return True

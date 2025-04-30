@@ -21,14 +21,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { googleIcon } from "../utility/Icons";
 import { environment } from "@/environment/load_env";
-import { useRouter } from "next/router";
 import { DialogClose, DialogTitle } from "@radix-ui/react-dialog";
 import { useCheckEmailExists } from "@/hooks/user";
 import { useToast } from "@/components/ui/use-toast";
 import api from "@/lib/api";
-import { useIsMobile } from "@/hooks/use-mobile";
 import Link from "next/link";
-import spydrLogo from "@/assets/spydr_icon.svg";
 import Image from "next/image";
 import sLogo from "@/assets/slogonobg.png";
 
@@ -175,7 +172,8 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
         });
         setOpen(false);
         const demoWebId = response.data.new_web_id;
-        window.location.href = `/web/${demoWebId}?ref=register`;
+        //window.location.href = `/web/${demoWebId}?ref=register`;
+        window.location.href = `/auth/onboarding?email=${data.email}&username=${data.username}&isGoogleSignup=false&defaultWebId=${demoWebId}`;
       }
     } catch (error: any) {
       toast({
@@ -195,7 +193,11 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
       >
         <DialogClose />
         <div className="flex flex-col items-center justify-center">
-          <Image src={sLogo} className="w-16 h-16 mb-4 rotate-45" alt="Spydr Logo" />
+          <Image
+            src={sLogo}
+            className="w-16 h-16 mb-4 rotate-45"
+            alt="Spydr Logo"
+          />
           <DialogTitle className="text-center text-xl font-semibold">
             {isExistingUser && step !== "email"
               ? "Welcome back"

@@ -19,6 +19,7 @@ from src.models.index import (
     Webs,
     Users,
     CreateUser,
+    UpdateUser,
     CreateWeb,
     create_user,
     create_web,
@@ -28,6 +29,8 @@ from src.db.neo4j import client as neo4jClient
 from src.utils.credits import PLAN_CREDITS
 from src.utils.exceptions import check_user
 from src.lib.logger.index import logger
+from pydantic import BaseModel
+from typing import Optional
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -92,13 +95,16 @@ async def auth_callback(code: str):
     token_data = await get_google_token(code)
     user_data, profile_picture_url = await get_google_user(token_data["access_token"])
     email = user_data["email"]
+    full_name = user_data["name"]
     user = Users.find_one({"email": email})
     new_web_id = None
     if not user:
         # create a new user
+        new_username = generate_username()
         create_user_data = CreateUser(
-            username=generate_username(),
+            username=new_username,
             email=email,
+            full_name=full_name,
         )
         user_id = create_user(create_user_data)
 
@@ -152,7 +158,7 @@ async def auth_callback(code: str):
         data={"sub": email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     response = RedirectResponse(
-        url=f"""{settings.next_url}/auth/google-callback?token={access_token}&email={email}&name={user_data['name']}&newuser={"true" if not user else ""}&newwebid={new_web_id if new_web_id else ""}""",
+        url=f"""{settings.next_url}/auth/google-callback?token={access_token}&email={email}&username={new_username if not user else user['username']}&firstName={user_data['given_name']}&lastName={user_data['family_name']}&newuser={"true" if not user else ""}&newwebid={new_web_id if new_web_id else ""}""",
     )
     manager.set_cookie(response, access_token)
     return response
@@ -297,6 +303,42 @@ def get_current_user(user=Depends(manager)):
         }
         logging.debug(f"User found in /auth/me: {publicUser}")
         return publicUser
+    except Exception as e:
+        logging.error(f"Exception in /auth/me: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+class OnboardingPayload(BaseModel):
+    firstName: str
+    lastName: Optional[str] = ""
+    username: str
+    bio: Optional[str] = ""
+    occupation: str
+    company: Optional[str] = ""
+    purpose: str
+    interest: Optional[str] = ""
+
+
+@router.post("/onboarding")
+def complete_onboarding(onboardingPayload: OnboardingPayload, user=Depends(manager)):
+    check_user(user)
+    try:
+        updates = UpdateUser(
+            full_name=f"{onboardingPayload.firstName} {onboardingPayload.lastName}",
+            username=onboardingPayload.username,
+            bio=onboardingPayload.bio,
+            occupation=onboardingPayload.occupation,
+            company=onboardingPayload.company,
+            purpose=onboardingPayload.purpose,
+            interest=onboardingPayload.interest,
+        )
+        logger.info(f"updates: {updates}")
+        Users.update_one(
+            {"id": user["id"]},
+            {"$set": updates.model_dump(exclude_none=True)},
+        )
+
+        return {"result": True}
     except Exception as e:
         logging.error(f"Exception in /auth/me: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")

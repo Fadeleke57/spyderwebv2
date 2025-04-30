@@ -11,6 +11,7 @@ from src.lib.pinecone.index import client as pineconeClient
 from src.lib.logger.index import logger
 import time
 
+
 class SourceService:
     def __init__(self):
         pass
@@ -93,7 +94,7 @@ class SourceService:
         except Exception as e:
             logger.error(f"Error processing Pinecone embeddings: {e}")
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
-        
+
     def refresh_note_embeddings(self, source: Source, content: str):
         try:
             all_ids = []
@@ -102,14 +103,18 @@ class SourceService:
                 all_ids.extend(id)
 
             if not all_ids:
-                logger.info(f"No vectors found for this web: {source['webId']}. Nothing to update")
+                logger.info(
+                    f"No vectors found for this web: {source['webId']}. Nothing to update"
+                )
                 return True
-            
+
             batch_size = 999
             ids_to_delete = []
             for i in range(0, len(all_ids), batch_size):
-                batch_ids = all_ids[i:i+batch_size]
-                fetch_response = pineconeClient.index.fetch(ids=batch_ids, namespace=source["webId"])
+                batch_ids = all_ids[i : i + batch_size]
+                fetch_response = pineconeClient.index.fetch(
+                    ids=batch_ids, namespace=source["webId"]
+                )
 
                 for vid, record in fetch_response.vectors.items():
                     metadata = record.metadata
@@ -131,7 +136,7 @@ class SourceService:
         except Exception as e:
             logger.error(f"Error processing Pinecone embeddings: {e}")
             return False
-        
+
     def delete_source_embeddings(self, source: Source):
         try:
             all_ids = []
@@ -140,14 +145,18 @@ class SourceService:
                 all_ids.extend(id)
 
             if not all_ids:
-                logger.info(f"No vectors found for this web: {source['webId']}. Nothing to update")
+                logger.info(
+                    f"No vectors found for this web: {source['webId']}. Nothing to update"
+                )
                 return True
-            
+
             batch_size = 999
             ids_to_delete = []
             for i in range(0, len(all_ids), batch_size):
-                batch_ids = all_ids[i:i+batch_size]
-                fetch_response = pineconeClient.index.fetch(ids=batch_ids, namespace=source["webId"]) # update to query with metadata filtering in the future for faster fetches
+                batch_ids = all_ids[i : i + batch_size]
+                fetch_response = pineconeClient.index.fetch(
+                    ids=batch_ids, namespace=source["webId"]
+                )  # update to query with metadata filtering in the future for faster fetches
 
                 for vid, record in fetch_response.vectors.items():
                     metadata = record.metadata
@@ -175,7 +184,7 @@ class SourceService:
         except Exception as e:
             logger.error(f"Error processing Pinecone embeddings: {e}")
             return False
-    
+
     def refresh_metadata(self, webId: str, sourceId: str, metadata: dict):
         logger.info(f"Updating source metadata: {metadata}")
         try:
@@ -187,13 +196,17 @@ class SourceService:
                 all_ids.extend(id)
 
             if not all_ids:
-                logger.info(f"No vectors found for this web: {webId}. Nothing to update")
+                logger.info(
+                    f"No vectors found for this web: {webId}. Nothing to update"
+                )
                 return True
-            
+
             batch_size = 999
             for i in range(0, len(all_ids), batch_size):
-                batch_ids = all_ids[i:i+batch_size]
-                fetch_response = pineconeClient.index.fetch(ids=batch_ids, namespace=webId)
+                batch_ids = all_ids[i : i + batch_size]
+                fetch_response = pineconeClient.index.fetch(
+                    ids=batch_ids, namespace=webId
+                )
 
                 for vid, record in fetch_response.vectors.items():
 
@@ -215,7 +228,6 @@ class SourceService:
         except Exception as e:
             logger.error(f"Error updating source metadata: {e}")
             return False
-        
 
     def parse_obsidian_links(self, web_id: str, sources: List[Source]) -> bool:
         connection_proccess_id = create_process(

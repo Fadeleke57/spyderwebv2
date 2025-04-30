@@ -53,8 +53,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       setSelectedButton(null);
     }
   }, [router.pathname]);
-  console.log(`${user?.username}`);
-  console.log(router.pathname);
   const handleButtonClick = (route: string) => {
     if (!user) {
       setOpen(true);
