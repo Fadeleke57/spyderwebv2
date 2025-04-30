@@ -396,16 +396,16 @@ def delete_web(webId: str, user=Depends(manager)):
 
         logger.info(f"Web {webId} deleted by user {user['id']}")
 
-        result = pineconeClient.index.delete(
+        # these need to run in the background (refactor to a web service that handles deletions)
+        webDeleteResult = pineconeClient.index.delete(
             ids=[webId], namespace="webs"
-        )  # these need to run in the background (refactor to a web service that handles deletions)
-        if result == {}:
-            logger.info(f"Web {webId} deleted from Pinecone")
-        result = pineconeClient.index.delete(
-            ids=webToDelete.get("sourceIds", []), namespace=webId
+        )  
+        sourceDeleteResult = pineconeClient.index.delete(
+            delete_all=True, namespace=webId
         )
-        if result == {}:
-            logger.info(f"Web {webId} deleted from Pinecone")
+
+        if webDeleteResult == {} and sourceDeleteResult == {}:
+            logger.info(f"Vectors for {webId} were successfully deleted from Pinecone")
 
         neo4jClient.delete_nodes_by_properties("source", {"webId": webId})
         logger.info(f"Sources {webId} attached to web deleted from Neo4j")
