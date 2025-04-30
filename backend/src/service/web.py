@@ -7,18 +7,18 @@ class WebService:
     def __init__(self):
         pass
 
-    def emebd_and_upsert_web(self, web_payload: Web) -> bool:
+    def emebd_and_upsert_web(self, web_payload: dict) -> bool:
 
         try:
 
             vectors = pineconeClient.generate_web_embeddings(
                 web_payload["name"], web_payload["description"]
             )
-            pincone_insert = web_payload  # create copy so we don't modify the original
+            pincone_insert = web_payload.copy()  # create copy so we don't modify the original
 
             del pincone_insert["_id"]
 
-            # date object not allowed in pinecone
+            # convert to string bc date object not allowed in pinecone
             pincone_insert["created"] = str(web_payload["created"])
             pincone_insert["updated"] = str(web_payload["updated"])
 
@@ -57,7 +57,7 @@ class WebService:
                 pineconeClient.index.update(
                     id=web_id,
                     values=vectors,
-                    set_metadata=updatePayload,
+                    set_metadata=updatePayload, # update metadata
                     namespace="webs",
                 )
             return True

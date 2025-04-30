@@ -435,7 +435,7 @@ def add_youtube(
 
 @router.patch("/update/note/{web_id}/{source_id}")
 def update_note(
-    web_id: str, source_id: str, updateNotePayload: UpdateNote, user=Depends(manager)
+    web_id: str, source_id: str, updateNotePayload: UpdateNote, background_tasks: BackgroundTasks, user=Depends(manager)
 ):
     """
     Update a note.
@@ -453,16 +453,20 @@ def update_note(
 
     try:
 
-        update_data = {
-            key: value
-            for key, value in updateNotePayload.model_dump(exclude_none=True).items()
-        }
+        update_data = updateNotePayload.model_dump(exclude_none=True)
+
         update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+        updatedSource = neo4jClient.update_source(source_id=source_id, properties=update_data)
 
-        result = neo4jClient.update_source(source_id=source_id, properties=update_data)
+        # refresh chunks
+        background_tasks.add_task(
+            sourceService.refresh_note_embeddings,
+            source=updatedSource,
+            content=updatedSource["content"],
+        )
 
-        if result:
-            return {"result": "Note updated"}
+        if updatedSource:
+            return {"result": True}
         else:
             return {"error": "Note not found or user not authorized"}, 404
 
@@ -472,7 +476,7 @@ def update_note(
 
 
 @router.delete("/delete/source/{source_id}")
-def delete_source(source_id: str, user=Depends(manager)):
+def delete_source(source_id: str, background_tasks: BackgroundTasks, user=Depends(manager)):
     """
     Delete a source.
 
@@ -489,6 +493,7 @@ def delete_source(source_id: str, user=Depends(manager)):
     check_user(user)
 
     try:
+        sourceToDelete = neo4jClient.get_source_by_id("source", source_id)
         result = neo4jClient.delete_source(source_id)
         if not result:
             return {"result": "Source not found"}
@@ -507,16 +512,10 @@ def delete_source(source_id: str, user=Depends(manager)):
             logger.info("Web not found")
             return {"result": "Web not found"}
 
-        try:
-            result = pineconeClient.index.delete(
-                ids=[source_id],
-                namespace=affected_web["webId"],
-                filter={"sourceId": source_id},
-            )
-            if result == {}:
-                logger.info(f"Source {source_id} deleted from Pinecone")
-        except:
-            logger.info("Pinecone namespace not found...Skipping embeddings deletion")
+        background_tasks.add_task(
+            sourceService.delete_source_embeddings,
+            source=sourceToDelete,
+        )
 
         return {"result": "Source deleted"}
 
@@ -571,15 +570,22 @@ def get_source(source_id: str, user=Depends(manager.optional)):
 
 
 @router.patch("/edit/source/{sourceId}")
-def edit_source(sourceId: str, info: UpdateSource, user=Depends(manager)):
+def edit_source(sourceId: str, updatePayload: UpdateSource, background_tasks: BackgroundTasks, user=Depends(manager)):
     check_user(user)
     try:
-        update_data = info.model_dump(exclude_none=True)
+        update_data = updatePayload.model_dump(exclude_none=True)
         update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
-        neo4jClient.update_source(source_id=sourceId, properties=update_data)
+        updated_source = neo4jClient.update_source(source_id=sourceId, properties=update_data)
 
-        return {"result", "Source updated"}
+        if not updated_source:
+            raise HTTPException(status_code=404, detail="Source not found")
+        
+        webId = updated_source["webId"]
+
+        background_tasks.add_task(sourceService.refresh_metadata, webId=webId, sourceId=sourceId, metadata=update_data)
+
+        return {"result": True}
 
     except Exception as e:
         logger.error(str(e))
