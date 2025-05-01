@@ -397,9 +397,7 @@ def delete_web(webId: str, user=Depends(manager)):
         logger.info(f"Web {webId} deleted by user {user['id']}")
 
         # these need to run in the background (refactor to a web service that handles deletions)
-        webDeleteResult = pineconeClient.index.delete(
-            ids=[webId], namespace="webs"
-        )  
+        webDeleteResult = pineconeClient.index.delete(ids=[webId], namespace="webs")
         sourceDeleteResult = pineconeClient.index.delete(
             delete_all=True, namespace=webId
         )
