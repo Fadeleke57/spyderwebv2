@@ -496,12 +496,16 @@ class SourceService:
             {"webId": web_id, "userId": user_id},
             {
                 "$push": {
-                    "sourceIds": source_id1,
-                    "sourceIds": source_id2,
-                    "sourceIds": source_id3,
-                    "sourceIds": source_id4,
-                    "sourceIds": source_id5,
-                    "sourceIds": source_id6,
+                    "sourceIds": {
+                        "$each": [
+                            source_id1,
+                            source_id2,
+                            source_id3,
+                            source_id4,
+                            source_id5,
+                            source_id6,
+                        ]
+                    }
                 },
                 "$set": {"updated": datetime.now(UTC)},
             },
