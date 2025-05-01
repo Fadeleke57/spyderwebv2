@@ -23,8 +23,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import Link from "next/link";
-import { Checkbox } from "@/components/ui/checkbox";
 import spydrLogo from "@/assets/slogonobg.png";
 import onboardingGraphic from "@/assets/Sig up/Group.svg";
 import { useCompleteOnboarding } from "@/hooks/auth";
@@ -32,7 +30,7 @@ import { useCompleteOnboarding } from "@/hooks/auth";
 const stepOneSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().optional(),
-  username: z.string().min(6).max(14),
+  username: z.string(), // locked anyways
   bio: z.string().optional(),
 });
 
