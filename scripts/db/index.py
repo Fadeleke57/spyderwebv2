@@ -290,9 +290,23 @@ def migrate_embeddings_to_mongodb():
     Embeddings.insert_many(insertions)
     print("Finished")
 
+def add_webid_to_chunks():
+    embeddings = list(Embeddings.find())
+    print(f"Found {len(embeddings)} embeddings")
+    for embedding in embeddings:
+        print(embedding)
+        pinecone_client.index.update(
+            id=embedding["embeddingId"],
+            namespace="sources",
+            set_metadata={"webId": embedding["webId"]}
+        )
+        print("Added webId to chunk", embedding["embeddingId"])
+        time.sleep(0.5)
+
 if __name__ == "__main__":
     #update_webs_with_defaults()
     #update_users_with_defaults()
     #sync_pinecone_source_metadata()
     #migrate_web_namespaces_to_sources()
-    migrate_embeddings_to_mongodb() #run right after
+    #migrate_embeddings_to_mongodb() #run right after
+    add_webid_to_chunks()
