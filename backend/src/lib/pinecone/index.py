@@ -45,6 +45,7 @@ class PineconeClient:
 
             metadata = {
                 "sourceId": source["sourceId"],
+                "webId": source["webId"],
                 "videoTitle": source["name"],
                 "videoDescription": source["content"],
                 "startTime": chunk["start_time"],
@@ -61,6 +62,7 @@ class PineconeClient:
 
             metadata = {
                 "documentTitle": source["name"],
+                "webId": source["webId"],
                 "sourceId": source["sourceId"],
                 "pageNumber": page_number,
                 "chunkIndex": index,
@@ -76,6 +78,7 @@ class PineconeClient:
 
             metadata = {
                 "noteTitle": source["name"],
+                "webId": source["webId"],
                 "sourceId": source["sourceId"],
                 "chunkIndex": index,
                 "chunkCount": number_of_chunks,
