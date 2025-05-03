@@ -78,9 +78,7 @@ class CandidateSelectorAgent:  # visits the pincone database for sources within 
         }
         return candidate_document
 
-    def _run_similiarity_search(
-        self, embedding: list[float], filter, k: int = 15
-    ):
+    def _run_similiarity_search(self, embedding: list[float], filter, k: int = 15):
         """
         Runs a similarity search over the Pinecone index using the given embedding.
 

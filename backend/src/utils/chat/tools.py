@@ -27,7 +27,7 @@ def get_graph_context(
     webId: str, query: str, sources: list[str] = []
 ):  # TODO: move to agent interface to extract webId, userId, etc.
     filter = {}
-    if (sources):
+    if sources:
         filter = {"sourceId": {"$in": sources}}
 
     try:

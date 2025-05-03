@@ -26,9 +26,8 @@ from src.models.index import (
 from src.service.source import service as sourceService
 from src.db.neo4j import client as neo4jClient
 from src.core.config import settings
-from src.utils.youtube import get_video_transcript, get_video_info
 from src.lib.firecrawl.index import client as firecrawlClient
-from src.lib.pinecone.index import client as pineconeClient
+from src.lib.youtube.index import client as youtubeClient
 
 router = APIRouter()
 s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
@@ -385,11 +384,11 @@ def add_youtube(
     check_user(user)
 
     try:
-        info = get_video_info(video_id)
+        info = youtubeClient.get_video_info(video_id)
         title, description = info["title"], info["description"]
 
         try:
-            transcripts = get_video_transcript(video_id)
+            transcripts = youtubeClient.get_video_transcript(video_id)
 
         except Exception as e:
             transcripts = []

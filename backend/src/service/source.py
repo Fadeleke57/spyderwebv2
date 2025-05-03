@@ -13,6 +13,7 @@ from fastapi import BackgroundTasks
 import uuid
 from pytz import UTC
 
+
 class SourceService:
     def __init__(self):
         pass
@@ -98,7 +99,7 @@ class SourceService:
 
     def refresh_note_embeddings(self, source: Source, content: str):
         try:
-            
+
             noteEmbeddings = Embeddings.find({"sourceId", source["sourceId"]})
             noteEmbeddingsToDelete = [e["embeddingId"] for e in noteEmbeddings]
             logger.info(f"Deleting {len(noteEmbeddingsToDelete)} embeddings")
@@ -137,7 +138,7 @@ class SourceService:
 
             logger.info("Deleted note chunks successfully")
             return True
-        
+
         except Exception as e:
             logger.error(f"Error processing Pinecone embeddings: {e}")
             return False
