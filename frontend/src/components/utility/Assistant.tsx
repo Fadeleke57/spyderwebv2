@@ -48,7 +48,6 @@ import SimpleTooltip from "./SimpleTooltip";
 import { useScrollToBottom } from "@/hooks/general";
 import { useRouter } from "next/router";
 import DeleteModal from "./DeleteModal";
-import AuthModal from "../auth/AuthModal";
 import { useUser } from "@/context/UserContext";
 import { PricingModal } from "@/components/pricing/PricingModal";
 
@@ -154,10 +153,10 @@ const SpydrAI = () => {
   };
 
   useEffect(() => {
-    if (webId) {
+    if (router.isReady && webId) {
       configureCharlotte(webId as string);
     }
-  }, [webId, router, configureCharlotte]);
+  }, [router.isReady, webId, configureCharlotte]);
 
   if (isMobile) {
     return (
