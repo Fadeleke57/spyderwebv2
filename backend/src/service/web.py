@@ -67,8 +67,8 @@ class WebService:
         except Exception as e:
             logger.error(e)
             return False
-        
-    def delete_web_embeddings(self, webId : str) -> bool:
+
+    def delete_web_embeddings(self, webId: str) -> bool:
 
         try:
             logger.info(f"Deleting web:{webId} from pinecone...")
@@ -76,18 +76,19 @@ class WebService:
 
             sourceEmbeddings = Embeddings.find({"webId": webId})
             sourceIdsToDelete = [e["embeddingId"] for e in sourceEmbeddings]
+
             logger.info(f"Found {len(sourceIdsToDelete)} to delete..")
+            
             if sourceIdsToDelete:
                 sourceDeleteResult = pineconeClient.index.delete(
-                    ids=[sourceIdsToDelete],
-                    namespace="sources"
+                    ids=[sourceIdsToDelete], namespace="sources"
                 )
             else:
                 sourceDeleteResult = {}
 
             if webDeleteResult == {} and sourceDeleteResult == {}:
                 logger.info("Successfully deleted web embeddings!")
-                #clean up mongo
+                # clean up mongo
                 Embeddings.delete_many({"webId": webId})
                 logger.info("Cleaned up embeddings in mongo!")
                 return True
@@ -95,5 +96,6 @@ class WebService:
         except Exception as e:
             logger.error(e)
             return False
+
 
 service = WebService()

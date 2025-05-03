@@ -153,7 +153,7 @@ class PineconeClient:
             contain the metadata of the result, as well as an "id" key containing the ID of the result.
         """
         filter["webId"] = webId
-        
+
         query_embedding = self.get_query_embedding(query)
         pinecone_response = self.index.query(
             vector=query_embedding,
@@ -351,7 +351,7 @@ class PineconeClient:
             mongo_embedding = {
                 "sourceId": source_id,
                 "webId": web_id,
-                "embeddingId": chunk_id
+                "embeddingId": chunk_id,
             }
             Embeddings.insert_one(mongo_embedding)
 
@@ -394,7 +394,7 @@ class PineconeClient:
             except Exception as e:
                 logger.error(f"Error embedding and upserting to Pinecone: {str(e)}")
                 raise
-        
+
         if should_run_autolinker:
             autolinker.run()
         return results

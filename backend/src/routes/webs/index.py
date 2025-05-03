@@ -372,7 +372,7 @@ def get_web_images(web_id: str):
 
 
 @router.delete("/delete")
-def delete_web(webId: str, background_tasks : BackgroundTasks, user=Depends(manager)):
+def delete_web(webId: str, background_tasks: BackgroundTasks, user=Depends(manager)):
     """
     Delete a web.
 
