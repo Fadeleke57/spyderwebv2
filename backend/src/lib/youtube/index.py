@@ -10,10 +10,6 @@ class YoutubeAPIClient:
     def __init__(self):
         self.apiKey = settings.youtube_api_key
         self.transcriptsClient = YouTubeTranscriptApi(
-            proxy_config=WebshareProxyConfig(
-                proxy_username=settings.proxy_username,
-                proxy_password=settings.proxy_password,
-            )
         )
 
     def get_video_info(self, video_id: str) -> dict:
@@ -56,7 +52,10 @@ class YoutubeAPIClient:
         Raises a 400 error if an exception occurs.
         """
         try:
-            response = self.transcriptsClient.get_transcript(video_id)
+
+            response = self.transcriptsClient.fetch(video_id)
+            response = response.to_raw_data()
+
         except Exception as e:
             logger.error(f"Error getting video transcript: {str(e)}")
             raise HTTPException(
