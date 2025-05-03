@@ -78,7 +78,7 @@ class WebService:
             sourceIdsToDelete = [e["embeddingId"] for e in sourceEmbeddings]
 
             logger.info(f"Found {len(sourceIdsToDelete)} to delete..")
-            
+
             if sourceIdsToDelete:
                 sourceDeleteResult = pineconeClient.index.delete(
                     ids=[sourceIdsToDelete], namespace="sources"

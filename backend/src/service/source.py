@@ -106,7 +106,9 @@ class SourceService:
             noteEmbeddings = list(Embeddings.find({"sourceId": source["sourceId"]}))
             noteEmbeddingsToDelete = [e["embeddingId"] for e in noteEmbeddings]
             logger.info(f"Deleting these embeddings: {noteEmbeddingsToDelete}")
-            logger.info(f"Deleting {len(noteEmbeddingsToDelete)} embeddings...: {noteEmbeddingsToDelete}")
+            logger.info(
+                f"Deleting {len(noteEmbeddingsToDelete)} embeddings...: {noteEmbeddingsToDelete}"
+            )
 
             if noteEmbeddingsToDelete:
                 pineconeClient.index.delete(
