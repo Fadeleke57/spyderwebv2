@@ -7,7 +7,7 @@ import time
 
 class MongoScriptsClient:
     def __init__(self):
-        self.client = MongoClient("mongodb+srv://spydrdev:ngRCmCBtYy82IiFh@spydr-storage-prod.maolt.mongodb.net/")
+        self.client = MongoClient("")
         self.database = self.client["storage"]
     
     def _get_collection(self, name : str):
@@ -20,8 +20,8 @@ Embeddings = mongo_client._get_collection("embeddings")
  
 class PineconeScriptsClient:
     def __init__(self):
-        self.client = Pinecone(api_key="a60adfbf-1a1d-4250-94df-40cfa914d585")
-        self.index = self.client.Index(name="bucket-space-prod")
+        self.client = Pinecone(api_key="")
+        self.index = self.client.Index(name="")
     
     def generate_embeddings(self, name: str, description: str, header_weight: int = 3) -> any:
         weighted_input = (name + ' ') * header_weight + description
@@ -37,7 +37,7 @@ pinecone_client = PineconeScriptsClient()
 class Neo4jScriptsClient:
 
     def __init__(self):
-        self.driver = GraphDatabase.driver("neo4j+s://89a7ee25.databases.neo4j.io", auth=("neo4j", "Ph-UEapfC_YQxtMq51N1eBXZDLJNzMB5sRAj2cDOsHI"))
+        self.driver = GraphDatabase.driver("", auth=("neo4j", ""))
 
     def close(self):
         self.driver.close()
