@@ -84,6 +84,9 @@ class SourceService:
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
 
     def embed_and_upsert_note(self, source: Source, text: str):
+        if not text:
+            logger.info("No text found in note. Skipping...")
+            return
         try:
             chunks = pineconeClient.chunk_clean_text(
                 text=text, chunk_size=1000, chunk_overlap=50
@@ -100,13 +103,16 @@ class SourceService:
     def refresh_note_embeddings(self, source: Source, content: str):
         try:
 
-            noteEmbeddings = Embeddings.find({"sourceId", source["sourceId"]})
+            noteEmbeddings = list(Embeddings.find({"sourceId": source["sourceId"]}))
             noteEmbeddingsToDelete = [e["embeddingId"] for e in noteEmbeddings]
-            logger.info(f"Deleting {len(noteEmbeddingsToDelete)} embeddings")
+            logger.info(f"Deleting these embeddings: {noteEmbeddingsToDelete}")
+            logger.info(
+                f"Deleting {len(noteEmbeddingsToDelete)} embeddings...: {noteEmbeddingsToDelete}"
+            )
 
             if noteEmbeddingsToDelete:
                 pineconeClient.index.delete(
-                    ids=noteEmbeddings,
+                    ids=noteEmbeddingsToDelete,
                     namespace="sources",
                 )
                 Embeddings.delete_many({"sourceId": source["sourceId"]})
