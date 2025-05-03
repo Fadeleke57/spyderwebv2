@@ -27,17 +27,15 @@ def get_graph_context(
     webId: str, query: str, sources: list[str] = []
 ):  # TODO: move to agent interface to extract webId, userId, etc.
     filter = {}
-    if (
-        sources
-    ):  # TODO: tell agent to build the filter itself using conext from the query (i.e "I want to know about these two youtube videos..")
+    if (sources):
         filter = {"sourceId": {"$in": sources}}
 
     try:
         logger.info(
             f"Fetching graph context for webId: {webId}, with filter: {filter}, and query: {query}"
         )
-        context = pineconeClient.run_remantic_source_search(
-            webId=webId, query=query, filter=filter, limit=10
+        context = pineconeClient.run_semantic_source_search(
+            webId=webId, query=query, filter=filter, limit=15
         )
         logger.info(f"Graph context: {context}")
         return {"context": context}

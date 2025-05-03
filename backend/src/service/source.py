@@ -5,15 +5,13 @@ from typing import List
 from uuid import uuid4
 from datetime import datetime
 from fastapi import HTTPException
-from src.models.index import Source, Connection, create_process, update_process, Webs
+from src.models.index import Source, create_process, update_process, Webs, Embeddings
 from src.db.neo4j import client as neo4jClient
 from src.lib.pinecone.index import client as pineconeClient
 from src.lib.logger.index import logger
 from fastapi import BackgroundTasks
 import uuid
 from pytz import UTC
-import time
-
 
 class SourceService:
     def __init__(self):
@@ -100,41 +98,22 @@ class SourceService:
 
     def refresh_note_embeddings(self, source: Source, content: str):
         try:
-            all_ids = []
+            
+            noteEmbeddings = Embeddings.find({"sourceId", source["sourceId"]})
+            noteEmbeddingsToDelete = [e["embeddingId"] for e in noteEmbeddings]
+            logger.info(f"Deleting {len(noteEmbeddingsToDelete)} embeddings")
 
-            for id in pineconeClient.index.list(namespace=source["webId"]):
-                all_ids.extend(id)
-
-            if not all_ids:
-                logger.info(
-                    f"No vectors found for this web: {source['webId']}. Nothing to update"
+            if noteEmbeddingsToDelete:
+                pineconeClient.index.delete(
+                    ids=noteEmbeddings,
+                    namespace="sources",
                 )
-                return True
-
-            batch_size = 999
-            ids_to_delete = []
-            for i in range(0, len(all_ids), batch_size):
-                batch_ids = all_ids[i : i + batch_size]
-                fetch_response = pineconeClient.index.fetch(
-                    ids=batch_ids, namespace=source["webId"]
-                )
-
-                for vid, record in fetch_response.vectors.items():
-                    metadata = record.metadata
-                    embedding_sourceId = metadata.get("sourceId")
-
-                    if embedding_sourceId == source["sourceId"]:
-                        ids_to_delete.append(vid)
-
-            logger.info(f"Deleting {len(ids_to_delete)} embeddings")
-
-            pineconeClient.index.delete(
-                ids=ids_to_delete,
-                namespace=source["webId"],
-            )
+                Embeddings.delete_many({"sourceId": source["sourceId"]})
+                logger.info("Deleted previous note embeddings!")
 
             self.embed_and_upsert_note(source, content)
             logger.info("Refreshed note chunks successfully")
+
             return True
         except Exception as e:
             logger.error(f"Error processing Pinecone embeddings: {e}")
@@ -142,48 +121,23 @@ class SourceService:
 
     def delete_source_embeddings(self, source: Source):
         try:
-            all_ids = []
 
-            for id in pineconeClient.index.list(namespace=source["webId"]):
-                all_ids.extend(id)
+            sourceEmbeddings = Embeddings.find({"sourceId": source["sourceId"]})
+            sourceEmbeddingsToDelete = [e["embeddingId"] for e in sourceEmbeddings]
 
-            if not all_ids:
-                logger.info(
-                    f"No vectors found for this web: {source['webId']}. Nothing to update"
+            logger.info(f"Deleting {len(sourceEmbeddingsToDelete)} embeddings")
+
+            if sourceEmbeddingsToDelete:
+                pineconeClient.index.delete(
+                    ids=sourceEmbeddingsToDelete,
+                    namespace="sources",
                 )
-                return True
 
-            batch_size = 999
-            ids_to_delete = []
-            for i in range(0, len(all_ids), batch_size):
-                batch_ids = all_ids[i : i + batch_size]
-                fetch_response = pineconeClient.index.fetch(
-                    ids=batch_ids, namespace=source["webId"]
-                )  # update to query with metadata filtering in the future for faster fetches
-
-                for vid, record in fetch_response.vectors.items():
-                    metadata = record.metadata
-                    if not metadata:
-                        continue
-                    embedding_sourceId = metadata.get("sourceId")
-
-                    if embedding_sourceId == source["sourceId"]:
-                        ids_to_delete.append(vid)
-
-            logger.info(f"Deleting {len(ids_to_delete)} embeddings")
-
-            try:
-                if ids_to_delete:
-                    pineconeClient.index.delete(
-                        ids=ids_to_delete,
-                        namespace=source["webId"],
-                    )
-            except Exception as e:
-                logger.error(f"Error deleting embeddings: {e}")
-                return False
+                Embeddings.delete_many({"sourceId": source["sourceId"]})
 
             logger.info("Deleted note chunks successfully")
             return True
+        
         except Exception as e:
             logger.error(f"Error processing Pinecone embeddings: {e}")
             return False
@@ -194,37 +148,16 @@ class SourceService:
             pinecone_safe_metadata = metadata.copy()
             del pinecone_safe_metadata["updated"]
 
-            all_ids = []
-            for id in pineconeClient.index.list(namespace=webId):
-                all_ids.extend(id)
+            sourceEmbeddings = Embeddings.find({"sourceId": sourceId})
+            sourceEmbeddingsToUpdate = [e["embeddingId"] for e in sourceEmbeddings]
 
-            if not all_ids:
-                logger.info(
-                    f"No vectors found for this web: {webId}. Nothing to update"
+            for embeddingToUpdate in sourceEmbeddingsToUpdate:
+                pineconeClient.index.update(
+                    id=embeddingToUpdate,
+                    set_metadata=pinecone_safe_metadata,
+                    namespace="sources",
                 )
-                return True
-
-            batch_size = 999
-            for i in range(0, len(all_ids), batch_size):
-                batch_ids = all_ids[i : i + batch_size]
-                fetch_response = pineconeClient.index.fetch(
-                    ids=batch_ids, namespace=webId
-                )
-
-                for vid, record in fetch_response.vectors.items():
-
-                    metadata = record.metadata
-                    embedding_sourceId = metadata.get("sourceId")
-
-                    if embedding_sourceId == sourceId:
-                        pineconeClient.index.update(
-                            id=vid,
-                            set_metadata=pinecone_safe_metadata,
-                            namespace=webId,
-                        )
-                        logger.info(f"Updated source metadata for {vid}")
-
-                time.sleep(0.1)
+                logger.info(f"Updated source metadata for {embeddingToUpdate}")
 
             logger.info("Updated source metadata successfully")
             return True

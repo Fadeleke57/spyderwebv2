@@ -16,6 +16,7 @@ class MongoScriptsClient:
 mongo_client = MongoScriptsClient()
 Users = mongo_client._get_collection("users")
 Webs = mongo_client._get_collection("webs")
+Embeddings = mongo_client._get_collection("embeddings")
  
 class PineconeScriptsClient:
     def __init__(self):
@@ -32,6 +33,23 @@ class PineconeScriptsClient:
         return embeddings
 
 pinecone_client = PineconeScriptsClient()
+
+class Neo4jScriptsClient:
+
+    def __init__(self):
+        self.driver = GraphDatabase.driver("", auth=("neo4j", ""))
+
+    def close(self):
+        self.driver.close()
+
+    def execute_query(self, query, parameters):
+        with self.driver.session() as session:
+            result = session.run(query, parameters)
+            return [record.data() for record in result]
+
+neo4j_client = Neo4jScriptsClient()
+
+# mongo native scripts
 
 def update_webs_with_defaults():
     required_defaults = {
@@ -105,21 +123,7 @@ def update_users_with_defaults():
     print(f"✅ Updated {update_count} user(s) with missing fields.")
 
 
-class Neo4jScriptsClient:
-
-    def __init__(self):
-        self.driver = GraphDatabase.driver("", auth=("neo4j", ""))
-
-    def close(self):
-        self.driver.close()
-
-    def execute_query(self, query, parameters):
-        with self.driver.session() as session:
-            result = session.run(query, parameters)
-            return [record.data() for record in result]
-
-neo4j_client = Neo4jScriptsClient()
-
+# pinecone native scripts
 def sync_pinecone_source_metadata():
     for web in Webs.find():
         webId = web["webId"]
@@ -180,8 +184,115 @@ def sync_pinecone_source_metadata():
         print(f"Completed web {webId}")
     print("All webs processed!")
 
+def migrate_web_namespaces_to_sources():
+    """Migrates all vectors from webId namespaces to a single 'sources' namespace"""
+    target_namespace = "sources"
+    batch_size = 100
+    migrated_count = 0
+
+    # Get all webIds from MongoDB
+    web_ids = [web["webId"] for web in Webs.find()]
+    print(f"Found {len(web_ids)} webs")
+
+    for web_id in web_ids:
+        print(f"\nMigrating namespace: {web_id}")
+        all_ids = []
+        
+        # List all vector IDs in current namespace
+        try:
+            for ids_chunk in pinecone_client.index.list(namespace=web_id):
+                all_ids.extend(ids_chunk)
+        except Exception as e:
+            print(f"Error listing vectors in {web_id}: {str(e)}")
+            continue
+
+        if not all_ids:
+            print(f"No vectors found in {web_id}, skipping...")
+            continue
+
+        # Process in batches
+        for i in range(0, len(all_ids), batch_size):
+            batch_ids = all_ids[i:i+batch_size]
+            
+            try:
+                # Fetch existing vectors
+                fetch_response = pinecone_client.index.fetch(ids=batch_ids, namespace=web_id)
+                vectors_to_upsert = [{
+                    "id": vid,
+                    "values": record.values,
+                    "metadata": record.metadata
+                } for vid, record in fetch_response.vectors.items()]
+
+                # Upsert to target namespace
+                if vectors_to_upsert:
+                    # Delete from old namespace
+                    pinecone_client.index.delete(ids=batch_ids, namespace=web_id)
+                    pinecone_client.index.upsert(
+                        vectors=vectors_to_upsert,
+                        namespace=target_namespace
+                    )
+                    migrated_count += len(vectors_to_upsert)
+
+                print(f"Migrated batch {(i//batch_size)+1} of {len(all_ids)//batch_size + 1} from {web_id}")
+
+            except Exception as e:
+                print(f"Error processing batch {i//batch_size} in {web_id}: {str(e)}")
+            
+            time.sleep(0.5)  # Rate limit protection
+
+    print(f"\n✅ Migration complete! Total vectors migrated: {migrated_count}")
+    return migrated_count
+
+def migrate_embeddings_to_mongodb():
+    all_ids = []
+    for ids_chunk in pinecone_client.index.list(namespace="sources"):
+        all_ids.extend(ids_chunk)
+    print(f"Found {len(all_ids)} vectors in sources")
+
+    # 2. Fetch metadata in batches
+    batch_size = 100
+    insertions = []
+    for i in range(0, len(all_ids), batch_size):
+        batch_ids = all_ids[i:i+batch_size]
+        fetch_response = pinecone_client.index.fetch(ids=batch_ids, namespace="sources")
+        
+        for vid, record in fetch_response.vectors.items():
+            metadata = record.metadata
+
+            result = neo4j_client.execute_query(
+                    "MATCH (s:source) WHERE s.sourceId=$sourceId RETURN s",
+                    parameters={"sourceId": metadata["sourceId"]}
+            )
+            sources = [record["s"] for record in result]
+            source = result[0]["s"] if sources else None
+
+            if not source:
+                print("corresponding source not found..")
+                pinecone_client.index.delete(ids=[vid], namespace="sources")
+                continue
+
+            pinecone_client.index.update(
+                id=vid,
+                namespace="sources",
+                set_metadata={"webId": source["webId"]}
+            )
+
+            to_insert = {
+                "embeddingId" : vid,
+                "webId" : source["webId"],
+                "sourceId" : metadata["sourceId"]
+            }
+
+            insertions.append(to_insert)
+        time.sleep(0.5)
+        print(f"Queued batch {(i//batch_size)+1} of {len(all_ids)//batch_size + 1} from sources namespace")
+
+    Embeddings.insert_many(insertions)
+    print("Finished")
 
 if __name__ == "__main__":
     #update_webs_with_defaults()
     #update_users_with_defaults()
-    sync_pinecone_source_metadata()
+    #sync_pinecone_source_metadata()
+    #migrate_web_namespaces_to_sources()
+    migrate_embeddings_to_mongodb() #run right after
