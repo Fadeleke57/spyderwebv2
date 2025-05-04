@@ -227,7 +227,6 @@ const CharlotteChatInterface = ({
   const { webId } = router.query;
   const { user } = useUser();
 
-  console.log("user", user);
   const token = localStorage.getItem("token") || "";
 
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
