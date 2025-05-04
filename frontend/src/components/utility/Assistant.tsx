@@ -195,6 +195,8 @@ const SpydrAI = () => {
           side="top"
           sideOffset={-40}
           avoidCollisions={false}
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
         >
           {mapViewToComponent()}
         </PopoverContent>
