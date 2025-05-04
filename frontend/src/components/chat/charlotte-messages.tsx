@@ -185,6 +185,7 @@ const AssistantMessage = ({
             <SimpleTooltip content="Save as note">
               <Button
                 className="rounded-l-none h-8 w-fit py-1 px-2  transition-all ease-in-out duration-200"
+                variant={"outline"}
                 onClick={() => handleMakeNote(message)}
               >
                 <NotebookText size={14} className="mr-2" />{" "}
