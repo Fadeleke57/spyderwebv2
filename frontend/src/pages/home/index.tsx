@@ -55,7 +55,7 @@ function Index() {
           <span className="text-md font-semibold ml-2 dark:text-muted-foreground">
             Recent Webs
           </span>{" "}
-          <Link href={"/webs"} className="ml-2 text-violet-400 hover:underline">
+          <Link href={`/user/${user?.username}`} className="ml-2 text-violet-400 hover:underline">
             View All
           </Link>
         </div>
