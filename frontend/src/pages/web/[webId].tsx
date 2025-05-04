@@ -32,9 +32,12 @@ import MobileWebView from "@/components/webs/MobileWebForm";
 import { useConfigureChat } from "@/hooks/chats";
 import { toast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import FeedbackModal from "@/components/utility/FeedbackModal";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function Index() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const { webId } = router.query;
   const {
     data: webData,
@@ -180,6 +183,7 @@ function Index() {
             </div>
           </div>
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
+            {!isMobile &&<FeedbackModal />}
             {webOwner && web?.enableAIConnections && (
               <TooltipProvider>
                 <Tooltip>

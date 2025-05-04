@@ -6,3 +6,4 @@ from src.models.process import *
 from src.models.analytics import *
 from src.models.chat import *
 from src.models.embedding import *
+from src.models.feedback import *

@@ -6,3 +6,4 @@ from src.routes.connections.index import router as connections_router
 from src.routes.chat.index import router as chat_router
 from src.routes.process.index import router as process_router
 from src.routes.payment.index import router as payment_router
+from src.routes.feedback.index import router as feedback_router
