@@ -25,8 +25,15 @@ import { useRouter } from "next/router";
 import { useUser } from "@/context/UserContext";
 import { toast } from "sonner";
 
-const FeedbackModal = () => {
-  const [open, setOpen] = useState(false);
+const FeedbackModal = ({
+  open,
+  setOpen,
+  triggerVisibile,
+}: {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  triggerVisibile?: boolean;
+}) => {
   const [rating, setRating] = useState(0);
   const [feedbackType, setFeedbackType] = useState("");
   const [comment, setComment] = useState("");
@@ -70,8 +77,11 @@ const FeedbackModal = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={"link"} className="flex items-center gap-2">
-          <MessageSquareText size={18} />
+        <Button
+          variant={"link"}
+          className={`flex items-center gap-2 text-xs ${triggerVisibile ? "" : "hidden"}`}
+        >
+          <MessageSquareText size={14} />
           Share Feedback
         </Button>
       </DialogTrigger>
@@ -101,10 +111,10 @@ const FeedbackModal = () => {
                       key={value}
                       type="button"
                       onClick={() => handleRatingClick(value)}
-                      className="text-2xl focus:outline-none transform transition-transform hover:scale-110"
+                      className="text-2xl w-fit h-fit bg-transparent focus:outline-none transform transition-transform hover:scale-110"
                     >
                       <Star
-                        size={32}
+                        size={26}
                         className={`${
                           rating >= value
                             ? "text-yellow-400 fill-yellow-400"
