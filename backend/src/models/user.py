@@ -20,6 +20,10 @@ class User(BaseModel):
     disabled: bool
     hashed_password: str
     bio: str = ""
+    occupation: str = ""
+    company: str = ""
+    purpose: str = ""
+    interest: str = ""
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     profile_picture_url: Optional[str] = None
@@ -38,6 +42,7 @@ class User(BaseModel):
 class CreateUser(BaseModel):
     username: str
     email: str
+    full_name: Optional[str] = None
     password: Optional[str] = None  # null for non oauth users
     profile_picture_url: Optional[str] = None
 
@@ -52,7 +57,7 @@ def create_user(create_user_data: CreateUser):
         user = User(
             id=user_id,
             username=create_user_data.username,
-            full_name=create_user_data.username,
+            full_name=create_user_data.full_name or create_user_data.username,
             email=create_user_data.email,
             hashed_password=(
                 get_password_hash(create_user_data.password)
@@ -76,3 +81,7 @@ class UpdateUser(BaseModel):  # updating user
     email: Optional[str] = None
     password: Optional[str] = None
     bio: Optional[str] = None
+    occupation: Optional[str] = None
+    company: Optional[str] = None
+    purpose: Optional[str] = None
+    interest: Optional[str] = None

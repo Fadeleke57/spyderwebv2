@@ -26,11 +26,11 @@ from src.models.index import (
 from src.service.source import service as sourceService
 from src.db.neo4j import client as neo4jClient
 from src.core.config import settings
-from src.utils.youtube import get_video_transcript, get_video_info
 from src.lib.firecrawl.index import client as firecrawlClient
 from src.lib.pinecone.index import client as pineconeClient
 from src.utils.audio import get_audio_transcript
 from tempfile import NamedTemporaryFile
+from src.lib.youtube.index import client as youtubeClient
 
 router = APIRouter()
 s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
@@ -387,11 +387,11 @@ def add_youtube(
     check_user(user)
 
     try:
-        info = get_video_info(video_id)
+        info = youtubeClient.get_video_info(video_id)
         title, description = info["title"], info["description"]
 
         try:
-            transcripts = get_video_transcript(video_id)
+            transcripts = youtubeClient.get_video_transcript(video_id)
 
         except Exception as e:
             transcripts = []
@@ -437,7 +437,11 @@ def add_youtube(
 
 @router.patch("/update/note/{web_id}/{source_id}")
 def update_note(
-    web_id: str, source_id: str, updateNotePayload: UpdateNote, background_tasks: BackgroundTasks, user=Depends(manager)
+    web_id: str,
+    source_id: str,
+    updateNotePayload: UpdateNote,
+    background_tasks: BackgroundTasks,
+    user=Depends(manager),
 ):
     """
     Update a note.
@@ -458,7 +462,9 @@ def update_note(
         update_data = updateNotePayload.model_dump(exclude_none=True)
 
         update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
-        updatedSource = neo4jClient.update_source(source_id=source_id, properties=update_data)
+        updatedSource = neo4jClient.update_source(
+            source_id=source_id, properties=update_data
+        )
 
         # refresh chunks
         background_tasks.add_task(
@@ -478,7 +484,9 @@ def update_note(
 
 
 @router.delete("/delete/source/{source_id}")
-def delete_source(source_id: str, background_tasks: BackgroundTasks, user=Depends(manager)):
+def delete_source(
+    source_id: str, background_tasks: BackgroundTasks, user=Depends(manager)
+):
     """
     Delete a source.
 
@@ -572,20 +580,32 @@ def get_source(source_id: str, user=Depends(manager.optional)):
 
 
 @router.patch("/edit/source/{sourceId}")
-def edit_source(sourceId: str, updatePayload: UpdateSource, background_tasks: BackgroundTasks, user=Depends(manager)):
+def edit_source(
+    sourceId: str,
+    updatePayload: UpdateSource,
+    background_tasks: BackgroundTasks,
+    user=Depends(manager),
+):
     check_user(user)
     try:
         update_data = updatePayload.model_dump(exclude_none=True)
         update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
-        updated_source = neo4jClient.update_source(source_id=sourceId, properties=update_data)
+        updated_source = neo4jClient.update_source(
+            source_id=sourceId, properties=update_data
+        )
 
         if not updated_source:
             raise HTTPException(status_code=404, detail="Source not found")
-        
+
         webId = updated_source["webId"]
 
-        background_tasks.add_task(sourceService.refresh_metadata, webId=webId, sourceId=sourceId, metadata=update_data)
+        background_tasks.add_task(
+            sourceService.refresh_metadata,
+            webId=webId,
+            sourceId=sourceId,
+            metadata=update_data,
+        )
 
         return {"result": True}
 

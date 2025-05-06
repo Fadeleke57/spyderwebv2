@@ -372,7 +372,7 @@ def get_web_images(web_id: str):
 
 
 @router.delete("/delete")
-def delete_web(webId: str, user=Depends(manager)):
+def delete_web(webId: str, background_tasks: BackgroundTasks, user=Depends(manager)):
     """
     Delete a web.
 
@@ -392,20 +392,11 @@ def delete_web(webId: str, user=Depends(manager)):
         webToDelete = Webs.find_one_and_delete({"webId": webId, "userId": user["id"]})
         if not webToDelete:
             logger.info(f"Web {webId} not found or not owned by user {user['id']}")
-            return {"result": "Web not found"}
+            return {"result": False}
 
         logger.info(f"Web {webId} deleted by user {user['id']}")
 
-        # these need to run in the background (refactor to a web service that handles deletions)
-        webDeleteResult = pineconeClient.index.delete(
-            ids=[webId], namespace="webs"
-        )  
-        sourceDeleteResult = pineconeClient.index.delete(
-            delete_all=True, namespace=webId
-        )
-
-        if webDeleteResult == {} and sourceDeleteResult == {}:
-            logger.info(f"Vectors for {webId} were successfully deleted from Pinecone")
+        background_tasks.add_task(webService.delete_web_embeddings, webId)
 
         neo4jClient.delete_nodes_by_properties("source", {"webId": webId})
         logger.info(f"Sources {webId} attached to web deleted from Neo4j")

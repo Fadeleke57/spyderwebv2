@@ -119,7 +119,7 @@ function UserProfile() {
   const joinDate = formatDate(user.created_at);
 
   return (
-    <div className="min-h-screen px-4 lg:px-8">
+    <div className="min-h-screen px-4 lg:px-16 py-8">
       <Head>
         <title>{user.username} - spydr</title>
         <meta

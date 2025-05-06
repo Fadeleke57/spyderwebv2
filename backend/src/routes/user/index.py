@@ -157,7 +157,8 @@ def unsave_web(webId: str, user: User = Depends(manager)):
     except Exception as e:
         logger.error(f"Error unsaving web: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+
 @router.patch("/pin/web/{webId}")
 def pin_web(webId: str, user: User = Depends(manager)):
     check_user(user)
@@ -168,7 +169,8 @@ def pin_web(webId: str, user: User = Depends(manager)):
     except Exception as e:
         logger.error(f"Error pinning web: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+
 @router.patch("/unpin/web/{webId}")
 def unpin_web(webId: str, user: User = Depends(manager)):
     check_user(user)
@@ -217,7 +219,8 @@ async def get_usage(user: User = Depends(manager)):
     except Exception as e:
         logger.error(f"Error getting usage for user {user['id']}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+
 @router.get("/pinned/webs/{user_id}")
 def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.optional)):
     authorized = False
@@ -236,14 +239,15 @@ def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.opti
 
         if not profile:
             raise HTTPException(status_code=404, detail="User not found")
-        
+
         webs = list(Webs.find(query, {"_id": 0}))
         return {"result": webs}
 
     except Exception as e:
         logger.error(f"Error fetching webs: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching webs {e}")
-    
+
+
 @router.get("/saved/webs/{user_id}")
 def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.optional)):
     authorized = False
@@ -261,7 +265,7 @@ def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.opti
 
         if not profile:
             raise HTTPException(status_code=404, detail="User not found")
-        
+
         webs = list(Webs.find(query, {"_id": 0}))
         return {"result": webs}
 

@@ -19,6 +19,7 @@ from src.models.index import (
     Webs,
     Users,
     CreateUser,
+    UpdateUser,
     CreateWeb,
     create_user,
     create_web,
@@ -28,6 +29,10 @@ from src.db.neo4j import client as neo4jClient
 from src.utils.credits import PLAN_CREDITS
 from src.utils.exceptions import check_user
 from src.lib.logger.index import logger
+from pydantic import BaseModel
+from typing import Optional
+from fastapi import BackgroundTasks
+from src.service.source import service as sourceService
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -81,7 +86,7 @@ def login():
 
 
 @router.get("/callback")
-async def auth_callback(code: str):
+async def auth_callback(code: str, background_tasks: BackgroundTasks):
     """
     Handle the OAuth2 callback from Google.
 
@@ -92,13 +97,16 @@ async def auth_callback(code: str):
     token_data = await get_google_token(code)
     user_data, profile_picture_url = await get_google_user(token_data["access_token"])
     email = user_data["email"]
+    full_name = user_data["name"]
     user = Users.find_one({"email": email})
     new_web_id = None
     if not user:
         # create a new user
+        new_username = generate_username()
         create_user_data = CreateUser(
-            username=generate_username(),
+            username=new_username,
             email=email,
+            full_name=full_name,
         )
         user_id = create_user(create_user_data)
 
@@ -114,45 +122,13 @@ async def auth_callback(code: str):
             showcase=False,
         )
         new_web_id = create_web(create_web_data, user_id)
-        # create the default welcome source node
-        now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
-        source_id = str(uuid.uuid4())
-
-        source_to_insert = {
-            "sourceId": source_id,
-            "webId": new_web_id,
-            "userId": user_id,
-            "name": "Welcome to Spydr!",
-            "content": (
-                "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n"
-                "### To get started\n"
-                "1. Create a new web or edit this one and add your first source.\n"
-                "2. You can then add notes, articles, and other content to your web.\n"
-                "3. Click on entities to view/edit their content.\n"
-                "4. Once you are done, you can share your web with others or leave it private to control who can access it.\n"
-                "5. Outside of your knowledge base, you can also hop into other webs and start from there.\n"
-                "### Have fun!"
-            ),
-            "url": None,
-            "type": "note",
-            "size": None,
-            "created": now,
-            "updated": now,
-        }
-
-        neo4jClient.create_node("source", source_to_insert)
-
-        # attach source ID to the web in Mongo
-        Webs.update_one(
-            {"webId": new_web_id, "userId": user_id},
-            {"$push": {"sourceIds": source_id}, "$set": {"updated": datetime.now(UTC)}},
-        )
+        sourceService.create_onboarding_sources(new_web_id, user_id, background_tasks)
 
     access_token = manager.create_access_token(
         data={"sub": email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     response = RedirectResponse(
-        url=f"""{settings.next_url}/auth/google-callback?token={access_token}&email={email}&name={user_data['name']}&newuser={"true" if not user else ""}&newwebid={new_web_id if new_web_id else ""}""",
+        url=f"""{settings.next_url}/auth/google-callback?token={access_token}&email={email}&username={new_username if not user else user['username']}&firstName={user_data['given_name']}&lastName={user_data['family_name']}&newuser={"true" if not user else ""}&newwebid={new_web_id if new_web_id else ""}""",
     )
     manager.set_cookie(response, access_token)
     return response
@@ -185,7 +161,7 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
 
 
 @router.post("/register")
-def register(create_user_data: CreateUser):
+def register(create_user_data: CreateUser, background_tasks: BackgroundTasks):
     """
     Register a new user.
 
@@ -216,39 +192,7 @@ def register(create_user_data: CreateUser):
         showcase=True,
     )
     web_id = create_web(create_web_data, user_id)
-
-    # create welcome source node
-    now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
-    source_id = str(uuid.uuid4())
-    source_to_insert = {
-        "sourceId": source_id,
-        "webId": web_id,
-        "userId": user_id,
-        "name": "How to use Spydr (click me!)",
-        "content": (
-            "## Spydr is a social platform that allows you to create, manage, and share your own internet knowledge bases.\n"
-            "### To get started\n"
-            "1. Create a new web or edit this one and add your first source.\n"
-            "2. You can then add notes, articles, and other content to your web.\n"
-            "3. Click on entities to view/edit their content.\n"
-            "4. Once you are done, you can share your web with others or leave it private to control who can access it.\n"
-            "5. Outside of your knowledge base, you can also hop into other webs and start from there.\n"
-            "### Have fun!"
-        ),
-        "url": None,
-        "type": "note",
-        "size": None,
-        "created": now,
-        "updated": now,
-    }
-
-    neo4jClient.create_node("source", source_to_insert)
-
-    # attach source ID to the web in Mongo
-    Webs.update_one(
-        {"webId": web_id, "userId": user_id},
-        {"$push": {"sourceIds": source_id}, "$set": {"updated": datetime.now(UTC)}},
-    )
+    sourceService.create_onboarding_sources(web_id, user_id, background_tasks)
 
     # create access token
     access_token = manager.create_access_token(
@@ -297,6 +241,42 @@ def get_current_user(user=Depends(manager)):
         }
         logging.debug(f"User found in /auth/me: {publicUser}")
         return publicUser
+    except Exception as e:
+        logging.error(f"Exception in /auth/me: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+class OnboardingPayload(BaseModel):
+    firstName: str
+    lastName: Optional[str] = ""
+    username: str
+    bio: Optional[str] = ""
+    occupation: str
+    company: Optional[str] = ""
+    purpose: str
+    interest: Optional[str] = ""
+
+
+@router.post("/onboarding")
+def complete_onboarding(onboardingPayload: OnboardingPayload, user=Depends(manager)):
+    check_user(user)
+    try:
+        updates = UpdateUser(
+            full_name=f"{onboardingPayload.firstName} {onboardingPayload.lastName}",
+            username=onboardingPayload.username,
+            bio=onboardingPayload.bio,
+            occupation=onboardingPayload.occupation,
+            company=onboardingPayload.company,
+            purpose=onboardingPayload.purpose,
+            interest=onboardingPayload.interest,
+        )
+        logger.info(f"updates: {updates}")
+        Users.update_one(
+            {"id": user["id"]},
+            {"$set": updates.model_dump(exclude_none=True)},
+        )
+
+        return {"result": True}
     except Exception as e:
         logging.error(f"Exception in /auth/me: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")

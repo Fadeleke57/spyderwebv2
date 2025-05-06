@@ -155,7 +155,7 @@ function WebForm({ web, user }: FormProps) {
       });
     }
   };
-console.log("images", images)
+
   const handleDeleteImage = useCallback(async () => {
     if (!selectedImage) {
       return;
