@@ -47,6 +47,7 @@ function Index() {
   } = useFetchWebById(webId as string);
 
   const [web, setWeb] = React.useState<Web | null>(webData || null);
+  const [feedbackModalOpen, setFeedbackModalOpen] = React.useState(false);
 
   const { mutateAsync: pinWeb, isPending: pinLoading } = usePinWeb(
     webId as string
@@ -183,7 +184,13 @@ function Index() {
             </div>
           </div>
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
-            {!isMobile &&<FeedbackModal />}
+            {!isMobile && (
+              <FeedbackModal
+                triggerVisibile
+                open={feedbackModalOpen}
+                setOpen={setFeedbackModalOpen}
+              />
+            )}
             {webOwner && web?.enableAIConnections && (
               <TooltipProvider>
                 <Tooltip>

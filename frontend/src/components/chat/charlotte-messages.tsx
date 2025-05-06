@@ -26,6 +26,7 @@ import { useRouter } from "next/router";
 import { useFetchWebById } from "@/hooks/webs";
 import { useUser } from "@/context/UserContext";
 import { toast } from "sonner";
+import FeedbackModal from "../utility/FeedbackModal";
 
 const UserMessage = ({ message }: { message: Message }) => {
   return (
@@ -76,6 +77,7 @@ const AssistantMessage = ({
   const [isCopied, setIsCopied] = useState(false);
   const [toolbarVisible, setToolbarVisible] = useState(false);
   const [review, setReview] = useState<"like" | "dislike" | null>(null);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const { webId } = router.query;
   const { data: web } = useFetchWebById(webId as string);
   const { mutateAsync: uploadNote } = useUploadNote(webId as string);
@@ -113,6 +115,11 @@ const AssistantMessage = ({
       window.open(url, "_blank");
       return;
     }
+  };
+
+  const handleDislike = () => {
+    setReview("dislike");
+    setFeedbackModalOpen(true);
   };
 
   return (
@@ -170,8 +177,8 @@ const AssistantMessage = ({
         <div>
           <SimpleTooltip content="Dislike">
             <Button
-              className={`rounded-sm rounded-l-none rounded-r-none h-8 w-fit py-1 px-2 transition-all ease-in-out duration-200`}
-              onClick={() => setReview("dislike")}
+              className={`rounded-sm rounded-l-none ${isOwner ? "rounded-r-none" : ""} h-8 w-fit py-1 px-2 transition-all ease-in-out duration-200`}
+              onClick={handleDislike}
             >
               <ThumbsDown
                 size={14}
@@ -269,6 +276,7 @@ const AssistantMessage = ({
           )}
         </div>
       </div>
+      <FeedbackModal open={feedbackModalOpen} setOpen={setFeedbackModalOpen} />
     </motion.div>
   );
 };
