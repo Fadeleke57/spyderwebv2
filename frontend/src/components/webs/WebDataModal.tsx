@@ -204,9 +204,9 @@ export default function WebDataModal({
                       source?.type === "youtube" ||
                       source?.type === "document" ? (
                         <FaviconDisplay url={source?.url || ""} />
-                      ) : (
+                      ) : source?.type ? (
                         getTypeIcon(source?.type)
-                      )}
+                      ) : null}
                       <span className="flex flex-row items-center gap-2">
                         {title || "Loading..."}
                       </span>
