@@ -33,6 +33,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "../ui/drawer";
+import { getTypeIcon } from "../chat/genui/graphcontext";
 
 type SearchSourceModalProps = {
   open: boolean;
@@ -43,10 +44,16 @@ type SearchSourceModalProps = {
 
 const tabs = [
   {
-    label: "Files",
+    label: "Documents",
     value: "document",
     placeholder: "Search files...",
     type: "document",
+  },
+  {
+    label: "Voice",
+    value: "voice_note",
+    placeholder: "Search notes...",
+    type: "voice_note",
   },
   {
     label: "Links",
@@ -112,12 +119,12 @@ function SearchSourceModal({
                     .map((source: Source, id: number) => (
                       <CommandItem
                         key={id}
-                        className="cursor-pointer items-start"
+                        className="cursor-pointer items-center"
                         onSelect={() => handleSourceClick(source.sourceId)}
                         value={`${source.name}${id}`}
                       >
-                        {mapSourceToIcon(source.type, 16)}
-                        <span className="ml-2">{source.name}</span>
+                        {getTypeIcon(source.type)}
+                        <span className="ml-1">{source.name}</span>
                       </CommandItem>
                     ))}
               </CommandGroup>

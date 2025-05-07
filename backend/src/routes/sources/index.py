@@ -27,9 +27,7 @@ from src.service.source import service as sourceService
 from src.db.neo4j import client as neo4jClient
 from src.core.config import settings
 from src.lib.firecrawl.index import client as firecrawlClient
-from src.lib.pinecone.index import client as pineconeClient
-from src.utils.audio import get_audio_transcript
-from tempfile import NamedTemporaryFile
+from src.lib.openai.index import client as openaiClient
 from src.lib.youtube.index import client as youtubeClient
 
 router = APIRouter()
@@ -644,10 +642,8 @@ async def upload_file_to_source(
                 )
 
                 url = f"https://{settings.cloudfront_domain}/{object_name}"
-                if not url:
-                    raise HTTPException(status_code=500, detail="Error generating URL")
-
                 uploaded_image_urls.append(url)
+
                 neo4jClient.update_source(
                     source_id=source_id,
                     properties={
@@ -693,7 +689,6 @@ async def upload_voice_note(
     check_user(user)
 
     try:
-        # Save uploaded file temporarily
         temp_dir = tempfile.gettempdir()
         temp_path = os.path.join(temp_dir, f"{uuid4()}_{file.filename}")
         
@@ -702,24 +697,24 @@ async def upload_voice_note(
             buffer.write(content)
 
         try:
-            # Upload to S3
+
             object_name = f"files/{user['id']}/{web_id}/voice-notes/{uuid4()}_{secure_filename(file.filename)}"
             s3_bucket.upload_file(temp_path, object_name)
             file_url = f"https://{settings.cloudfront_domain}/{object_name}"
 
-            # Transcribe audio first
-            transcript = get_audio_transcript(temp_path)
+            # transcribe audio first
+            transcript : str = openaiClient.get_audio_transcript(temp_path)
             if not transcript:
                 raise HTTPException(status_code=500, detail="Failed to transcribe audio")
 
-            # Create source with transcript as content
+            # create source with transcript as content
             source_id = str(uuid4())
             source_to_insert = {
                 "sourceId": source_id,
                 "webId": web_id,
                 "userId": user["id"],
-                "name": "Voice Note",  # Could be updated with first few words of transcript
-                "content": transcript,  # Store transcript as content
+                "name": f"Voice Note - {transcript[:50]}...",  # Could be updated with first few words of transcript
+                "content": transcript,
                 "url": file_url,
                 "type": "voice_note",
                 "size": len(content),

@@ -86,6 +86,19 @@ class PineconeClient:
                 "text": chunk,
                 "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             }
+        
+        elif type == "voice_note":
+
+            metadata = {
+                "voiceNoteTitle": source["name"],
+                "webId": source["webId"],
+                "sourceId": source["sourceId"],
+                "chunkIndex": index,
+                "chunkCount": number_of_chunks,
+                "type": type,
+                "text": chunk,
+                "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            }
 
         return metadata
 

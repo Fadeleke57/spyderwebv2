@@ -1,6 +1,9 @@
 import { Source } from "@/types/source";
 import { Card } from "../ui/card";
 import FaviconDisplay from "../utility/FaviconDisplay";
+import { Notebook } from "lucide-react";
+import { getTypeIcon, ReferenceMetadata } from "../chat/genui/graphcontext";
+import { get } from "lodash";
 
 interface SourceTooltipProps {
   children: React.ReactNode;
@@ -14,6 +17,25 @@ const SourceTooltip = ({ children, source, position }: SourceTooltipProps) => {
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
+  };
+
+  const mapTypeToDescriptor = (type: string) => {
+    switch (type) {
+      case "website":
+        return "Website";
+      case "pdf":
+        return "PDF";
+      case "document":
+        return "Document";
+      case "youtube":
+        return "YouTube Video";
+      case "note":
+        return "Note";
+      case "voice_note":
+        return "Voice Note";
+      default:
+        return "Unknown";
+    }
   };
 
   const formatDate = (dateString?: string) => {
@@ -54,8 +76,16 @@ const SourceTooltip = ({ children, source, position }: SourceTooltipProps) => {
       >
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm font-medium">
-            {source?.url && <FaviconDisplay url={source.url} />}
-            <span className="capitalize">{source?.type}</span>
+            {source?.type === "website" ||
+            source?.type === "document" ||
+            source?.type === "youtube" ? (
+              <FaviconDisplay url={source.url} />
+            ) : (
+              getTypeIcon(source?.type)
+            )}
+            <span className="capitalize">
+              {mapTypeToDescriptor(source?.type || "")}
+            </span>
           </div>
 
           <div className="text-sm font-semibold truncate">{source?.name}</div>

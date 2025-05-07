@@ -100,7 +100,7 @@ const AssistantMessage = ({
   const handleMakeNote = async (message: Message) => {
     try {
       await uploadNote({
-        title: `Assistant Note: ${formatText(message.content, 50)}...`,
+        title: `Assistant Note - ${formatText(message.content, 50)}`,
         content: message.content,
       });
       toast("Message saved as note!");

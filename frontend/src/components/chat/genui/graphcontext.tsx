@@ -9,6 +9,7 @@ import {
   Calendar,
   FileIcon,
   Globe,
+  AudioLines,
 } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
@@ -39,7 +40,52 @@ export interface ReferenceMetadata {
 
   // Note specific
   noteTitle?: string;
+
+  // Voice note specific
+  voiceNoteTitle?: string;
 }
+export const getTypeIcon = (referenceType?: string) => {
+  const type = referenceType?.toLowerCase();
+
+  switch (type) {
+    case "youtube video":
+      return (
+        <div className="w-6 h-6 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+          <Youtube className="w-4 h-4 text-red-500" />
+        </div>
+      );
+    case "pdf document":
+      return (
+        <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+          <FileType className="w-4 h-4 text-blue-500" />
+        </div>
+      );
+    case "note":
+      return (
+        <div className="w-6 h-6 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
+          <FileText className="w-4 h-4 text-amber-500" />
+        </div>
+      );
+    case "website":
+      return (
+        <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
+          <Globe className="w-4 h-4 text-emerald-500" />
+        </div>
+      );
+    case "voice_note":
+      return (
+        <div className="w-6 h-6 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center">
+          <AudioLines className="w-4 h-4 text-violet-500" />
+        </div>
+      );
+    default:
+      return (
+        <div className="w-6 h-6 bg-gray-100 dark:bg-gray-900/30 rounded-full flex items-center justify-center">
+          <FileIcon className="w-4 h-4 text-muted-foreground" />
+        </div>
+      );
+  }
+};
 
 interface ReferencesComponentProps {
   context?: ReferenceMetadata[];
@@ -60,17 +106,6 @@ const ReferencesComponent: React.FC<ReferencesComponentProps> = ({
   // If no references, don't render anything
   if (context.length === 0) return null;
 
-  // Format timestamp to a readable date
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  // Format video timestamp (seconds) to MM:SS format
   const formatVideoTime = (seconds?: number) => {
     if (seconds === undefined) return "";
     const hours = Math.floor(seconds / 3600);
@@ -80,50 +115,6 @@ const ReferencesComponent: React.FC<ReferencesComponentProps> = ({
   };
 
   // Get icon based on reference type
-  const getTypeIcon = (reference: ReferenceMetadata) => {
-    const type = reference.type?.toLowerCase();
-
-    if (reference.url && !type?.includes("youtube") && !type?.includes("pdf")) {
-      return (
-        <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
-          <Globe className="w-4 h-4 text-emerald-500" />
-        </div>
-      );
-    }
-
-    switch (type) {
-      case "youtube video":
-        return (
-          <div className="w-6 h-6 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-            <Youtube className="w-4 h-4 text-red-500" />
-          </div>
-        );
-      case "pdf document":
-        return (
-          <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-            <FileType className="w-4 h-4 text-blue-500" />
-          </div>
-        );
-      case "note":
-        return (
-          <div className="w-6 h-6 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
-            <FileText className="w-4 h-4 text-amber-500" />
-          </div>
-        );
-      case "website":
-        return (
-          <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
-            <Globe className="w-4 h-4 text-emerald-500" />
-          </div>
-        );
-      default:
-        return (
-          <div className="w-6 h-6 bg-gray-100 dark:bg-gray-900/30 rounded-full flex items-center justify-center">
-            <FileIcon className="w-4 h-4 text-muted-foreground" />
-          </div>
-        );
-    }
-  };
 
   // Extract domain from URL
   const getDomain = (url?: string) => {
@@ -150,6 +141,7 @@ const ReferencesComponent: React.FC<ReferencesComponentProps> = ({
     if (type === "youtube video") return reference.videoTitle;
     if (type === "pdf document") return reference.documentTitle;
     if (type === "note") return reference.noteTitle;
+    if (type === "voice_note") return reference.voiceNoteTitle;
     if (type === "website")
       return reference.websiteTitle || getDomain(reference.url);
 
@@ -166,6 +158,14 @@ const ReferencesComponent: React.FC<ReferencesComponentProps> = ({
 
     if (type === "pdf document" && reference.pageNumber) {
       return `Page ${reference.pageNumber}`;
+    }
+
+    if (type === "voice_note") {
+      return `Voice Note`;
+    }
+
+    if (type === "note") {
+      return "Note";
     }
 
     if (reference.url) {
@@ -196,7 +196,7 @@ const ReferencesComponent: React.FC<ReferencesComponentProps> = ({
                 {reference.url ? (
                   <FaviconDisplay url={reference.url} />
                 ) : (
-                  getTypeIcon(reference)
+                  getTypeIcon(reference.type)
                 )}
 
                 <div className="flex-1 min-w-0">
@@ -226,7 +226,6 @@ const ReferencesComponent: React.FC<ReferencesComponentProps> = ({
                   <div className="text-xs text-muted-foreground dark:text-foreground line-clamp-2">
                     {getTextPreview(reference.text)}
                   </div>
-
                 </div>
               </div>
             </Card>
