@@ -53,7 +53,7 @@ const tabs = [
     label: "Voice",
     value: "voice_note",
     placeholder: "Search notes...",
-    type: "voice_note",
+    type: "voice note",
   },
   {
     label: "Links",
@@ -65,7 +65,7 @@ const tabs = [
     label: "YouTube",
     value: "youtube",
     placeholder: "Search YouTube videos...",
-    type: "youtube",
+    type: "youtube video",
   },
   {
     label: "Notes",
