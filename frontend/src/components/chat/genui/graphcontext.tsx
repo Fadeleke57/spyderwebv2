@@ -44,10 +44,16 @@ export interface ReferenceMetadata {
   // Voice note specific
   voiceNoteTitle?: string;
 }
-export const getTypeIcon = (referenceType?: string) => {
-  const type = referenceType?.toLowerCase();
+export const getTypeIcon = (referenceType: string) => {
+  const type = referenceType.toLowerCase();
 
   switch (type) {
+    case "youtube":
+      return (
+        <div className="w-6 h-6 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+          <Youtube className="w-4 h-4 text-red-500" />
+        </div>
+      );
     case "youtube video":
       return (
         <div className="w-6 h-6 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
@@ -55,6 +61,12 @@ export const getTypeIcon = (referenceType?: string) => {
         </div>
       );
     case "pdf document":
+      return (
+        <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+          <FileType className="w-4 h-4 text-blue-500" />
+        </div>
+      );
+    case "document":
       return (
         <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
           <FileType className="w-4 h-4 text-blue-500" />
@@ -195,9 +207,9 @@ const ReferencesComponent: React.FC<ReferencesComponentProps> = ({
               <div className="flex items-start gap-2">
                 {reference.url ? (
                   <FaviconDisplay url={reference.url} />
-                ) : (
+                ) : reference.type ? (
                   getTypeIcon(reference.type)
-                )}
+                ) : null}
 
                 <div className="flex-1 min-w-0">
                   <div
