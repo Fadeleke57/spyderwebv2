@@ -80,9 +80,9 @@ const SourceTooltip = ({ children, source, position }: SourceTooltipProps) => {
             source?.type === "document" ||
             source?.type === "youtube" ? (
               <FaviconDisplay url={source.url} />
-            ) : (
+            ) : source?.type ? (
               getTypeIcon(source?.type)
-            )}
+            ) : null}
             <span className="capitalize">
               {mapTypeToDescriptor(source?.type || "")}
             </span>
