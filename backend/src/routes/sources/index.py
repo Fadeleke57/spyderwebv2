@@ -27,6 +27,7 @@ from src.service.source import service as sourceService
 from src.db.neo4j import client as neo4jClient
 from src.core.config import settings
 from src.lib.firecrawl.index import client as firecrawlClient
+from src.lib.openai.index import client as openaiClient
 from src.lib.youtube.index import client as youtubeClient
 
 router = APIRouter()
@@ -641,10 +642,8 @@ async def upload_file_to_source(
                 )
 
                 url = f"https://{settings.cloudfront_domain}/{object_name}"
-                if not url:
-                    raise HTTPException(status_code=500, detail="Error generating URL")
-
                 uploaded_image_urls.append(url)
+
                 neo4jClient.update_source(
                     source_id=source_id,
                     properties={
@@ -666,4 +665,91 @@ async def upload_file_to_source(
 
     except Exception as e:
         logger.error(f"Upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/upload/voice-note/{web_id}")
+async def upload_voice_note(
+    web_id: str,
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    user=Depends(manager)
+):
+    """
+    Upload a voice note, transcribe it, and create a source.
+
+    Args:
+        web_id (str): The ID of the web to upload to
+        file (UploadFile): The voice note audio file
+        user (User): The authenticated user
+
+    Returns:
+        dict: JSON response with the source ID
+    """
+    check_user(user)
+
+    try:
+        temp_dir = tempfile.gettempdir()
+        temp_path = os.path.join(temp_dir, f"{uuid4()}_{file.filename}")
+        
+        content = await file.read()
+        with open(temp_path, "wb") as buffer:
+            buffer.write(content)
+
+        try:
+
+            object_name = f"files/{user['id']}/{web_id}/voice-notes/{uuid4()}_{secure_filename(file.filename)}"
+            s3_bucket.upload_file(temp_path, object_name)
+            file_url = f"https://{settings.cloudfront_domain}/{object_name}"
+
+            # transcribe audio first
+            transcript : str = openaiClient.get_audio_transcript(temp_path)
+            if not transcript:
+                raise HTTPException(status_code=500, detail="Failed to transcribe audio")
+
+            # create source with transcript as content
+            source_id = str(uuid4())
+            source_to_insert = {
+                "sourceId": source_id,
+                "webId": web_id,
+                "userId": user["id"],
+                "name": f"Voice Note - {transcript[:50]}...",  # Could be updated with first few words of transcript
+                "content": transcript,
+                "url": file_url,
+                "type": "voice_note",
+                "size": len(content),
+                "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+                "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            }
+
+            # Create Neo4j node
+            neo4jClient.create_node("source", source_to_insert)
+
+            # Update web
+            Webs.update_one(
+                {"webId": web_id, "userId": user["id"]},
+                {
+                    "$push": {"sourceIds": source_id},
+                    "$set": {"updated": datetime.now(UTC)}
+                }
+            )
+
+            # Add background task to process embeddings with the transcript
+            background_tasks.add_task(
+                sourceService.embed_and_upsert_voice_note,
+                source=source_to_insert,
+                text=transcript  # Pass transcript instead of file_path
+            )
+
+            return {"result": source_id}
+
+        except Exception as e:
+            logger.error(f"Error processing voice note: {str(e)}")
+            raise HTTPException(status_code=500, detail="Error processing voice note")
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    except Exception as e:
+        logger.error(f"Voice note upload error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

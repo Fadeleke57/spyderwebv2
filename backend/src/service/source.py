@@ -285,6 +285,34 @@ class SourceService:
             logger.error(str(e))
             return False
 
+
+    def embed_and_upsert_voice_note(self, source: Source, text: str):
+        """
+        Create embeddings for voice note transcription and store in Pinecone.
+        Following the same pattern as notes since we're dealing with text content.
+
+        Args:
+            source (Source): The source document
+            text (str): The transcribed text (similar to note content)
+        """
+        try:
+            # Use exact same chunking as notes
+            chunks = pineconeClient.chunk_clean_text(
+                text=text,
+                chunk_size=1000,
+                chunk_overlap=50
+            )
+            results = pineconeClient.embed_and_upsert_to_pinecone(
+                source=source,
+                chunks=chunks,
+                user_id=source["userId"]
+            )
+
+            logger.info(f"Pinecone results: {results}")
+        except Exception as e:
+            logger.error(f"Error processing Pinecone embeddings: {e}")
+            raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
+
     def create_onboarding_sources(
         self, web_id: str, user_id: str, background_tasks: BackgroundTasks
     ):
@@ -452,6 +480,5 @@ class SourceService:
         )
 
         return True
-
 
 service = SourceService()

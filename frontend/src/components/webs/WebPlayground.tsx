@@ -9,6 +9,7 @@ import {
   Maximize2,
   Search,
   Plus,
+  Mic,
 } from "lucide-react";
 import { Web } from "@/types/web";
 import { PublicUser } from "@/types/user";
@@ -20,6 +21,7 @@ import {
   useFetchSourcesForWeb,
   useFileUpload,
   useUploadNote,
+  useUploadVoiceNote,
 } from "@/hooks/sources";
 
 import WebDataModal from "./WebDataModal";
@@ -32,9 +34,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  DialogTrigger,
-} from "../ui/dialog";
+import { DialogTrigger } from "../ui/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -78,7 +78,7 @@ function WebPlayground({
   const [isAddSourceModalOpen, setIsAddSourceModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [webSearchModalView, setAddSourceModalView] = useState<
-    "youtube" | "website" | "default" | "note"
+    "youtube" | "website" | "default" | "note" | "voice-note"
   >("default");
   const { mutateAsync: uploadFile, isPending: isFileUploading } = useFileUpload(
     web?.webId || ""
@@ -94,6 +94,8 @@ function WebPlayground({
     isLoading: connectionsLoading,
     refetch: refetchConnections,
   } = useFetchAllConnectionsForWeb(web?.webId);
+  const { mutateAsync: uploadVoiceNote, isPending: isVoiceNoteUploading } =
+    useUploadVoiceNote(web?.webId || "");
 
   const handleDropdownOpenChange = (open: boolean) => {
     setAddIconOrientation(open ? 45 : -45);
@@ -151,7 +153,7 @@ function WebPlayground({
   };
 
   const handleDropdownButtonClick = (
-    view: "youtube" | "website" | "default" | "note"
+    view: "youtube" | "website" | "default" | "note" | "voice-note"
   ) => {
     setAddSourceModalView(view);
     setIsAddSourceModalOpen(true);
@@ -178,6 +180,25 @@ function WebPlayground({
         description: "Please try again",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleVoiceNoteUpload = async (blob: Blob) => {
+    try {
+      const sourceId = await uploadVoiceNote(blob);
+      toast({
+        title: "Voice note uploaded",
+        description: "Voice note uploaded successfully",
+        duration: 500,
+      });
+
+      refetchSources();
+      refetch();
+      setSelectedSourceId(sourceId);
+      setIsAddSourceModalOpen(false);
+      setIsWebDataModalOpen(true);
+    } catch (error) {
+      console.error("Error uploading voice note:", error);
     }
   };
 
@@ -294,6 +315,8 @@ function WebPlayground({
               handleFileUpload={handleFileUpload}
               isFileUploading={isFileUploading}
               setParseObsidianLinks={setParseObsidianLinks}
+              handleVoiceNoteUpload={handleVoiceNoteUpload}
+              isVoiceNoteUploading={isVoiceNoteUploading}
             >
               <TooltipProvider>
                 <Tooltip delayDuration={100}>
@@ -336,6 +359,7 @@ function WebPlayground({
                             <span>File</span>
                           </DropdownMenuItem>
                         </DialogTrigger>
+
                         <DropdownMenuItem
                           className="cursor-pointer"
                           onClick={() => handleCreateEmptyNote()}
@@ -351,6 +375,17 @@ function WebPlayground({
                           <DropdownMenuItem className="cursor-pointer">
                             <Youtube size={16} className="mr-2" />
                             <span>Youtube</span>
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                        <DialogTrigger
+                          asChild
+                          onClick={() =>
+                            handleDropdownButtonClick("voice-note")
+                          }
+                        >
+                          <DropdownMenuItem className="cursor-pointer">
+                            <Mic size={16} className="mr-2" />
+                            <span>Voice Note</span>
                           </DropdownMenuItem>
                         </DialogTrigger>
                       </DropdownMenuGroup>
@@ -391,6 +426,8 @@ function WebPlayground({
                   handleFileUpload={handleFileUpload}
                   isFileUploading={isFileUploading}
                   setParseObsidianLinks={setParseObsidianLinks}
+                  handleVoiceNoteUpload={handleVoiceNoteUpload}
+                  isVoiceNoteUploading={isVoiceNoteUploading}
                 >
                   <DropdownMenu onOpenChange={handleDropdownOpenChange}>
                     <DropdownMenuTrigger asChild>
@@ -443,6 +480,17 @@ function WebPlayground({
                           <DropdownMenuItem className="cursor-pointer">
                             <Youtube size={16} className="mr-2" />
                             <span>Youtube</span>
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                        <DialogTrigger
+                          asChild
+                          onClick={() =>
+                            handleDropdownButtonClick("voice-note")
+                          }
+                        >
+                          <DropdownMenuItem className="cursor-pointer">
+                            <Mic size={16} className="mr-2" />
+                            <span>Voice Note</span>
                           </DropdownMenuItem>
                         </DialogTrigger>
                       </DropdownMenuGroup>
