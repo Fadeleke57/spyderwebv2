@@ -47,30 +47,35 @@ const tabs = [
     label: "Documents",
     value: "document",
     placeholder: "Search files...",
+    emptyValue: "No documents found",
     type: "document",
   },
   {
     label: "Voice",
     value: "voice_note",
     placeholder: "Search notes...",
-    type: "voice_note",
+    emptyValue: "No voice notes found",
+    type: "voice note",
   },
   {
     label: "Links",
     value: "website",
     placeholder: "Search links...",
+    emptyValue: "No links found",
     type: "website",
   },
   {
     label: "YouTube",
     value: "youtube",
     placeholder: "Search YouTube videos...",
+    emptyValue: "No YouTube videos found",
     type: "youtube",
   },
   {
     label: "Notes",
     value: "note",
     placeholder: "Search notes...",
+    emptyValue: "No notes found",
     type: "note",
   },
 ];
@@ -97,7 +102,7 @@ function SearchSourceModal({
         ))}
       </TabsList>
 
-      {tabs.map(({ value, placeholder, type }) => (
+      {tabs.map(({ value, placeholder, type, emptyValue }) => (
         <TabsContent
           key={value}
           value={value}
@@ -110,7 +115,7 @@ function SearchSourceModal({
             />
             <CommandList className="h-[50dvh] no-scroll-bg">
               <CommandEmpty>
-                No {type.split("_").join(" ")}s found. <span>Add one?</span>
+                {emptyValue}. <span className="">Add one?</span>
               </CommandEmpty>
               <CommandGroup>
                 {sources &&
