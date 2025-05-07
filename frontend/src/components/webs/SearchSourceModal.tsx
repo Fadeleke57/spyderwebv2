@@ -110,7 +110,7 @@ function SearchSourceModal({
             />
             <CommandList className="h-[50dvh] no-scroll-bg">
               <CommandEmpty>
-                No {type}s found. <span>Add one?</span>
+                No {type.split("_").join(" ")}s found. <span>Add one?</span>
               </CommandEmpty>
               <CommandGroup>
                 {sources &&
