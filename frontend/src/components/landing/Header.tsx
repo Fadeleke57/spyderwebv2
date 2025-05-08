@@ -40,7 +40,7 @@ function Header() {
           </span>
         </h1>
         <p className="leading-7 mt-4 text-base sm:text-lg font-medium max-w-full lg:max-w-xl mx-0 text-muted-foreground dark:text-white">
-          Learn. Create. Connect. Share.{" "}
+          Intake. Create. Connect. Share.{" "}
           <span className="hidden md:inline lg:inline">
             Let AI curate your deep dives and turn them into starting points for
             discovery.
