@@ -6,6 +6,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export function useFetchUserWebs(criteria?: string) {
   return useInfiniteQuery({
@@ -319,6 +320,42 @@ export function useFetchContributers(webId: string) {
     queryFn: async () => {
       const response = await api.get(`/webs/contributers/${webId}`);
       return response.data.result;
+    },
+  });
+}
+
+export type ExportGraphPayload = {
+  webId: string;
+  selectedSources: string[];
+  asMarkdown: boolean;
+};
+
+export function useExportGraph() {
+  return useMutation({
+    mutationFn: async ({
+      webId,
+      selectedSources,
+      asMarkdown,
+    }: ExportGraphPayload) => {
+      const response = await api.post(
+        `/webs/export/graph/context`,
+        {
+          webId,
+          selectedSources,
+          asMarkdown,
+        },
+        {
+          responseType: asMarkdown ? "blob" : "json",
+        }
+      );
+      if (asMarkdown) {
+        return response.data;
+      }
+
+      return response.data.result;
+    },
+    onError: () => {
+      toast.error("Failed to export sources.");
     },
   });
 }

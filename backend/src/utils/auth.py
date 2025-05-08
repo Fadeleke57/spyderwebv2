@@ -1,5 +1,6 @@
 import random
 import string
+from src.models.index import Users, User
 
 
 def generate_username():
@@ -201,3 +202,16 @@ def generate_username():
 
     username = f"{adjective}{noun}{number}"
     return username
+
+
+def convert_to_public_user(user: User) -> User:
+
+    publicUser = {
+        "id": user["id"],
+        "username": user["username"],
+        "email": user["email"],
+        "bio": user["bio"],
+        "full_name": user["full_name"],
+    }
+
+    return publicUser

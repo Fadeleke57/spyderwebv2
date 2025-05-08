@@ -4,6 +4,7 @@ from typing import Optional
 
 Feedbacks = get_collection("feedback")
 
+
 class FeedbackPayload(BaseModel):
     rating: int
     feedbackType: str

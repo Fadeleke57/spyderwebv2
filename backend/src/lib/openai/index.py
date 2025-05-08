@@ -90,7 +90,7 @@ class OpenAIClient:
                     model="whisper-1",
                 )
                 return response.text
-        
+
         except Exception as e:
             logger.error(f"Transcription failed: {str(e)}")
             raise Exception(f"Transcription failed: {str(e)}")

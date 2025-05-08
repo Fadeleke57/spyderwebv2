@@ -144,7 +144,7 @@ function SearchSourceModal({
     return (
       <Drawer open={open} onOpenChange={setOpen}>
         <TooltipProvider>
-          <Tooltip>
+          <Tooltip delayDuration={100}>
             <TooltipTrigger asChild>
               <DrawerTrigger asChild>
                 <Button
@@ -177,7 +177,7 @@ function SearchSourceModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <TooltipProvider>
-        <Tooltip>
+        <Tooltip delayDuration={100}>
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
               <Button
