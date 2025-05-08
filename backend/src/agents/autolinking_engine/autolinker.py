@@ -2,6 +2,7 @@ from typing import Any
 from src.lib.logger.index import logger
 from src.agents.autolinking_engine.candidate_selector import CandidateSelectorAgent
 from src.agents.autolinking_engine.connection_reasoning import ConnectionReasoningAgent
+from src.agents.autolinking_engine.connection_evaluator import ConnectionEvaluatorAgent
 from src.models.index import Webs, Web, create_process, update_process
 
 
@@ -56,6 +57,7 @@ class AutoLinkerEngine:
 
             cs = CandidateSelectorAgent(webId=self.webId, sourceId=self.sourceId)
             cr = ConnectionReasoningAgent(webId=self.webId, sourceId=self.sourceId)
+            ce = ConnectionEvaluatorAgent(webId=self.webId, sourceId=self.sourceId)
 
             # for each vector in the stage, find top candidates and create candidate document, which is a dictioary containing the model source and the chosen candidates
             for index, vector in enumerate(self.vector_stage):
@@ -63,7 +65,7 @@ class AutoLinkerEngine:
 
                 # find top candidates
                 raw_candidates = cs.find_top_candidates(
-                    embedding=embedding, threshold=0.8
+                    embedding=embedding, threshold=0.7
                 )
 
                 if not raw_candidates:
@@ -74,14 +76,20 @@ class AutoLinkerEngine:
                 candidate_document = cs.create_candidate_doc(
                     raw_candidates=raw_candidates, model_candidate_metadata=metadata
                 )
+                
+                # create connections and pool to connection evaluator
+                conns = cr._create_connections_list(candidate_document)
+                for c in conns:
+                    ce.add_connection_to_stage(c)
 
-                # create relationships in neo4j
-                cr.create_relationships_in_db(candidate_document)
-                update_process(
-                    job_id=self.jobId,
-                    status="processing",
-                    percentage=round((index + 1) / len(self.vector_stage) * 100, 2),
-                )
+            # filter and create relationships in neo4j
+            ce.process_staged_connections()
+
+            update_process(
+                job_id=self.jobId,
+                status="processing",
+                percentage=round((index + 1) / len(self.vector_stage) * 100, 2),
+            )
 
         except Exception as e:
             logger.error(f"Error running AutoLinkerEngine: {e}")
