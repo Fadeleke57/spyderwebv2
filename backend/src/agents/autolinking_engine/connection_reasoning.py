@@ -138,7 +138,7 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
         4. connection description
 
         ## Style guide for `connection description`:
-        - Casual, present-tense, ~20 words, proper punctuation.
+        - Casual, present-tense, ~15 words, proper punctuation.
         - Start with the speaker or doc (“Marques says…”, “Paper X shows…”).  
         - Capture the **direction** implicitly: *the description should read naturally from the FROM doc’s perspective.*  
         - **Outgoing** example: “Marq mentions this concept → Trinetix explainer.”  

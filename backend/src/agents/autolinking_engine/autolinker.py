@@ -65,7 +65,7 @@ class AutoLinkerEngine:
 
                 # find top candidates
                 raw_candidates = cs.find_top_candidates(
-                    embedding=embedding, threshold=0.7
+                    embedding=embedding, threshold=0.8
                 )
 
                 if not raw_candidates:
