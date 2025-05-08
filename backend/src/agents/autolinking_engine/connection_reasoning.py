@@ -1,11 +1,7 @@
 import json
-from uuid import uuid4
-from pytz import UTC
-from datetime import datetime
 from src.lib.logger.index import logger
 from src.lib.gemini.index import client as geminiClient
 from src.models.index import CreateConnection
-from src.db.neo4j import client as neo4jClient
 
 
 class ConnectionReasoningAgent:  # reasons connections from selected sources and generates structured output
@@ -86,54 +82,6 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
             logger.error(f"Raw response: {response}")
             return []
 
-    def create_relationships_in_db(
-        self, candidate_document
-    ):  # use neo4j to take structured output and create relationships
-        """
-        Uses the structured output from the Gemini Model to create relationships in the database.
-
-        Args:
-            candidate_document (dict): The candidate document containing the source and its candidates.
-
-        Returns:
-            bool: True if all relationships were created successfully, False otherwise.
-
-        Raises:
-            RuntimeError: If there is an error generating content from the Gemini Model.
-        """
-        logger.info(f"Creating relationships...")
-        connections: list[CreateConnection] = self._create_connections_list(
-            candidate_document
-        )
-        for c in connections:
-            c["connectionId"] = str(uuid4())
-            c["webId"] = self.webId
-            c["fromSourceId"] = self.sourceId
-            c["created"] = datetime.now(UTC)
-            c["updated"] = datetime.now(UTC)
-            c["aiGenerated"] = True
-
-        num_created = 0
-        num_errors = 0
-
-        for connection in connections:
-            try:
-                s = neo4jClient.create_connection_between_sources(
-                    start_node_id=self.sourceId,
-                    end_node_id=connection["toSourceId"],
-                    properties=connection,
-                )
-                if s:
-                    num_created += 1
-                else:
-                    num_errors += 1
-            except Exception as e:
-                num_errors += 1
-                logger.error(f"Error creating relationship: {e}. Skipping...")
-                continue
-
-        logger.info(f"Created {num_created} connections with {num_errors} errors")
-        return True
 
     def _generate_prompt(self, candidate_document):
         """
@@ -143,8 +91,8 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
         GEMINI_CONNECTION_REASONING_PROMPT = f"""You are Charlotte, an advanced knowledge graph connection reasoning agent operating at an expert cognitive level. Your task is to discover profound, non-trivial connections between documents in a user's knowledge web that might not be immediately obvious.
 
         Input Context:
-        - Primary Document: {candidate_document["model_candidate"]}
-        - Potential Connection Documents: {candidate_document["candidates_to_link"]}
+        - Primary Document (FROM): {candidate_document["model_candidate"]}
+        - Potential Connection Documents (TO): {candidate_document["candidates_to_link"]}
         - Knowledge Web ID: {self.webId}
         - Previously Mapped Connections: {self.staged_connections}
         - Source ID: {self.sourceId}
@@ -178,22 +126,24 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
         • Prioritize precision over quantity
 
         Location-Specific References:
-        • For videos: Convert timestamps to MM:SS format
+        • For videos: Convert timestamps to <a href="URL&t=TIME_IN_SECONDS" target="_blank">MM:SS</a> format
         • For documents: Reference specific page numbers, sections, or paragraphs
         • For websites: Reference specific headings or content sections
-
-        Language Style Guide:
-        • Write as a knowledgeable human would, not an algorithm
-        • Use domain-appropriate terminology
-        • Be specific about conceptual relationships
-        • Articulate the intellectual value of each connection
 
         Output Format:
         Structured JSON matching the CreateConnection model with:
         1. fromSourceId (provided)
         2. toSourceId (from candidates. ALWAYS REFER TO "sourceId" on the object)
         3. webId (provided)
-        4. metadata (containing your connection description)
+        4. connection description
+
+        ## Style guide for `connection description`:
+        - Casual, present-tense, ~15 words, proper punctuation.
+        - Start with the speaker or doc (“Marques says…”, “Paper X shows…”).  
+        - Capture the **direction** implicitly: *the description should read naturally from the FROM doc’s perspective.*  
+        - **Outgoing** example: “Marq mentions this concept → Trinetix explainer.”  
+        - **Incoming** example: “Verge review slams it as half-baked.”  
+        - No IDs, no quotation marks unless they are real quotes, no boilerplate.
 
         Before finalizing each connection, verify it meets these criteria:
         1. Would a subject matter expert find this connection insightful?

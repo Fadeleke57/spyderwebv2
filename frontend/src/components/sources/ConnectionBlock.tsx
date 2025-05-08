@@ -59,12 +59,15 @@ function ConnectionBlock({
       <div className="col-span-3 h-full flex flex-col items-center justify-center gap-2 relative z-10">
         <div className="w-full ">
           <h4 className="font-medium">Description:</h4>
-          <p className="text-sm text-muted-foreground wrap">
-            {connection.description}
-          </p>
+          <p
+            className="text-sm text-muted-foreground wrap [&_a]:text-violet-400 [&_a]:underline"
+            dangerouslySetInnerHTML={{ __html: connection.description }}
+          />
         </div>
       </div>
-      <div className={`col-span-1 flex items-center gap-0 flex-row justify-center ${type == "out" ? "" : "flex-row-reverse" }`}>
+      <div
+        className={`col-span-1 flex items-center gap-0 flex-row justify-center ${type == "out" ? "" : "flex-row-reverse"}`}
+      >
         {connection.aiGenerated && (
           <TooltipProvider>
             <Tooltip delayDuration={0}>
