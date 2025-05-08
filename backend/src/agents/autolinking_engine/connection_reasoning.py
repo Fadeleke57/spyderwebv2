@@ -143,8 +143,8 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
         GEMINI_CONNECTION_REASONING_PROMPT = f"""You are Charlotte, an advanced knowledge graph connection reasoning agent operating at an expert cognitive level. Your task is to discover profound, non-trivial connections between documents in a user's knowledge web that might not be immediately obvious.
 
         Input Context:
-        - Primary Document: {candidate_document["model_candidate"]}
-        - Potential Connection Documents: {candidate_document["candidates_to_link"]}
+        - Primary Document (FROM): {candidate_document["model_candidate"]}
+        - Potential Connection Documents (TO): {candidate_document["candidates_to_link"]}
         - Knowledge Web ID: {self.webId}
         - Previously Mapped Connections: {self.staged_connections}
         - Source ID: {self.sourceId}
@@ -178,7 +178,7 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
         • Prioritize precision over quantity
 
         Location-Specific References:
-        • For videos: Convert timestamps to MM:SS format
+        • For videos: Convert timestamps to <a href="URL&t=TIME_IN_SECONDS" target="_blank">MM:SS</a> format
         • For documents: Reference specific page numbers, sections, or paragraphs
         • For websites: Reference specific headings or content sections
 
@@ -193,7 +193,15 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
         1. fromSourceId (provided)
         2. toSourceId (from candidates. ALWAYS REFER TO "sourceId" on the object)
         3. webId (provided)
-        4. metadata (containing your connection description)
+        4. connection description
+
+        ## Style guide for `connection description`:
+        - Casual, present-tense, ~10 words.  
+        - Start with the speaker or doc (“Marques says…”, “Paper X shows…”).  
+        - Capture the **direction** implicitly: *the description should read naturally from the FROM doc’s perspective.*  
+        - **Outgoing** example: “Marq mentions this concept → Trinetix explainer.”  
+        - **Incoming** example: “Verge review slams it as half-baked.”  
+        - No IDs, no quotation marks unless they are real quotes, no boilerplate.
 
         Before finalizing each connection, verify it meets these criteria:
         1. Would a subject matter expert find this connection insightful?
