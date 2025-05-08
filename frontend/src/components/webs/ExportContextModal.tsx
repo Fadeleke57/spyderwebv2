@@ -25,7 +25,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { ExportGraphPayload, useExportGraph } from "@/hooks/webs";
+import {
+  ExportGraphPayload,
+  useExportGraph,
+  useFetchWebById,
+} from "@/hooks/webs";
 import { toast } from "sonner";
 import { useRouter } from "next/router";
 import {
@@ -51,6 +55,11 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
   const router = useRouter();
 
   const { webId } = router.query;
+  const {
+    data: web,
+    isLoading: webLoading,
+    error: webError,
+  } = useFetchWebById(webId as string);
 
   const [exportConfig, setExportConfig] = React.useState<ExportGraphPayload>({
     webId: webId as string,
@@ -73,7 +82,9 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
         const url = window.URL.createObjectURL(result);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `context_${webId}.md`;
+        a.download = web
+          ? `${web.name.slice(0, 40)}.md`
+          : `context_${webId}.md`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -300,7 +311,7 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
         <DialogDescription>
           Export context to use with any llm.
         </DialogDescription>
-        <Separator className="my-2" />
+        <Separator />
         {content}
       </DialogContent>
     </Dialog>

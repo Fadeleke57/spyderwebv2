@@ -801,7 +801,7 @@ def export_graph_context(payload: ExportGraphContext, user=Depends(manager)):
             markdown_content = f"# {web['name']}\n\n {json.dumps(result, indent=2)}"
 
             file_stream = io.StringIO(markdown_content)
-            filename = f"context_{payload.webId}.md"
+            filename = f"{web['name'][:40]}.md"
 
             return StreamingResponse(
                 iter([file_stream.getvalue()]),

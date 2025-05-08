@@ -430,7 +430,7 @@ class Neo4jDBService:
         MATCH (src:source)
         WHERE src.webId=$webId AND src.sourceId IN $selectedNodes
         RETURN 
-        {name: src.name, content: src.content} AS src
+        {name: src.name, content: src.content, type: src.type} AS src
         """
         records = self.execute_query(query, params)
         result = [record["src"] for record in records]
