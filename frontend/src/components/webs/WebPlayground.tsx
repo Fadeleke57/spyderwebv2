@@ -46,6 +46,7 @@ import { toast } from "../ui/use-toast";
 import ProcessModal from "@/components/webs/ProcessModal";
 import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
 import SearchSourceModal from "./SearchSourceModal";
+import ExportContextModal from "./ExportContextModal";
 
 const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
 
@@ -68,6 +69,8 @@ function WebPlayground({
     description: web?.description || "",
   });
   const [searchDialogOpen, setSearchDialogOpen] = useState<boolean>(false);
+  const [exportContextModalOpen, setExportContextModalOpen] =
+    useState<boolean>(false);
   const [parseObsidianLinks, setParseObsidianLinks] = useState<boolean>(false);
   const [addIconOrientation, setAddIconOrientation] = useState<number>(0);
   const [proccessModalOpen, setProcessModalOpen] = useState<boolean>(false);
@@ -286,12 +289,19 @@ function WebPlayground({
           </TooltipProvider>
 
           {fetchedSources && (
-            <SearchSourceModal
-              open={searchDialogOpen}
-              setOpen={setSearchDialogOpen}
-              sources={fetchedSources}
-              handleSourceClick={handleSourceClick}
-            ></SearchSourceModal>
+            <div className="flex gap-2 items-center">
+              <SearchSourceModal
+                open={searchDialogOpen}
+                setOpen={setSearchDialogOpen}
+                sources={fetchedSources}
+                handleSourceClick={handleSourceClick}
+              ></SearchSourceModal>
+              <ExportContextModal
+                open={exportContextModalOpen}
+                setOpen={setExportContextModalOpen}
+                sources={fetchedSources}
+              />
+            </div>
           )}
         </div>
         {isOwner &&

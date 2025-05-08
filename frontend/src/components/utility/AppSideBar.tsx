@@ -292,7 +292,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 computationLimit={usage?.computation.limit || 0}
               />
             )}
-            {usageError && <div>Something went wrong</div>}
+            {usageError && <div className="p-2 text-sm bg-red-500/80 rounded-lg flex items-center justify-center">Something went wrong</div>}
           </div>
         )}
         <NavUser />

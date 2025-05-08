@@ -8,6 +8,7 @@ from src.models.index import FeedbackPayload, Feedbacks
 
 router = APIRouter()
 
+
 @router.post("/")
 async def feedback(feedbackPayload: FeedbackPayload):
     toInsert = feedbackPayload.model_dump()

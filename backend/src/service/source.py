@@ -285,7 +285,6 @@ class SourceService:
             logger.error(str(e))
             return False
 
-
     def embed_and_upsert_voice_note(self, source: Source, text: str):
         """
         Create embeddings for voice note transcription and store in Pinecone.
@@ -296,16 +295,12 @@ class SourceService:
             text (str): The transcribed text (similar to note content)
         """
         try:
-            # Use exact same chunking as notes
+            # same chunking as notes
             chunks = pineconeClient.chunk_clean_text(
-                text=text,
-                chunk_size=1000,
-                chunk_overlap=50
+                text=text, chunk_size=1000, chunk_overlap=50
             )
             results = pineconeClient.embed_and_upsert_to_pinecone(
-                source=source,
-                chunks=chunks,
-                user_id=source["userId"]
+                source=source, chunks=chunks, user_id=source["userId"]
             )
 
             logger.info(f"Pinecone results: {results}")
@@ -480,5 +475,6 @@ class SourceService:
         )
 
         return True
+
 
 service = SourceService()

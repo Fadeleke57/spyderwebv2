@@ -86,7 +86,7 @@ class PineconeClient:
                 "text": chunk,
                 "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             }
-        
+
         elif type == "voice_note":
 
             metadata = {

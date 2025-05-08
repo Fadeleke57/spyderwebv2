@@ -673,7 +673,7 @@ async def upload_voice_note(
     web_id: str,
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    user=Depends(manager)
+    user=Depends(manager),
 ):
     """
     Upload a voice note, transcribe it, and create a source.
@@ -691,7 +691,7 @@ async def upload_voice_note(
     try:
         temp_dir = tempfile.gettempdir()
         temp_path = os.path.join(temp_dir, f"{uuid4()}_{file.filename}")
-        
+
         content = await file.read()
         with open(temp_path, "wb") as buffer:
             buffer.write(content)
@@ -703,9 +703,11 @@ async def upload_voice_note(
             file_url = f"https://{settings.cloudfront_domain}/{object_name}"
 
             # transcribe audio first
-            transcript : str = openaiClient.get_audio_transcript(temp_path)
+            transcript: str = openaiClient.get_audio_transcript(temp_path)
             if not transcript:
-                raise HTTPException(status_code=500, detail="Failed to transcribe audio")
+                raise HTTPException(
+                    status_code=500, detail="Failed to transcribe audio"
+                )
 
             # create source with transcript as content
             source_id = str(uuid4())
@@ -730,15 +732,15 @@ async def upload_voice_note(
                 {"webId": web_id, "userId": user["id"]},
                 {
                     "$push": {"sourceIds": source_id},
-                    "$set": {"updated": datetime.now(UTC)}
-                }
+                    "$set": {"updated": datetime.now(UTC)},
+                },
             )
 
             # Add background task to process embeddings with the transcript
             background_tasks.add_task(
                 sourceService.embed_and_upsert_voice_note,
                 source=source_to_insert,
-                text=transcript  # Pass transcript instead of file_path
+                text=transcript,  # Pass transcript instead of file_path
             )
 
             return {"result": source_id}

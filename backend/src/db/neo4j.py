@@ -401,6 +401,42 @@ class Neo4jDBService:
         self.execute_query(query, {"source_id": source_id})
         return True
 
+    def retreive_graph(
+        self, webId: str, selectedNodes: List[str]
+    ) -> List[Dict[str, Any]]:
+        params = {
+            "webId": webId,
+            "selectedNodes": selectedNodes,
+        }
+
+        #        if withConnections:
+
+        #           query = """
+        #           MATCH (src:source)
+        #           WHERE src.webId=$webId AND src.sourceId IN $selectedNodes
+        #           OPTIONAL MATCH (src)-[conn:connection]-(dst:source)
+        #           WHERE conn.webId=$webId AND (dst.webId=$webId AND dst.sourceId IN $selectedNodes)
+        #           RETURN
+        #           {name: src.name, content: src.content} AS src,
+        #           {description: conn.description} AS conn,
+        #           {name: dst.name, content: dst.content} AS dst
+        #            """
+        #            records = self.execute_query(query, params)
+        #            result = [
+        #                (record["src"], record["conn"], record["dst"]) for record in records
+        #            ]
+
+        query = """
+        MATCH (src:source)
+        WHERE src.webId=$webId AND src.sourceId IN $selectedNodes
+        RETURN 
+        {name: src.name, content: src.content} AS src
+        """
+        records = self.execute_query(query, params)
+        result = [record["src"] for record in records]
+
+        return result
+
     def copy_sources_to_new_web(
         self,
         original_web_id: str,
