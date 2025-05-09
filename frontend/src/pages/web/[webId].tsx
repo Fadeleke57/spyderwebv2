@@ -218,7 +218,7 @@ function Index() {
               </TooltipProvider>
             )}
             {web && <MobileWebView web={web} user={user || null} />}
-            {webOwner?.id === user?.id && (
+            {webOwner && user && webOwner.id === user.id && (
               <Button
                 size="sm"
                 variant={"outline"}
