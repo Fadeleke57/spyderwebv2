@@ -32,9 +32,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  DialogTrigger,
-} from "../ui/dialog";
+import { DialogTrigger } from "../ui/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -148,6 +146,15 @@ function WebPlayground({
     setSelectedSourceId(sourceId);
     setIsWebDataModalOpen(true);
     setSearchDialogOpen(false);
+  };
+
+  const handleSourceChange = (newSourceId: string) => {
+    console.log("handle source change has been called");
+    setSelectedSourceId(newSourceId);
+    setIsWebDataModalOpen(true);
+    refetchSources();
+    refetchConnections();
+    refetch();
   };
 
   const handleDropdownButtonClick = (
@@ -480,6 +487,7 @@ function WebPlayground({
             setOpen={setIsWebDataModalOpen}
             sourceId={selectedSourceId}
             webId={web.webId}
+            onSourceChange={handleSourceChange}
           />
         )}
         {proccessModalOpen && web?.webId && (

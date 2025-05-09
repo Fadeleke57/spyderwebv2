@@ -588,6 +588,10 @@ function WebGraph({
           open={isDrawerOpen}
           setOpen={setDrawerOpen}
           webId={webId}
+          onSourceChange={(newSourceId) => {
+            setSelectedSourceId(newSourceId);
+            refetchSources();
+          }}
         />
       )}
       <div className="absolute bottom-4 right-4">

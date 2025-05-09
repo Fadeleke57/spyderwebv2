@@ -167,9 +167,10 @@ export const useFetchSource = (sourceId: string, contextId?: string) => {
       const response = await api.get(`/sources/${sourceId}`);
       return response.data;
     },
-    staleTime: 60000, //1 minute stale time
+    staleTime: 0, // Change this to 0 to always refetch
     retry: 2,
     enabled: !!sourceId,
+    refetchOnMount: true, // Add this to ensure refetch on mount
   });
 };
 

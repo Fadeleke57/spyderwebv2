@@ -15,10 +15,12 @@ function ConnectionBlock({
   connection,
   type,
   isOwner,
+  onSourceClick,
 }: {
   connection: Connection;
   type: string;
   isOwner: boolean;
+  onSourceClick: (sourceId: string) => void;
 }) {
   const [deleted, setDeleted] = useState(false);
 
@@ -47,6 +49,16 @@ function ConnectionBlock({
 
   if (deleted) return null;
 
+  const handleSourceClick = () => {
+    console.log("Connection block source clicked");
+    console.log(
+      type === "out" ? connection.toSourceId : connection.fromSourceId
+    );
+    onSourceClick(
+      type === "out" ? connection.toSourceId : connection.fromSourceId
+    );
+  };
+
   return (
     <div className="border relative grid grid-cols-6 gap-4 rounded-lg p-2">
       {isOwner && (
@@ -57,14 +69,16 @@ function ConnectionBlock({
         />
       )}
       <div className="col-span-3 h-full flex flex-col items-center justify-center gap-2 relative z-10">
-        <div className="w-full ">
+        <div className="w-full">
           <h4 className="font-medium">Description:</h4>
           <p className="text-sm text-muted-foreground wrap">
             {connection.description}
           </p>
         </div>
       </div>
-      <div className={`col-span-1 flex items-center gap-0 flex-row justify-center ${type == "out" ? "" : "flex-row-reverse" }`}>
+      <div
+        className={`col-span-1 flex items-center gap-0 flex-row justify-center ${type == "out" ? "" : "flex-row-reverse"}`}
+      >
         {connection.aiGenerated && (
           <TooltipProvider>
             <Tooltip delayDuration={0}>
@@ -90,7 +104,10 @@ function ConnectionBlock({
         )}
       </div>
 
-      <div className="col-span-2 space-y-2 rounded-lg p-2">
+      <div
+        className="col-span-2 space-y-2 rounded-lg p-2 cursor-pointer hover:bg-muted/50"
+        onClick={handleSourceClick}
+      >
         {toLoading ? (
           <div className="flex items-center justify-center h-full">
             <Skeleton className="h-16 w-full rounded-xl" />

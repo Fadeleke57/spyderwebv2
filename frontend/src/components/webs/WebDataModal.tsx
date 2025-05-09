@@ -27,6 +27,7 @@ interface WebDataDrawerProps {
   setOpen: (open: boolean) => void;
   sourceId: string;
   webId: string;
+  onSourceChange: (newSourceId: string) => void;
 }
 
 export default function WebDataModal({
@@ -34,9 +35,14 @@ export default function WebDataModal({
   setOpen,
   sourceId,
   webId,
+  onSourceChange,
 }: WebDataDrawerProps) {
   const { user } = useUser();
-  const { data: sourceData, refetch: refetchSource } = useFetchSource(sourceId);
+  const {
+    data: sourceData,
+    refetch: refetchSource,
+    isLoading: isSourceLoading,
+  } = useFetchSource(sourceId);
   const { mutateAsync: editSourceTitle } = useEditSourceTitle(sourceId);
 
   const [source, setSource] = useState<SourceAsNode | null>(null);
@@ -47,6 +53,20 @@ export default function WebDataModal({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!sourceId) return;
+
+    // Clear the state
+    setIsLoading(true);
+    setTitle("");
+    setContent("");
+    setPresignedUrl("");
+    setSource(null);
+
+    // Force a refetch of the new source
+    refetchSource();
+  }, [sourceId]);
+
+  useEffect(() => {
     if (!sourceData) return;
     setSource(sourceData.result);
     setTitle(sourceData.result.name);
@@ -54,6 +74,7 @@ export default function WebDataModal({
     setPresignedUrl(sourceData.file_url);
     setIsLoading(false);
   }, [sourceData]);
+
   const isOwner = (source?.userId && user?.id) === source?.userId;
 
   const handleNewTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -152,9 +173,23 @@ export default function WebDataModal({
     setIsLoading(true);
   };
 
+  const handleConnectionSourceClick = (clickedSourceId: string) => {
+    // Just call onSourceChange directly
+    console.log("web data modal connection source clicked");
+    console.log(clickedSourceId);
+    onSourceChange(clickedSourceId);
+  };
+
   return (
     <div className="grid grid-cols-2 gap-2">
-      <Dialog open={open} onOpenChange={handleClose}>
+      <Dialog
+        open={open}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            handleClose();
+          }
+        }}
+      >
         <DialogClose onClick={handleClose} className="absolute right-4 top-10">
           <ArrowLeft></ArrowLeft>
         </DialogClose>
@@ -296,6 +331,7 @@ export default function WebDataModal({
               webId={webId}
               sourceId={sourceId}
               isOwner={isOwner}
+              onSourceClick={handleConnectionSourceClick}
             ></ConnectionsConfig>
           </div>
         </DialogContent>
