@@ -138,7 +138,7 @@ function ConnectionBlock({
         ) : (
           <div className="break-words">
             <h4 className="font-medium text-sm mb-1">
-              {type == "out" ? "Connecting to:" : "From:"}
+              {type == "out" ? "Connecting to:" : "Connecting from:"}
             </h4>
             <p className="text-sm text-violet-400">
               {type == "out" ? toSource.result.name : fromSource.result.name}

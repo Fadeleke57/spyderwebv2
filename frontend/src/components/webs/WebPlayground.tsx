@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { useSourceStore } from "@/store/sourceStore";
 import {
   Link,
   File,
@@ -7,7 +8,6 @@ import {
   Youtube,
   Minimize2,
   Maximize2,
-  Search,
   Plus,
   Mic,
 } from "lucide-react";
@@ -59,23 +59,31 @@ function WebPlayground({
   user: PublicUser | null;
   refetch: () => void;
 }) {
+  const { selectedSourceId, setSelectedSourceId } = useSourceStore();
+  const isOwner = user && web && user.id === web.userId;
+
   const {
     mutateAsync: uploadNote,
     isPending,
     error,
-  } = useUploadNote(web?.webId);
+  } = useUploadNote(web.webId);
+
   const [config, setConfig] = useState<CreateWeb>({
-    title: web?.name || "",
-    description: web?.description || "",
+    title: web.name || "",
+    description: web.description || "",
   });
+
+  const { mutateAsync: uploadFile, isPending: isFileUploading } = useFileUpload(
+    web.webId || ""
+  );
+
   const [searchDialogOpen, setSearchDialogOpen] = useState<boolean>(false);
   const [exportContextModalOpen, setExportContextModalOpen] =
     useState<boolean>(false);
   const [parseObsidianLinks, setParseObsidianLinks] = useState<boolean>(false);
   const [addIconOrientation, setAddIconOrientation] = useState<number>(0);
   const [proccessModalOpen, setProcessModalOpen] = useState<boolean>(false);
-  const isOwner = user && user?.id === web?.userId;
-  const [selectedSourceId, setSelectedSourceId] = useState<string>("");
+
   const [fetchedSources, setFetchedSources] = useState<Source[]>([]);
   const [isWebDataModalOpen, setIsWebDataModalOpen] = useState(false);
   const [isAddSourceModalOpen, setIsAddSourceModalOpen] = useState(false);
@@ -83,20 +91,20 @@ function WebPlayground({
   const [webSearchModalView, setAddSourceModalView] = useState<
     "youtube" | "website" | "default" | "note" | "voice-note"
   >("default");
-  const { mutateAsync: uploadFile, isPending: isFileUploading } = useFileUpload(
-    web?.webId || ""
-  );
+
   const {
     data: sources,
     isLoading: sourcesLoading,
     error: sourcesError,
     refetch: refetchSources,
   } = useFetchSourcesForWeb(web?.webId);
+
   const {
     data: connections,
     isLoading: connectionsLoading,
     refetch: refetchConnections,
   } = useFetchAllConnectionsForWeb(web?.webId);
+
   const { mutateAsync: uploadVoiceNote, isPending: isVoiceNoteUploading } =
     useUploadVoiceNote(web?.webId || "");
 
@@ -262,7 +270,7 @@ function WebPlayground({
             variant="outline"
             className={`border dark:border-violet-400/70`}
           >
-            {web?.sourceIds?.length || 0} sources added
+            {(web.sourceIds && web.sourceIds.length) || 0} sources added
           </Badge>
         </div>
 
@@ -314,112 +322,111 @@ function WebPlayground({
           )}
         </div>
         {isOwner &&
-        (web?.sourceIds?.length === undefined ||
-          web?.sourceIds?.length === null ||
-          web?.sourceIds?.length > 0) ? (
-          <div
-            className={`absolute ${isExpanded ? "right-6" : "right-3"} top-12`}
-          >
-            <AddSourceModal
-              open={isAddSourceModalOpen}
-              setOpen={setIsAddSourceModalOpen}
-              setIsWebDataModalOpen={setIsWebDataModalOpen}
-              setSelectedSourceId={setSelectedSourceId}
-              web={web}
-              config={config}
-              setConfig={setConfig}
-              refreshSources={refetchSources}
-              refreshWeb={refetch}
-              view={webSearchModalView}
-              handleFileUpload={handleFileUpload}
-              isFileUploading={isFileUploading}
-              setParseObsidianLinks={setParseObsidianLinks}
-              handleVoiceNoteUpload={handleVoiceNoteUpload}
-              isVoiceNoteUploading={isVoiceNoteUploading}
+          (web.sourceIds?.length === undefined ||
+            web.sourceIds?.length === null ||
+            web.sourceIds?.length > 0) && (
+            <div
+              className={`absolute ${isExpanded ? "right-6" : "right-3"} top-12`}
             >
-              <TooltipProvider>
-                <Tooltip delayDuration={100}>
-                  <DropdownMenu onOpenChange={handleDropdownOpenChange}>
-                    <TooltipTrigger>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size={"icon"}
-                          className="dark:bg-violet-400/80 dark:hover:bg-violet-400 rounded-full p-1 h-fit w-fit"
-                        >
-                          <Plus
-                            strokeWidth={3}
-                            size={16}
-                            className={`rotate-${addIconOrientation} transition-transform ease-in-out duration-300`}
-                          />
-                        </Button>
-                      </DropdownMenuTrigger>
-                    </TooltipTrigger>
-                    <DropdownMenuContent
-                      side="left"
-                      sideOffset={5}
-                      className="w-40 right-0"
-                    >
-                      <DropdownMenuGroup>
-                        <DialogTrigger
-                          asChild
-                          onClick={() => handleDropdownButtonClick("website")}
-                        >
-                          <DropdownMenuItem className="cursor-pointer">
-                            <Link size={16} className="mr-2" />
-                            <span>Website</span>
-                          </DropdownMenuItem>
-                        </DialogTrigger>
-                        <DialogTrigger
-                          asChild
-                          onClick={() => handleDropdownButtonClick("default")}
-                        >
-                          <DropdownMenuItem className="cursor-pointer">
-                            <File size={16} className="mr-2" />
-                            <span>File</span>
-                          </DropdownMenuItem>
-                        </DialogTrigger>
+              <AddSourceModal
+                open={isAddSourceModalOpen}
+                setOpen={setIsAddSourceModalOpen}
+                setIsWebDataModalOpen={setIsWebDataModalOpen}
+                web={web}
+                config={config}
+                setConfig={setConfig}
+                refreshSources={refetchSources}
+                refreshWeb={refetch}
+                view={webSearchModalView}
+                handleFileUpload={handleFileUpload}
+                isFileUploading={isFileUploading}
+                setParseObsidianLinks={setParseObsidianLinks}
+                handleVoiceNoteUpload={handleVoiceNoteUpload}
+                isVoiceNoteUploading={isVoiceNoteUploading}
+              >
+                <TooltipProvider>
+                  <Tooltip delayDuration={100}>
+                    <DropdownMenu onOpenChange={handleDropdownOpenChange}>
+                      <TooltipTrigger>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size={"icon"}
+                            className="dark:bg-violet-400/80 dark:hover:bg-violet-400 rounded-full p-1 h-fit w-fit"
+                          >
+                            <Plus
+                              strokeWidth={3}
+                              size={16}
+                              className={`rotate-${addIconOrientation} transition-transform ease-in-out duration-300`}
+                            />
+                          </Button>
+                        </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <DropdownMenuContent
+                        side="left"
+                        sideOffset={5}
+                        className="w-40 right-0"
+                      >
+                        <DropdownMenuGroup>
+                          <DialogTrigger
+                            asChild
+                            onClick={() => handleDropdownButtonClick("website")}
+                          >
+                            <DropdownMenuItem className="cursor-pointer">
+                              <Link size={16} className="mr-2" />
+                              <span>Website</span>
+                            </DropdownMenuItem>
+                          </DialogTrigger>
+                          <DialogTrigger
+                            asChild
+                            onClick={() => handleDropdownButtonClick("default")}
+                          >
+                            <DropdownMenuItem className="cursor-pointer">
+                              <File size={16} className="mr-2" />
+                              <span>File</span>
+                            </DropdownMenuItem>
+                          </DialogTrigger>
 
-                        <DropdownMenuItem
-                          className="cursor-pointer"
-                          onClick={() => handleCreateEmptyNote()}
-                        >
-                          <Notebook size={16} className="mr-2" />
-                          <span>Note</span>
-                        </DropdownMenuItem>
-
-                        <DialogTrigger
-                          asChild
-                          onClick={() => handleDropdownButtonClick("youtube")}
-                        >
-                          <DropdownMenuItem className="cursor-pointer">
-                            <Youtube size={16} className="mr-2" />
-                            <span>Youtube</span>
+                          <DropdownMenuItem
+                            className="cursor-pointer"
+                            onClick={() => handleCreateEmptyNote()}
+                          >
+                            <Notebook size={16} className="mr-2" />
+                            <span>Note</span>
                           </DropdownMenuItem>
-                        </DialogTrigger>
-                        <DialogTrigger
-                          asChild
-                          onClick={() =>
-                            handleDropdownButtonClick("voice-note")
-                          }
-                        >
-                          <DropdownMenuItem className="cursor-pointer">
-                            <Mic size={16} className="mr-2" />
-                            <span>Voice Note</span>
-                          </DropdownMenuItem>
-                        </DialogTrigger>
-                      </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
 
-                  <TooltipContent>Add source</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>{" "}
-            </AddSourceModal>
-          </div>
-        ) : null}
+                          <DialogTrigger
+                            asChild
+                            onClick={() => handleDropdownButtonClick("youtube")}
+                          >
+                            <DropdownMenuItem className="cursor-pointer">
+                              <Youtube size={16} className="mr-2" />
+                              <span>Youtube</span>
+                            </DropdownMenuItem>
+                          </DialogTrigger>
+                          <DialogTrigger
+                            asChild
+                            onClick={() =>
+                              handleDropdownButtonClick("voice-note")
+                            }
+                          >
+                            <DropdownMenuItem className="cursor-pointer">
+                              <Mic size={16} className="mr-2" />
+                              <span>Voice Note</span>
+                            </DropdownMenuItem>
+                          </DialogTrigger>
+                        </DropdownMenuGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    <TooltipContent>Add source</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>{" "}
+              </AddSourceModal>
+            </div>
+          )}
         {isOwner &&
-          web?.sourceIds &&
-          web?.sourceIds?.length === 0 &&
+          web.sourceIds &&
+          web.sourceIds.length === 0 &&
           !isFileUploading && (
             <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/4 flex flex-col items-center gap-1 text-center min-w-[300px]">
               <h3 className="text-2xl font-bold tracking-tight">
@@ -434,7 +441,6 @@ function WebPlayground({
                 <AddSourceModal
                   open={isAddSourceModalOpen}
                   setOpen={setIsAddSourceModalOpen}
-                  setSelectedSourceId={setSelectedSourceId}
                   setIsWebDataModalOpen={setIsWebDataModalOpen}
                   web={web}
                   config={config}
@@ -530,8 +536,6 @@ function WebPlayground({
           refetchSources={refetchSources}
           refetchWeb={refetch}
           sourcesLoading={sourcesLoading}
-          selectedSourceId={selectedSourceId}
-          setSelectedSourceId={setSelectedSourceId}
           handleFileUpload={handleFileUpload}
           isFileUploading={isFileUploading}
           connections={connections}
@@ -541,7 +545,7 @@ function WebPlayground({
         <div className="absolute bottom-8 left-6">
           <div className="flex w-fit rounded-full flex-col pt-0"></div>
         </div>
-        {isWebDataModalOpen && selectedSourceId && web?.webId && (
+        {isWebDataModalOpen && selectedSourceId && (
           <WebDataModal
             open={isWebDataModalOpen}
             setOpen={setIsWebDataModalOpen}
@@ -550,7 +554,7 @@ function WebPlayground({
             onSourceChange={handleSourceChange}
           />
         )}
-        {proccessModalOpen && web?.webId && (
+        {proccessModalOpen && (
           <ProcessModal
             refetchWeb={refetch}
             refetchSources={refetchSources}

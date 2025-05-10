@@ -21,6 +21,7 @@ import {
 import { Drawer, DrawerContent, DrawerHeader } from "../ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "../ui/skeleton";
+import { useSourceStore } from "@/store/sourceStore";
 
 type AddSourceModalProps = {
   open: boolean;
@@ -32,7 +33,6 @@ type AddSourceModalProps = {
   refreshWeb: () => void;
   view?: string;
   setIsWebDataModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setSelectedSourceId: React.Dispatch<React.SetStateAction<string>>;
   handleFileUpload: (files: FileList | null) => void;
   isFileUploading: boolean;
   setParseObsidianLinks: React.Dispatch<React.SetStateAction<boolean>>;
@@ -50,13 +50,14 @@ export default function AddSourceModal({
   refreshSources,
   refreshWeb,
   setIsWebDataModalOpen,
-  setSelectedSourceId,
   handleFileUpload,
   isFileUploading,
   setParseObsidianLinks,
   handleVoiceNoteUpload,
   isVoiceNoteUploading,
 }: AddSourceModalProps) {
+  const { setSelectedSourceId } = useSourceStore();
+
   const isMobile = useIsMobile();
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");

@@ -57,6 +57,7 @@ function Index() {
   );
   const [showIterateModal, setShowIterateModal] = React.useState(false);
   const [authModalOpen, setAuthModalOpen] = React.useState(false);
+  
   useEffect(() => {
     if (webData) {
       setWeb(webData);

@@ -25,6 +25,7 @@ import {
 import SourceTooltip from "./SourceToolTip";
 import { Connection } from "@/types/connection";
 import SpydrAI from "../utility/Assistant";
+import { useSourceStore } from "@/store/sourceStore";
 
 interface GraphProps {
   isOwner: boolean;
@@ -36,8 +37,6 @@ interface GraphProps {
   refetchWeb: () => void;
   setFetchedSources: Dispatch<SetStateAction<Source[]>>;
   sourcesLoading: boolean;
-  selectedSourceId: string | null;
-  setSelectedSourceId: Dispatch<SetStateAction<string>>;
   handleFileUpload: (files: FileList | null) => void;
   isFileUploading: boolean;
   connections: Connection[];
@@ -54,14 +53,14 @@ function WebGraph({
   refetchWeb,
   setFetchedSources,
   sourcesLoading,
-  selectedSourceId,
-  setSelectedSourceId,
   handleFileUpload,
   isFileUploading,
   connections,
   connectionsLoading,
   refetchConnections,
 }: GraphProps) {
+  const { selectedSourceId, setSelectedSourceId } = useSourceStore();
+
   const [isDragging, setIsDragging] = useState(false);
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
