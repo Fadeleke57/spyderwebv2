@@ -2,7 +2,7 @@ import { useFetchSource } from "@/hooks/sources";
 import { Connection } from "@/types/connection";
 import React, { useState } from "react";
 import { Skeleton } from "../ui/skeleton";
-import { ArrowLeft, ArrowRight, Sparkles, Trash } from "lucide-react";
+import { ArrowLeft, ArrowRight, Cable, Sparkles, Trash } from "lucide-react";
 import { useDeleteConnection } from "@/hooks/connections";
 import {
   Tooltip,
@@ -70,7 +70,7 @@ function ConnectionBlock({
       )}
       <div className="col-span-3 h-full flex flex-col items-center justify-center gap-2 relative z-10">
         <div className="w-full">
-          <h4 className="font-medium">Description:</h4>
+          <h4 className="font-medium text-sm mb-1">Description:</h4>
           <p
             className="text-sm text-muted-foreground wrap [&_a]:text-violet-400 [&_a]:underline"
             dangerouslySetInnerHTML={{ __html: connection.description }}
@@ -80,7 +80,7 @@ function ConnectionBlock({
       <div
         className={`col-span-1 flex items-center gap-0 flex-row justify-center ${type == "out" ? "" : "flex-row-reverse"}`}
       >
-        {connection.aiGenerated && (
+        {connection.aiGenerated ? (
           <TooltipProvider>
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
@@ -91,17 +91,17 @@ function ConnectionBlock({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        )}
-        {type == "out" ? (
-          <ArrowRight
-            strokeWidth={3}
-            className={`${connection.aiGenerated ? "text-violet-400" : "w-full"}`}
-          />
         ) : (
-          <ArrowLeft
-            strokeWidth={3}
-            className={`${connection.aiGenerated ? "text-violet-400" : "w-full"}`}
-          />
+          <TooltipProvider>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Cable size={20} className="text-violet-400" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Linked</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
       </div>
 
@@ -115,7 +115,7 @@ function ConnectionBlock({
           </div>
         ) : (
           <div className="break-words">
-            <h4 className="font-medium">
+            <h4 className="font-medium text-sm mb-1">
               {type == "out" ? "Connecting to:" : "From:"}
             </h4>
             <p className="text-sm text-violet-400">
