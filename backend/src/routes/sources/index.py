@@ -26,9 +26,9 @@ from src.models.index import (
 from src.service.source import service as sourceService
 from src.db.neo4j import client as neo4jClient
 from src.core.config import settings
-from src.utils.youtube import get_video_transcript, get_video_info
 from src.lib.firecrawl.index import client as firecrawlClient
-from src.lib.pinecone.index import client as pineconeClient
+from src.lib.openai.index import client as openaiClient
+from src.lib.youtube.index import client as youtubeClient
 
 router = APIRouter()
 s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
@@ -385,11 +385,11 @@ def add_youtube(
     check_user(user)
 
     try:
-        info = get_video_info(video_id)
+        info = youtubeClient.get_video_info(video_id)
         title, description = info["title"], info["description"]
 
         try:
-            transcripts = get_video_transcript(video_id)
+            transcripts = youtubeClient.get_video_transcript(video_id)
 
         except Exception as e:
             transcripts = []
@@ -435,7 +435,11 @@ def add_youtube(
 
 @router.patch("/update/note/{web_id}/{source_id}")
 def update_note(
-    web_id: str, source_id: str, updateNotePayload: UpdateNote, background_tasks: BackgroundTasks, user=Depends(manager)
+    web_id: str,
+    source_id: str,
+    updateNotePayload: UpdateNote,
+    background_tasks: BackgroundTasks,
+    user=Depends(manager),
 ):
     """
     Update a note.
@@ -456,7 +460,9 @@ def update_note(
         update_data = updateNotePayload.model_dump(exclude_none=True)
 
         update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
-        updatedSource = neo4jClient.update_source(source_id=source_id, properties=update_data)
+        updatedSource = neo4jClient.update_source(
+            source_id=source_id, properties=update_data
+        )
 
         # refresh chunks
         background_tasks.add_task(
@@ -476,7 +482,9 @@ def update_note(
 
 
 @router.delete("/delete/source/{source_id}")
-def delete_source(source_id: str, background_tasks: BackgroundTasks, user=Depends(manager)):
+def delete_source(
+    source_id: str, background_tasks: BackgroundTasks, user=Depends(manager)
+):
     """
     Delete a source.
 
@@ -570,20 +578,32 @@ def get_source(source_id: str, user=Depends(manager.optional)):
 
 
 @router.patch("/edit/source/{sourceId}")
-def edit_source(sourceId: str, updatePayload: UpdateSource, background_tasks: BackgroundTasks, user=Depends(manager)):
+def edit_source(
+    sourceId: str,
+    updatePayload: UpdateSource,
+    background_tasks: BackgroundTasks,
+    user=Depends(manager),
+):
     check_user(user)
     try:
         update_data = updatePayload.model_dump(exclude_none=True)
         update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
-        updated_source = neo4jClient.update_source(source_id=sourceId, properties=update_data)
+        updated_source = neo4jClient.update_source(
+            source_id=sourceId, properties=update_data
+        )
 
         if not updated_source:
             raise HTTPException(status_code=404, detail="Source not found")
-        
+
         webId = updated_source["webId"]
 
-        background_tasks.add_task(sourceService.refresh_metadata, webId=webId, sourceId=sourceId, metadata=update_data)
+        background_tasks.add_task(
+            sourceService.refresh_metadata,
+            webId=webId,
+            sourceId=sourceId,
+            metadata=update_data,
+        )
 
         return {"result": True}
 
@@ -622,10 +642,8 @@ async def upload_file_to_source(
                 )
 
                 url = f"https://{settings.cloudfront_domain}/{object_name}"
-                if not url:
-                    raise HTTPException(status_code=500, detail="Error generating URL")
-
                 uploaded_image_urls.append(url)
+
                 neo4jClient.update_source(
                     source_id=source_id,
                     properties={
@@ -647,4 +665,93 @@ async def upload_file_to_source(
 
     except Exception as e:
         logger.error(f"Upload error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/upload/voice-note/{web_id}")
+async def upload_voice_note(
+    web_id: str,
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    user=Depends(manager),
+):
+    """
+    Upload a voice note, transcribe it, and create a source.
+
+    Args:
+        web_id (str): The ID of the web to upload to
+        file (UploadFile): The voice note audio file
+        user (User): The authenticated user
+
+    Returns:
+        dict: JSON response with the source ID
+    """
+    check_user(user)
+
+    try:
+        temp_dir = tempfile.gettempdir()
+        temp_path = os.path.join(temp_dir, f"{uuid4()}_{file.filename}")
+
+        content = await file.read()
+        with open(temp_path, "wb") as buffer:
+            buffer.write(content)
+
+        try:
+
+            object_name = f"files/{user['id']}/{web_id}/voice-notes/{uuid4()}_{secure_filename(file.filename)}"
+            s3_bucket.upload_file(temp_path, object_name)
+            file_url = f"https://{settings.cloudfront_domain}/{object_name}"
+
+            # transcribe audio first
+            transcript: str = openaiClient.get_audio_transcript(temp_path)
+            if not transcript:
+                raise HTTPException(
+                    status_code=500, detail="Failed to transcribe audio"
+                )
+
+            # create source with transcript as content
+            source_id = str(uuid4())
+            source_to_insert = {
+                "sourceId": source_id,
+                "webId": web_id,
+                "userId": user["id"],
+                "name": f"Voice Note - {transcript[:50]}...",  # Could be updated with first few words of transcript
+                "content": transcript,
+                "url": file_url,
+                "type": "voice_note",
+                "size": len(content),
+                "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+                "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            }
+
+            # Create Neo4j node
+            neo4jClient.create_node("source", source_to_insert)
+
+            # Update web
+            Webs.update_one(
+                {"webId": web_id, "userId": user["id"]},
+                {
+                    "$push": {"sourceIds": source_id},
+                    "$set": {"updated": datetime.now(UTC)},
+                },
+            )
+
+            # Add background task to process embeddings with the transcript
+            background_tasks.add_task(
+                sourceService.embed_and_upsert_voice_note,
+                source=source_to_insert,
+                text=transcript,  # Pass transcript instead of file_path
+            )
+
+            return {"result": source_id}
+
+        except Exception as e:
+            logger.error(f"Error processing voice note: {str(e)}")
+            raise HTTPException(status_code=500, detail="Error processing voice note")
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+    except Exception as e:
+        logger.error(f"Voice note upload error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

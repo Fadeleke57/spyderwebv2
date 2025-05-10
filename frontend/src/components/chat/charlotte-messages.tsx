@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { cn, mapToolNameToBreadcrumb } from "@/lib/utils";
-import { Copy, Check, ThumbsUp, ThumbsDown } from "lucide-react";
+import { cn, formatText, mapToolNameToBreadcrumb } from "@/lib/utils";
+import {
+  Copy,
+  Check,
+  ThumbsUp,
+  ThumbsDown,
+  Save,
+  NotebookText,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/chat/markdown";
 import Charlotte from "@/components/chat/Charlotte";
@@ -14,6 +21,12 @@ import ReferencesComponent, {
   ReferenceMetadata,
 } from "./genui/graphcontext";
 import { url } from "inspector";
+import { useUploadNote } from "@/hooks/sources";
+import { useRouter } from "next/router";
+import { useFetchWebById } from "@/hooks/webs";
+import { useUser } from "@/context/UserContext";
+import { toast } from "sonner";
+import FeedbackModal from "../utility/FeedbackModal";
 
 const UserMessage = ({ message }: { message: Message }) => {
   return (
@@ -60,9 +73,17 @@ const AssistantMessage = ({
   message: Message;
   isLoading: boolean;
 }) => {
+  const router = useRouter();
   const [isCopied, setIsCopied] = useState(false);
   const [toolbarVisible, setToolbarVisible] = useState(false);
   const [review, setReview] = useState<"like" | "dislike" | null>(null);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const { webId } = router.query;
+  const { data: web } = useFetchWebById(webId as string);
+  const { mutateAsync: uploadNote } = useUploadNote(webId as string);
+  const { user } = useUser();
+
+  const isOwner = user && web && user.id === web.userId;
 
   const handleCopy = () => {
     try {
@@ -76,12 +97,29 @@ const AssistantMessage = ({
     }
   };
 
+  const handleMakeNote = async (message: Message) => {
+    try {
+      await uploadNote({
+        title: `Assistant Note - ${formatText(message.content, 50)}`,
+        content: message.content,
+      });
+      toast("Message saved as note!");
+    } catch (error) {
+      console.error("Failed to make note!", error);
+    }
+  };
+
   const handleReferenceClick = (reference: ReferenceMetadata) => {
     if (reference.url && reference.type != "pdf document") {
       const url = formatLinkwithTimeStamp(reference.url, reference.startTime);
       window.open(url, "_blank");
       return;
     }
+  };
+
+  const handleDislike = () => {
+    setReview("dislike");
+    setFeedbackModalOpen(true);
   };
 
   return (
@@ -95,13 +133,13 @@ const AssistantMessage = ({
     >
       {" "}
       <div
-        className={`absolute -top-[30px] left-0 grid grid-cols-3 ${toolbarVisible && !isLoading ? "opacity-100" : "opacity-0"} transition-all ease-in-out duration-200`}
+        className={`absolute -top-[40px] left-0 flex flex-row ${toolbarVisible && !isLoading ? "opacity-100" : "opacity-0"} transition-all ease-in-out duration-200`}
       >
         <div>
           <SimpleTooltip content="Copy">
             <Button
               variant={"secondary"}
-              className="rounded-sm rounded-r-none h-fit w-fit py-1 px-2 flex items-center justify-center"
+              className="rounded-sm rounded-r-none h-8 w-fit py-1 px-2 flex items-center justify-center"
               onClick={handleCopy}
             >
               <Copy
@@ -126,7 +164,7 @@ const AssistantMessage = ({
         <div>
           <SimpleTooltip content="Like">
             <Button
-              className="rounded-none h-fit w-fit py-1 px-2  transition-all ease-in-out duration-200"
+              className="rounded-none h-8 w-fit py-1 px-2  transition-all ease-in-out duration-200"
               onClick={() => setReview("like")}
             >
               <ThumbsUp
@@ -139,8 +177,8 @@ const AssistantMessage = ({
         <div>
           <SimpleTooltip content="Dislike">
             <Button
-              className={`rounded-sm rounded-l-none h-fit w-fit py-1 px-2 transition-all ease-in-out duration-200`}
-              onClick={() => setReview("dislike")}
+              className={`rounded-sm rounded-l-none ${isOwner ? "rounded-r-none" : ""} h-8 w-fit py-1 px-2 transition-all ease-in-out duration-200`}
+              onClick={handleDislike}
             >
               <ThumbsDown
                 size={14}
@@ -149,6 +187,20 @@ const AssistantMessage = ({
             </Button>
           </SimpleTooltip>
         </div>
+        {isOwner && (
+          <div>
+            <SimpleTooltip content="Save as note">
+              <Button
+                className="rounded-l-none h-8 w-fit py-1 px-2  transition-all ease-in-out duration-200"
+                variant={"outline"}
+                onClick={() => handleMakeNote(message)}
+              >
+                <NotebookText size={14} className="mr-2" />{" "}
+                <small>Make Note</small>
+              </Button>
+            </SimpleTooltip>
+          </div>
+        )}
       </div>
       <div className="flex flex-col gap-2">
         <AnimatePresence>
@@ -224,6 +276,7 @@ const AssistantMessage = ({
           )}
         </div>
       </div>
+      <FeedbackModal open={feedbackModalOpen} setOpen={setFeedbackModalOpen} />
     </motion.div>
   );
 };

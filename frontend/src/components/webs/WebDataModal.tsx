@@ -21,6 +21,8 @@ import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import FaviconDisplay from "../utility/FaviconDisplay";
 import AutoLinkerIndicator from "../sources/AutoLinkerIndicator";
+import { VoiceNoteComponent } from "../sources/VoiceNoteComponent";
+import { getTypeIcon } from "../chat/genui/graphcontext";
 
 interface WebDataDrawerProps {
   open: boolean;
@@ -158,8 +160,8 @@ export default function WebDataModal({
         return (
           <NoteComponent webId={webId} source={source} isOwner={isOwner} />
         );
-      default:
-        return null;
+      case "voice_note":
+        return <VoiceNoteComponent source={source} />;
     }
   };
 
@@ -233,7 +235,13 @@ export default function WebDataModal({
                       target="_blank"
                       className="hover:underline hover:text-violet-400 inline text-lg flex flex-row items-center gap-2"
                     >
-                      <FaviconDisplay url={source?.url || ""} />
+                      {source?.type === "website" ||
+                      source?.type === "youtube" ||
+                      source?.type === "document" ? (
+                        <FaviconDisplay url={source?.url || ""} />
+                      ) : source?.type ? (
+                        getTypeIcon(source?.type)
+                      ) : null}
                       <span className="flex flex-row items-center gap-2">
                         {title || "Loading..."}
                       </span>

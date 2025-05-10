@@ -1,9 +1,10 @@
-import { ArrowBigRight, Upload } from "lucide-react";
+import { ArrowBigRight, Upload, Mic } from "lucide-react";
 import React, { useState, useRef } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
+import { toast } from "../ui/use-toast";
 
 function UploadFile({
   handleFileUpload,
@@ -248,4 +249,113 @@ function UploadYoutube({
   );
 }
 
-export { UploadFile, UploadWebsite, UploadYoutube };
+function UploadVoiceNote({
+  isVoiceNoteUploading,
+  handleVoiceNoteUpload,
+}: {
+  isVoiceNoteUploading: boolean;
+  handleVoiceNoteUpload: (blob: Blob) => Promise<void>;
+}) {
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        setAudioBlob(blob);
+        setAudioUrl(URL.createObjectURL(blob));
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+      toast({
+        title: "Error",
+        description: "Could not access microphone. Please check permissions.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      mediaRecorderRef.current.stream
+        .getTracks()
+        .forEach((track) => track.stop());
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="w-full h-full bg-muted p-10 rounded-xl border-dashed border-2 border-slate-400 dark:border-muted-foreground">
+        <div className="flex flex-col gap-4 items-center">
+          <div>
+            {!isRecording ? (
+              <Button
+                onClick={startRecording}
+                className="relative p-4 rounded-full bg-violet-500 cursor-pointer hover:bg-violet-400 dark:bg-violet-500"
+                disabled={isVoiceNoteUploading}
+              >
+                <Mic size={24} color="white" className="cursor-pointer" />
+              </Button>
+            ) : (
+              <Button
+                onClick={stopRecording}
+                variant="destructive"
+                className="relative p-4 rounded-full cursor-pointer"
+              >
+                <span className="h-3 w-3 bg-white rounded-sm" />
+              </Button>
+            )}
+          </div>
+          <div className="text-center">
+            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight text-muted-foreground">
+              {isRecording ? "Recording..." : "Start Recording"}
+            </h3>
+            <p className="text-md text-muted-foreground text-center">
+              {isRecording
+                ? "Click the button to stop recording"
+                : "Click the microphone to start recording"}
+            </p>
+          </div>
+          {audioUrl && (
+            <div className="w-full max-w-md flex flex-col gap-2">
+              <audio controls src={audioUrl} className="w-full" />
+              <Button
+                onClick={() => {
+                  if (audioBlob) {
+                    handleVoiceNoteUpload(audioBlob);
+                  }
+                }}
+                disabled={isVoiceNoteUploading}
+                className="w-full"
+              >
+                {isVoiceNoteUploading ? "Uploading..." : "Upload Recording"}
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export { UploadFile, UploadWebsite, UploadYoutube, UploadVoiceNote };

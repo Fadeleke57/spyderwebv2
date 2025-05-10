@@ -52,8 +52,7 @@ class CandidateSelectorAgent:  # visits the pincone database for sources within 
         raw_candidates = self._run_similiarity_search(
             embedding=embedding,
             k=k,
-            web_id=self.webId,
-            filter={"sourceId": {"$ne": self.sourceId}},
+            filter={"sourceId": {"$ne": self.sourceId}, "webId": self.webId},
         )
         raw_candidates = [
             candidate for candidate in raw_candidates if candidate["score"] >= threshold
@@ -79,9 +78,7 @@ class CandidateSelectorAgent:  # visits the pincone database for sources within 
         }
         return candidate_document
 
-    def _run_similiarity_search(
-        self, embedding: list[float], web_id: str, filter, k: int = 10
-    ):
+    def _run_similiarity_search(self, embedding: list[float], filter, k: int = 15):
         """
         Runs a similarity search over the Pinecone index using the given embedding.
 
@@ -96,12 +93,12 @@ class CandidateSelectorAgent:  # visits the pincone database for sources within 
         - list: A list of dictionaries, each containing the metadata of a result, as well as its similarity score.
         """
         logger.info(
-            f"Running similiarity search for embedding: {embedding[:5]}... with filter: {filter} and k: {k} and namespace: {web_id}"
+            f"Running similiarity search for embedding: {embedding[:5]}... with filter: {filter} and k: {k}"
         )
         pinecone_response = self.vectordb_index.query(
             top_k=k,
             vector=embedding,
-            namespace=web_id,
+            namespace="sources",
             filter=filter,
             include_metadata=True,
             include_values=False,

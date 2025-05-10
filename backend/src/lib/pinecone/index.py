@@ -7,7 +7,7 @@ import re
 import time
 from src.lib.logger.index import logger
 from src.agents.autolinking_engine.autolinker import engine as autolinker
-from src.models.index import Source
+from src.models.index import Source, Embeddings
 
 
 class PineconeClient:
@@ -45,6 +45,7 @@ class PineconeClient:
 
             metadata = {
                 "sourceId": source["sourceId"],
+                "webId": source["webId"],
                 "videoTitle": source["name"],
                 "videoDescription": source["content"],
                 "startTime": chunk["start_time"],
@@ -61,6 +62,7 @@ class PineconeClient:
 
             metadata = {
                 "documentTitle": source["name"],
+                "webId": source["webId"],
                 "sourceId": source["sourceId"],
                 "pageNumber": page_number,
                 "chunkIndex": index,
@@ -76,6 +78,20 @@ class PineconeClient:
 
             metadata = {
                 "noteTitle": source["name"],
+                "webId": source["webId"],
+                "sourceId": source["sourceId"],
+                "chunkIndex": index,
+                "chunkCount": number_of_chunks,
+                "type": type,
+                "text": chunk,
+                "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            }
+
+        elif type == "voice_note":
+
+            metadata = {
+                "voiceNoteTitle": source["name"],
+                "webId": source["webId"],
                 "sourceId": source["sourceId"],
                 "chunkIndex": index,
                 "chunkCount": number_of_chunks,
@@ -135,7 +151,7 @@ class PineconeClient:
             results.append(result)
         return results
 
-    def run_remantic_source_search(
+    def run_semantic_source_search(
         self, webId: str, query: str, filter: Dict[str, Any] = {}, limit: int = 10
     ):
         """
@@ -152,12 +168,14 @@ class PineconeClient:
         - List[Dict[str, Any]]: A list of dictionaries, each representing a result. The dictionary will
             contain the metadata of the result, as well as an "id" key containing the ID of the result.
         """
+        filter["webId"] = webId
+
         query_embedding = self.get_query_embedding(query)
         pinecone_response = self.index.query(
             vector=query_embedding,
             top_k=limit,
             include_metadata=True,
-            namespace=webId,
+            namespace="sources",
             filter=filter,
         )
         results = []
@@ -329,7 +347,7 @@ class PineconeClient:
             from src.utils.credits import deduct_credits
             import asyncio
 
-            # Check if user has enough credits for autolinker
+            # check if user has enough credits for autolinker
             success, _ = asyncio.run(deduct_credits(user_id, "autolinker"))
             if success:
                 should_run_autolinker = True
@@ -344,6 +362,14 @@ class PineconeClient:
                 else f"{source_id}:chunk{i}"
             )
             logger.info(f"Uploading chunk: {chunk_id}")
+
+            # add a corresponding reference to the chunk in mongo for update and delete operations later on
+            mongo_embedding = {
+                "sourceId": source_id,
+                "webId": web_id,
+                "embeddingId": chunk_id,
+            }
+            Embeddings.insert_one(mongo_embedding)
 
             metadata = self._generate_source_chunk_metadata(
                 source=source,
@@ -373,7 +399,7 @@ class PineconeClient:
             try:
                 response = self.index.upsert(
                     vectors=batch,
-                    namespace=web_id,
+                    namespace="sources",
                     batch_size=batch_size,
                 )
                 results.append(response)

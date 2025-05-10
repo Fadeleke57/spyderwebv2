@@ -1,11 +1,15 @@
 import os
+import io
 import uuid
+import json
 import boto3
 from pytz import UTC
 from datetime import datetime
 from typing import Optional, Literal
 from pymongo import ReturnDocument
 from fastapi import APIRouter, Depends, UploadFile, File, Query, BackgroundTasks
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from fastapi.exceptions import HTTPException
 from botocore.exceptions import ClientError
 from werkzeug.utils import secure_filename
@@ -372,7 +376,7 @@ def get_web_images(web_id: str):
 
 
 @router.delete("/delete")
-def delete_web(webId: str, user=Depends(manager)):
+def delete_web(webId: str, background_tasks: BackgroundTasks, user=Depends(manager)):
     """
     Delete a web.
 
@@ -392,20 +396,11 @@ def delete_web(webId: str, user=Depends(manager)):
         webToDelete = Webs.find_one_and_delete({"webId": webId, "userId": user["id"]})
         if not webToDelete:
             logger.info(f"Web {webId} not found or not owned by user {user['id']}")
-            return {"result": "Web not found"}
+            return {"result": False}
 
         logger.info(f"Web {webId} deleted by user {user['id']}")
 
-        # these need to run in the background (refactor to a web service that handles deletions)
-        webDeleteResult = pineconeClient.index.delete(
-            ids=[webId], namespace="webs"
-        )  
-        sourceDeleteResult = pineconeClient.index.delete(
-            delete_all=True, namespace=webId
-        )
-
-        if webDeleteResult == {} and sourceDeleteResult == {}:
-            logger.info(f"Vectors for {webId} were successfully deleted from Pinecone")
+        background_tasks.add_task(webService.delete_web_embeddings, webId)
 
         neo4jClient.delete_nodes_by_properties("source", {"webId": webId})
         logger.info(f"Sources {webId} attached to web deleted from Neo4j")
@@ -777,4 +772,47 @@ def get_web_contributors(web_id: str, user=Depends(manager.optional)):
         logger.error(f"Error getting web contributers: {e}")
         raise HTTPException(
             status_code=500, detail=f"Error getting web contributers: {e}"
+        )
+
+
+class ExportGraphContext(BaseModel):
+    webId: str
+    selectedSources: list[str]
+    asMarkdown: bool = False
+
+
+@router.post("/export/graph/context")
+def export_graph_context(payload: ExportGraphContext, user=Depends(manager)):
+    check_user(user)
+
+    try:
+        web = Webs.find_one({"webId": payload.webId})
+
+        if not web:
+            raise HTTPException(status_code=404, detail=f"Web not found!")
+
+        result = neo4jClient.retreive_graph(
+            webId=payload.webId, selectedNodes=payload.selectedSources
+        )
+
+        logger.info(f"Exported graph context for web {payload.webId}: {result}")
+
+        if payload.asMarkdown:
+            markdown_content = f"# {web['name']}\n\n {json.dumps(result, indent=2)}"
+
+            file_stream = io.StringIO(markdown_content)
+            filename = f"{web['name'][:40]}.md"
+
+            return StreamingResponse(
+                iter([file_stream.getvalue()]),
+                media_type="text/markdown",
+                headers={"Content-Disposition": f"attachment; filename={filename}"},
+            )
+
+        return {"result": result}
+
+    except Exception as e:
+        logger.error(f"Error exporting graph context: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Error exporting graph context: {e}"
         )

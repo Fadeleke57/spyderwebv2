@@ -1,4 +1,4 @@
-from src.models.index import Web
+from src.models.index import Web, Embeddings
 from src.lib.pinecone.index import client as pineconeClient
 from src.lib.logger.index import logger
 
@@ -14,7 +14,9 @@ class WebService:
             vectors = pineconeClient.generate_web_embeddings(
                 web_payload["name"], web_payload["description"]
             )
-            pincone_insert = web_payload.copy()  # create copy so we don't modify the original
+            pincone_insert = (
+                web_payload.copy()
+            )  # create copy so we don't modify the original
 
             del pincone_insert["_id"]
 
@@ -57,10 +59,39 @@ class WebService:
                 pineconeClient.index.update(
                     id=web_id,
                     values=vectors,
-                    set_metadata=updatePayload, # update metadata
+                    set_metadata=updatePayload,
                     namespace="webs",
                 )
             return True
+
+        except Exception as e:
+            logger.error(e)
+            return False
+
+    def delete_web_embeddings(self, webId: str) -> bool:
+
+        try:
+            logger.info(f"Deleting web:{webId} from pinecone...")
+            webDeleteResult = pineconeClient.index.delete(ids=[webId], namespace="webs")
+
+            sourceEmbeddings = Embeddings.find({"webId": webId})
+            sourceIdsToDelete = [e["embeddingId"] for e in sourceEmbeddings]
+
+            logger.info(f"Found {len(sourceIdsToDelete)} to delete..")
+
+            if sourceIdsToDelete:
+                sourceDeleteResult = pineconeClient.index.delete(
+                    ids=[sourceIdsToDelete], namespace="sources"
+                )
+            else:
+                sourceDeleteResult = {}
+
+            if webDeleteResult == {} and sourceDeleteResult == {}:
+                logger.info("Successfully deleted web embeddings!")
+                # clean up mongo
+                Embeddings.delete_many({"webId": webId})
+                logger.info("Cleaned up embeddings in mongo!")
+                return True
 
         except Exception as e:
             logger.error(e)

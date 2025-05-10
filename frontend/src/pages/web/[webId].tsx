@@ -32,9 +32,12 @@ import MobileWebView from "@/components/webs/MobileWebForm";
 import { useConfigureChat } from "@/hooks/chats";
 import { toast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import FeedbackModal from "@/components/utility/FeedbackModal";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 function Index() {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const { webId } = router.query;
   const {
     data: webData,
@@ -44,6 +47,7 @@ function Index() {
   } = useFetchWebById(webId as string);
 
   const [web, setWeb] = React.useState<Web | null>(webData || null);
+  const [feedbackModalOpen, setFeedbackModalOpen] = React.useState(false);
 
   const { mutateAsync: pinWeb, isPending: pinLoading } = usePinWeb(
     webId as string
@@ -180,6 +184,13 @@ function Index() {
             </div>
           </div>
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
+            {!isMobile && (
+              <FeedbackModal
+                triggerVisibile
+                open={feedbackModalOpen}
+                setOpen={setFeedbackModalOpen}
+              />
+            )}
             {webOwner && web?.enableAIConnections && (
               <TooltipProvider>
                 <Tooltip>
@@ -207,7 +218,7 @@ function Index() {
               </TooltipProvider>
             )}
             {web && <MobileWebView web={web} user={user || null} />}
-            {webOwner?.id === user?.id && (
+            {webOwner && user && webOwner.id === user.id && (
               <Button
                 size="sm"
                 variant={"outline"}

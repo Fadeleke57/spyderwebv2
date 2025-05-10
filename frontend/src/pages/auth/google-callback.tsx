@@ -8,14 +8,17 @@ const GoogleCallback = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    const { token, email, name, newuser, newwebid } = router.query;
-    let redirectToWeb = null;
+    const { token, email, username, firstName, lastName, newuser, newwebid } =
+      router.query;
+    let redirectTo = null;
     if (newwebid) {
-      redirectToWeb = `/web/${newwebid}?ref=${newuser ? "register" : "login"}`;
+      redirectTo = "/auth/onboarding";
     }
-    if (token && email && name) {
+    if (token && email && username && firstName && lastName) {
       localStorage.setItem("token", token as string);
-      window.location.href = redirectToWeb || "/home";
+      window.location.href = redirectTo
+        ? `${redirectTo}?firstName=${firstName}&lastName=${lastName}&username=${username}&isGoogleSignup=true&defaultWebId=${newwebid}`
+        : "/home";
     }
   }, [router.query, router, isMobile]);
 

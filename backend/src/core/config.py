@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     stripe_basic_yearly_price_id: str
     stripe_pro_monthly_price_id: str
     stripe_pro_yearly_price_id: str
+    proxy_username: str
+    proxy_password: str
 
     class Config:
         env_file = f".env"

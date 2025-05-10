@@ -12,7 +12,12 @@ import { toast } from "../ui/use-toast";
 import gsap from "gsap";
 import { extractVideoId } from "@/lib/utils";
 import { DialogTitle } from "@radix-ui/react-dialog";
-import { UploadFile, UploadWebsite, UploadYoutube } from "./AddSourceViews";
+import {
+  UploadFile,
+  UploadWebsite,
+  UploadYoutube,
+  UploadVoiceNote,
+} from "./AddSourceViews";
 import { Drawer, DrawerContent, DrawerHeader } from "../ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "../ui/skeleton";
@@ -32,6 +37,8 @@ type AddSourceModalProps = {
   isFileUploading: boolean;
   setParseObsidianLinks: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode;
+  handleVoiceNoteUpload?: (blob: Blob) => Promise<void>;
+  isVoiceNoteUploading?: boolean;
 };
 
 export default function AddSourceModal({
@@ -47,6 +54,8 @@ export default function AddSourceModal({
   handleFileUpload,
   isFileUploading,
   setParseObsidianLinks,
+  handleVoiceNoteUpload,
+  isVoiceNoteUploading,
 }: AddSourceModalProps) {
   const isMobile = useIsMobile();
   const [websiteUrl, setWebsiteUrl] = useState("");
@@ -144,7 +153,12 @@ export default function AddSourceModal({
   function mapViewToContent() {
     switch (view) {
       case "default":
-        return <UploadFile handleFileUpload={handleFileUpload} setParseObsidianLinks={setParseObsidianLinks} />;
+        return (
+          <UploadFile
+            handleFileUpload={handleFileUpload}
+            setParseObsidianLinks={setParseObsidianLinks}
+          />
+        );
       case "website":
         return (
           <UploadWebsite
@@ -161,6 +175,15 @@ export default function AddSourceModal({
             handleYoutubeUrlChange={handleYoutubeUrlChange}
             handleYoutubeUpload={handleYoutubeUpload}
             isYoutubeUploading={isYoutubeUploading}
+          />
+        );
+      case "voice-note":
+        return (
+          <UploadVoiceNote
+            isVoiceNoteUploading={isVoiceNoteUploading || false}
+            handleVoiceNoteUpload={
+              handleVoiceNoteUpload || (() => Promise.resolve())
+            }
           />
         );
       default:
@@ -204,6 +227,18 @@ export default function AddSourceModal({
             </DialogTitle>
             <p className="text-sm max-w-full md:max-w-lg lg:text-md text-muted-foreground text-left">
               Videos are the building blocks of knowledge. Upload them here.
+            </p>
+          </div>
+        );
+      case "voice-note":
+        return (
+          <div className="space-y-2">
+            <DialogTitle className="scroll-m-20 text-2xl lg:text-3xl font-extrabold tracking-tight lg:text-6xl text-left">
+              <span>Record Voice Note</span>
+            </DialogTitle>
+            <p className="text-sm max-w-full md:max-w-lg lg:text-md text-muted-foreground text-left">
+              Voice notes are the building blocks of knowledge. Record your
+              thoughts here. Supported format is WebM audio.
             </p>
           </div>
         );

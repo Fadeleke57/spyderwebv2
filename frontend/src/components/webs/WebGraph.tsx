@@ -174,10 +174,15 @@ function WebGraph({
   const { mutateAsync: deleteSource } = useDeleteSource();
 
   const handleDeleteSource = async (sourceId: string) => {
-    await deleteSource(sourceId);
-    refetchConnections();
-    refetchSources();
-    refetchWeb();
+    if (fetchedSources.length === 1) {
+      await deleteSource(sourceId);
+      window.location.reload();
+    } else {
+      await deleteSource(sourceId);
+      refetchConnections();
+      refetchSources();
+      refetchWeb();
+    }
   };
 
   useEffect(() => {

@@ -81,5 +81,19 @@ class OpenAIClient:
         }
         self.webId = webId
 
+    def get_audio_transcript(self, audio_file_path: str):
+        try:
+
+            with open(audio_file_path, "rb") as audio_file:
+                response = self.client.audio.transcriptions.create(
+                    file=audio_file,
+                    model="whisper-1",
+                )
+                return response.text
+
+        except Exception as e:
+            logger.error(f"Transcription failed: {str(e)}")
+            raise Exception(f"Transcription failed: {str(e)}")
+
 
 client = OpenAIClient()
