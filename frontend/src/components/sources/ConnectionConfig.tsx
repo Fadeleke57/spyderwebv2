@@ -51,6 +51,11 @@ function ConnectionsConfig({
     refetch: refetchOtherSources,
   } = useFetchSourcesForWeb(webId);
 
+  const handleConnectionBlockDelete = () => {
+    refetchOutgoingConnections();
+    refetchIncomingConnections();
+  };
+
   const [sourcePopoverOpen, setSourcePopoverOpen] = useState(false);
   const [selectedToSourceId, setSelectedToSourceId] = useState<string>("");
   const [connectionPlaceHolderVisible, setConnectionPlaceHolderVisible] =
@@ -134,14 +139,14 @@ function ConnectionsConfig({
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="outgoing" className="space-y-2">
+        <TabsContent value="outgoing" className="space-y-2 font-mono">
           {isLoadingOutgoingConnections ? (
             <Skeleton className="h-16 w-full rounded-xl" />
           ) : (
             <>
               {!outgoingConnections?.length &&
                 !connectionPlaceHolderVisible && (
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm text-muted-foreground font-mono">
                     Nothing yet.
                   </span>
                 )}
@@ -162,6 +167,7 @@ function ConnectionsConfig({
                     type="out"
                     isOwner={isOwner}
                     onSourceClick={onSourceClick}
+                    onConnectionDeleted={handleConnectionBlockDelete}
                   />
                 )
               )}
@@ -173,7 +179,7 @@ function ConnectionsConfig({
           {isLoadingIncomingConnections ? (
             <Skeleton className="h-16 w-full rounded-xl" />
           ) : !incomingConnections?.length ? (
-            <span className="text-sm text-muted-foreground">Nothing yet.</span>
+            <span className="text-sm text-muted-foreground font-mono">Nothing yet.</span>
           ) : (
             incomingConnections?.map((connection: Connection, id: number) => (
               <ConnectionBlock
