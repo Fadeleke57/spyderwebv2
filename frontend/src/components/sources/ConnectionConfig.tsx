@@ -18,7 +18,7 @@ import ConnectionBlock from "./ConnectionBlock";
 import CreateConnectionBlock from "./CreateConnectionBlock";
 import { mapSourceToIcon } from "../utility/Icons";
 import { Source } from "@/types/source";
-import { CirclePlus, Loader2 } from "lucide-react";
+import { CirclePlus } from "lucide-react";
 import { Connection } from "@/types/connection";
 import { ScrollArea } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
@@ -129,7 +129,12 @@ function ConnectionsConfig({
         </h4>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs
+        value={activeTab}
+        defaultValue={"outgoing"}
+        onValueChange={setActiveTab}
+        className="w-full"
+      >
         <TabsList className="w-full grid grid-cols-2 mb-4">
           <TabsTrigger value="outgoing" className="font-mono">
             Outgoing ({outgoingConnections?.length || 0})
@@ -179,7 +184,9 @@ function ConnectionsConfig({
           {isLoadingIncomingConnections ? (
             <Skeleton className="h-16 w-full rounded-xl" />
           ) : !incomingConnections?.length ? (
-            <span className="text-sm text-muted-foreground font-mono">Nothing yet.</span>
+            <span className="text-sm text-muted-foreground font-mono">
+              Nothing yet.
+            </span>
           ) : (
             incomingConnections?.map((connection: Connection, id: number) => (
               <ConnectionBlock
