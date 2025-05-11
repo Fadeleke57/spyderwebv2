@@ -12,5 +12,7 @@ export const environment = {
   client_url: where === "dev" ? local_client_url : prod_client_url,
   next_auth_secret: process.env.NEXT_AUTH_SECRET,
   google_client_id: process.env.GOOGLE_CLIENT_ID,
-  google_client_secret: process.env.GOOGLE_CLIENT_SECRET
+  google_client_secret: process.env.GOOGLE_CLIENT_SECRET,
+  posthog_key: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+  posthog_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
 };

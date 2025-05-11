@@ -106,7 +106,7 @@ export function useClearSearchHistory() {
   return { loading, error, clearSearchHistory };
 }
 
-export function useFetchUserById(userId: string) {
+export function useFetchUserById(userId: string | null | undefined) {
   return useQuery({
     queryKey: ["user", userId],
     queryFn: async () => {

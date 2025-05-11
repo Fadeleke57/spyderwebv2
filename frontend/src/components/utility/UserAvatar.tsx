@@ -36,7 +36,7 @@ function UserAvatar({
   };
   return (
     <TooltipProvider>
-      <Tooltip>
+      <Tooltip delayDuration={100}>
         <TooltipTrigger>
           <Button
             variant="outline"

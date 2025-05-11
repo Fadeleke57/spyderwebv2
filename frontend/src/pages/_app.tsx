@@ -13,6 +13,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/hoc/theme-provider";
 import { handleLinkedInWebView } from "@/lib/utils";
 import { Toaster as SonnerToaster } from "sonner";
+import { PostHogProvider } from "@/components/PostHogProvider";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -81,33 +82,35 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
   }, [toast, toastId]);
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      <QueryClientProvider client={queryClient}>
-        <Head>
-          <title>spydr</title>
-          <meta
-            name="description"
-            content="spydr is working to democratize research."
-          />
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-        </Head>
+    <PostHogProvider>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        <QueryClientProvider client={queryClient}>
+          <Head>
+            <title>spydr</title>
+            <meta
+              name="description"
+              content="spydr is working to democratize research."
+            />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+          </Head>
 
-        <UserProvider>
-          <div className="max-w-[1400px] mx-auto">
-            {getLayout(
-              <>
-                <Analytics />
-                <div className={`${fontSans.className}`}>
-                  <Component {...pageProps} />
-                  <Toaster />
-                  <SonnerToaster />
-                </div>
-              </>
-            )}
-          </div>
-        </UserProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+          <UserProvider>
+            <div className="max-w-[1400px] mx-auto">
+              {getLayout(
+                <>
+                  <Analytics />
+                  <div className={`${fontSans.className}`}>
+                    <Component {...pageProps} />
+                    <Toaster />
+                    <SonnerToaster />
+                  </div>
+                </>
+              )}
+            </div>
+          </UserProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </PostHogProvider>
   );
 }
 
