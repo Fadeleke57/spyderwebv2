@@ -53,11 +53,11 @@ const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
 function WebPlayground({
   web,
   user,
-  refetch,
+  refetchWeb,
 }: {
   web: Web;
   user: PublicUser | null;
-  refetch: () => void;
+  refetchWeb: () => void;
 }) {
   const { selectedSourceId, setSelectedSourceId } = useSourceStore();
   const isOwner = user && web && user.id === web.userId;
@@ -136,7 +136,7 @@ function WebPlayground({
           });
 
           refetchSources();
-          refetch();
+          refetchWeb();
           setSelectedSourceId(firstSourceId);
           setIsWebDataModalOpen(true);
           setIsAddSourceModalOpen(false);
@@ -169,7 +169,7 @@ function WebPlayground({
     setIsWebDataModalOpen(true);
     refetchSources();
     refetchConnections();
-    refetch();
+    refetchWeb();
   };
 
   const handleDropdownButtonClick = (
@@ -192,7 +192,7 @@ function WebPlayground({
       });
       setSelectedSourceId(noteId);
       refetchSources();
-      refetch();
+      refetchWeb();
       setIsWebDataModalOpen(true);
     } catch (error: any) {
       toast({
@@ -213,7 +213,7 @@ function WebPlayground({
       });
 
       refetchSources();
-      refetch();
+      refetchWeb();
       setSelectedSourceId(sourceId);
       setIsAddSourceModalOpen(false);
       setIsWebDataModalOpen(true);
@@ -265,7 +265,7 @@ function WebPlayground({
             isExpanded ? "right-6" : "right-3"
           }  top-3`}
         >
-          {isOwner && <WebSettingsModal refetchWeb={refetch} web={web} />}
+          {isOwner && <WebSettingsModal refetchWeb={refetchWeb} web={web} />}
           <Badge
             variant="outline"
             className={`border dark:border-violet-400/70`}
@@ -335,8 +335,8 @@ function WebPlayground({
                 web={web}
                 config={config}
                 setConfig={setConfig}
-                refreshSources={refetchSources}
-                refreshWeb={refetch}
+                refetchSources={refetchSources}
+                refetchWeb={refetchWeb}
                 view={webSearchModalView}
                 handleFileUpload={handleFileUpload}
                 isFileUploading={isFileUploading}
@@ -445,8 +445,8 @@ function WebPlayground({
                   web={web}
                   config={config}
                   setConfig={setConfig}
-                  refreshSources={refetchSources}
-                  refreshWeb={refetch}
+                  refetchSources={refetchSources}
+                  refetchWeb={refetchWeb}
                   view={webSearchModalView}
                   handleFileUpload={handleFileUpload}
                   isFileUploading={isFileUploading}
@@ -534,7 +534,7 @@ function WebPlayground({
           fetchedSources={fetchedSources}
           setFetchedSources={setFetchedSources}
           refetchSources={refetchSources}
-          refetchWeb={refetch}
+          refetchWeb={refetchWeb}
           sourcesLoading={sourcesLoading}
           handleFileUpload={handleFileUpload}
           isFileUploading={isFileUploading}
@@ -549,14 +549,12 @@ function WebPlayground({
           <WebDataModal
             open={isWebDataModalOpen}
             setOpen={setIsWebDataModalOpen}
-            sourceId={selectedSourceId}
             webId={web.webId}
-            onSourceChange={handleSourceChange}
           />
         )}
         {proccessModalOpen && (
           <ProcessModal
-            refetchWeb={refetch}
+            refetchWeb={refetchWeb}
             refetchSources={refetchSources}
             refetchConnections={refetchConnections}
             webId={web.webId}

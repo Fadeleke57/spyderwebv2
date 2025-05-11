@@ -13,20 +13,20 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "../ui/button";
 import SimpleTooltip from "../utility/SimpleTooltip";
+import { useSourceStore } from "@/store/sourceStore";
 
 function ConnectionBlock({
   connection,
   type,
   isOwner,
-  onSourceClick,
   onConnectionDeleted,
 }: {
   connection: Connection;
   type: string;
   isOwner: boolean;
-  onSourceClick: (sourceId: string) => void;
   onConnectionDeleted?: () => void;
 }) {
+  const { setSelectedSourceId } = useSourceStore();
   const [isHovering, setIsHovering] = useState(false);
 
   const {
@@ -57,16 +57,6 @@ function ConnectionBlock({
     } catch (e) {
       console.error(e);
     }
-  };
-
-  const handleSourceClick = () => {
-    console.log("Connection block source clicked");
-    console.log(
-      type === "out" ? connection.toSourceId : connection.fromSourceId
-    );
-    onSourceClick(
-      type === "out" ? connection.toSourceId : connection.fromSourceId
-    );
   };
 
   return (
@@ -127,16 +117,20 @@ function ConnectionBlock({
         </TooltipProvider>
       </div>
 
-      <div
-        className="col-span-2 space-y-2 rounded-lg p-2 cursor-pointer hover:bg-muted/50"
-        onClick={handleSourceClick}
-      >
+      <div className="col-span-2 space-y-2 rounded-lg p-2 cursor-pointer hover:bg-muted/50">
         {toLoading ? (
           <div className="flex items-center justify-center h-full">
             <Skeleton className="h-16 w-full rounded-xl" />
           </div>
         ) : (
-          <div className="break-words">
+          <div
+            className="break-words"
+            onClick={() =>
+              setSelectedSourceId(
+                type == "out" ? connection.toSourceId : connection.fromSourceId
+              )
+            }
+          >
             <h4 className="font-medium text-sm mb-1">
               {type == "out" ? "Connecting to:" : "Connecting from:"}
             </h4>

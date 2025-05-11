@@ -29,8 +29,8 @@ type AddSourceModalProps = {
   config: CreateWeb;
   setConfig: (value: CreateWeb) => void;
   web: Web;
-  refreshSources: () => void;
-  refreshWeb: () => void;
+  refetchSources: () => void;
+  refetchWeb: () => void;
   view?: string;
   setIsWebDataModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleFileUpload: (files: FileList | null) => void;
@@ -47,8 +47,8 @@ export default function AddSourceModal({
   setOpen,
   view = "default",
   children,
-  refreshSources,
-  refreshWeb,
+  refetchSources,
+  refetchWeb,
   setIsWebDataModalOpen,
   handleFileUpload,
   isFileUploading,
@@ -84,8 +84,8 @@ export default function AddSourceModal({
         description: "Website uploaded successfully",
         duration: 500,
       });
-      refreshSources();
-      refreshWeb();
+      refetchSources();
+      refetchWeb();
       setSelectedSourceId(sourceId);
       handleClose();
       setIsWebDataModalOpen(true);
@@ -111,8 +111,8 @@ export default function AddSourceModal({
         description: "Youtube video uploaded successfully",
         duration: 500,
       });
-      refreshSources();
-      refreshWeb();
+      refetchSources();
+      refetchWeb();
       setSelectedSourceId(sourceId);
       handleClose();
       setIsWebDataModalOpen(true);

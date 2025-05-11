@@ -3,7 +3,6 @@ import * as d3 from "d3";
 import { CreateWeb } from "@/types/web";
 import { useState, Dispatch, SetStateAction } from "react";
 import { LoadingPage } from "@/components/utility/Loading";
-import WebDataDrawer from "./WebDataModal";
 import { useDeleteSource } from "@/hooks/sources";
 import { Source, SourceAsNode } from "@/types/source";
 import { Trash } from "lucide-react";
@@ -26,6 +25,7 @@ import SourceTooltip from "./SourceToolTip";
 import { Connection } from "@/types/connection";
 import SpydrAI from "../utility/Assistant";
 import { useSourceStore } from "@/store/sourceStore";
+import WebDataModal from "./WebDataModal";
 
 interface GraphProps {
   isOwner: boolean;
@@ -587,15 +587,10 @@ function WebGraph({
       )}
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
       {isDrawerOpen && webId && selectedSource && (
-        <WebDataDrawer
-          sourceId={selectedSource?.sourceId}
+        <WebDataModal
           open={isDrawerOpen}
           setOpen={setDrawerOpen}
           webId={webId}
-          onSourceChange={(newSourceId) => {
-            setSelectedSourceId(newSourceId);
-            refetchSources();
-          }}
         />
       )}
       <div className="absolute bottom-4 right-4">
