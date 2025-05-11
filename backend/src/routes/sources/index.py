@@ -818,7 +818,7 @@ def get_link_preview(
         }
 
         return {"result": linkPreview}
-    
+
     except Exception as e:
         logger.error(str(e))
 
