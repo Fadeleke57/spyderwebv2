@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from src.models.index import User
 from typing import Optional
 
+
 def check_user(user):
     """
     Checks if a user is disabled and raises an HTTPException if they are.
@@ -17,8 +18,11 @@ def check_user(user):
     if not user or user["disabled"]:
         logging.error("Not authorized!")
         raise HTTPException(status_code=401, detail="Unauthorized")
-    
-def checkAuthorizedUser(resourceUserId : str, userMakingRequest : Optional[dict] = None, denyRequest=False):
+
+
+def checkAuthorizedUser(
+    resourceUserId: str, userMakingRequest: Optional[dict] = None, denyRequest=False
+):
     if denyRequest:
         if not userMakingRequest or userMakingRequest["id"] != resourceUserId:
             logging.error("Not authorized!")
@@ -28,4 +32,3 @@ def checkAuthorizedUser(resourceUserId : str, userMakingRequest : Optional[dict]
             return False
         else:
             return userMakingRequest.get("id", None) == resourceUserId
-

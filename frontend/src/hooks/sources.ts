@@ -238,14 +238,17 @@ export const useUploadVoiceNote = (webId: string) => {
   return useMutation({
     mutationFn: async (blob: Blob) => {
       const formData = new FormData();
-      formData.append('file', new File([blob], 'voice-note.webm', { type: 'audio/webm' }));
+      formData.append(
+        "file",
+        new File([blob], "voice-note.webm", { type: "audio/webm" })
+      );
 
       const response = await api.post(
         `/sources/upload/voice-note/${webId}`,
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         }
       );
@@ -253,19 +256,42 @@ export const useUploadVoiceNote = (webId: string) => {
       return response.data.result;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['sources', webId] });
+      queryClient.invalidateQueries({ queryKey: ["sources", webId] });
       // Invalidate this specific source if it exists in cache
       if (data && data.id) {
-        queryClient.invalidateQueries({ queryKey: ['source', data.id] });
+        queryClient.invalidateQueries({ queryKey: ["source", data.id] });
       }
     },
     onError: (error: any) => {
-      console.error('Voice note upload failed:', error);
+      console.error("Voice note upload failed:", error);
       toast({
         variant: "destructive",
         title: "Error uploading voice note",
         description: "Please try again",
       });
     },
+  });
+};
+
+export const useFetchLinkPreviewData = (
+  url: string,
+  sourceId: string,
+  disabled: boolean
+) => {
+  return useQuery({
+    queryKey: ["link-preview", url],
+    queryFn: async () => {
+      const response = await api.get(`/sources/link/preview/`, {
+        params: {
+          url,
+          sourceId,
+        },
+      });
+      return response.data.result;
+    },
+    staleTime: 5000,
+    retry: 2,
+    enabled: !disabled && (!!url || !!sourceId),
+    refetchOnMount: true,
   });
 };

@@ -245,7 +245,8 @@ def add_website(
 
         try:
 
-            title, md = firecrawlClient.run_scrape(str(url.url))
+            md, meta = firecrawlClient.getMarkdown(url=str(url.url), withMetadata=True)
+            title = meta.get("title", None)
 
         except Exception as e:
             logger.error(str(e))
@@ -266,6 +267,10 @@ def add_website(
             "content": md,
             "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            "ogImage": meta.get("ogImage", ""),
+            "ogDescription": meta.get("ogDescription", ""),
+            "ogTitle": meta.get("ogTitle", ""),
+            "favicon": meta.get("favicon", ""),
         }
 
         background_tasks.add_task(
@@ -755,3 +760,77 @@ async def upload_voice_note(
     except Exception as e:
         logger.error(f"Voice note upload error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/link/preview")
+def get_link_preview(
+    sourceId: str,
+    url: str,
+    background_tasks: BackgroundTasks,
+    user=Depends(manager.optional),
+):
+    if user:
+        check_user(user)
+
+    try:
+
+        source = neo4jClient.get_source_by_id("source", sourceId)
+
+        ogImage = source.get("ogImage", None)
+        ogDescription = source.get("ogDescription", None)
+        ogTitle = source.get("ogTitle", None)
+        favicon = source.get("favicon", None)
+
+        if (
+            ogImage == None
+            or ogDescription == None
+            or ogTitle == None
+            or favicon == None
+        ):
+            logger.info(f"Missing metadata for source {sourceId}...")
+            logger.info(
+                f"Got ogImage: {ogImage}, ogDescription: {ogDescription}, ogTitle: {ogTitle}, favicon: {favicon}"
+            )
+            metadata = firecrawlClient.getMarkdown(url=url, justMetadata=True)
+
+            ogImage = metadata.get("ogImage", "")
+            ogDescription = metadata.get("ogDescription", "")
+            ogTitle = metadata.get("ogTitle", "")
+            favicon = metadata.get("favicon", "")
+
+            metadataToUpdate = {
+                "ogImage": ogImage,
+                "ogDescription": ogDescription,
+                "ogTitle": ogTitle,
+                "favicon": favicon,
+                "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            }
+
+            background_tasks.add_task(
+                sourceService.addLinkMetaData, sourceId, metadataToUpdate
+            )
+
+        linkPreview = {
+            "ogImage": ogImage,
+            "ogDescription": ogDescription,
+            "ogTitle": ogTitle,
+            "favicon": favicon,
+        }
+
+        return {"result": linkPreview}
+    
+    except Exception as e:
+        logger.error(str(e))
+
+        errorLinkPreview = {
+            "ogImage": "",
+            "ogDescription": "",
+            "ogTitle": "",
+            "favicon": "",
+        }
+
+        background_tasks.add_task(
+            sourceService.addLinkMetaData, sourceId, errorLinkPreview
+        )
+
+        return {"result": errorLinkPreview}

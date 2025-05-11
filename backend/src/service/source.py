@@ -18,6 +18,15 @@ class SourceService:
     def __init__(self):
         pass
 
+    def addLinkMetaData(self, sourceId: str, metadata: dict):
+        try:
+            neo4jClient.update_source(sourceId, metadata)
+            logger.info(f"Updated source {sourceId} metadata: {metadata}")
+            return True
+        except Exception as e:
+            logger.error(f"Error updating source metadata: {e}")
+            return False
+
     def embed_and_upsert_website(self, source: Source, md: str):
 
         try:

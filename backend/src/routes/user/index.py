@@ -223,9 +223,11 @@ async def get_usage(user: User = Depends(manager)):
 
 @router.get("/pinned/webs/{user_id}")
 def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.optional)):
-    authorized = checkAuthorizedUser(resourceUserId=user_id, userMakingRequest=userMakingRequest)
+    authorized = checkAuthorizedUser(
+        resourceUserId=user_id, userMakingRequest=userMakingRequest
+    )
     profile = Users.find_one({"id": user_id})
-    
+
     query = {"webId": {"$in": profile["websPinned"]}}
 
     if not authorized:
