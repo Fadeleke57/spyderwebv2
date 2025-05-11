@@ -76,7 +76,7 @@ class AutoLinkerEngine:
                 candidate_document = cs.create_candidate_doc(
                     raw_candidates=raw_candidates, model_candidate_metadata=metadata
                 )
-                
+
                 # create connections and pool to connection evaluator
                 conns = cr._create_connections_list(candidate_document)
                 for c in conns:

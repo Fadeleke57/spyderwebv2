@@ -26,11 +26,11 @@ import { Connection } from "@/types/connection";
 import SpydrAI from "../utility/Assistant";
 import { useSourceStore } from "@/store/sourceStore";
 import WebDataModal from "./WebDataModal";
+import { useRouter } from "next/router";
 
 interface GraphProps {
   isOwner: boolean;
   setConfig: (value: CreateWeb) => void;
-  webId: string;
   hasSources: boolean;
   refetchSources: () => void;
   fetchedSources: Source[];
@@ -46,7 +46,6 @@ interface GraphProps {
 
 function WebGraph({
   isOwner,
-  webId,
   hasSources,
   fetchedSources,
   refetchSources,
@@ -59,7 +58,14 @@ function WebGraph({
   connectionsLoading,
   refetchConnections,
 }: GraphProps) {
-  const { selectedSourceId, setSelectedSourceId } = useSourceStore();
+  const router = useRouter();
+  const { webId } = router.query;
+
+  const {
+    setSelectedSourceId,
+    source: selectedSource,
+    setSource: setSelectedSource,
+  } = useSourceStore();
 
   const [isDragging, setIsDragging] = useState(false);
   const handleDragEnter = (e: React.DragEvent) => {
@@ -160,8 +166,6 @@ function WebGraph({
 
   const isMobile = useIsMobile();
   const { theme } = useTheme();
-
-  const [selectedSource, setSelectedSource] = useState<Source | null>(null);
   const [hoveredSource, setHoveredSource] = useState<Source | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{
     x: number;
@@ -590,7 +594,6 @@ function WebGraph({
         <WebDataModal
           open={isDrawerOpen}
           setOpen={setDrawerOpen}
-          webId={webId}
         />
       )}
       <div className="absolute bottom-4 right-4">

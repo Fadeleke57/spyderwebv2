@@ -23,18 +23,15 @@ import AutoLinkerIndicator from "../sources/AutoLinkerIndicator";
 import { VoiceNoteComponent } from "../sources/VoiceNoteComponent";
 import { getTypeIcon } from "../chat/genui/graphcontext";
 import { toast } from "sonner";
+import { useRouter } from "next/router";
+import LinkPreview from "../sources/LinkPreview";
 
 interface WebDataModalProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  webId: string;
 }
 
-export default function WebDataModal({
-  open,
-  setOpen,
-  webId,
-}: WebDataModalProps) {
+export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
   const {
     selectedSourceId: sourceId,
     source,
@@ -50,7 +47,8 @@ export default function WebDataModal({
   } = useSourceStore();
 
   const { user } = useUser();
-
+  const router = useRouter();
+  const { webId } = router.query;
   const {
     data: sourceData,
     refetch: refetchSource,
@@ -95,13 +93,10 @@ export default function WebDataModal({
     switch (type) {
       case "website":
         return (
-          <>
-            <iframe
-              src={source?.url || ""}
-              width="100%"
-              className="rounded-lg h-full"
-            />
-          </>
+          <LinkPreview
+            url={source ? source.url : ""}
+            disabled={!!source?.ogImage || source?.ogImage === ""}
+          />
         );
       case "pdf":
         return (
@@ -142,13 +137,17 @@ export default function WebDataModal({
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
-              className="rounded-lg h-full"
+              className="rounded-lg min-h-[77dvh]"
             ></iframe>
           </>
         );
       case "note":
         return (
-          <NoteComponent webId={webId} source={source} isOwner={isOwner} />
+          <NoteComponent
+            webId={webId as string}
+            source={source}
+            isOwner={isOwner}
+          />
         );
       case "voice_note":
         return <VoiceNoteComponent source={source} />;
@@ -299,7 +298,10 @@ export default function WebDataModal({
                 <div className="flex flex-row justify-between items-center">
                   <span className="text-violet-400">{source.type}</span>
                   <div className="flex flex-col items-end space-y-1">
-                    <AutoLinkerIndicator sourceId={sourceId} webId={webId} />
+                    <AutoLinkerIndicator
+                      sourceId={sourceId}
+                      webId={webId as string}
+                    />
                     {source?.updated && (
                       <small>
                         {formatDate(source?.updated.toString(), {
@@ -320,7 +322,7 @@ export default function WebDataModal({
           <div className="grid lg:grid-cols-2 gap-4">
             <div>
               {sourceLoading || !source ? (
-                <Skeleton className="h-[97%] w-full mt-4 rounded-lg" />
+                <Skeleton className="min-h-[77dvh] lg:h-[97%] lg:min-h-[0] w-full mt-4 rounded-lg" />
               ) : (
                 mapSourceTypeToComponent(source?.type)
               )}

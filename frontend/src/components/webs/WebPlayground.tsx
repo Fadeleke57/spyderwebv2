@@ -529,7 +529,6 @@ function WebPlayground({
         <WebGraph
           isOwner={isOwner || false}
           setConfig={setConfig}
-          webId={web?.webId}
           hasSources={web?.sourceIds?.length ? true : false}
           fetchedSources={fetchedSources}
           setFetchedSources={setFetchedSources}
@@ -549,7 +548,6 @@ function WebPlayground({
           <WebDataModal
             open={isWebDataModalOpen}
             setOpen={setIsWebDataModalOpen}
-            webId={web.webId}
           />
         )}
         {proccessModalOpen && (
