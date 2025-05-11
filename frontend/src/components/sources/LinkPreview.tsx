@@ -18,7 +18,7 @@ function LinkPreview({ url, disabled }: { url: string; disabled: boolean }) {
   const { selectedSourceId, source } = useSourceStore();
   const [linkPreview, setLinkPreview] = useState<linkPreview | null>(null);
   const [currentDate, setCurrentDate] = useState("");
-console.log("dsisabled", disabled);
+  console.log("dsisabled", disabled);
   useEffect(() => {
     const today = new Date();
     const day = today.getDate();
@@ -54,7 +54,11 @@ console.log("dsisabled", disabled);
   const favicon = disabled ? source?.favicon || "" : linkPreview?.favicon || "";
 
   return (
-    <Link href={url} target="_blank" className="block">
+    <Link
+      href={url}
+      target="_blank"
+      className="block transition-shadow duration-200 hover:shadow-[0_4px_6px_-1px_rgba(59,130,246,0.5), 0_2px_4px_-1px_rgba(59,130,246,0.3)]"
+    >
       <div className="w-full h-full min-h-[77dvh] border rounded-lg overflow-hidden bg-black/40 text-foreground">
         <div className="p-3 rounded-lg m-2">
           <div className="relative">
@@ -98,7 +102,9 @@ console.log("dsisabled", disabled);
               {formatText(title || source?.name || "Untitled", 50)}
             </h2>
 
-            <p className="text-muted-foreground mb-3">{formatText(description, 130)}</p>
+            <p className="text-muted-foreground mb-3">
+              {formatText(description, 130)}
+            </p>
 
             <div className="flex items-center gap-2 text-foreground text-sm">
               <span className="font-bold">
