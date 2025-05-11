@@ -8,7 +8,6 @@ import {
   useUploadImageToWeb,
 } from "@/hooks/webs";
 import { useToast } from "../ui/use-toast";
-import { useRouter } from "next/router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -31,7 +30,7 @@ import { SHOWCASE_IMAGE } from "@/lib/consts";
 
 type FormProps = {
   web: Web;
-  user: PublicUser | null;
+  user: PublicUser;
 };
 
 const webSchema = z.object({
@@ -75,16 +74,15 @@ function WebForm({ web, user }: FormProps) {
     }
   }, [web, imageUrls, images]);
 
-  const isOwner = user?.id === web?.userId;
+  const isOwner = user.id === web.userId;
 
   const { mutateAsync: updateWeb, isPending } = useUpdateWeb(web?.webId);
   const { toast } = useToast();
-  const router = useRouter();
 
   const [webConfig, setWebConfig] = useState<WebConfig>({
-    name: web?.name,
-    description: web?.description,
-    visibility: web?.visibility,
+    name: web ? web.name : "",
+    description: web ? web.description : "",
+    visibility: web ? web.visibility : "Private",
   });
 
   const form = useForm<WebFormValues>({

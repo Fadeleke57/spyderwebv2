@@ -42,8 +42,8 @@ function Index() {
   const {
     data: webData,
     isLoading: webLoading,
-    error,
-    refetch,
+    error: webError,
+    refetch: refetchWeb,
   } = useFetchWebById(webId as string);
 
   const [web, setWeb] = React.useState<Web | null>(webData || null);
@@ -57,32 +57,38 @@ function Index() {
   );
   const [showIterateModal, setShowIterateModal] = React.useState(false);
   const [authModalOpen, setAuthModalOpen] = React.useState(false);
+
   useEffect(() => {
     if (webData) {
       setWeb(webData);
     }
   }, [webData]);
 
-  const { data: webOwner, isLoading: webOwnerLoading } = useFetchUserById(
-    web?.userId as string
-  );
+  const {
+    data: webOwner,
+    isLoading: webOwnerLoading,
+    error: webOwnerError,
+  } = useFetchUserById(web ? web.userId : "");
 
-  const { data: iteratedFromUser, isLoading: iteratedFromLoading } =
-    useFetchUserById(web?.iteratedFrom ? web?.iteratedFrom : "");
+  const {
+    data: iteratedFromUser,
+    isLoading: iteratedFromLoading,
+    error: iteratedFromError,
+  } = useFetchUserById(web ? web.iteratedFrom || "" : "");
 
-  const { user } = useUser();
+  const { user, userLoading } = useUser();
 
   const [isPinned, setPinned] = React.useState(
-    user?.websPinned?.includes(webId as string) || false
+    user ? user.websPinned.includes(webId as string) : false
   );
 
   useEffect(() => {
     if (user) {
-      setPinned(user.websPinned?.includes(webId as string) || false);
+      setPinned(user.websPinned.includes(webId as string));
     }
   }, [user, webId]);
 
-  const isOwner = user?.id === webOwner?.id;
+  const isOwner = user && webOwner && user.id === webOwner.id;
 
   const title = webLoading ? "Loading..." : web?.name || "Web Details";
   const description = webLoading
@@ -129,7 +135,7 @@ function Index() {
     }
   };
 
-  if (error) {
+  if (webError) {
     return (
       <div className="grid h-screen w-full overflow-hidden scrollbar-none">
         <Head>
@@ -303,9 +309,10 @@ function Index() {
                 />
                 <div className="flex flex-col gap-0">
                   <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
-                    {webOwner?.username || ""}{" "}
+                    {webOwnerLoading ? "Loading..." : ""}
+                    {(webOwner && webOwner.username) || ""}{" "}
                   </h1>
-                  {web?.iteratedFrom ? (
+                  {web && web.iteratedFrom ? (
                     <p className="text-xs font-normal text-muted-foreground">
                       Iterated From{" "}
                       <span className="font-semibold text-violet-400/80 dark:text-violet-400/80">
@@ -325,8 +332,12 @@ function Index() {
                 </div>
               </div>
 
-              {web && isOwner && <WebForm web={web} user={user || null} />}
-              {web && !isOwner && <PublicWebView web={web} />}
+              {web && user && isOwner && <WebForm web={web} user={user} />}
+              {web &&
+                !isOwner &&
+                !webLoading &&
+                !webOwnerLoading &&
+                !userLoading && <PublicWebView web={web} />}
 
               {webId && web && web.iterations.length > 0 && (
                 <>
@@ -343,7 +354,11 @@ function Index() {
             <Skeleton className="flex h-full lg:h-[calc(90vh-18px)] flex-col rounded-xl lg:col-span-2"></Skeleton>
           )}
           {web && (
-            <WebPlayground web={web} user={user || null} refetch={refetch} />
+            <WebPlayground
+              web={web}
+              user={user || null}
+              refetchWeb={refetchWeb}
+            />
           )}
         </div>
       </div>

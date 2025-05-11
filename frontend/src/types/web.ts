@@ -4,7 +4,7 @@ export interface Web {
   description: string;
   tags: string[];
   userId: string;
-  sourceIds?: string[]; //list of misc source ids
+  sourceIds: string[];
   imageKeys: string[];
   created: string;
   updated: string;

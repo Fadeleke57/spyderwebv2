@@ -1,22 +1,19 @@
-import {
-  createContext,
-  useContext,
-  ReactNode,
-} from "react";
+import { createContext, useContext, ReactNode } from "react";
 import { PublicUser } from "@/types/user";
 import { useCheckUserState } from "@/hooks/user";
 
 type UserContextType = {
   user: PublicUser | null | undefined;
   logout: () => void;
+  userLoading: boolean;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const { user, isLoading: loading, error, logout } = useCheckUserState();
+  const { user, isLoading: userLoading, error, logout } = useCheckUserState();
 
-  if (loading) {
+  if (userLoading) {
     return null;
   }
 
@@ -25,7 +22,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <UserContext.Provider value={{ user, logout: logout }}>
+    <UserContext.Provider value={{ user, logout: logout, userLoading }}>
       {children}
     </UserContext.Provider>
   );
