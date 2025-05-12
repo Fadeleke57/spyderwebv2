@@ -13,6 +13,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/hoc/theme-provider";
 import { handleLinkedInWebView } from "@/lib/utils";
 import { Toaster as SonnerToaster } from "sonner";
+import { PostHogProvider } from "@/components/PostHogProvider";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -81,33 +82,51 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
   }, [toast, toastId]);
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      <QueryClientProvider client={queryClient}>
-        <Head>
-          <title>spydr</title>
-          <meta
-            name="description"
-            content="spydr is working to democratize research."
-          />
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-        </Head>
+    <PostHogProvider>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        <QueryClientProvider client={queryClient}>
+          <Head>
+            <title>Bridging the Gap Between AI Models and Human Thought</title>
+            <meta
+              name="description"
+              content="An exploration into harmonizing AI capabilities with human cognition."
+            />
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1"
+            />
+            <meta
+              property="og:title"
+              content="Bridging the Gap Between AI Models and Human Thought"
+            />
+            <meta
+              property="og:description"
+              content="An exploration into harmonizing AI capabilities with human cognition."
+            />
+            <meta property="og:image" content="/opengraph-image.jpg" />
+            <meta property="og:url" content="https://www.spydr.ai" />
+            <meta property="og:type" content="website" />
+            <link rel="icon" href="/favicon.ico" />
+            <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+          </Head>
 
-        <UserProvider>
-          <div className="max-w-[1400px] mx-auto">
-            {getLayout(
-              <>
-                <Analytics />
-                <div className={`${fontSans.className}`}>
-                  <Component {...pageProps} />
-                  <Toaster />
-                  <SonnerToaster />
-                </div>
-              </>
-            )}
-          </div>
-        </UserProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+          <UserProvider>
+            <div className="max-w-[1400px] mx-auto">
+              {getLayout(
+                <>
+                  <Analytics />
+                  <div className={`${fontSans.className}`}>
+                    <Component {...pageProps} />
+                    <Toaster />
+                    <SonnerToaster />
+                  </div>
+                </>
+              )}
+            </div>
+          </UserProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </PostHogProvider>
   );
 }
 

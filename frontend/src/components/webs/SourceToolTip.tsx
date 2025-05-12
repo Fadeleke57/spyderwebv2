@@ -3,22 +3,19 @@ import { Card } from "../ui/card";
 import FaviconDisplay from "../utility/FaviconDisplay";
 import { Notebook } from "lucide-react";
 import { getTypeIcon, ReferenceMetadata } from "../chat/genui/graphcontext";
-import { get } from "lodash";
 
 interface SourceTooltipProps {
   children: React.ReactNode;
   source: Source | null;
   position: { x: number; y: number } | null;
 }
-
+export const formatFileSize = (bytes?: number) => {
+  if (!bytes) return "";
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
+};
 const SourceTooltip = ({ children, source, position }: SourceTooltipProps) => {
-  const formatFileSize = (bytes?: number) => {
-    if (!bytes) return "";
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
-  };
-
   const mapTypeToDescriptor = (type: string) => {
     switch (type) {
       case "website":

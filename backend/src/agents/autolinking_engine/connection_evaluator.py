@@ -7,6 +7,7 @@ from src.lib.gemini.index import client as geminiClient
 from src.db.neo4j import client as neo4jClient
 from src.models.index import CreateConnection
 
+
 class ConnectionEvaluatorAgent:
     def __new__(cls, *args, **kwargs):
         """
@@ -29,7 +30,6 @@ class ConnectionEvaluatorAgent:
         self.staged_connections = []
 
     def _build_evaluation_prompt(self, k: int = 2):
-
         """
         Builds a prompt for the Gemini Model to evaluate the quality of the connections staged by the agent.
 

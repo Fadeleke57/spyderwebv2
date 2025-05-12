@@ -26,6 +26,10 @@ class Source(BaseModel):
     size: int
     created: datetime
     updated: datetime
+    ogImage: Optional[str] = None
+    ogDescription: Optional[str] = None
+    ogTitle: Optional[str] = None
+    favicon: Optional[str] = None
 
 
 class CreateSource(BaseModel):

@@ -3,7 +3,6 @@ import * as d3 from "d3";
 import { CreateWeb } from "@/types/web";
 import { useState, Dispatch, SetStateAction } from "react";
 import { LoadingPage } from "@/components/utility/Loading";
-import WebDataDrawer from "./WebDataModal";
 import { useDeleteSource } from "@/hooks/sources";
 import { Source, SourceAsNode } from "@/types/source";
 import { Trash } from "lucide-react";
@@ -25,19 +24,19 @@ import {
 import SourceTooltip from "./SourceToolTip";
 import { Connection } from "@/types/connection";
 import SpydrAI from "../utility/Assistant";
+import { useSourceStore } from "@/store/sourceStore";
+import WebDataModal from "./WebDataModal";
+import { useRouter } from "next/router";
 
 interface GraphProps {
   isOwner: boolean;
   setConfig: (value: CreateWeb) => void;
-  webId: string;
   hasSources: boolean;
   refetchSources: () => void;
   fetchedSources: Source[];
   refetchWeb: () => void;
   setFetchedSources: Dispatch<SetStateAction<Source[]>>;
   sourcesLoading: boolean;
-  selectedSourceId: string | null;
-  setSelectedSourceId: Dispatch<SetStateAction<string>>;
   handleFileUpload: (files: FileList | null) => void;
   isFileUploading: boolean;
   connections: Connection[];
@@ -47,21 +46,27 @@ interface GraphProps {
 
 function WebGraph({
   isOwner,
-  webId,
   hasSources,
   fetchedSources,
   refetchSources,
   refetchWeb,
   setFetchedSources,
   sourcesLoading,
-  selectedSourceId,
-  setSelectedSourceId,
   handleFileUpload,
   isFileUploading,
   connections,
   connectionsLoading,
   refetchConnections,
 }: GraphProps) {
+  const router = useRouter();
+  const { webId } = router.query;
+
+  const {
+    setSelectedSourceId,
+    source: selectedSource,
+    setSource: setSelectedSource,
+  } = useSourceStore();
+
   const [isDragging, setIsDragging] = useState(false);
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -161,8 +166,6 @@ function WebGraph({
 
   const isMobile = useIsMobile();
   const { theme } = useTheme();
-
-  const [selectedSource, setSelectedSource] = useState<Source | null>(null);
   const [hoveredSource, setHoveredSource] = useState<Source | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{
     x: number;
@@ -588,11 +591,9 @@ function WebGraph({
       )}
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
       {isDrawerOpen && webId && selectedSource && (
-        <WebDataDrawer
-          sourceId={selectedSource?.sourceId}
+        <WebDataModal
           open={isDrawerOpen}
           setOpen={setDrawerOpen}
-          webId={webId}
         />
       )}
       <div className="absolute bottom-4 right-4">

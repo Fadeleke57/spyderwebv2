@@ -39,7 +39,7 @@ function UserAvatar({
   console.log("user", user);
   return (
     <TooltipProvider>
-      <Tooltip>
+      <Tooltip delayDuration={100}>
         <TooltipTrigger>
           <Button
             variant="outline"

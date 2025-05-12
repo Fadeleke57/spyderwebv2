@@ -82,7 +82,6 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
             logger.error(f"Raw response: {response}")
             return []
 
-
     def _generate_prompt(self, candidate_document):
         """
         Generates an advanced prompt for the Gemini Model to create meaningful, high-value connections

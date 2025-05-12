@@ -21,6 +21,7 @@ import {
 import { Drawer, DrawerContent, DrawerHeader } from "../ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Skeleton } from "../ui/skeleton";
+import { useSourceStore } from "@/store/sourceStore";
 
 type AddSourceModalProps = {
   open: boolean;
@@ -28,11 +29,10 @@ type AddSourceModalProps = {
   config: CreateWeb;
   setConfig: (value: CreateWeb) => void;
   web: Web;
-  refreshSources: () => void;
-  refreshWeb: () => void;
+  refetchSources: () => void;
+  refetchWeb: () => void;
   view?: string;
   setIsWebDataModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setSelectedSourceId: React.Dispatch<React.SetStateAction<string>>;
   handleFileUpload: (files: FileList | null) => void;
   isFileUploading: boolean;
   setParseObsidianLinks: React.Dispatch<React.SetStateAction<boolean>>;
@@ -47,16 +47,17 @@ export default function AddSourceModal({
   setOpen,
   view = "default",
   children,
-  refreshSources,
-  refreshWeb,
+  refetchSources,
+  refetchWeb,
   setIsWebDataModalOpen,
-  setSelectedSourceId,
   handleFileUpload,
   isFileUploading,
   setParseObsidianLinks,
   handleVoiceNoteUpload,
   isVoiceNoteUploading,
 }: AddSourceModalProps) {
+  const { setSelectedSourceId } = useSourceStore();
+
   const isMobile = useIsMobile();
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -83,8 +84,8 @@ export default function AddSourceModal({
         description: "Website uploaded successfully",
         duration: 500,
       });
-      refreshSources();
-      refreshWeb();
+      refetchSources();
+      refetchWeb();
       setSelectedSourceId(sourceId);
       handleClose();
       setIsWebDataModalOpen(true);
@@ -110,8 +111,8 @@ export default function AddSourceModal({
         description: "Youtube video uploaded successfully",
         duration: 500,
       });
-      refreshSources();
-      refreshWeb();
+      refetchSources();
+      refetchWeb();
       setSelectedSourceId(sourceId);
       handleClose();
       setIsWebDataModalOpen(true);

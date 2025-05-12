@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from src.routes.auth.oauth2 import manager
 from src.lib.logger.index import logger
-from src.utils.exceptions import check_user
+from src.utils.exceptions import check_user, checkAuthorizedUser
 from src.models.index import User, UpdateUser, Users, Webs
 from src.constants.credits import PLAN_CREDITS
 from src.utils.storage import calculate_storage_usage
@@ -224,14 +224,13 @@ async def get_usage(user: User = Depends(manager)):
 
 @router.get("/pinned/webs/{user_id}")
 def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.optional)):
-    authorized = False
-    if userMakingRequest:
-        check_user(userMakingRequest)
-        if userMakingRequest["id"] == user_id:
-            authorized = True
-
+    authorized = checkAuthorizedUser(
+        resourceUserId=user_id, userMakingRequest=userMakingRequest
+    )
     profile = Users.find_one({"id": user_id})
+
     query = {"webId": {"$in": profile["websPinned"]}}
+
     if not authorized:
         query["visibility"] = "Public"
 

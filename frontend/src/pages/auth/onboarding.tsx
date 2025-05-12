@@ -9,6 +9,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { DialogDescription } from "@radix-ui/react-dialog";
+
 export default function OnboardingPage() {
   const router = useRouter();
   const { toast } = useToast();

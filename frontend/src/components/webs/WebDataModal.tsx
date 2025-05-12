@@ -1,13 +1,12 @@
 import { useEditSourceTitle, useFetchSource } from "@/hooks/sources";
-import { useState, useEffect } from "react";
+import { useSourceStore } from "@/store/sourceStore";
+import { useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, Edit, X } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { Textarea } from "../ui/textarea";
 import { useUser } from "@/context/UserContext";
-import { toast } from "../ui/use-toast";
 import { extractVideoId } from "@/lib/utils";
-import { SourceAsNode } from "@/types/source";
 import NoteComponent from "../notes/Notes";
 import {
   Dialog,
@@ -23,58 +22,68 @@ import FaviconDisplay from "../utility/FaviconDisplay";
 import AutoLinkerIndicator from "../sources/AutoLinkerIndicator";
 import { VoiceNoteComponent } from "../sources/VoiceNoteComponent";
 import { getTypeIcon } from "../chat/genui/graphcontext";
+import { toast } from "sonner";
+import { useRouter } from "next/router";
+import LinkPreview from "../sources/LinkPreview";
 
-interface WebDataDrawerProps {
+interface WebDataModalProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  sourceId: string;
-  webId: string;
 }
 
-export default function WebDataModal({
-  open,
-  setOpen,
-  sourceId,
-  webId,
-}: WebDataDrawerProps) {
-  const { user } = useUser();
-  const { data: sourceData, refetch: refetchSource } = useFetchSource(sourceId);
-  const { mutateAsync: editSourceTitle } = useEditSourceTitle(sourceId);
+export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
+  const {
+    selectedSourceId: sourceId,
+    source,
+    setSource,
+    isEditingSource,
+    setIsEditingSource,
+    sourceTitle,
+    setSourceTitle,
+    sourceContent,
+    setSourceContent,
+    presignedUrl,
+    setPresignedUrl,
+  } = useSourceStore();
 
-  const [source, setSource] = useState<SourceAsNode | null>(null);
-  const [presignedUrl, setPresignedUrl] = useState("");
-  const [title, setTitle] = useState(source?.name);
-  const [content, setContent] = useState(source?.content);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useUser();
+  const router = useRouter();
+  const { webId } = router.query;
+  const {
+    data: sourceData,
+    refetch: refetchSource,
+    isLoading: sourceLoading,
+  } = useFetchSource(sourceId);
+
+  const { mutateAsync: editSourceTitle } = useEditSourceTitle(sourceId);
 
   useEffect(() => {
     if (!sourceData) return;
     setSource(sourceData.result);
-    setTitle(sourceData.result.name);
-    setContent(sourceData.result.content);
+    setSourceTitle(sourceData.result.name);
+    setSourceContent(sourceData.result.content);
     setPresignedUrl(sourceData.file_url);
-    setIsLoading(false);
   }, [sourceData]);
-  const isOwner = (source?.userId && user?.id) === source?.userId;
+
+  const isOwner = (source && user && source.userId === user.id) || false;
 
   const handleNewTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newTitle = e.target.value;
-    setTitle(newTitle);
+    setSourceTitle(newTitle);
   };
 
   const handleEditTitle = async () => {
     // any source
-    if (!title) {
-      setIsEditing(false);
+    if (!sourceTitle || !source || sourceTitle === source.name) {
+      setIsEditingSource(false);
       return;
     }
     try {
-      handleNewTitleChange({ target: { value: title } } as any);
-      await editSourceTitle(title);
+      handleNewTitleChange({ target: { value: sourceTitle } } as any);
+      await editSourceTitle(sourceTitle);
       refetchSource();
-      setIsEditing(false);
-      toast({ title: "Changes saved." });
+      setIsEditingSource(false);
+      toast.success("Changes saved");
     } catch (err) {
       console.error("Failed to update note:", err);
     }
@@ -84,13 +93,10 @@ export default function WebDataModal({
     switch (type) {
       case "website":
         return (
-          <>
-            <iframe
-              src={source?.url || ""}
-              width="100%"
-              className="rounded-lg h-full"
-            />
-          </>
+          <LinkPreview
+            url={source ? source.url : ""}
+            disabled={!!source?.ogImage || source?.ogImage === ""}
+          />
         );
       case "pdf":
         return (
@@ -112,7 +118,7 @@ export default function WebDataModal({
               data={presignedUrl}
               type="application/pdf"
               width="100%"
-              className="rounded-lg border h-full"
+              className="rounded-lg border h-full transition-shadow duration-200 hover:shadow-blue-glow-md"
             >
               <p>Your browser does not support PDFs.</p>
             </object>
@@ -131,13 +137,17 @@ export default function WebDataModal({
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
-              className="rounded-lg h-full"
+              className="rounded-lg min-h-[77dvh] transition-shadow duration-200 hover:shadow-blue-glow-sm"
             ></iframe>
           </>
         );
       case "note":
         return (
-          <NoteComponent webId={webId} source={source} isOwner={isOwner} />
+          <NoteComponent
+            webId={webId as string}
+            source={source}
+            isOwner={isOwner}
+          />
         );
       case "voice_note":
         return <VoiceNoteComponent source={source} />;
@@ -145,40 +155,52 @@ export default function WebDataModal({
   };
 
   const handleClose = () => {
-    setTitle("");
-    setContent("");
+    setSourceTitle("");
+    setSourceContent("");
     setPresignedUrl("");
     setSource(null);
     setOpen(false);
-    setIsEditing(false);
-    setIsLoading(true);
+    setIsEditingSource(false);
   };
+
+  useEffect(() => {
+    if (!sourceId) {
+      handleClose();
+    }
+  }, [sourceId]);
 
   return (
     <div className="grid grid-cols-2 gap-2">
-      <Dialog open={open} onOpenChange={handleClose}>
+      <Dialog
+        open={open}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            handleClose();
+          }
+        }}
+      >
         <DialogClose onClick={handleClose} className="absolute right-4 top-10">
           <ArrowLeft></ArrowLeft>
         </DialogClose>
         <DialogContent className="max-w-full h-full">
           <div className="flex flex-col gap-4">
             <DialogTitle className="text-left w-11/12 font-bold relative group min-h-[50px]">
-              {isLoading ? (
+              {sourceLoading ? (
                 <Skeleton className="h-8 w-3/4 rounded-lg" />
               ) : presignedUrl || source?.url ? (
-                isEditing ? (
+                isEditingSource ? (
                   <div className="flex items-center justify-between">
                     <Textarea
-                      defaultValue={title}
+                      defaultValue={sourceTitle}
                       onChange={(e) => handleNewTitleChange(e)}
                       placeholder="Title..."
-                      className="w-full text-lg font-bold resize-none !p-0 !m-0 !shadow-none !bg-transparent rounded-md focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg"
+                      className="w-full text-lg font-bold resize-none p-0 pl-4 !m-0 !shadow-none !bg-transparent rounded-md focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg"
                     />
                     {isOwner && (
                       <div className="absolute left-0 -bottom-4 flex border rounded-sm">
                         <Button
                           size={"icon"}
-                          onClick={() => setIsEditing(false)}
+                          onClick={() => setIsEditingSource(false)}
                           className="p-0 m-0 h-8 w-8 rounded-none"
                         >
                           <X size={16} />
@@ -208,7 +230,7 @@ export default function WebDataModal({
                         getTypeIcon(source?.type)
                       ) : null}
                       <span className="flex flex-row items-center gap-2">
-                        {title || "Loading..."}
+                        {sourceTitle || "Loading..."}
                       </span>
                     </Link>
                     {isOwner && (
@@ -216,16 +238,16 @@ export default function WebDataModal({
                         <Edit
                           size={20}
                           className="cursor-pointer text-foreground hover:text-violet-400"
-                          onClick={() => setIsEditing(!isEditing)}
+                          onClick={() => setIsEditingSource(!isEditingSource)}
                         />
                       </div>
                     )}
                   </div>
                 )
-              ) : isEditing ? (
+              ) : isEditingSource ? (
                 <div className="flex items-center justify-between relative">
                   <Textarea
-                    defaultValue={title}
+                    defaultValue={sourceTitle}
                     onChange={(e) => handleNewTitleChange(e)}
                     placeholder="Title..."
                     className="w-full text-lg font-bold resize-none !p-0 !m-0 !shadow-none !bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg"
@@ -234,7 +256,7 @@ export default function WebDataModal({
                     <div className="absolute left-0 -bottom-4 flex border rounded-sm">
                       <Button
                         size={"icon"}
-                        onClick={() => setIsEditing(false)}
+                        onClick={() => setIsEditingSource(false)}
                         className="p-0 m-0 h-8 w-8 rounded-none"
                       >
                         <X size={16} />
@@ -251,13 +273,15 @@ export default function WebDataModal({
                 </div>
               ) : (
                 <div className="flex items-center justify-between relative">
-                  <span className="text-lg">{title || source?.name || ""}</span>
+                  <span className="text-lg">
+                    {sourceTitle || source?.name || ""}
+                  </span>
                   {isOwner && (
                     <div className="absolute left-0 -bottom-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out flex space-x-2">
                       <Edit
                         size={20}
                         className="cursor-pointer text-foreground hover:text-violet-400"
-                        onClick={() => setIsEditing(!isEditing)}
+                        onClick={() => setIsEditingSource(!isEditingSource)}
                       />
                     </div>
                   )}
@@ -265,16 +289,19 @@ export default function WebDataModal({
               )}
             </DialogTitle>
             <DialogDescription className="text-left pb-1 font-semibold text-muted-foreground flex flex-col gap-2 justify-start border-b border-b-muted">
-              {isLoading ? (
+              {sourceLoading || !source ? (
                 <div className="flex flex-row justify-between items-center">
                   <Skeleton className="h-4 w-24 rounded-lg" />
                   <Skeleton className="h-4 w-32 rounded-lg" />
                 </div>
               ) : (
                 <div className="flex flex-row justify-between items-center">
-                  <span className="text-violet-400">{source?.type}</span>
+                  <span className="text-violet-400">{source.type}</span>
                   <div className="flex flex-col items-end space-y-1">
-                    <AutoLinkerIndicator sourceId={sourceId} webId={webId} />
+                    <AutoLinkerIndicator
+                      sourceId={sourceId}
+                      webId={webId as string}
+                    />
                     {source?.updated && (
                       <small>
                         {formatDate(source?.updated.toString(), {
@@ -294,17 +321,13 @@ export default function WebDataModal({
 
           <div className="grid lg:grid-cols-2 gap-4">
             <div>
-              {isLoading ? (
-                <Skeleton className="h-[97%] w-full mt-4 rounded-lg" />
+              {sourceLoading || !source ? (
+                <Skeleton className="min-h-[77dvh] lg:h-[97%] lg:min-h-[0] w-full mt-4 rounded-lg" />
               ) : (
                 mapSourceTypeToComponent(source?.type)
               )}
             </div>
-            <ConnectionsConfig
-              webId={webId}
-              sourceId={sourceId}
-              isOwner={isOwner}
-            ></ConnectionsConfig>
+            <ConnectionsConfig isOwner={isOwner}></ConnectionsConfig>
           </div>
         </DialogContent>
       </Dialog>

@@ -13,7 +13,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { useUser } from "@/context/UserContext";
-import { usePathname } from "next/navigation";
 
 export default function AppLayout({
   children,
