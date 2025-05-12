@@ -118,7 +118,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
               data={presignedUrl}
               type="application/pdf"
               width="100%"
-              className="rounded-lg border h-full"
+              className="rounded-lg border h-full transition-shadow duration-200 hover:shadow-blue-glow-md"
             >
               <p>Your browser does not support PDFs.</p>
             </object>
@@ -137,7 +137,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
-              className="rounded-lg min-h-[77dvh]"
+              className="rounded-lg min-h-[77dvh] transition-shadow duration-200 hover:shadow-blue-glow-sm"
             ></iframe>
           </>
         );
