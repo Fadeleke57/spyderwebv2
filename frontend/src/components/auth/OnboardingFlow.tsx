@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import spydrLogo from "@/assets/slogonobg.png";
-import onboardingGraphic from "@/assets/Sig up/Group.svg";
+import onboardingGraphic from "@/assets/onboardingGraphic.svg";
 import { useCompleteOnboarding } from "@/hooks/auth";
 
 const stepOneSchema = z.object({

@@ -86,12 +86,26 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <QueryClientProvider client={queryClient}>
           <Head>
-            <title>spydr</title>
+            <title>Bridging the Gap Between AI Models and Human Thought</title>
             <meta
               name="description"
-              content="spydr is working to democratize research."
+              content="An exploration into harmonizing AI capabilities with human cognition."
             />
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1"
+            />
+            <meta
+              property="og:title"
+              content="Bridging the Gap Between AI Models and Human Thought"
+            />
+            <meta
+              property="og:description"
+              content="An exploration into harmonizing AI capabilities with human cognition."
+            />
+            <meta property="og:url" content="https://www.spydr.ai" />
+            <meta property="og:type" content="website" />
+            <link rel="icon" href="/favicon.ico" />
           </Head>
 
           <UserProvider>
