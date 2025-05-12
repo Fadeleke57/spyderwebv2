@@ -1,5 +1,6 @@
 import os
 import boto3
+import json
 import tempfile
 from typing import List
 from pytz import UTC
@@ -410,12 +411,13 @@ def add_youtube(
             "webId": web_id,
             "userId": user["id"],
             "name": title,
-            "content": description,
+            "content": json.dumps(transcripts, indent=2),
             "url": url,
             "type": "youtube",
             "size": 300000,
             "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            "description": description,
         }
 
         if transcripts:
@@ -426,6 +428,9 @@ def add_youtube(
             )
 
         neo4jClient.create_node("source", sourceToInsert)
+        
+        sourceToInsert["content"] = description
+        del sourceToInsert["description"]
 
         Webs.update_one(
             {"webId": web_id, "userId": user["id"]},

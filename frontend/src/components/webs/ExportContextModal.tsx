@@ -90,7 +90,7 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        toast.success("Markdown file downloaded!");
+        toast.success("Context downloaded!");
       } else {
         const stringifiedResult =
           typeof result === "string" ? result : JSON.stringify(result, null, 2);
