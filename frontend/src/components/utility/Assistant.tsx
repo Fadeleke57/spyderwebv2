@@ -26,8 +26,6 @@ import {
   MoveLeft,
   PlusCircle,
   SquarePen,
-  Trash2,
-  Waypoints,
   X,
 } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
@@ -50,17 +48,18 @@ import { useRouter } from "next/router";
 import DeleteModal from "./DeleteModal";
 import { useUser } from "@/context/UserContext";
 import { PricingModal } from "@/components/pricing/PricingModal";
+import GroupedChats from "./GroupedChats";
 
-type viewType = "chat" | "history";
+export type viewType = "chat" | "history";
 
-type DBMessage = Message & {
+export type DBMessage = Message & {
   chatId: string;
   userId: string;
   createdAt: Date;
   messages: Message[];
 };
 
-type CharlotteAIProps = {
+export type CharlotteAIProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
   view: viewType;
@@ -99,11 +98,11 @@ const SpydrAI = () => {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [previouslySelectedChat, setPreviouslySelectedChat] = useState<
     string | null
-    >(null);
-  
+  >(null);
+
   const { mutateAsync: configureCharlotte, isPending: isConfiguring } =
     useConfigureChat();
-  
+
   const router = useRouter();
   const { webId } = router.query;
   const isMobile = useIsMobile();
@@ -698,46 +697,13 @@ const ChatHistoryInterface = ({
         </div>
       </div>
 
-      <ScrollArea className="flex-grow flex justify-center p-2 pt-0 space-y-2 px-3">
-        <motion.div
-          className="w-full space-y-2"
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-        >
-          {allChats &&
-            allChats.map((chat: DBMessage, index: number) => (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                className="relative border w-full p-2 bg-muted/80 hover:bg-muted cursor-pointer rounded-md text-muted-foreground flex flex-col transition-all duration-200 ease-in-out"
-                onClick={() => handleSelectChat(chat.chatId)}
-                onMouseEnter={() => setDeleteVisible(index)}
-                onMouseLeave={() => setDeleteVisible(-1)}
-              >
-                <span className="text-sm font-semibold text-foreground">
-                  {formatText(chat.messages[0].content, 50)}
-                </span>
-                <span className="text-xs">
-                  {formatDate(chat.createdAt, "MMM dd, yyyy hh:mm a")}
-                </span>
-                <Button
-                  variant={"link"}
-                  className={`absolute top-4 right-4 h-fit w-fit p-1 ${deleteVisible === index ? "opacity-100" : "opacity-0"} transition-all duration-200 ease-in-out hover:text-red-400`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    setDeleteChatId(chat.chatId);
-                    setDeleteModalOpen(true);
-                  }}
-                >
-                  <Trash2 size={16} />
-                </Button>
-              </motion.div>
-            ))}
-        </motion.div>
-        <ScrollBar />
-      </ScrollArea>
+      <GroupedChats
+        allChats={allChats}
+        handleSelectChat={handleSelectChat}
+        setDeleteChatId={setDeleteChatId}
+        setDeleteModalOpen={setDeleteModalOpen}
+      />
+
       {deleteModalOpen && (
         <DeleteModal
           open={deleteModalOpen}
