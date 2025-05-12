@@ -231,6 +231,7 @@ def get_current_user(user=Depends(manager)):
             "username": user["username"],
             "email": user["email"],
             "bio": user["bio"],
+            "profile_picture_url": user["profile_picture_url"],
             "full_name": user["full_name"],
             "disabled": user["disabled"],
             "websHidden": user["websHidden"],
