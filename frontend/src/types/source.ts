@@ -13,6 +13,7 @@ export interface Source {
   ogTitle?: string;
   ogDescription?: string;
   favicon?: string;
+  description?: string;
 }
 
 export interface SourceAsNode extends Source {

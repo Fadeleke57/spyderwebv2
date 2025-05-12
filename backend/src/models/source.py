@@ -26,10 +26,11 @@ class Source(BaseModel):
     size: int
     created: datetime
     updated: datetime
-    ogImage: Optional[str] = None
-    ogDescription: Optional[str] = None
-    ogTitle: Optional[str] = None
-    favicon: Optional[str] = None
+    ogImage: Optional[str] = None # website specific
+    ogDescription: Optional[str] = None # website specific
+    ogTitle: Optional[str] = None # website specific
+    favicon: Optional[str] = None # website specific
+    description: Optional[str] = None # youtube specific
 
 
 class CreateSource(BaseModel):
