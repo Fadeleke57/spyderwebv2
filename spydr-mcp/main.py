@@ -1,6 +1,56 @@
 # server.py
 from mcp.server.fastmcp import FastMCP
 import os
+from pymongo import MongoClient
+from pinecone import Pinecone, ServerlessSpec
+from neo4j import GraphDatabase
+from pytz import UTC
+from datetime import datetime
+import time
+
+class MongoScriptsClient:
+    def __init__(self):
+        self.client = MongoClient("")
+        self.database = self.client["storage"]
+    
+    def _get_collection(self, name : str):
+        return self.database[name]
+
+mongo_client = MongoScriptsClient()
+Users = mongo_client._get_collection("users")
+Webs = mongo_client._get_collection("webs")
+Embeddings = mongo_client._get_collection("embeddings")
+ 
+class PineconeScriptsClient:
+    def __init__(self):
+        self.client = Pinecone(api_key="")
+        self.index = self.client.Index(name="")
+    
+    def generate_embeddings(self, name: str, description: str, header_weight: int = 3) -> any:
+        weighted_input = (name + ' ') * header_weight + description
+        embeddings = self.client.inference.embed(
+            model="multilingual-e5-large",
+            inputs=[weighted_input],
+                parameters={"input_type": "passage", "truncate": "END"}
+        )
+        return embeddings
+
+pinecone_client = PineconeScriptsClient()
+
+class Neo4jScriptsClient:
+
+    def __init__(self):
+        self.driver = GraphDatabase.driver("", auth=("neo4j", ""))
+
+    def close(self):
+        self.driver.close()
+
+    def execute_query(self, query, parameters):
+        with self.driver.session() as session:
+            result = session.run(query, parameters)
+            return [record.data() for record in result]
+
+neo4j_client = Neo4jScriptsClient()
 
 # Create an MCP server
 mcp = FastMCP("SpydrMCP")
