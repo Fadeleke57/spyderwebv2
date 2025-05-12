@@ -103,9 +103,11 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
               property="og:description"
               content="An exploration into harmonizing AI capabilities with human cognition."
             />
+            <meta property="og:image" content="/opengraph-image.jpg" />
             <meta property="og:url" content="https://www.spydr.ai" />
             <meta property="og:type" content="website" />
             <link rel="icon" href="/favicon.ico" />
+            <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
           </Head>
 
           <UserProvider>
