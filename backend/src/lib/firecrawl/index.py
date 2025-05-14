@@ -1,6 +1,7 @@
 from src.core.config import settings
 from firecrawl import FirecrawlApp
-from typing import Any
+from typing import Union
+from fastapi import HTTPException
 
 
 class FireCrawlClient:
@@ -24,16 +25,24 @@ class FireCrawlClient:
 
     def getMarkdown(
         self, url: str, withMetadata: bool = False, justMetadata: bool = False
-    ) -> Any:
-        if justMetadata:
-            result = self.app.scrape_url(url=url)
-            return result.metadata
+    ) -> Union[str, tuple[str, dict], dict]:
+        try:
+            if justMetadata:
+                result = self.app.scrape_url(url=url)
+                metadata: dict = result.metadata
+                return metadata
 
-        result = self.app.scrape_url(url=url, formats=["markdown"])
-        if withMetadata:
-            return result.markdown, result.metadata
+            result = self.app.scrape_url(url=url, formats=["markdown"])
+            if withMetadata:
+                markdown: str = result.markdown
+                return markdown, result.metadata
 
-        return result.markdown
+            markdown: str = result.markdown
+            return markdown
+        except Exception as e:
+            raise HTTPException(
+                status_code=400, detail="This website is not supported."
+            )
 
 
 client = FireCrawlClient()

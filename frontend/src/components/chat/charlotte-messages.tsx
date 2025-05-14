@@ -6,7 +6,6 @@ import {
   Check,
   ThumbsUp,
   ThumbsDown,
-  Save,
   NotebookText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,6 @@ import ReferencesComponent, {
   formatLinkwithTimeStamp,
   ReferenceMetadata,
 } from "./genui/graphcontext";
-import { url } from "inspector";
 import { useUploadNote } from "@/hooks/sources";
 import { useRouter } from "next/router";
 import { useFetchWebById } from "@/hooks/webs";
@@ -133,7 +131,7 @@ const AssistantMessage = ({
     >
       {" "}
       <div
-        className={`absolute -top-[40px] left-0 flex flex-row ${toolbarVisible && !isLoading ? "opacity-100" : "opacity-0"} transition-all ease-in-out duration-200`}
+        className={`absolute -top-[40px] left-0 flex flex-row ${toolbarVisible && !isLoading ? "opacity-100" : "opacity-0 hidden"} transition-all ease-in-out duration-200`}
       >
         <div>
           <SimpleTooltip content="Copy">

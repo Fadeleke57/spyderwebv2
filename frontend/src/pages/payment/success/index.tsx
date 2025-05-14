@@ -58,10 +58,10 @@ export default function PaymentSuccessPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <div className="text-center max-w-md">
         <div className="flex justify-center mb-6">
-          <CheckCircle className="h-16 w-16 text-green-500" />
+          <CheckCircle className="h-16 w-16 text-green-500/40" />
         </div>
         <h1 className="text-2xl font-bold mb-2">Payment Successful!</h1>
         <p className="text-muted-foreground mb-6">

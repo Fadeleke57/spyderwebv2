@@ -10,6 +10,7 @@ from botocore.exceptions import ClientError
 from werkzeug.utils import secure_filename
 from pydantic import BaseModel, HttpUrl
 from urllib.parse import unquote
+from src.utils.storage import handleTextStorage, handleFileStorage
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, BackgroundTasks
 from src.routes.auth.oauth2 import manager
 from src.utils.exceptions import check_user
@@ -23,6 +24,7 @@ from src.models.index import (
     UpdateNote,
     Source,
     UpdateSource,
+    Users,
 )
 from src.service.source import service as sourceService
 from src.db.neo4j import client as neo4jClient
@@ -75,6 +77,14 @@ async def process_file(
 
             s3_bucket.upload_file(temp_path, object_name)  # upload to S3
 
+            fileStorageResult = handleFileStorage(
+                fileSizeBytes=os.path.getsize(temp_path),
+                userId=user_id,
+                operation="$inc",
+            )
+            if not fileStorageResult:
+                raise HTTPException(status_code=400, detail="Storage limit exceeded")
+
             sourceToInsert: Source = {
                 "sourceId": sourceId,
                 "webId": web_id,
@@ -99,6 +109,16 @@ async def process_file(
                 text_content = f.read()
 
                 filename = (" ".join(file.filename.split(".")[:-1])).replace("%22", " ")
+
+                textStorageResult = handleTextStorage(
+                    extractedText=text_content,
+                    userId=user_id,
+                    operation="$inc",
+                )
+                if not textStorageResult:
+                    raise HTTPException(
+                        status_code=400, detail="Storage limit exceeded"
+                    )
 
                 sourceToInsert: Source = {
                     "sourceId": sourceId,
@@ -244,18 +264,14 @@ def add_website(
 
     try:
 
-        try:
-
-            md, meta = firecrawlClient.getMarkdown(url=str(url.url), withMetadata=True)
-            title = meta.get("title", None)
-
-        except Exception as e:
-            logger.error(str(e))
-            raise HTTPException(
-                status_code=400, detail="Could not retrieve the webpage"
-            )
+        md, meta = firecrawlClient.getMarkdown(url=str(url.url), withMetadata=True)
+        title = meta.get("title", None)
 
         sourceId = str(uuid4())
+
+        textStorageResult = handleTextStorage(md, user["id"], operation="$inc")
+        if not textStorageResult:
+            raise HTTPException(status_code=400, detail="Text storage limit reached")
 
         sourceToInsert = {
             "sourceId": sourceId,
@@ -264,7 +280,7 @@ def add_website(
             "name": title,
             "url": str(url.url),
             "type": "website",
-            "size": len(md) * 200,
+            "size": len(md.encode("utf-8")),
             "content": md,
             "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
@@ -284,7 +300,10 @@ def add_website(
 
         Webs.update_one(
             {"webId": web_id, "userId": user["id"]},
-            {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
+            {
+                "$addToSet": {"sourceIds": sourceId},
+                "$set": {"updated": datetime.now(UTC)},
+            },
         )
         return {"result": sourceId}
 
@@ -353,6 +372,12 @@ def upload_note(
     check_user(user)
     sourceId = str(uuid4())
 
+    deductTextStorageResult = handleTextStorage(
+        note.content, user["id"], operation="$inc"
+    )
+    if not deductTextStorageResult:
+        raise HTTPException(status_code=400, detail="Text storage limit reached")
+
     sourceToInsert = {
         "sourceId": sourceId,
         "webId": web_id,
@@ -361,7 +386,7 @@ def upload_note(
         "content": note.content,
         "url": None,
         "type": "note",
-        "size": None,
+        "size": len((note.content or "").encode("utf-8")),
         "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
     }
@@ -373,12 +398,17 @@ def upload_note(
     )
 
     try:
+
         neo4jClient.create_node("source", sourceToInsert)
         Webs.update_one(
             {"webId": web_id, "userId": user["id"]},
-            {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
+            {
+                "$addToSet": {"sourceIds": sourceId},
+                "$set": {"updated": datetime.now(UTC)},
+            },
         )
         return {"result": sourceId}
+
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))
@@ -406,15 +436,22 @@ def add_youtube(
 
         sourceId = str(uuid4())
 
+        jsonTranscript = json.dumps(transcripts, indent=2)
+        textStorageResult = handleTextStorage(
+            jsonTranscript, user["id"], operation="$inc"
+        )
+        if not textStorageResult:
+            raise HTTPException(status_code=400, detail="Text storage limit reached")
+
         sourceToInsert = {
             "sourceId": sourceId,
             "webId": web_id,
             "userId": user["id"],
             "name": title,
-            "content": json.dumps(transcripts, indent=2),
+            "content": jsonTranscript,
             "url": url,
             "type": "youtube",
-            "size": 300000,
+            "size": len(jsonTranscript.encode("utf-8")),
             "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             "description": description,
@@ -428,13 +465,16 @@ def add_youtube(
             )
 
         neo4jClient.create_node("source", sourceToInsert)
-        
+
         sourceToInsert["content"] = description
         del sourceToInsert["description"]
 
         Webs.update_one(
             {"webId": web_id, "userId": user["id"]},
-            {"$push": {"sourceIds": sourceId}, "$set": {"updated": datetime.now(UTC)}},
+            {
+                "$addToSet": {"sourceIds": sourceId},
+                "$set": {"updated": datetime.now(UTC)},
+            },
         )
         return {"result": sourceId}
 
@@ -451,43 +491,44 @@ def update_note(
     background_tasks: BackgroundTasks,
     user=Depends(manager),
 ):
-    """
-    Update a note.
-
-    Args:
-        web_id (str): The ID of the web the note belongs to.
-        source_id (str): The ID of the note to update.
-        note (UpdateNote): The new content for the note.
-        user (User): The user making the request.
-
-    Returns:
-        dict: A JSON response with a result key.
-    """
     check_user(user)
 
     try:
-
         update_data = updateNotePayload.model_dump(exclude_none=True)
-
         update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+
+        previousSource = neo4jClient.get_source_by_id("source", source_id=source_id)
+        if not previousSource:
+            raise HTTPException(status_code=404, detail="Note not found")
+
+        prev_content = previousSource.get("content") or ""
+        new_content = update_data.get("content") or ""
+
+        if new_content:
+            new_size = len(new_content.encode("utf-8"))
+            prev_size = len(prev_content.encode("utf-8"))
+            update_data["size"] = new_size
+            byte_diff = new_size - prev_size
+
+            if byte_diff != 0:
+                Users.update_one(
+                    {"id": user["id"]}, {"$inc": {"storage_used": byte_diff}}
+                )
+
         updatedSource = neo4jClient.update_source(
             source_id=source_id, properties=update_data
         )
 
-        # refresh chunks
         background_tasks.add_task(
             sourceService.refresh_note_embeddings,
             source=updatedSource,
-            content=updatedSource["content"],
+            content=updatedSource.get("content", ""),
         )
 
-        if updatedSource:
-            return {"result": True}
-        else:
-            return {"error": "Note not found or user not authorized"}, 404
+        return {"result": True}
 
     except Exception as e:
-        logger.error(str(e))
+        logger.error(f"{str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -496,7 +537,7 @@ def delete_source(
     source_id: str, background_tasks: BackgroundTasks, user=Depends(manager)
 ):
     """
-    Delete a source.
+    Delete a source and deduct associated storage usage.
 
     Args:
         source_id (str): The ID of the source to delete.
@@ -512,14 +553,47 @@ def delete_source(
 
     try:
         sourceToDelete = neo4jClient.get_source_by_id("source", source_id)
+        if not sourceToDelete:
+            return {"result": "Source not found"}
+
+        # === Deduct file storage (if file URL exists) ===
+        try:
+            if sourceToDelete.get("type") in ("document", "voice_note"):
+                # Try to extract file path from S3 URL
+                file_url = sourceToDelete.get("url", "")
+                if file_url:
+                    object_key = file_url.split(f"{settings.cloudfront_domain}/")[-1]
+                    s3.delete_object(Bucket=s3_bucket.bucket_name, Key=object_key)
+                    logger.info(f"Deleted S3 object: {object_key}")
+
+                file_size_bytes = sourceToDelete.get("size", 0)
+                if file_size_bytes:
+                    handleFileStorage(
+                        fileSizeBytes=file_size_bytes,
+                        userId=user["id"],
+                        operation="$dec",
+                    )
+        except Exception as e:
+            logger.warning(
+                f"Error deleting S3 object or rolling back file storage: {e}"
+            )
+
+        # === Deduct text storage ===
+        try:
+            content = sourceToDelete.get("content", "")
+            if content:
+                handleTextStorage(
+                    extractedText=content, userId=user["id"], operation="$dec"
+                )
+        except Exception as e:
+            logger.warning(f"Error rolling back text storage: {e}")
+
+        # === Delete from Neo4j ===
         result = neo4jClient.delete_source(source_id)
         if not result:
             return {"result": "Source not found"}
 
-        # remove from s3 if it's a document type (commenting out for now for iterations)
-        # if source["type"] == "document":
-        #    s3.delete_object(Bucket=s3_bucket.bucket_name, Key=source["url"])
-        # clean up web
+        # === Remove from Web ===
         affected_web = Webs.find_one_and_update(
             {"sourceIds": source_id},
             {"$pull": {"sourceIds": source_id}, "$set": {"updated": datetime.now(UTC)}},
@@ -530,6 +604,7 @@ def delete_source(
             logger.info("Web not found")
             return {"result": "Web not found"}
 
+        # === Background task: remove embeddings ===
         background_tasks.add_task(
             sourceService.delete_source_embeddings,
             source=sourceToDelete,
@@ -538,7 +613,7 @@ def delete_source(
         return {"result": "Source deleted"}
 
     except Exception as e:
-        logger.error(str(e))
+        logger.error(f"Error deleting source: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -633,24 +708,29 @@ async def upload_file_to_source(
 
     try:
         for file in files:
-            # sanitize filename
             object_name = f"files/{user['id']}/{source_id}/images/{uuid4()}_{secure_filename(file.filename)}"
 
             temp_dir = "/tmp/note_uploads"
             os.makedirs(temp_dir, exist_ok=True)
-
             temp_path = os.path.join(temp_dir, f"{uuid4()}_{file.filename}")
 
             try:
                 contents = await file.read()
+                file_size_bytes = len(contents)
+
+                # track storage usage for each image
+                file_storage_success = handleFileStorage(
+                    fileSizeBytes=file_size_bytes, userId=user["id"], operation="$inc"
+                )
+                if not file_storage_success:
+                    raise HTTPException(
+                        status_code=400, detail="Storage limit exceeded"
+                    )
+
                 with open(temp_path, "wb") as buffer:
                     buffer.write(contents)
 
-                s3_bucket.upload_file(
-                    temp_path,
-                    object_name,
-                )
-
+                s3_bucket.upload_file(temp_path, object_name)
                 url = f"https://{settings.cloudfront_domain}/{object_name}"
                 uploaded_image_urls.append(url)
 
@@ -707,25 +787,39 @@ async def upload_voice_note(
             buffer.write(content)
 
         try:
-
             object_name = f"files/{user['id']}/{web_id}/voice-notes/{uuid4()}_{secure_filename(file.filename)}"
+
+            file_storage_success = handleFileStorage(
+                fileSizeBytes=len(content), userId=user["id"], operation="$inc"
+            )
+            if not file_storage_success:
+                raise HTTPException(
+                    status_code=400, detail="File storage limit exceeded"
+                )
+
             s3_bucket.upload_file(temp_path, object_name)
             file_url = f"https://{settings.cloudfront_domain}/{object_name}"
 
-            # transcribe audio first
             transcript: str = openaiClient.get_audio_transcript(temp_path)
             if not transcript:
                 raise HTTPException(
                     status_code=500, detail="Failed to transcribe audio"
                 )
 
-            # create source with transcript as content
+            text_storage_success = handleTextStorage(
+                extractedText=transcript, userId=user["id"], operation="$inc"
+            )
+            if not text_storage_success:
+                raise HTTPException(
+                    status_code=400, detail="Text storage limit exceeded"
+                )
+
             source_id = str(uuid4())
             source_to_insert = {
                 "sourceId": source_id,
                 "webId": web_id,
                 "userId": user["id"],
-                "name": f"Voice Note - {transcript[:50]}...",  # Could be updated with first few words of transcript
+                "name": f"{transcript[:50]}...",
                 "content": transcript,
                 "url": file_url,
                 "type": "voice_note",
@@ -734,10 +828,8 @@ async def upload_voice_note(
                 "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             }
 
-            # Create Neo4j node
             neo4jClient.create_node("source", source_to_insert)
 
-            # Update web
             Webs.update_one(
                 {"webId": web_id, "userId": user["id"]},
                 {
@@ -746,11 +838,11 @@ async def upload_voice_note(
                 },
             )
 
-            # Add background task to process embeddings with the transcript
+            # process embeddings in background (embedding storage will be handled in that function)
             background_tasks.add_task(
                 sourceService.embed_and_upsert_voice_note,
                 source=source_to_insert,
-                text=transcript,  # Pass transcript instead of file_path
+                text=transcript,
             )
 
             return {"result": source_id}
@@ -758,6 +850,7 @@ async def upload_voice_note(
         except Exception as e:
             logger.error(f"Error processing voice note: {str(e)}")
             raise HTTPException(status_code=500, detail="Error processing voice note")
+
         finally:
             if os.path.exists(temp_path):
                 os.remove(temp_path)

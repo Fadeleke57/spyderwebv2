@@ -32,7 +32,7 @@ async def reset_user_credits(user_id: str) -> bool:
         return False
 
 
-async def deduct_credits(user_id: str, operation: str) -> tuple[bool, Optional[str]]:
+def deduct_credits(user_id: str, operation: str) -> tuple[bool, Optional[str]]:
     """
     Deduct credits for an operation.
     Returns (success, error_message)
