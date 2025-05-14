@@ -469,9 +469,7 @@ def delete_web(webId: str, background_tasks: BackgroundTasks, user=Depends(manag
             s3_session_client.delete_objects(
                 Bucket=s3_bucket.bucket_name, Delete={"Objects": delete_keys}
             )
-            logger.info(
-                f"Deleted {len(delete_keys)} files from S3 for web {webId}"
-            )
+            logger.info(f"Deleted {len(delete_keys)} files from S3 for web {webId}")
 
             # === Deduct combined storage from user's account
             handleFileStorage(

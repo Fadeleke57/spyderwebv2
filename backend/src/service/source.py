@@ -40,7 +40,6 @@ class SourceService:
             return False
 
     def embed_and_upsert_website(self, source: Source, md: str):
-
         """
         Embed a website's markdown content using Pinecone and upsert it directly.
 
@@ -93,7 +92,7 @@ class SourceService:
 
     def embed_and_upsert_pdf(self, file_path: str, source: Source):
         """
-        Extracts text from a PDF file, converts it to markdown, and upserts the 
+        Extracts text from a PDF file, converts it to markdown, and upserts the
         resulting embeddings into Pinecone.
 
         Args:
@@ -101,7 +100,7 @@ class SourceService:
             source (Source): The source document metadata.
 
         This function processes each page of the PDF, extracting text as markdown,
-        chunking the text, and creating embeddings. The embeddings are then upserted 
+        chunking the text, and creating embeddings. The embeddings are then upserted
         into Pinecone, with each page's results logged.
 
         Raises:
@@ -297,7 +296,7 @@ class SourceService:
         Returns:
             bool: True if the function was successful, False otherwise.
         """
-        
+
         connection_proccess_id = create_process(
             web_id=web_id,
             type="connect",
