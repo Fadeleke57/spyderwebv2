@@ -1,9 +1,11 @@
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Zap } from "lucide-react";
+import { Info, Zap } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useState } from "react";
 import { PricingModal } from "@/components/pricing/PricingModal";
+import { useUser } from "@/context/UserContext";
+import SimpleTooltip from "./SimpleTooltip";
 
 interface ResourceUsageProps {
   storageUsed: number;
@@ -12,6 +14,19 @@ interface ResourceUsageProps {
   computationLimit: number;
 }
 
+const mapTierToLabel = (tier: string) => {
+  switch (tier) {
+    case "free":
+      return "Starter Plan";
+    case "basic":
+      return "Basic Plan";
+    case "pro":
+      return "Enterprise";
+    default:
+      return "Resource";
+  }
+};
+
 export function ResourceUsage({
   storageUsed,
   storageLimit,
@@ -19,10 +34,72 @@ export function ResourceUsage({
   computationLimit,
 }: ResourceUsageProps) {
   const { state } = useSidebar();
+  const { user } = useUser();
   const isCollapsed = state === "collapsed";
   const [showPricing, setShowPricing] = useState(false);
 
-  // Ensure we have valid numbers and calculate percentages safely
+  const formatStorage = (mb: number) => {
+    if (!mb || mb === 0) return "0 MB";
+    if (mb > 1000) {
+      const gb = mb / 1024;
+      return `${Math.round(gb)} GB`;
+    }
+    return `${mb.toFixed(1)} MB`;
+  };
+
+  const handleUpgradeClick = () => {
+    setShowPricing(true);
+  };
+
+  const storageMessage = (
+    <div className="">
+      Storage is the total size of all your uploaded items and how they are
+      stored as memory.
+      <br />
+      <br />
+      The max storage for your plan is{" "}
+      <span className="font-semibold text-violet-400/80">
+        {formatStorage(storageLimit || 0)}
+      </span>
+      . Once you reach this limit, uploads and memory updates will be paused
+      till the next billing cycle.
+      <br />
+      <br />
+      To avoid interruptions,{" "}
+      <a
+        className="hover:underline cursor-pointer text-violet-400/80"
+        onClick={handleUpgradeClick}
+      >
+        upgrade your plan
+      </a>
+      .
+    </div>
+  );
+
+  const computationMessage = (
+    <div>
+      Computation makes up your chats with Charlotte AI and Autolinker usage.
+      <br />
+      <br />
+      The max computation for your plan is{" "}
+      <span className="font-semibold text-violet-400/80">
+        {computationLimit} credits
+      </span>
+      . Once you reach this limit, chats and autolinker access will be paused
+      till the next billing cycle.
+      <br />
+      <br />
+      To avoid interruptions,{" "}
+      <a
+        className="hover:underline cursor-pointer text-violet-400/80"
+        onClick={handleUpgradeClick}
+      >
+        upgrade your plan
+      </a>
+      .
+    </div>
+  );
+
   const storagePercentage = Math.min(
     ((storageUsed || 0) / (storageLimit || 1)) * 100,
     100
@@ -32,25 +109,6 @@ export function ResourceUsage({
     100
   );
 
-  const formatStorage = (mb: number) => {
-    if (!mb || mb === 0) return "0 MB";
-
-    // For storage limit, it's already in MB but needs to be shown in GB
-    if (mb > 1000) {
-      // If more than 1000 MB
-      const gb = mb / 1024;
-      return `${Math.round(gb)} GB`; // Round to whole GB for cleaner display
-    }
-
-    // For smaller values, show in MB with 1 decimal
-    return `${mb.toFixed(1)} MB`;
-  };
-
-  const handleUpgradeClick = () => {
-    setShowPricing(true);
-  };
-
-  // If sidebar is collapsed, show a minimal version
   if (isCollapsed) {
     return (
       <>
@@ -72,11 +130,29 @@ export function ResourceUsage({
     <>
       <div className="p-3 bg-card rounded-lg border border-border shadow-sm font-semibold">
         <div className="space-y-3">
+          {/* Header */}
+          {user && (
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-foreground flex items-center">
+                {mapTierToLabel(user.subscription_plan)}
+              </span>
+              <SimpleTooltip p={2} content="Plan details">
+                <Info size={16} className=" ml-1 mt-[1px]"></Info>
+              </SimpleTooltip>
+            </div>
+          )}
           {/* Storage Section */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-foreground">
-                Storage
+              <span className="text-xs text-foreground flex items-center">
+                Storage{" "}
+                <SimpleTooltip
+                  side="right"
+                  sideOffset={8}
+                  content={storageMessage}
+                >
+                  <Info size={12} className="ml-1 mt-[1px]" />
+                </SimpleTooltip>
               </span>
               <span className="text-xs text-foreground">
                 {formatStorage(storageUsed)} / {formatStorage(storageLimit)}
@@ -88,8 +164,15 @@ export function ResourceUsage({
           {/* Computation Section */}
           <div className="space-y-1.5">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-medium text-foreground">
-                Computation
+              <span className="text-xs font-medium text-foreground flex items-center">
+                Computation{" "}
+                <SimpleTooltip
+                  side="right"
+                  sideOffset={8}
+                  content={computationMessage}
+                >
+                  <Info size={12} className=" ml-1 mt-[1px]"></Info>
+                </SimpleTooltip>
               </span>
               <span className="text-xs text-foreground">
                 {computationUsed || 0} / {computationLimit || 0}
@@ -107,13 +190,15 @@ export function ResourceUsage({
           )}
 
           {/* Upgrade Button */}
-          <Button
-            className="w-full text-foreground shadow-sm transition-all duration-200 hover:shadow-violet-500/20 text-xs py-1 h-7"
-            size="sm"
-            onClick={handleUpgradeClick}
-          >
-            Upgrade Now
-          </Button>
+          {user && user.subscription_plan === "free" && (
+            <Button
+              className="w-full text-foreground shadow-sm transition-all duration-200 hover:shadow-violet-500/20 text-xs py-1 h-7"
+              size="sm"
+              onClick={handleUpgradeClick}
+            >
+              Upgrade Now
+            </Button>
+          )}
         </div>
       </div>
       <PricingModal open={showPricing} setOpen={setShowPricing} />

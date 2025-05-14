@@ -8,6 +8,9 @@ import time
 from src.lib.logger.index import logger
 from src.agents.autolinking_engine.autolinker import engine as autolinker
 from src.models.index import Source, Embeddings
+from src.utils.storage import handleEmbeddingStorage
+from src.utils.credits import deduct_credits
+from fastapi import HTTPException
 
 
 class PineconeClient:
@@ -32,6 +35,7 @@ class PineconeClient:
             metadata = {
                 "sourceId": source["sourceId"],
                 "webId": source["webId"],
+                "userId": source["userId"],
                 "websiteTitle": source["name"],
                 "chunkIndex": index,
                 "chunkCount": number_of_chunks,
@@ -46,6 +50,7 @@ class PineconeClient:
             metadata = {
                 "sourceId": source["sourceId"],
                 "webId": source["webId"],
+                "userId": source["userId"],
                 "videoTitle": source["name"],
                 "videoDescription": source["content"],
                 "startTime": chunk["start_time"],
@@ -63,6 +68,7 @@ class PineconeClient:
             metadata = {
                 "documentTitle": source["name"],
                 "webId": source["webId"],
+                "userId": source["userId"],
                 "sourceId": source["sourceId"],
                 "pageNumber": page_number,
                 "chunkIndex": index,
@@ -79,6 +85,7 @@ class PineconeClient:
             metadata = {
                 "noteTitle": source["name"],
                 "webId": source["webId"],
+                "userId": source["userId"],
                 "sourceId": source["sourceId"],
                 "chunkIndex": index,
                 "chunkCount": number_of_chunks,
@@ -92,6 +99,7 @@ class PineconeClient:
             metadata = {
                 "voiceNoteTitle": source["name"],
                 "webId": source["webId"],
+                "userId": source["userId"],
                 "sourceId": source["sourceId"],
                 "chunkIndex": index,
                 "chunkCount": number_of_chunks,
@@ -321,8 +329,7 @@ class PineconeClient:
         self,
         source: Source,
         chunks: list[str],
-        user_id: str,
-        page_number: Optional[int] = None,
+        pageNumber: Optional[int] = None,
     ):
         """
         Embed text chunks using Pinecone's embedding service and upsert them directly.
@@ -337,36 +344,40 @@ class PineconeClient:
         Returns:
             dict: Pinecone API response
         """
-        source_id = source["sourceId"]
-        web_id = source["webId"]
+        sourceId = source["sourceId"]
+        webId = source["webId"]
+        userId = source["userId"]
 
         vectors = []
         should_run_autolinker = False
 
-        if user_id:
-            from src.utils.credits import deduct_credits
-            import asyncio
+        success, _ = deduct_credits(userId, "autolinker")
+        if success:
+            should_run_autolinker = True
+            autolinker.configure(webId, sourceId)
 
-            # check if user has enough credits for autolinker
-            success, _ = asyncio.run(deduct_credits(user_id, "autolinker"))
-            if success:
-                should_run_autolinker = True
-                autolinker.configure(web_id, source_id)
+        embeddingStorageResult = handleEmbeddingStorage(
+            sizeBytes=source["size"],
+            userId=userId,
+            operation="$inc",
+        )
+        if not embeddingStorageResult:
+            raise HTTPException(status_code=400, detail="Storage limit exceeded")
 
         num_chunks = len(chunks)
 
         for i, chunk in enumerate(chunks):
             chunk_id = (
-                f"{source_id}:chunk{i}:page{page_number}"
-                if page_number
-                else f"{source_id}:chunk{i}"
+                f"{sourceId}:chunk{i}:page{pageNumber}"
+                if pageNumber
+                else f"{sourceId}:chunk{i}"
             )
             logger.info(f"Uploading chunk: {chunk_id}")
 
             # add a corresponding reference to the chunk in mongo for update and delete operations later on
             mongo_embedding = {
-                "sourceId": source_id,
-                "webId": web_id,
+                "sourceId": sourceId,
+                "webId": webId,
                 "embeddingId": chunk_id,
             }
             Embeddings.insert_one(mongo_embedding)
@@ -376,7 +387,7 @@ class PineconeClient:
                 chunk=chunk,
                 index=i,
                 number_of_chunks=num_chunks,
-                page_number=page_number,
+                page_number=pageNumber,
             )
             chunk = chunk["text"] if source["type"] == "youtube" else chunk
 

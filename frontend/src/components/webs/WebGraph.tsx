@@ -591,10 +591,7 @@ function WebGraph({
       )}
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
       {isDrawerOpen && webId && selectedSource && (
-        <WebDataModal
-          open={isDrawerOpen}
-          setOpen={setDrawerOpen}
-        />
+        <WebDataModal open={isDrawerOpen} setOpen={setDrawerOpen} />
       )}
       <div className="absolute bottom-4 right-4">
         <SpydrAI />

@@ -4,6 +4,9 @@ from neo4j import GraphDatabase
 from pytz import UTC
 from datetime import datetime
 import time
+import math
+from tqdm import tqdm
+from itertools import cycle
 
 class MongoScriptsClient:
     def __init__(self):
@@ -243,6 +246,38 @@ def migrate_web_namespaces_to_sources():
     print(f"\n✅ Migration complete! Total vectors migrated: {migrated_count}")
     return migrated_count
 
+def sync_user_storage():
+    all_users = list(Users.find())
+
+    spinner = cycle(["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"])
+
+    for user in tqdm(all_users, desc="Syncing user storage", unit="user"):
+        # Optional: show user ID briefly
+        print(f"  {next(spinner)} Syncing user: {user['id'][:6]}...", end="\r")
+
+        all_user_sources = neo4j_client.execute_query(
+            "MATCH (s:source) WHERE s.userId=$userId RETURN s",
+            parameters={"userId": user["id"]}
+        )
+        user_sources = [record["s"] for record in all_user_sources]
+        print(f"  {next(spinner)} Found {len(user_sources)} sources for user: {user['id'][:6]}...", end="\r")
+        for source in user_sources:
+            source_size = source.get("size", 0)
+
+            bytesPerFloat32 = 4
+            bytesPerVector = 1024 * bytesPerFloat32
+            numVectors = math.ceil(source_size / 1100)
+            vectorStorageBytes = numVectors * bytesPerVector
+
+            Users.update_one(
+                {"id": user["id"]},
+                {"$inc": {"storage_used": source_size + vectorStorageBytes}}
+            )
+
+        time.sleep(0.1)  # Just to make the animation visible per user
+
+    print("✅ Sync complete!")
+
 def migrate_embeddings_to_mongodb():
     all_ids = []
     for ids_chunk in pinecone_client.index.list(namespace="sources"):
@@ -303,10 +338,41 @@ def add_webid_to_chunks():
         print("Added webId to chunk", embedding["embeddingId"])
         time.sleep(0.5)
 
+def add_userid_to_chunks():
+    embeddings = list(Embeddings.find())
+    print(f"Found {len(embeddings)} embeddings")
+
+    for i, embedding in enumerate(embeddings):
+        print(f"Iteration {i} / {len(embeddings)}...")
+        print("searching web for", embedding["webId"])
+        web = Webs.find_one({"webId": embedding["webId"]})
+    
+        if not web:
+            print("corresponding web not found..deleting..")
+            pinecone_client.index.delete(ids=[embedding["embeddingId"]], namespace="sources")
+            Embeddings.delete_one({"embeddingId": embedding["embeddingId"]})
+            continue
+
+        web_name = web.get("name")
+        print(f"web found called: {web_name}")
+
+        result = pinecone_client.index.update(
+            id=embedding["embeddingId"],
+            namespace="sources",
+            set_metadata={"userId": web["userId"]}
+        )
+        if result == {}:
+            print("Successfully added userId to chunk", embedding["embeddingId"])
+            continue
+        
+        time.sleep(0.5)
+
 if __name__ == "__main__":
     #update_webs_with_defaults()
     #update_users_with_defaults()
     #sync_pinecone_source_metadata()
     #migrate_web_namespaces_to_sources()
     #migrate_embeddings_to_mongodb() #run right after
-    add_webid_to_chunks()
+    #add_webid_to_chunks()
+    #add_userid_to_chunks()
+    sync_user_storage()

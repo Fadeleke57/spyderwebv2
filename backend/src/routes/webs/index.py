@@ -34,6 +34,7 @@ from src.core.config import settings
 from src.lib.pinecone.index import client as pineconeClient
 from src.service.web import service as webService
 from src.routes.chat.index import configure_chat
+from src.utils.storage import handleFileStorage
 
 router = APIRouter()
 
@@ -264,7 +265,19 @@ async def upload_file(
     files: list[UploadFile] = File(..., description="Multiple files as UploadFile"),
     user=Depends(manager),
 ):
+    """
+    Upload images to a web.
 
+    Args:
+        web_id (str): The ID of the web to upload images to.
+        files (list[UploadFile]): The images to upload.
+
+    Returns:
+        dict: A JSON response containing the URLs of the uploaded images.
+
+    Raises:
+        HTTPException: If the upload fails.
+    """
     check_user(user)
     uploaded_image_urls = []
     try:
@@ -282,6 +295,15 @@ async def upload_file(
                 contents = await file.read()
                 with open(temp_path, "wb") as buffer:
                     buffer.write(contents)
+
+                fileStorageResult = handleFileStorage(
+                    fileSizeBytes=len(contents), userId=user["id"], operation="$inc"
+                )
+
+                if not fileStorageResult:
+                    raise HTTPException(
+                        status_code=400, detail="Storage limit exceeded"
+                    )
 
                 s3_bucket.upload_file(
                     temp_path,
@@ -321,10 +343,34 @@ async def upload_file(
 
 @router.delete("/delete/image/{web_id}/{image_name}")
 def delete_image(web_id: str, image_name: str, user=Depends(manager)):
+    """
+    Delete an image associated with a web.
+
+    Args:
+        web_id (str): The ID of the web the image belongs to.
+        image_name (str): The name of the image to delete.
+        user (User): The authenticated user making the request.
+
+    Returns:
+        dict: A JSON response with a result key indicating success.
+
+    Raises:
+        HTTPException: If the image is not found in S3, the web is not found, or if any other error occurs during the operation.
+    """
+
     check_user(user)
     try:
 
         filepath = f"files/{user['id']}/{web_id}/images/{image_name}"
+
+        try:
+            response = s3_session_client.head_object(
+                Bucket=s3_bucket.bucket_name, Key=filepath
+            )
+            file_size_bytes = response["ContentLength"]
+        except ClientError as e:
+            logger.error(f"Error retrieving object metadata: {e}")
+            raise HTTPException(status_code=404, detail="Image not found in S3")
 
         result = Webs.update_one(
             {"webId": web_id, "userId": user["id"], "imageKeys": filepath},
@@ -335,6 +381,11 @@ def delete_image(web_id: str, image_name: str, user=Depends(manager)):
             raise HTTPException(status_code=404, detail="Web not found")
 
         s3_session_client.delete_object(Bucket=s3_bucket.bucket_name, Key=filepath)
+
+        fileStorageResult = handleFileStorage(
+            fileSizeBytes=file_size_bytes, userId=user["id"], operation="$dec"
+        )
+
         return {"result": True}
 
     except Exception as e:
@@ -378,18 +429,7 @@ def get_web_images(web_id: str):
 @router.delete("/delete")
 def delete_web(webId: str, background_tasks: BackgroundTasks, user=Depends(manager)):
     """
-    Delete a web.
-
-    Args:
-        webId (str): The ID of the web to delete.
-        user (User): The user making the request.
-
-    Returns:
-        dict: A JSON response with a result key.
-
-    Raises:
-        HTTPException: If the web is not found or the user is not the owner of the web.
-
+    Delete a web and all associated sources, images, documents, and embeddings.
     """
     check_user(user)
     try:
@@ -400,25 +440,43 @@ def delete_web(webId: str, background_tasks: BackgroundTasks, user=Depends(manag
 
         logger.info(f"Web {webId} deleted by user {user['id']}")
 
-        background_tasks.add_task(webService.delete_web_embeddings, webId)
-
-        neo4jClient.delete_nodes_by_properties("source", {"webId": webId})
-        logger.info(f"Sources {webId} attached to web deleted from Neo4j")
-
-        images_path = f"files/{user['id']}/{webId}/images"
-        pages = s3_session_client.get_paginator("list_objects_v2").paginate(
-            Bucket=s3_bucket.bucket_name, Prefix=images_path
+        # === handle background tasks
+        background_tasks.add_task(
+            webService.delete_web_embeddings, webId=webId, userId=user["id"]
         )
+
+        # === Paths to clean up in S3
+        paths = [
+            f"files/{user['id']}/{webId}/images",
+            f"files/{user['id']}/{webId}/document",
+        ]
+
         delete_keys = []
-        for page in pages:
-            if "Contents" in page:
-                for obj in page["Contents"]:
-                    delete_keys.append({"Key": obj["Key"]})
+        total_bytes_to_decrement = 0
+
+        for prefix in paths:
+            paginator = s3_session_client.get_paginator("list_objects_v2").paginate(
+                Bucket=s3_bucket.bucket_name, Prefix=prefix
+            )
+
+            for page in paginator:
+                if "Contents" in page:
+                    for obj in page["Contents"]:
+                        delete_keys.append({"Key": obj["Key"]})
+                        total_bytes_to_decrement += obj["Size"]
+
         if delete_keys:
             s3_session_client.delete_objects(
                 Bucket=s3_bucket.bucket_name, Delete={"Objects": delete_keys}
             )
-            logger.info(f"Deleted {len(delete_keys)} images from S3 for web {webId}")
+            logger.info(f"Deleted {len(delete_keys)} files from S3 for web {webId}")
+
+            # === Deduct combined storage from user's account
+            handleFileStorage(
+                fileSizeBytes=total_bytes_to_decrement,
+                userId=user["id"],
+                operation="$dec",
+            )
 
         return {"result": True}
 

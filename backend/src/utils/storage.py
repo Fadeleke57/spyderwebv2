@@ -1,63 +1,205 @@
-from src.db.mongodb import get_collection
+import math
+from src.models.index import Users
 from src.lib.logger.index import logger
+from fastapi import HTTPException
+from typing import Literal
+from datetime import datetime
+from pytz import UTC
 
-Sources = get_collection("sources")
+STORAGE_LIMITS_MB = {  # for frontend
+    "free": 2048,
+    "basic": 51200,
+    "pro": 204800,
+}
 
-# Update size constants to be in MB
-FILE_SIZE_ESTIMATES = {
-    "pdf": {
-        "base": 0.1,  # 0.1 MB base size
-        "per_page": 0.05,  # 0.05 MB per page
-    },
-    "website": {
-        "per_char": 0.000002,  # ~2 bytes per character converted to MB
-        "base": 0.01,  # 0.01 MB base size
-    },
-    "youtube": {
-        "per_char": 0.000002,  # ~2 bytes per character converted to MB
-        "base": 0.02,  # 0.02 MB base size
-    },
-    "vector": 0.001,  # 0.001 MB per vector (1KB)
+STORAGE_LIMITS_BYTES = {
+    tier: mb * 1024 * 1024 for tier, mb in STORAGE_LIMITS_MB.items()
 }
 
 
-def calculate_storage_usage(user_id: str) -> float:
+def handleTextStorage(
+    extractedText: str, userId: str, operation: Literal["$inc", "$dec"]
+) -> bool:
     """
-    Calculate total storage usage for a user based on their sources
-    Returns size in megabytes (MB)
+    Adjusts the user's storage usage based on the extracted text's size and the specified operation.
+
+    Args:
+        extractedText (str): The extracted text whose storage impact is being calculated.
+        userId (str): The ID of the user whose storage is being updated.
+        operation (Literal["$inc", "$dec"]): The operation to perform on the storage usage; either
+                                             increase ("$inc") or decrease ("$dec").
+
+    Returns:
+        bool: True if the storage was successfully updated, False otherwise.
+
+    Raises:
+        HTTPException: If the user is not found or the storage limit is exceeded.
     """
     try:
-        sources = Sources.find({"userId": user_id})
-        total_size = 0.0
+        if operation not in ("$inc", "$dec"):
+            raise ValueError("Invalid operation. Must be '$inc' or '$dec'.")
 
-        for source in sources:
-            source_type = source.get("type", "unknown")
+        size_of_text = len(extractedText.encode("utf-8"))
+        user = Users.find_one({"id": userId})
 
-            if source_type == "pdf":
-                pages = source.get("pages", 1)
-                total_size += FILE_SIZE_ESTIMATES["pdf"]["base"] + (
-                    pages * FILE_SIZE_ESTIMATES["pdf"]["per_page"]
-                )
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
 
-            elif source_type == "website":
-                content = source.get("content", "")
-                total_size += FILE_SIZE_ESTIMATES["website"]["base"] + (
-                    len(content) * FILE_SIZE_ESTIMATES["website"]["per_char"]
-                )
+        plan = user.get("subscription_plan", "free")
+        storage_used = user.get("storage_used", 0)
+        storage_limit = STORAGE_LIMITS_BYTES.get(plan, STORAGE_LIMITS_BYTES["free"])
 
-            elif source_type == "youtube":
-                chunks = source.get("chunks", [])
-                transcript_length = sum(len(chunk.get("text", "")) for chunk in chunks)
-                total_size += FILE_SIZE_ESTIMATES["youtube"]["base"] + (
-                    transcript_length * FILE_SIZE_ESTIMATES["youtube"]["per_char"]
-                )
+        if operation == "$inc" and storage_used + size_of_text > storage_limit:
+            raise HTTPException(status_code=400, detail="Storage limit exceeded")
+        elif operation == "$dec" and storage_used - size_of_text < 0:
+            raise HTTPException(
+                status_code=400, detail="Storage used cannot be negative."
+            )
 
-            # Add vector storage for all types
-            chunks_count = len(source.get("chunks", [])) or 1
-            total_size += chunks_count * FILE_SIZE_ESTIMATES["vector"]
-
-        return round(total_size, 2)  # Round to 2 decimal places
+        Users.update_one(
+            {"id": userId},
+            {
+                "$inc": {
+                    "storage_used": (
+                        size_of_text if operation == "$inc" else -size_of_text
+                    )
+                },
+                "$set": {"updated_at": datetime.now(UTC)},
+            },
+        )
+        logger.info(
+            f"Updated file storage for user {userId}: calculated size of text- {math.ceil(size_of_text / 1024)} KB -> new storage used- {(storage_used + size_of_text) // 1024 if operation == '$inc' else (storage_used - size_of_text) // 1024} KB"
+        )
+        return True
 
     except Exception as e:
-        logger.error(f"Error calculating storage for user {user_id}: {str(e)}")
-        return 0.0
+        logger.error(f"Error updating storage for user {userId}: {str(e)}")
+        return False
+
+
+def handleFileStorage(
+    fileSizeBytes: int, userId: str, operation: Literal["$inc", "$dec"]
+) -> bool:
+    """
+    Adjusts the user's storage usage based on the file size and the specified operation.
+
+    Args:
+        fileSizeBytes (int): The size of the file in bytes.
+        userId (str): The ID of the user whose storage is being updated.
+        operation (Literal["$inc", "$dec"]): The operation to perform on the storage usage.
+
+    Returns:
+        bool: True if the storage was successfully updated, False otherwise.
+
+    Raises:
+        HTTPException: If the user is not found, the storage limit is exceeded, or an invalid operation is provided.
+    """
+    try:
+        if operation not in ("$inc", "$dec"):
+            raise ValueError("Invalid operation. Must be '$inc' or '$dec'.")
+
+        user = Users.find_one({"id": userId})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        plan = user.get("subscription_plan", "free")
+        storageUsed = user.get("storage_used", 0)
+        storageLimit = STORAGE_LIMITS_BYTES.get(plan, STORAGE_LIMITS_BYTES["free"])
+
+        if operation == "$inc" and storageUsed + fileSizeBytes > storageLimit:
+            raise HTTPException(status_code=400, detail="Storage limit exceeded")
+        elif operation == "$dec" and storageUsed - fileSizeBytes < 0:
+            raise HTTPException(
+                status_code=400, detail="Storage used cannot be negative."
+            )
+
+        Users.update_one(
+            {"id": userId},
+            {
+                "$inc": {
+                    "storage_used": (
+                        fileSizeBytes if operation == "$inc" else -fileSizeBytes
+                    )
+                },
+                "$set": {"updated_at": datetime.now(UTC)},
+            },
+        )
+        logger.info(
+            f"Updated file storage for user {userId}: calculated size of file- {math.ceil(fileSizeBytes / 1024)} KB -> new storage used- {(storageUsed + fileSizeBytes) // 1024 if operation == '$inc' else (storageUsed - fileSizeBytes) // 1024} KB"
+        )
+        return True
+
+    except Exception as e:
+        logger.error(f"Error updating file storage for user {userId}: {str(e)}")
+        return False
+
+
+def handleEmbeddingStorage(
+    sizeBytes: int,
+    userId: str,
+    operation: Literal["$inc", "$dec"],
+    chunkCharLength: int = 1100,
+    vectorDim: int = 1024,
+) -> bool:
+    """
+    Updates a user's storage usage based on the extracted text and the user's current plan.
+
+    Args:
+        extractedText (str): The extracted text whose storage impact is being calculated.
+        userId (str): The ID of the user whose storage is being updated.
+        operation (Literal["$inc", "$dec"]): The operation to perform on the storage usage.
+        chunkCharLength (int): The length of each chunk of text to be embedded in a vector.
+        vectorDim (int): The dimension of each vector in the embedding.
+
+    Returns:
+        bool: True if the storage was successfully updated, False otherwise.
+
+    Raises:
+        HTTPException: If the user is not found, the storage limit is exceeded, or an invalid operation is provided.
+    """
+    try:
+        if operation not in ("$inc", "$dec"):
+            raise ValueError("Invalid operation. Must be '$inc' or '$dec'.")
+
+        user = Users.find_one({"id": userId})
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        plan = user.get("subscription_plan", "free")
+        storageUsed = user.get("storage_used", 0)
+        storageLimit = STORAGE_LIMITS_BYTES.get(plan, STORAGE_LIMITS_BYTES["free"])
+
+        bytesPerFloat32 = 4
+        bytesPerVector = vectorDim * bytesPerFloat32
+
+        numVectors = math.ceil(sizeBytes / chunkCharLength)
+        vectorStorageBytes = numVectors * bytesPerVector
+
+        if operation == "$inc" and storageUsed + vectorStorageBytes > storageLimit:
+            raise HTTPException(status_code=400, detail="Storage limit exceeded")
+        elif operation == "$dec" and storageUsed - vectorStorageBytes < 0:
+            raise HTTPException(
+                status_code=400, detail="Storage used cannot be negative."
+            )
+
+        Users.update_one(
+            {"id": userId},
+            {
+                "$inc": {
+                    "storage_used": (
+                        vectorStorageBytes
+                        if operation == "$inc"
+                        else -vectorStorageBytes
+                    )
+                },
+                "$set": {"updated_at": datetime.now(UTC)},
+            },
+        )
+        logger.info(
+            f"Updated file storage for user {userId}: calculated size of embeddings- {math.ceil(vectorStorageBytes / 1024)} KB -> new storage used- {(storageUsed + vectorStorageBytes) // 1024 if operation == '$inc' else (storageUsed - vectorStorageBytes) // 1024} KB"
+        )
+        return True
+
+    except Exception as e:
+        logger.error(f"Error updating embedding storage for user {userId}: {str(e)}")
+        return False

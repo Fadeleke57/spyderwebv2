@@ -6,15 +6,10 @@ from src.lib.logger.index import logger
 from src.utils.exceptions import check_user, checkAuthorizedUser
 from src.models.index import User, UpdateUser, Users, Webs
 from src.constants.credits import PLAN_CREDITS
-from src.utils.storage import calculate_storage_usage
+from src.utils.credits import get_user_credits
+from src.utils.storage import STORAGE_LIMITS_MB
 
 router = APIRouter()
-
-STORAGE_LIMITS = {
-    "free": 15000,
-    "basic": 50000,
-    "pro": 200000,
-}
 
 
 @router.get("/search/history")
@@ -198,6 +193,7 @@ def check_email(email: str):
 @router.get("/usage")
 async def get_usage(user: User = Depends(manager)):
     """Get user's resource usage"""
+    check_user(user)
     try:
         user_data = Users.find_one({"id": user["id"]})
         if not user_data:
@@ -208,8 +204,8 @@ async def get_usage(user: User = Depends(manager)):
         credits_limit = PLAN_CREDITS[plan]
 
         # Get storage values directly from user_data
-        storage_used = user_data.get("storage_used", 0)
-        storage_limit = STORAGE_LIMITS[plan]
+        storage_used = user_data.get("storage_used", 0) / (1024**2)
+        storage_limit = STORAGE_LIMITS_MB[plan]
 
         return {
             "storage": {"used": storage_used, "limit": storage_limit},

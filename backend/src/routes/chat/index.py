@@ -79,7 +79,7 @@ async def handle_chat_data(
 
     try:
         # Deduct credits if sufficient
-        success, error = await deduct_credits(user["id"], "chatbot")
+        success, error = deduct_credits(user["id"], "chatbot")
         if not success:
             raise HTTPException(status_code=400, detail=error)
 
