@@ -38,14 +38,22 @@ export function ResourceUsage({
   const isCollapsed = state === "collapsed";
   const [showPricing, setShowPricing] = useState(false);
 
-  const formatStorage = (mb: number) => {
-    if (!mb || mb === 0) return "0 MB";
-    if (mb > 1000) {
-      const gb = mb / 1024;
-      return `${Math.round(gb)} GB`;
-    }
-    return `${mb.toFixed(1)} MB`;
-  };
+const formatStorage = (mb: number, limit?: number) => {
+  if (!mb || mb === 0) return "0 MB";
+
+  const gb = mb / 1024;
+
+  // Format based on context
+  if (limit && limit >= 100) {
+    // For large limits like 200 GB: compact formatting
+    return gb >= 1 ? `${gb.toFixed(1)} GB` : `${mb.toFixed(0)} MB`;
+  } else {
+    // For smaller limits: show with more clarity
+    return gb >= 1
+      ? `${gb.toFixed(gb >= 10 ? 0 : 1)} GB`
+      : `${mb.toFixed(1)} MB`;
+  }
+};
 
   const handleUpgradeClick = () => {
     setShowPricing(true);
@@ -155,7 +163,7 @@ export function ResourceUsage({
                 </SimpleTooltip>
               </span>
               <span className="text-xs text-foreground">
-                {formatStorage(storageUsed)} / {formatStorage(storageLimit)}
+                {formatStorage(storageUsed, storageLimit)} / {formatStorage(storageLimit)}
               </span>
             </div>
             <Progress value={storagePercentage} className="h-1.5" />
