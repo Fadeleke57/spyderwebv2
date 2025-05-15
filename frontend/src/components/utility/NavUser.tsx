@@ -73,7 +73,9 @@ export function NavUser() {
             className={`${isCollapsed && "-ml-[13px]"}`}
           />
           <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-semibold">{user.username}</span>
+            <span className="truncate font-semibold">
+              {user.full_name || user.username}
+            </span>
             <span className="truncate text-xs text-muted-foreground">
               {user.email}
             </span>
