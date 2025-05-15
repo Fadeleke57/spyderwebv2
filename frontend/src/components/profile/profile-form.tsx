@@ -199,7 +199,7 @@ export function ProfileForm({
                   <label className="absolute top-[60%] lg:top-[70%] right-[70%] lg:right-[70%] cursor-pointer">
                     <input
                       type="file"
-                      accept="image/jpeg,image/png,image/webp,image/jpg"
+                      accept="image/jpeg,image/png,image/webp,image/jpg,image/heic"
                       className="sr-only"
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         handleFileChange(e);
