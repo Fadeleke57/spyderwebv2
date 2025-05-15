@@ -223,11 +223,10 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
                     *
                   </p>
                   <p className="ml-2 text-xs text-muted-foreground font-normal">
-                    {web?.updated
-                      ? formatDistanceToNow(new Date(web.updated), {
-                          addSuffix: true,
-                        })
-                      : "Unknown date"}
+                    {web?.updated &&
+                      formatDistanceToNow(new Date(web.updated + "Z"), {
+                        addSuffix: true,
+                      })}
                   </p>
                 </div>
                 {iteratedFrom ? (
