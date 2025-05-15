@@ -229,7 +229,14 @@ def get_current_user(user=Depends(manager)):
         user["_id"] = str(user["_id"])
         publicUser = convert_to_public_user(
             user,
-            ["subscription_plan", "websPinned", "websSaved", "websHidden", "created_at", "disabled"],
+            [
+                "subscription_plan",
+                "websPinned",
+                "websSaved",
+                "websHidden",
+                "created_at",
+                "disabled",
+            ],
         )
         logging.debug(f"User found in /auth/me: {publicUser}")
         return publicUser

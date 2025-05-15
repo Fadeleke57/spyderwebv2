@@ -8,6 +8,7 @@ from src.models.index import CreateConnection
 _last_gemini_call = 0
 GEMINI_MIN_INTERVAL = 5
 
+
 class ConnectionReasoningAgent:  # reasons connections from selected sources and generates structured output
     def __new__(cls, *args, **kwargs):
         """
@@ -60,7 +61,9 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
         elapsed = now - _last_gemini_call
         if elapsed < GEMINI_MIN_INTERVAL:
             sleep_for = GEMINI_MIN_INTERVAL - elapsed
-            logger.info(f"Rate limiting Gemini request. Sleeping for {sleep_for:.2f}s...")
+            logger.info(
+                f"Rate limiting Gemini request. Sleeping for {sleep_for:.2f}s..."
+            )
             time.sleep(sleep_for)
 
         try:
