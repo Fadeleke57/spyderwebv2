@@ -42,6 +42,18 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
         logger.info("CONNECTION REASONING AGENT INITIALIZED")
 
     def _rate_limited_generate(self, prompt):
+        """
+        Calls Gemini's generate_content API but enforces a minimum interval between requests (GEMINI_MIN_INTERVAL).
+
+        Args:
+            prompt (str): The prompt to pass to Gemini's generate_content API.
+
+        Returns:
+            Response: The response object from Gemini's generate_content API.
+
+        Raises:
+            RuntimeError: If Gemini's generate_content API raises an exception.
+        """
         global _last_gemini_call
 
         now = time.time()
