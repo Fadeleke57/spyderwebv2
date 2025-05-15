@@ -214,12 +214,7 @@ function Index() {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <UserAvatar
-                userId={user?.id}
-                username={user?.username}
-                width={36}
-                height={36}
-              />
+              <UserAvatar userId={user?.id} dimension={36} />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>

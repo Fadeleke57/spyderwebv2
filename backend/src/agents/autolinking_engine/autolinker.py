@@ -70,7 +70,7 @@ class AutoLinkerEngine:
 
                 if not raw_candidates:
                     logger.info("No candidates found..Shutting down...")
-                    return
+                    continue
 
                 # create candidate document which is a dict containing the "model" source and "chosen_candidates"
                 candidate_document = cs.create_candidate_doc(

@@ -1,4 +1,5 @@
 import re
+import os
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from src.routes.auth.oauth2 import manager
@@ -6,10 +7,21 @@ from src.lib.logger.index import logger
 from src.utils.exceptions import check_user, checkAuthorizedUser
 from src.models.index import User, UpdateUser, Users, Webs
 from src.constants.credits import PLAN_CREDITS
-from src.utils.credits import get_user_credits
 from src.utils.storage import STORAGE_LIMITS_MB
+from pydantic import BaseModel
+from src.core.config import settings
+from fastapi import File, UploadFile
+from src.lib.s3.index import S3Bucket
+from werkzeug.utils import secure_filename
+from uuid import uuid4
+from src.lib.logger.index import logger
+from datetime import datetime
+from pytz import UTC
+from src.utils.credits import get_user_credits
+from typing import Optional, List
 
 router = APIRouter()
+s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
 
 
 @router.get("/search/history")
@@ -35,15 +47,9 @@ def get_user(userId: str, userMakingRequest: User = Depends(manager.optional)):
         if not requestedUser:
             return {"result": None}
 
-        publicUser = {
-            "id": requestedUser["id"],
-            "username": requestedUser["username"],
-            "email": requestedUser["email"],
-            "bio": requestedUser["bio"],
-            "full_name": requestedUser["full_name"],
-            "created_at": requestedUser["created_at"],
-            "subscription_plan": requestedUser["subscription_plan"],
-        }
+        publicUser = convert_to_public_user(
+            requestedUser, ["subscription_plan", "websPinned", "websSaved"]
+        )
 
         return {"result": publicUser}
     except Exception as e:
@@ -64,17 +70,9 @@ def get_user_by_username(
         if not requestedUser or requestedUser.get("disabled", False):
             return {"result": None}
 
-        publicUser = {
-            "id": requestedUser["id"],
-            "username": requestedUser["username"],
-            "email": requestedUser["email"],
-            "bio": requestedUser["bio"],
-            "full_name": requestedUser["full_name"],
-            "websPinned": requestedUser["websPinned"],
-            "websSaved": requestedUser["websSaved"],
-            "created_at": requestedUser["created_at"],
-            "subscription_plan": requestedUser["subscription_plan"],
-        }
+        publicUser = convert_to_public_user(
+            requestedUser, ["subscription_plan", "websPinned", "websSaved"]
+        )
 
         return {"result": publicUser}
     except Exception as e:
@@ -200,7 +198,7 @@ async def get_usage(user: User = Depends(manager)):
             raise HTTPException(status_code=404, detail="User not found")
 
         plan = user_data.get("subscription_plan", "free")
-        credits_used = PLAN_CREDITS[plan] - user_data.get("credits", 0)
+        credits_used = user_data.get("credits", 0)
         credits_limit = PLAN_CREDITS[plan]
 
         # Get storage values directly from user_data
@@ -267,3 +265,70 @@ def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.opti
     except Exception as e:
         logger.error(f"Error fetching webs: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching webs {e}")
+
+
+class UploadProfilePictureRequest(BaseModel):
+    image: UploadFile
+
+
+@router.post("/replace/profile/picture")
+async def replace_profile_picture(
+    file: UploadFile = File(...), user: User = Depends(manager)
+):
+    check_user(user)
+
+    try:
+        file_uuid = str(uuid4())
+        filename = secure_filename(file.filename)
+        object_name = f"files/{user['id']}/profile/images/{filename}_{file_uuid}"
+        temp_dir = "/tmp/profile_image_uploads"
+        os.makedirs(temp_dir, exist_ok=True)
+        temp_path = os.path.join(temp_dir, f"{filename}_{file_uuid}")
+
+        contents = await file.read()
+        with open(temp_path, "wb") as buffer:
+            buffer.write(contents)
+
+        s3_bucket.upload_file(temp_path, object_name)
+        os.remove(temp_path)
+
+        url = f"https://{settings.cloudfront_domain}/{object_name}"
+
+        prev_image_keys = user.get("imageKeys", [])
+        Users.update_one(
+            {"id": user["id"]},
+            {
+                "$set": {
+                    "imageKeys": prev_image_keys + [object_name],
+                    "profile_picture_url": url,
+                    "updated_at": datetime.now(UTC),
+                },
+            },
+        )
+
+        return {"result": url}
+
+    except Exception as e:
+        logger.error(f"Error replacing profile picture: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+def convert_to_public_user(
+    user: User, extra_fields: Optional[List[str]] = None
+) -> User:
+
+    publicUser = {
+        "id": user["id"],
+        "username": user["username"],
+        "profile_picture_url": user["profile_picture_url"],
+        "email": user["email"],
+        "bio": user["bio"],
+        "full_name": user["full_name"],
+        "created_at": user["created_at"],
+    }
+
+    if extra_fields:
+        for field in extra_fields:
+            publicUser[field] = user[field]
+
+    return publicUser

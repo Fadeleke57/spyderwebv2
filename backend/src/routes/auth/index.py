@@ -33,6 +33,7 @@ from pydantic import BaseModel
 from typing import Optional
 from fastapi import BackgroundTasks
 from src.service.source import service as sourceService
+from src.routes.user.index import convert_to_public_user
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -128,7 +129,7 @@ async def auth_callback(code: str, background_tasks: BackgroundTasks):
         data={"sub": email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     response = RedirectResponse(
-        url=f"""{settings.next_url}/auth/google-callback?token={access_token}&email={email}&username={new_username if not user else user['username']}&firstName={user_data['given_name']}&lastName={user_data['family_name']}&newuser={"true" if not user else ""}&newwebid={new_web_id if new_web_id else ""}""",
+        url=f"""{settings.next_url}/auth/google-callback?token={access_token}&email={email}&username={new_username if not user else user['username']}&firstName={user_data.get('given_name', "")}&lastName={user_data.get('family_name', "")}&newuser={"true" if not user else ""}&newwebid={new_web_id if new_web_id else ""}""",
     )
     manager.set_cookie(response, access_token)
     return response
@@ -226,19 +227,10 @@ def get_current_user(user=Depends(manager)):
             logging.error("User not found in /auth/me")
             raise HTTPException(status_code=401, detail="Unauthorized")
         user["_id"] = str(user["_id"])
-        publicUser = {
-            "id": user["id"],
-            "username": user["username"],
-            "email": user["email"],
-            "bio": user["bio"],
-            "full_name": user["full_name"],
-            "disabled": user["disabled"],
-            "websHidden": user["websHidden"],
-            "websSaved": user["websSaved"],
-            "websPinned": user["websPinned"],
-            "created_at": user["created_at"],
-            "subscription_plan": user["subscription_plan"],
-        }
+        publicUser = convert_to_public_user(
+            user,
+            ["subscription_plan", "websPinned", "websSaved", "websHidden", "created_at", "disabled"],
+        )
         logging.debug(f"User found in /auth/me: {publicUser}")
         return publicUser
     except Exception as e:

@@ -17,7 +17,7 @@ import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import DeleteModal from "../utility/DeleteModal";
 import { toast } from "sonner";
 import { useRouter } from "next/router";
-import { set } from "lodash";
+import SimpleTooltip from "../utility/SimpleTooltip";
 
 function WebSettingsModal({
   web,
@@ -67,9 +67,11 @@ function WebSettingsModal({
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger>
-          <Button variant="ghost" className="h-fit p-2 m-0 rounded-full">
-            <SettingsIcon size={20} className="cursor-pointer" />
-          </Button>
+          <SimpleTooltip content="Web Settings" p={2}>
+            <Button variant="ghost" className="h-fit p-2 m-0 rounded-full">
+              <SettingsIcon size={20} className="cursor-pointer" />
+            </Button>
+          </SimpleTooltip>
         </DialogTrigger>
         <DialogContent className="">
           <DialogHeader>

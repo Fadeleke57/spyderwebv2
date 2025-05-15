@@ -248,7 +248,7 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
               What would you like to start thinking about?
             </DialogTitle>
             <DialogDescription className="text-left">
-              Create a knowledge base.
+              Create a memory store
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -271,7 +271,7 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
                 <Textarea
                   id="description"
                   rows={1}
-                  placeholder="Enter a brief description of your web..."
+                  placeholder="Enter a brief description of this memory store..."
                   {...form.register("description")}
                   className="w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-muted-foreground"
                   onInput={(e: any) => {

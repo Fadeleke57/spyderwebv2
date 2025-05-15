@@ -14,7 +14,7 @@ const GoogleCallback = () => {
     if (newwebid) {
       redirectTo = "/auth/onboarding";
     }
-    if (token && email && username && firstName && lastName) {
+    if (token && email && username) {
       localStorage.setItem("token", token as string);
       window.location.href = redirectTo
         ? `${redirectTo}?firstName=${firstName}&lastName=${lastName}&username=${username}&isGoogleSignup=true&defaultWebId=${newwebid}`

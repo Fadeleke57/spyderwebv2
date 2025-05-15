@@ -40,18 +40,19 @@ def deduct_credits(user_id: str, operation: str) -> tuple[bool, Optional[str]]:
     try:
         cost = OPERATION_COSTS.get(operation, 1)
         user = Users.find_one({"id": user_id})
+        plan = user.get("subscription_plan", "free")
 
         if not user:
             return False, "User not found"
 
         current_credits = user.get("credits", 0)
 
-        if current_credits < cost:
+        if current_credits + cost > PLAN_CREDITS.get(plan, 0):
             return False, "Insufficient credits"
 
         Users.update_one(
             {"id": user_id},
-            {"$inc": {"credits": -cost}, "$set": {"updated_at": datetime.now(UTC)}},
+            {"$inc": {"credits": cost}, "$set": {"updated_at": datetime.now(UTC)}},
         )
 
         return True, None

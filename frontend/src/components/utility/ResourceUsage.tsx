@@ -122,7 +122,7 @@ const formatStorage = (mb: number, limit?: number) => {
       <>
         <div className="flex justify-center items-center w-full">
           <Button
-            className="aspect-square rounded-full w-6 h-6 p-0 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white shadow-sm transition-all duration-200 hover:shadow-purple-500/20 flex items-center justify-center"
+            className="aspect-square rounded-full w-6 h-6 p-0 flex items-center justify-center"
             size="sm"
             onClick={handleUpgradeClick}
           >

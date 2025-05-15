@@ -206,13 +206,7 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
       <Card className="w-full relative mx-auto min-h-[80px] bg-background hover:bg-muted p-6 pb-3 pt-4 rounded-none lg:rounded-xl">
         <div className="flex flex-row gap-2 w-full">
           <div>
-            <UserAvatar
-              username={webOwner?.username}
-              userId={web?.userId}
-              width={30}
-              height={30}
-              className="w-[30px] h-[30px]"
-            />
+            <UserAvatar showTooltip userId={web?.userId} dimension={30} />
           </div>
           <div className={`w-full flex flex-col gap-2`}>
             <div className="flex flex-row justify-between w-full">
@@ -222,7 +216,7 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
                     <Skeleton className="h-3 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
                   ) : (
                     <p className="text-[.8rem] text-muted-foreground dark:text-foreground font-semibold">
-                      {webOwner?.username}
+                      {webOwner?.full_name || webOwner?.username}
                     </p>
                   )}
                   <p className="ml-2 text-sm text-muted-foreground dark:text-violet-400/80 font-semibold flex items-center pt-[2px]">

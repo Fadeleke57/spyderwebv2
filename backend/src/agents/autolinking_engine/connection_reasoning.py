@@ -1,8 +1,12 @@
 import json
+import time
 from src.lib.logger.index import logger
 from src.lib.gemini.index import client as geminiClient
 from src.models.index import CreateConnection
 
+# shared rate limiter timestamp
+_last_gemini_call = 0
+GEMINI_MIN_INTERVAL = 5
 
 class ConnectionReasoningAgent:  # reasons connections from selected sources and generates structured output
     def __new__(cls, *args, **kwargs):
@@ -37,24 +41,21 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
         self.staged_connections: list[CreateConnection] = []
         logger.info("CONNECTION REASONING AGENT INITIALIZED")
 
-    def _create_connections_list(self, candidate_document):
-        """
-        Generates a list of CreateConnection objects from the candidate document using the Gemini Model.
+    def _rate_limited_generate(self, prompt):
+        global _last_gemini_call
 
-        Args:
-            candidate_document (dict): The candidate document containing the source and its candidates.
+        now = time.time()
+        elapsed = now - _last_gemini_call
+        if elapsed < GEMINI_MIN_INTERVAL:
+            sleep_for = GEMINI_MIN_INTERVAL - elapsed
+            logger.info(f"Rate limiting Gemini request. Sleeping for {sleep_for:.2f}s...")
+            time.sleep(sleep_for)
 
-        Returns:
-            list[CreateConnection]: A list of CreateConnection objects.
-
-        Raises:
-            RuntimeError: If there is an error generating content from the Gemini Model.
-        """
-        logger.info(f"Creating connections...")
         try:
-            response = geminiClient.client.models.generate_content(
+            _last_gemini_call = time.time()
+            return geminiClient.client.models.generate_content(
                 model=geminiClient.selected_model,
-                contents=self._generate_prompt(candidate_document),
+                contents=prompt,
                 config={
                     "response_mime_type": "application/json",
                     "response_schema": list[CreateConnection],
@@ -64,13 +65,21 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
             logger.error(f"Error generating content: {e}")
             raise RuntimeError(f"Error generating content: {e}")
 
+    def _create_connections_list(self, candidate_document):
+        logger.info(f"Creating connections...")
         try:
+            prompt = self._generate_prompt(candidate_document)
+            response = self._rate_limited_generate(prompt)
+        except Exception as e:
+            logger.error(f"Error generating content: {e}")
+            raise RuntimeError(f"Error generating content: {e}")
 
+        try:
             parsed_response = json.loads(response.text)
             logger.info(f"Parsed response: {parsed_response}")
 
             if not isinstance(parsed_response, list):
-                logger.error(f"Error parsing response: {e}")
+                logger.error(f"Error parsing response: {parsed_response}")
                 return []
             else:
                 self.staged_connections.extend(parsed_response)
@@ -78,7 +87,6 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
 
         except Exception as e:
             logger.error(f"Error parsing response: {e}")
-            # Log the raw response for debugging
             logger.error(f"Raw response: {response}")
             return []
 

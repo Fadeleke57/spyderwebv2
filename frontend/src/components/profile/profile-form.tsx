@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
-import { Pencil, X, Check } from "lucide-react";
+import { Pencil, X, Check, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -19,10 +19,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PublicUser } from "@/types/user";
-import { useEditUser } from "@/hooks/user";
+import { useEditUser, useUploadProfileImage } from "@/hooks/user";
 import UserAvatar from "../utility/UserAvatar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "../ui/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import Image from "next/image";
 
 const profileFormSchema = z.object({
   username: z
@@ -34,14 +43,15 @@ const profileFormSchema = z.object({
       message: "Username must not be longer than 20 characters.",
     })
     .regex(/^[a-zA-Z0-9_]+$/, {
-      message: "Display name can only contain letters, numbers, and underscores.",
+      message:
+        "Display name can only contain letters, numbers, and underscores.",
     }),
   email: z
     .string({
       required_error: "Please select an email to display.",
     })
     .email(),
-  fullname: z.string(), 
+  fullname: z.string().min(2).max(20).optional(),
   bio: z.string().max(160).min(4).optional(),
   avatar: z.string().optional(),
 });
@@ -57,8 +67,12 @@ export function ProfileForm({
 }) {
   const { mutateAsync: editUser, isPending, error } = useEditUser();
   const isMobile = useIsMobile();
-  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [isEditingDisplayName, setIsEditingDisplayName] = useState(false);
   const [isEditingBio, setIsEditingBio] = useState(false);
+  const [stagedImage, setStagedImage] = useState<File | null>(null);
+  const [profileImage, setProfileImage] = useState<null | string>(null);
+  const { mutateAsync: uploadProfileImage } = useUploadProfileImage();
+  const [profileImageModalOpen, setProfileImageModalOpen] = useState(false);
 
   const defaultValues: Partial<ProfileFormValues> = {
     username: user?.username || "",
@@ -72,15 +86,15 @@ export function ProfileForm({
     defaultValues,
   });
 
-  const handleEditUsername = async () => {
-    const isValid = await form.trigger("username");
+  const handleEditDisplayName = async () => {
+    const isValid = await form.trigger("fullname");
     if (!isValid) return;
 
-    const newUsername = form.getValues("username");
+    const newFullName = form.getValues("fullname");
     try {
-      await editUser({ username: newUsername });
+      await editUser({ full_name: newFullName });
       refetch();
-      setIsEditingUsername(false);
+      setIsEditingDisplayName(false);
     } catch (error: any) {
       toast({
         title: "Error updating username",
@@ -111,10 +125,10 @@ export function ProfileForm({
     }
   };
 
-  const handleCancelEdit = (field: "username" | "bio") => {
-    if (field === "username") {
-      form.setValue("username", user?.username || "");
-      setIsEditingUsername(false);
+  const handleCancelEdit = (field: "fullname" | "bio") => {
+    if (field === "fullname") {
+      form.setValue("fullname", user?.username || "");
+      setIsEditingDisplayName(false);
     } else {
       form.setValue("bio", user?.bio || "");
       setIsEditingBio(false);
@@ -129,9 +143,42 @@ export function ProfileForm({
       form.setValue("bio", user.bio);
     }
     if (user?.full_name) {
-      form.setValue("fullname", user.full_name)
+      form.setValue("fullname", user.full_name);
     }
   }, [user?.username, user?.bio, user?.full_name, form]);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setStagedImage(file);
+      setProfileImageModalOpen(true);
+    }
+  };
+
+  const handleCancelImageUpload = () => {
+    setStagedImage(null);
+    setProfileImage(null);
+    setProfileImageModalOpen(false);
+  };
+
+  const handleUploadProfileImage = async () => {
+    if (!stagedImage) return;
+    try {
+      const url = await uploadProfileImage(stagedImage);
+      setProfileImage(url);
+      toast({
+        title: "Avatar updated",
+        description: "Avatar updated successfully",
+      });
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: "Error updating avatar",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Form {...form}>
@@ -144,17 +191,33 @@ export function ProfileForm({
               <div className="space-y-0.5">
                 <FormLabel>Avatar</FormLabel>
                 <FormDescription>
-                  The ability to change your avatar is coming soon!
+                  Feel free to change your avatar.
                 </FormDescription>
               </div>
-              <FormControl>
-                <UserAvatar
-                  userId={user?.id || ""}
-                  className="w-[60px] h-[60px] lg:w-[100px] lg:h-[100px]"
-                  width={isMobile ? 60 : 100}
-                  height={isMobile ? 60 : 100}
-                />
-              </FormControl>
+              <div>
+                <div className="relative">
+                  <label className="absolute top-[60%] lg:top-[70%] right-[70%] lg:right-[70%] cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/jpg"
+                      className="sr-only"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        handleFileChange(e);
+                      }}
+                    />
+                    <div className="flex items-center justify-center dark:bg-black/70 dark:hover:bg-black/50 rounded-full p-2 lg:px-4 text-xs">
+                      <span className="hidden lg:block">Edit</span>
+                      <Edit className="lg:ml-2" size={16} />
+                    </div>
+                  </label>
+                  <UserAvatar
+                    deactive
+                    showTooltip={false}
+                    userId={user?.id || ""}
+                    dimension={isMobile ? 60 : 100}
+                  />
+                </div>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -165,20 +228,50 @@ export function ProfileForm({
           render={({ field }) => (
             <FormItem className="w-full px-4">
               <div className="flex items-center justify-between">
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Display Name</FormLabel>
+                {!isEditingDisplayName && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditingDisplayName(true)}
+                  >
+                    Change
+                    <Pencil className="h-4 w-4 ml-2" />
+                  </Button>
+                )}
               </div>
               <div className="flex gap-2">
                 <FormControl>
                   <Input
                     className="w-full"
-                    disabled={true}
+                    disabled={!isEditingDisplayName}
                     {...field}
                   />
                 </FormControl>
+                {isEditingDisplayName && (
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleEditDisplayName}
+                      disabled={isPending}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCancelEdit("fullname")}
+                      disabled={isPending}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
-              <FormDescription>
-                This is your username. It cannot be changed.
-              </FormDescription>
+              <FormDescription>Your display name. Other users will see this when they search for you.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -189,52 +282,14 @@ export function ProfileForm({
           render={({ field }) => (
             <FormItem className="w-full px-4">
               <div className="flex items-center justify-between">
-                <FormLabel>Display Name</FormLabel>
-                {!isEditingUsername && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditingUsername(true)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                )}
+                <FormLabel>Username</FormLabel>
               </div>
               <div className="flex gap-2">
                 <FormControl>
-                  <Input
-                    className="w-full"
-                    disabled={!isEditingUsername}
-                    {...field}
-                  />
+                  <Input className="w-full" disabled={true} {...field} />
                 </FormControl>
-                {isEditingUsername && (
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleEditUsername}
-                      disabled={isPending}
-                    >
-                      <Check className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleCancelEdit("username")}
-                      disabled={isPending}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
               </div>
-              <FormDescription>
-                This is your public display name. Other users will see this when
-                they search for you.
-              </FormDescription>
+              <FormDescription>Your username</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -253,7 +308,7 @@ export function ProfileForm({
                   {...field}
                 />
               </FormControl>
-              <FormDescription>This is your email</FormDescription>
+              <FormDescription>Your email</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -272,7 +327,8 @@ export function ProfileForm({
                     size="sm"
                     onClick={() => setIsEditingBio(true)}
                   >
-                    <Pencil className="h-4 w-4" />
+                    Change
+                    <Pencil className="h-4 w-4 ml-2" />
                   </Button>
                 )}
               </div>
@@ -308,13 +364,69 @@ export function ProfileForm({
                 )}
               </div>
               <FormDescription>
-                Give a brief description of yourself
+                A brief description about yourself
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
       </form>
+      {stagedImage && (
+        <ProfilePictureStageModal
+          open={profileImageModalOpen}
+          setOpen={setProfileImageModalOpen}
+          image={stagedImage}
+          handleConfirm={handleUploadProfileImage}
+          handleCancel={handleCancelImageUpload}
+        />
+      )}
     </Form>
+  );
+}
+
+function ProfilePictureStageModal({
+  open,
+  setOpen,
+  image,
+  handleConfirm,
+  handleCancel,
+}: {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  image: File | null;
+  handleConfirm: () => void;
+  handleCancel: () => void;
+}) {
+  const handleAcceptImage = () => {
+    handleConfirm && handleConfirm();
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="p-10 max-h-[90dvh]">
+        <DialogHeader>
+          <DialogTitle>Profile Picture</DialogTitle>
+        </DialogHeader>
+        <DialogDescription>
+          Are you sure you want to update your profile picture?
+        </DialogDescription>
+        {image && (
+          <Image
+            src={URL.createObjectURL(image)}
+            alt="Staged Image"
+            width={200}
+            height={200}
+            className="rounded-md border"
+          ></Image>
+        )}
+        <DialogFooter className="flex flex-col gap-2">
+          <Button variant="outline" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button onClick={handleAcceptImage}>Update</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

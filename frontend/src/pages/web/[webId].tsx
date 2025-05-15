@@ -302,10 +302,9 @@ function Index() {
             >
               <div className="flex items-center gap-2 px-3">
                 <UserAvatar
-                  username={webOwner?.username}
+                  showTooltip
                   userId={web?.userId}
-                  height={28}
-                  width={28}
+                  dimension={38}
                 />
                 <div className="flex flex-col gap-0">
                   <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
