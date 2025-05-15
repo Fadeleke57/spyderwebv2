@@ -307,7 +307,7 @@ function Index() {
                     {webOwnerLoading ? "Loading..." : ""}
                     {(webOwner && webOwner.full_name) || ""}{" "}
                   </h1>
-                  <span className="text-foreground text-xs">
+                  <span className="text-foreground font-semibold text-xs">
                     @{webOwner && webOwner.username}
                   </span>
                   {web && web.iteratedFrom ? (
