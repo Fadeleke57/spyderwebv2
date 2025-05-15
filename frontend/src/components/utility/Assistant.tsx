@@ -152,9 +152,16 @@ const SpydrAI = () => {
   };
 
   useEffect(() => {
-    if (router.isReady && webId) {
+    if (!router.isReady || !webId) return;
+
+    // call it once immediately
+    configureCharlotte(webId as string);
+
+    const interval = setInterval(() => {
       configureCharlotte(webId as string);
-    }
+    }, 3000);
+
+    return () => clearInterval(interval);
   }, [router.isReady, webId, configureCharlotte]);
 
   if (isMobile) {

@@ -18,7 +18,6 @@ export const useConfigureChat = () => {
       });
     },
     retry: true,
-    retryDelay: 4000,
   });
 };
 
