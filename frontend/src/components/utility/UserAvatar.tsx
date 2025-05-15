@@ -28,10 +28,10 @@ function UserAvatar({
 }) {
   const router = useRouter();
   const { data: user } = useFetchUserById(userId);
-  console.log("user", user);
+  
   const username = user?.username;
   const profilepicurl = user?.profile_picture_url;
-
+        
   const navigateOnClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
