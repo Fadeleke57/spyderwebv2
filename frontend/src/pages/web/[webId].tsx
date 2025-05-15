@@ -301,16 +301,15 @@ function Index() {
               x-chunk="dashboard-03-chunk-0"
             >
               <div className="flex items-center gap-2 px-3">
-                <UserAvatar
-                  showTooltip
-                  userId={web?.userId}
-                  dimension={38}
-                />
+                <UserAvatar showTooltip userId={web?.userId} dimension={38} />
                 <div className="flex flex-col gap-0">
-                  <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
+                  <h1 className="text-xs md:text-base flex items-center lg:text-sm font-semibold m-0">
                     {webOwnerLoading ? "Loading..." : ""}
-                    {(webOwner && webOwner.username) || ""}{" "}
+                    {(webOwner && webOwner.full_name) || ""}{" "}
                   </h1>
+                  <span className="text-foreground text-xs">
+                    @{webOwner && webOwner.username}
+                  </span>
                   {web && web.iteratedFrom ? (
                     <p className="text-xs font-normal text-muted-foreground">
                       Iterated From{" "}
