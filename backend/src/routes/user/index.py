@@ -41,6 +41,7 @@ def get_user(userId: str, userMakingRequest: User = Depends(manager.optional)):
             "email": requestedUser["email"],
             "bio": requestedUser["bio"],
             "full_name": requestedUser["full_name"],
+            "profile_picture_url": requestedUser["profile_picture_url"],
             "created_at": requestedUser["created_at"],
             "subscription_plan": requestedUser["subscription_plan"],
         }

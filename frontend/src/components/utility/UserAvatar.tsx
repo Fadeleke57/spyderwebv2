@@ -10,16 +10,15 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { useRouter } from "next/router";
+import { useFetchUserById } from "@/hooks/user";
 
 function UserAvatar({
-  profilepicurl,
   userId,
   className,
   width,
   height,
   username,
 }: {
-  profilepicurl?: string;
   userId?: string;
   username?: string;
   className?: string;
@@ -27,6 +26,7 @@ function UserAvatar({
   height?: number;
 }) {
   const router = useRouter();
+  const { data: user } = useFetchUserById(userId);
   const navigateOnClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -34,6 +34,9 @@ function UserAvatar({
       router.push(`/user/${username}`);
     }
   };
+
+  const profilePicUrl = user?.profile_picture_url;
+  console.log("user", user);
   return (
     <TooltipProvider>
       <Tooltip delayDuration={100}>
@@ -51,7 +54,7 @@ function UserAvatar({
             {userId ? (
               <Image
                 src={
-                  profilepicurl || `https://robohash.org/${userId}?size=300x300`
+                  profilePicUrl || `https://robohash.org/${userId}?size=300x300`
                 }
                 alt="Avatar"
                 width={width || 36}
