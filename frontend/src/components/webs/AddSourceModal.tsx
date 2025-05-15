@@ -94,8 +94,8 @@ export default function AddSourceModal({
       toast({
         variant: "destructive",
         title: `${
-          err.response?.status === 400
-            ? "Unable to upload this website"
+          err.response?.status === 400 || err.response?.status === 500
+            ? "This website is not supported"
             : "Error uploading website"
         }`,
       });

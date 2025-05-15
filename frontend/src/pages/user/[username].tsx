@@ -16,18 +16,20 @@ import {
   Pin,
   CirclePlus,
   Link as LinkIcon,
+  CircleUser,
+  Edit,
 } from "lucide-react";
 import { useFetchProfileWebs } from "@/hooks/webs";
 import { Web } from "@/types/web";
 import { format } from "date-fns";
 import { useFetchPinnedWebs, useFetchUserByUsername } from "@/hooks/user";
 import UserAvatar from "@/components/utility/UserAvatar";
-import { ScrollAreaWithBlur } from "@/components/utility/ScrollAreaWithBlur";
 import UserWebSearch from "@/components/webs/UserWebSearch";
 import { useUser } from "@/context/UserContext";
 import { NewWebModal } from "@/components/webs/NewWebModal";
+import { motion } from "framer-motion";
+import SimpleTooltip from "@/components/utility/SimpleTooltip";
 
-// Valid tab values
 const VALID_TABS = ["overview", "webs", "packages", "stars"];
 
 function UserProfile() {
@@ -37,7 +39,6 @@ function UserProfile() {
   const [tab, setTab] = useState("overview");
   const { ref, inView } = useInView();
 
-  // Set tab from URL param if available and valid
   useEffect(() => {
     if (
       tabParam &&
@@ -48,11 +49,9 @@ function UserProfile() {
     }
   }, [tabParam]);
 
-  // Update URL when tab change
   const handleTabChange = (value: string) => {
     setTab(value);
 
-    // Update URL with new tab parameter without page reload
     router.push(
       {
         pathname: router.pathname,
@@ -92,7 +91,6 @@ function UserProfile() {
 
   const allWebs = websData?.pages.flatMap((page) => page.result) || [];
 
-  // Placeholder counts
   const webCount = websData?.pages[0]?.total || 0;
   const isOwner = viewer && user && viewer.id === user.id;
 
@@ -105,7 +103,23 @@ function UserProfile() {
   }
 
   if (!user) {
-    return <div className="p-8">User not found</div>;
+    return (
+      <div className="h-screen flex items-center justify-center bg-background text-foreground">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="text-center space-y-4 p-6 border border-muted rounded-2xl shadow-lg bg-card max-w-sm"
+        >
+          <CircleUser className="mx-auto w-10 h-10" />
+          <h2 className="text-xl font-semibold">User Not Found</h2>
+          <p className="text-sm text-muted-foreground">
+            The user you&apos;re looking for doesn&apos;t exist or has been
+            deleted.
+          </p>
+        </motion.div>
+      </div>
+    );
   }
 
   const formatDate = (dateString: string) => {
@@ -131,27 +145,42 @@ function UserProfile() {
       {/* Profile header - Full Width for Mobile */}
       <div className="p-4 border-b">
         <div className="flex flex-col mb-4">
-          <div className="flex lg:items-center gap-4">
-            <UserAvatar
-              username={user.username}
-              userId={user.id}
-              width={64}
-              height={64}
-              className="hidden md:block"
-            />
-            <UserAvatar
-              username={user.username}
-              userId={user.id}
-              width={48}
-              height={48}
-              className="md:hidden -ml-4"
-            />
+          <div className="flex lg:items-center gap-2">
+            <div className="relative">
+              {" "}
+              {isOwner && (
+                <div className="flex items-center justify-center cursor-pointer dark:bg-black/70 dark:hover:bg-black/50 rounded-full p-2 text-xs absolute -top-2 -right-2">
+                  <SimpleTooltip
+                    content="Change your avatar"
+                    side={"right"}
+                    p={2}
+                    sideOffset={8}
+                  >
+                    <Edit
+                      onClick={() => router.push("/settings?tab=profile")}
+                      size={16}
+                    />
+                  </SimpleTooltip>
+                </div>
+              )}
+              <UserAvatar
+                userId={user.id}
+                dimension={96}
+                className="hidden md:block"
+              />
+              <UserAvatar
+                userId={user.id}
+                dimension={48}
+                className="md:hidden -ml-4"
+              />
+            </div>
+
             <div>
               <h1 className="text-xl md:text-2xl font-bold">
                 {user.full_name}
               </h1>
               <h2 className="text-base md:text-lg text-muted-foreground">
-                {user.username}
+                @{user.username}
               </h2>
             </div>
           </div>
@@ -247,7 +276,7 @@ function UserProfile() {
                 <GitFork size={16} className="mr-2 hidden md:inline" />
                 Webs{" "}
                 <span className="ml-2 bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
-                  {websLoading ? "..." :  webCount}
+                  {websLoading ? "..." : webCount}
                 </span>
               </TabsTrigger>
               <TabsTrigger

@@ -108,7 +108,7 @@ function LinkPreview({ url, disabled }: { url: string; disabled: boolean }) {
 
             <div className="flex items-center gap-2 text-foreground text-sm">
               <span className="font-bold">
-                {formatFileSize(source ? source.size : 0)}
+                {formatFileSize(source ? source.size : 0) || "0 KB"}
               </span>
               <span>*</span> <span>{currentDate}</span>
             </div>

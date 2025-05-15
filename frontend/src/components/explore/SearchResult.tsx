@@ -133,9 +133,7 @@ export function SearchResultCard({
           <div className="flex flex-row items-center mt-3">
             <UserAvatar
               userId={web?.userId}
-              width={20}
-              height={20}
-              className="w-[25px] h-[25px]"
+              dimension={25}
             />
             <div className="ml-2 text-slate-500 flex flex-col align-center">
               <div className="flex flex-row items-center">

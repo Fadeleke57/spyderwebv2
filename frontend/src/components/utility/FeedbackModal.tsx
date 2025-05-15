@@ -81,7 +81,6 @@ const FeedbackModal = ({
           variant={"link"}
           className={`flex items-center gap-2 text-xs ${triggerVisibile ? "" : "hidden"}`}
         >
-          <MessageSquareText size={14} />
           Share Feedback
         </Button>
       </DialogTrigger>

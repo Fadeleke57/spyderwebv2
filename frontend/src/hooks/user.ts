@@ -119,6 +119,7 @@ export function useFetchUserById(userId: string | null | undefined) {
       return data;
     },
     enabled: !!userId,
+    staleTime: 120000, //2 minute stale time
   });
 }
 
@@ -266,3 +267,33 @@ export function useFetchSavedWebs(userId: string) {
     enabled: !!userId,
   });
 }
+
+export const useUploadProfileImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+
+      formData.append("file", file);
+
+      const { data } = await api.post(
+        `/users/replace/profile/picture`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return data.result;
+    },
+    onError: (error: any) => {
+      console.error("Image upload failed:", error);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+};

@@ -35,6 +35,7 @@ from src.lib.pinecone.index import client as pineconeClient
 from src.service.web import service as webService
 from src.routes.chat.index import configure_chat
 from src.utils.storage import handleFileStorage
+from src.routes.user.index import convert_to_public_user
 
 router = APIRouter()
 
@@ -815,13 +816,7 @@ def get_web_contributors(web_id: str, user=Depends(manager.optional)):
         for iteration in web["iterations"]:
             user = Users.find_one({"id": iteration}, {"_id": 0})
             if user:
-                publicUser = {
-                    "id": user["id"],
-                    "username": user["username"],
-                    "email": user["email"],
-                    "bio": user["bio"],
-                    "full_name": user["full_name"],
-                }
+                publicUser = convert_to_public_user(user)
                 contributers.append(publicUser)
 
         return {"result": contributers}
