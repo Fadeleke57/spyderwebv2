@@ -9,7 +9,7 @@ from src.lib.openai.index import client as openaiClient
 from src.utils.chat.prompt import convert_to_openai_messages, stream_text
 from src.models.index import Request, User, Chats
 from src.utils.credits import deduct_credits, get_user_credits
-from src.constants.credits import OPERATION_COSTS
+from src.constants.credits import OPERATION_COSTS, PLAN_CREDITS
 
 router = APIRouter()
 
@@ -70,7 +70,7 @@ async def handle_chat_data(
     if current_credits is None:
         raise HTTPException(status_code=500, detail="Error checking credits")
 
-    if current_credits < chat_cost:
+    if current_credits + chat_cost > PLAN_CREDITS.get(user["subscription_plan"], 0):
         # Return a 402 Payment Required status with a clear message
         raise HTTPException(
             status_code=402,  # Payment Required
