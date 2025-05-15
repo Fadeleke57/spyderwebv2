@@ -338,6 +338,10 @@ def add_webid_to_chunks():
         print("Added webId to chunk", embedding["embeddingId"])
         time.sleep(0.5)
 
+def reset_user_credits():
+    Users.update_many({}, {"$set": {"credits": 0, "last_credits_reset": datetime.now(UTC), "updated_at": datetime.now(UTC)}})
+    print("Credits reset for all users!")
+
 def add_userid_to_chunks():
     embeddings = list(Embeddings.find())
     print(f"Found {len(embeddings)} embeddings")
@@ -375,4 +379,5 @@ if __name__ == "__main__":
     #migrate_embeddings_to_mongodb() #run right after
     #add_webid_to_chunks()
     #add_userid_to_chunks()
-    sync_user_storage()
+    #sync_user_storage()
+    reset_user_credits()
