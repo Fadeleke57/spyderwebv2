@@ -131,7 +131,7 @@ const AssistantMessage = ({
     >
       {" "}
       <div
-        className={`absolute -top-[40px] left-0 flex flex-row ${toolbarVisible && !isLoading ? "opacity-100" : "opacity-0 hidden"} transition-all ease-in-out duration-200`}
+        className={`absolute -top-[40px] left-0 flex flex-row ${toolbarVisible && !isLoading ? "opacity-100" : "opacity-0"} transition-all ease-in-out duration-200`}
       >
         <div>
           <SimpleTooltip content="Copy">
