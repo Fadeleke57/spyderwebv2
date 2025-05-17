@@ -285,14 +285,18 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
                 <>
                   <ScrollArea className="w-full flex flex-row">
                     <div className="flex-1 w-full max-h-[400px] overflow-hidden mb-2 rounded-lg -ml-1 ">
-                      <Image
-                        height={300}
-                        width={500}
-                        src={images[0]}
-                        alt={web.name}
-                        className="rounded-xl w-full border h-auto object-cover"
-                        onClick={(e) => handleImageClick(e, images[0])}
-                      />
+                      {imagesLoading ? (
+                        <Skeleton className="h-[300px] w-full" />
+                      ) : (
+                        <Image
+                          height={300}
+                          width={500}
+                          src={images[0]}
+                          alt={web.name}
+                          className="rounded-xl w-full border h-auto object-cover"
+                          onClick={(e) => handleImageClick(e, images[0])}
+                        />
+                      )}
                     </div>
                     <ScrollBar orientation="horizontal" />
                   </ScrollArea>

@@ -53,8 +53,6 @@ const tiers: PricingTier[] = [
   },
   {
     name: "Enterprise",
-    monthlyPrice: "50",
-    yearlyPrice: "40",
     description:
       "Comprehensive memory solutions for organizations-scalable, secure, and fully customizable.",
     features: [
@@ -62,7 +60,7 @@ const tiers: PricingTier[] = [
       "5,000 AI Credits",
       "Charlotte AI Access",
       "AI Autolinker Access",
-      "Dedicated support, compliance options, and integration assistance.",
+      "Dedicated support, custom solutions, and integration assistance.",
     ],
     cta: "Contact Us",
     highlighted: false,
@@ -80,7 +78,8 @@ export function PricingModal({ open, setOpen }: PricingModalProps) {
 
   const handleSubscribe = async (tier: PricingTier) => {
     try {
-      if (tier.name === "Enterprise") { // redirect to email spydrdev@gmail.com
+      if (tier.name === "Enterprise") {
+        // redirect to email spydrdev@gmail.com
         window.location.href = "mailto:spydrdev@gmail.com";
         return;
       }
@@ -183,64 +182,66 @@ export function PricingModal({ open, setOpen }: PricingModalProps) {
                 >
                   {tier.description}
                 </p>
-                <div className="mt-3">
-                  {tier.price ? (
-                    <>
-                      <span
-                        className={cn(
-                          "text-2xl font-bold",
-                          tier.highlighted ? "text-white" : "text-foreground"
-                        )}
-                      >
-                        ${tier.price}
-                      </span>
-                      <span
-                        className={cn(
-                          "text-sm ml-1",
-                          tier.highlighted
-                            ? "text-violet-100"
-                            : "text-muted-foreground"
-                        )}
-                      >
-                        forever
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span
-                        className={cn(
-                          "text-2xl font-bold",
-                          tier.highlighted ? "text-white" : "text-foreground"
-                        )}
-                      >
-                        ${isYearly ? tier.yearlyPrice : tier.monthlyPrice}
-                      </span>
-                      <span
-                        className={cn(
-                          "text-sm ml-1",
-                          tier.highlighted
-                            ? "text-violet-100"
-                            : "text-muted-foreground"
-                        )}
-                      >
-                        per month
-                      </span>
-                      {isYearly && tier.monthlyPrice && (
-                        <div
+                {tier.monthlyPrice && tier.yearlyPrice && (
+                  <div className="mt-3">
+                    {tier.price ? (
+                      <>
+                        <span
                           className={cn(
-                            "text-xs mt-0.5",
+                            "text-2xl font-bold",
+                            tier.highlighted ? "text-white" : "text-foreground"
+                          )}
+                        >
+                          ${tier.price}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-sm ml-1",
                             tier.highlighted
                               ? "text-violet-100"
                               : "text-muted-foreground"
                           )}
                         >
-                          ${calculateYearlyPrice(tier.monthlyPrice)} billed
-                          yearly
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
+                          forever
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span
+                          className={cn(
+                            "text-2xl font-bold",
+                            tier.highlighted ? "text-white" : "text-foreground"
+                          )}
+                        >
+                          ${isYearly ? tier.yearlyPrice : tier.monthlyPrice}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-sm ml-1",
+                            tier.highlighted
+                              ? "text-violet-100"
+                              : "text-muted-foreground"
+                          )}
+                        >
+                          per month
+                        </span>
+                        {isYearly && tier.monthlyPrice && (
+                          <div
+                            className={cn(
+                              "text-xs mt-0.5",
+                              tier.highlighted
+                                ? "text-violet-100"
+                                : "text-muted-foreground"
+                            )}
+                          >
+                            ${calculateYearlyPrice(tier.monthlyPrice)} billed
+                            yearly
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
                 <Button
                   className={cn(
                     "w-full mt-3",
