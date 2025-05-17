@@ -246,8 +246,8 @@ export function PricingModal({ open, setOpen }: PricingModalProps) {
                   className={cn(
                     "w-full mt-3",
                     tier.highlighted
-                      ? "bg-white text-violet-600 hover:bg-violet-50"
-                      : "bg-violet-600 text-white hover:bg-violet-500"
+                      ? "dark:bg-white dark:text-violet-400 dark:hover:bg-violet-50"
+                      : "dark:bg-violet-400/80 dark:text-white dark:hover:bg-violet-400/60"
                   )}
                   onClick={() => handleSubscribe(tier)}
                   disabled={isLoading === tier.name}
