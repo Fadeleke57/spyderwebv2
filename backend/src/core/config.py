@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     stripe_pro_yearly_price_id: str
     proxy_username: str
     proxy_password: str
+    stytch_project_id: str
+    stytch_secret: str
 
     class Config:
         env_file = f".env"

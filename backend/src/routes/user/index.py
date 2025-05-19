@@ -1,14 +1,15 @@
-import re
 import os
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from src.routes.auth.utils import manager
 from src.lib.logger.index import logger
+from src.lib.stytch.index import client as stytchClient
 from src.utils.exceptions import check_user, checkAuthorizedUser
 from src.models.index import User, UpdateUser, Users, Webs
 from src.constants.credits import PLAN_CREDITS
 from src.utils.storage import STORAGE_LIMITS_MB
 from pydantic import BaseModel
+from stytch.consumer.models.users import SearchUsersQueryOperator, SearchUsersQuery
 from src.core.config import settings
 from fastapi import File, UploadFile
 from src.lib.s3.index import S3Bucket
@@ -17,7 +18,6 @@ from uuid import uuid4
 from src.lib.logger.index import logger
 from datetime import datetime
 from pytz import UTC
-from src.utils.credits import get_user_credits
 from typing import Optional, List
 
 router = APIRouter()
@@ -179,8 +179,16 @@ def unpin_web(webId: str, user: User = Depends(manager)):
 @router.get("/check/email")
 def check_email(email: str):
     try:
-        user = Users.find_one({"email": email})
-        result = True if user else False
+        resp = stytchClient.users.search(
+            query=SearchUsersQuery(
+                limit=200,
+                operator=SearchUsersQueryOperator.AND,
+                operands=[
+                    {"filter_name": "email_address", "filter_value": [email]},
+                ],
+            ),
+        )
+        result = True if resp.results else False
         return {"result": result}
 
     except Exception as e:

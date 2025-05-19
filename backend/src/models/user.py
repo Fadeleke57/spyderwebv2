@@ -30,7 +30,7 @@ class User(BaseModel):
     websHidden: list[str] = []
     websSaved: list[str] = []
     websPinned: list[str] = []
-    credits: int = PLAN_CREDITS["free"]
+    credits: int = 0
     subscription_plan: str = "free"
     last_credits_reset: datetime = Field(default_factory=lambda: datetime.now(UTC))
     storage_used: float = 0.0
@@ -40,36 +40,34 @@ class User(BaseModel):
 
 
 class CreateUser(BaseModel):
+    userId: str
     username: str
     email: str
-    full_name: Optional[str] = None
+    fullName: Optional[str] = None
     password: Optional[str] = None  # null for non oauth users
-    profile_picture_url: Optional[str] = None
+    profilePictureUrl: Optional[str] = None
 
 
-def create_user(create_user_data: CreateUser):
-    if not create_user_data:
+def create_user(createUser: CreateUser):
+    if not createUser:
         raise ValueError("User data is required")
 
     try:
-        user_id = str(uuid4())
 
         user = User(
-            id=user_id,
-            username=create_user_data.username,
-            full_name=create_user_data.full_name or create_user_data.username,
-            email=create_user_data.email,
+            id=createUser.userId,
+            username=createUser.username,
+            full_name=createUser.fullName or createUser.username,
+            email=createUser.email,
             hashed_password=(
-                get_password_hash(create_user_data.password)
-                if create_user_data.password
-                else ""
+                get_password_hash(createUser.password) if createUser.password else ""
             ),
             disabled=False,
-            profile_picture_url=create_user_data.profile_picture_url or "",
+            profile_picture_url=createUser.profilePictureUrl or "",
         )
 
         Users.insert_one(user.model_dump())
-        return user_id
+        return True
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
