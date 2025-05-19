@@ -2,7 +2,7 @@ import re
 import os
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
-from src.routes.auth.oauth2 import manager
+from src.routes.auth.utils import manager
 from src.lib.logger.index import logger
 from src.utils.exceptions import check_user, checkAuthorizedUser
 from src.models.index import User, UpdateUser, Users, Webs

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from pydantic.fields import Field
 from src.db.mongodb import get_collection
 from src.constants.credits import PLAN_CREDITS
-from src.routes.auth.oauth2 import get_password_hash
+from src.routes.auth.utils import get_password_hash
 from uuid import uuid4
 from pytz import UTC
 from fastapi import HTTPException

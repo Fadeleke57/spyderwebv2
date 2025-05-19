@@ -7,7 +7,7 @@ from fastapi import Depends, HTTPException, Response
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_login.exceptions import InvalidCredentialsException
 from fastapi.responses import JSONResponse, RedirectResponse
-from src.routes.auth.oauth2 import (
+from src.routes.auth.utils import (
     get_google_token,
     get_google_user,
     manager,

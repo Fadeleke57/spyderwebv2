@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from fastapi.exceptions import HTTPException
 from botocore.exceptions import ClientError
 from werkzeug.utils import secure_filename
-from src.routes.auth.oauth2 import manager
+from src.routes.auth.utils import manager
 from src.lib.s3.index import S3Bucket
 from src.utils.exceptions import check_user
 from src.db.neo4j import client as neo4jClient

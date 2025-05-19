@@ -3,7 +3,7 @@ from pytz import UTC
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
-from src.routes.auth.oauth2 import manager
+from src.routes.auth.utils import manager
 from src.utils.exceptions import check_user
 from src.models.connection import (
     CreateConnection,

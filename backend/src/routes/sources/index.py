@@ -12,7 +12,7 @@ from pydantic import BaseModel, HttpUrl
 from urllib.parse import unquote
 from src.utils.storage import handleTextStorage, handleFileStorage
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, BackgroundTasks
-from src.routes.auth.oauth2 import manager
+from src.routes.auth.utils import manager
 from src.utils.exceptions import check_user
 from src.lib.logger.index import logger
 from src.lib.s3.index import S3Bucket

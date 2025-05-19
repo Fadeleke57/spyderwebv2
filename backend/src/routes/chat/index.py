@@ -2,7 +2,7 @@ from pytz import UTC
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query, HTTPException
 from fastapi.responses import StreamingResponse
-from src.routes.auth.oauth2 import manager
+from src.routes.auth.utils import manager
 from src.utils.exceptions import check_user
 from src.lib.logger.index import logger
 from src.lib.openai.index import client as openaiClient

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from src.routes.auth.oauth2 import manager
+from src.routes.auth.utils import manager
 from uuid import uuid4
 from pytz import UTC
 from src.utils.exceptions import check_user

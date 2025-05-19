@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 import stripe
 from dotenv import load_dotenv
-from src.routes.auth.oauth2 import manager
+from src.routes.auth.utils import manager
 from src.models.user import User
 from src.utils.credits import update_user_plan, reset_user_credits
 from src.core.config import settings
