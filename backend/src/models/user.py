@@ -30,7 +30,7 @@ class User(BaseModel):
     websHidden: list[str] = []
     websSaved: list[str] = []
     websPinned: list[str] = []
-    credits: int = PLAN_CREDITS["free"]
+    credits: int = 0
     subscription_plan: str = "free"
     last_credits_reset: datetime = Field(default_factory=lambda: datetime.now(UTC))
     storage_used: float = 0.0
