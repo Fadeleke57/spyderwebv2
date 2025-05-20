@@ -5,7 +5,7 @@ import { PublicUser, Search, UpdateUser } from "@/types/user";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 
-export function useCheckUserState() {
+export function useCheckLoggedInUser() {
   const queryClient = useQueryClient();
 
   const {
@@ -15,10 +15,6 @@ export function useCheckUserState() {
   } = useQuery({
     queryKey: ["user", "me", "state"],
     queryFn: async (): Promise<PublicUser | null> => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        return null;
-      }
       const response = await api.get("/auth/me");
       if (response.data) {
         return response.data;
@@ -26,7 +22,7 @@ export function useCheckUserState() {
         return null;
       }
     },
-    retry: false, //dont retry when error
+    retry: false,
   });
 
   const { mutate: logout } = useMutation({
@@ -105,7 +101,6 @@ export function useClearSearchHistory() {
   };
   return { loading, error, clearSearchHistory };
 }
-
 
 export function useFetchUserById(userId: string | null | undefined) {
   return useQuery({

@@ -58,7 +58,7 @@ const registerSchema = z.object({
 });
 
 type AuthModalProps = {
-  type?: "login" | "register"; // Optional: type can be determined by email check
+  type?: "login" | "register" | "like" | "iterate";
   referrer?: string; // Optional
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -108,7 +108,7 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
   }, [step, userEmail, loginForm, registerForm]);
 
   const handleGoogleSignIn = () => {
-    window.location.href = `${environment.api_url}/auth/login/google`;
+    window.location.href = `https://test.stytch.com/v1/public/oauth/google/start?public_token=${environment.stytch_public_token}`;
   };
 
   const onEmailSubmit = async (data: EmailSubmission) => {
@@ -148,21 +148,18 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
   const onRegisterSubmit = async (data: RegisterSubmission) => {
     try {
       const result = await submitRegister({
-        email: data.email, // userEmail could also be used if guaranteed to be set
+        email: data.email,
         username: data.username,
         password: data.password,
       });
-      // The useSubmitRegister hook handles success toast.
-      // Backend sets HttpOnly cookies.
-      // Now, redirect to onboarding using the webId from the response.
+
       if (result && result.webId) {
-        setOpen(false); // Close modal before redirecting
+        setOpen(false);
         router.push(
           `/auth/onboarding?email=${encodeURIComponent(data.email)}&username=${encodeURIComponent(data.username)}&isGoogleSignup=false&defaultWebId=${result.webId}`
         );
       }
     } catch (error) {
-      // Error is handled by the useSubmitRegister hook's onError
       console.error("Registration submission component error:", error);
     }
   };

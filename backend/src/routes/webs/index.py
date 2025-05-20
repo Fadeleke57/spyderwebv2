@@ -15,7 +15,6 @@ from botocore.exceptions import ClientError
 from werkzeug.utils import secure_filename
 from src.routes.auth.utils import manager
 from src.lib.s3.index import S3Bucket
-from src.utils.exceptions import check_user
 from src.db.neo4j import client as neo4jClient
 from src.models.index import (
     Webs,
@@ -63,7 +62,6 @@ def get_user_webs(
     Returns:
         dict: A JSON response containing the paginated list of webs and pagination metadata.
     """
-    check_user(user)
 
     try:
 
@@ -115,7 +113,7 @@ async def get_webs(
     cursor: str = None,
     visibility=None,
     userId=None,
-    userMakingRequest=Depends(manager.optional),
+    userMakingRequest=Depends(manager),
 ):
     """
     Retrieve public webs with cursor-based pagination.
@@ -134,8 +132,7 @@ async def get_webs(
     """
     authorized = False
     if userMakingRequest:
-        check_user(userMakingRequest)
-        if userMakingRequest["id"] == userId:
+        if userMakingRequest.user_id == userId:
             authorized = True
     try:
         query = {}
@@ -211,7 +208,6 @@ def get_user_liked_webs(user: User = Depends(manager)):
     Returns:
         dict: A JSON response containing a list of liked webs sorted by creation date in descending order.
     """
-    check_user(user)
     try:
         likedWebs = list(
             Webs.find({"likes": user["id"]}, {"_id": 0}, sort=[("created", -1)])
@@ -243,7 +239,6 @@ def create_web_endpoint(
     Raises:
         HTTPException: If web creation fails.
     """
-    check_user(user)
     try:
 
         web_id = create_web(createWebPayload, user["id"])
@@ -279,7 +274,6 @@ async def upload_file(
     Raises:
         HTTPException: If the upload fails.
     """
-    check_user(user)
     uploaded_image_urls = []
     try:
         for file in files:
@@ -359,7 +353,6 @@ def delete_image(web_id: str, image_name: str, user=Depends(manager)):
         HTTPException: If the image is not found in S3, the web is not found, or if any other error occurs during the operation.
     """
 
-    check_user(user)
     try:
 
         filepath = f"files/{user['id']}/{web_id}/images/{image_name}"
@@ -432,7 +425,6 @@ def delete_web(webId: str, background_tasks: BackgroundTasks, user=Depends(manag
     """
     Delete a web and all associated sources, images, documents, and embeddings.
     """
-    check_user(user)
     try:
         webToDelete = Webs.find_one_and_delete({"webId": webId, "userId": user["id"]})
         if not webToDelete:
@@ -504,7 +496,6 @@ def update_web(
     Returns:
         dict: A JSON response with a result key.
     """
-    check_user(user)
     try:
         web = Webs.find_one({"webId": webId, "userId": user["id"]})
         if not web:
@@ -532,7 +523,7 @@ def update_web(
 
 
 @router.get("/id")
-def get_web_by_id(webId: str, user=Depends(manager.optional)):
+def get_web_by_id(webId: str, user=Depends(manager)):
     """
     Retrieve a web by its ID.
 
@@ -546,8 +537,6 @@ def get_web_by_id(webId: str, user=Depends(manager.optional)):
     Raises:
         HTTPException: If the web is not found, raises a 404 error.
     """
-    if user:
-        check_user(user)
 
     try:
         web: Web = Webs.find_one({"webId": webId}, {"_id": 0})
@@ -582,7 +571,6 @@ def like_web(web_id: str, user=Depends(manager)):
     Returns:
         dict: A JSON response with the updated number of likes for the web.
     """
-    check_user(user)
 
     try:
         result = Webs.find_one_and_update(
@@ -615,7 +603,6 @@ def unlike_web(web_id: str, user=Depends(manager)):
     Returns:
         dict: A JSON response with the updated number of likes for the web.
     """
-    check_user(user)
     try:
         result = Webs.find_one_and_update(
             {"webId": web_id, "likes": user["id"]},
@@ -634,7 +621,6 @@ def unlike_web(web_id: str, user=Depends(manager)):
 
 @router.get("/saved/user")
 def get_user_saved_webs(user=Depends(manager)):
-    check_user(user)
     try:
 
         result = Webs.find({"webId": {"$in": user["websSaved"]}}, {"_id": 0})
@@ -646,7 +632,6 @@ def get_user_saved_webs(user=Depends(manager)):
 
 @router.patch("/add/tag/{web_id}/{tag}")
 def add_tag(web_id: str, tag: str, user=Depends(manager)):
-    check_user(user)
     try:
 
         formatted_tag = tag.lower()
@@ -662,7 +647,6 @@ def add_tag(web_id: str, tag: str, user=Depends(manager)):
 
 @router.patch("/remove/tag/{web_id}/{tag}")
 def remove_tag(web_id: str, tag: str, user=Depends(manager)):
-    check_user(user)
 
     try:
 
@@ -696,7 +680,6 @@ def iterate_web(
     4. Update the new web in Mongo with the new sourceIds and iteration info.
     5. Queue embedding task.
     """
-    check_user(user)
 
     try:
         # get original web + owner
@@ -770,10 +753,8 @@ def search_webs(
     ),
     userId: Optional[str] = None,
     webId: Optional[str] = None,
-    user=Depends(manager.optional),
+    user=Depends(manager),
 ):
-    if user:
-        check_user(user)
 
     try:
         filter = {}
@@ -803,9 +784,7 @@ def search_webs(
 
 
 @router.get("/contributers/{web_id}")
-def get_web_contributors(web_id: str, user=Depends(manager.optional)):
-    if user:
-        check_user(user)
+def get_web_contributors(web_id: str, user=Depends(manager)):
 
     try:
         web = Webs.find_one({"webId": web_id})
@@ -836,7 +815,6 @@ class ExportGraphContext(BaseModel):
 
 @router.post("/export/graph/context")
 def export_graph_context(payload: ExportGraphContext, user=Depends(manager)):
-    check_user(user)
 
     try:
         web = Webs.find_one({"webId": payload.webId})

@@ -13,12 +13,11 @@ function Header() {
   const router = useRouter();
   const [typeOfAuth, setTypeOfAuth] = useState<"login" | "register">("login");
   const handleGoogleSignIn = () => {
-    window.location.href = `${environment.api_url}/auth/login/google`;
+    window.location.href = `https://test.stytch.com/v1/public/oauth/google/start?public_token=${environment.stytch_public_token}`;
   };
 
   const handleButtonClick = (typeOfAuth: "login" | "register") => {
     setTypeOfAuth(typeOfAuth);
-    console.log("handleButtonClick", typeOfAuth);
     setIsOpen(true);
   };
 

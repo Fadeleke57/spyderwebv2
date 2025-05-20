@@ -4,7 +4,6 @@ from datetime import datetime
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from src.routes.auth.utils import manager
-from src.utils.exceptions import check_user
 from src.models.connection import (
     CreateConnection,
     UpdateConnection,
@@ -65,7 +64,6 @@ def get_connection(web_id: str, connection_id: str):
 
 @router.post("/create")
 def create_connection(connection_data: CreateConnection, user=Depends(manager)):
-    check_user(user)
 
     connection = {
         "connectionId": str(uuid.uuid4()),
@@ -91,13 +89,12 @@ def create_connection(connection_data: CreateConnection, user=Depends(manager)):
 def update_connection(
     connection_id: str, config: UpdateConnection, user=Depends(manager)
 ):
-    check_user(user)
+
     pass
 
 
 @router.delete("/delete/{connection_id}")
 def delete_connection(connection_id: str, user=Depends(manager)):
-    check_user(user)
 
     try:
         neo4jClient.delete_connection(connection_id, "connection")

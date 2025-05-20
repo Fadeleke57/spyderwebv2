@@ -15,4 +15,5 @@ export const environment = {
   google_client_secret: process.env.GOOGLE_CLIENT_SECRET,
   posthog_key: process.env.NEXT_PUBLIC_POSTHOG_KEY,
   posthog_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+  stytch_public_token: process.env.NEXT_PUBLIC_STYTCH_TOKEN,
 };

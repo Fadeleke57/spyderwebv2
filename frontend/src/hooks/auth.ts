@@ -1,9 +1,8 @@
 import api from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/use-toast";
-import { useRouter } from "next/router"; // Assuming Next.js for router
+import { useRouter } from "next/router";
 
-// Types from your backend Pydantic models for clarity
 type BackendRegisterRequest = {
   email: string;
   password: string;
@@ -51,11 +50,8 @@ export function useSubmitLogin() {
         title: "Success",
         description: data.message || "Logged in successfully!",
       });
-      // Invalidate user queries to refetch user data
       queryClient.invalidateQueries({ queryKey: ["user", "me"] });
-      // Redirect to home or dashboard
-      // The backend sets HttpOnly cookies, so no client-side token storage needed here.
-      router.push("/home"); // Or your desired redirect path
+      router.push("/home");
     },
     onError: (error: any) => {
       toast({
@@ -69,10 +65,34 @@ export function useSubmitLogin() {
   });
 }
 
+export function useAuthenticate() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  return useMutation({
+    mutationFn: async (authPayload: {
+      token: string;
+      stytch_token_type: string;
+    }) => {
+      const response = await api.get(`/auth/authenticate`, {
+        params: {
+          token: authPayload.token,
+          stytch_token_type: authPayload.stytch_token_type,
+        },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user", "me"] });
+      router.push("/home");
+    },
+    onError: (error: any) => {
+      console.error("Authentication error:", error);
+    },
+  });
+}
+
 export function useSubmitRegister() {
   const queryClient = useQueryClient();
-  // No automatic redirect from the hook, let the component handle it with userId and webId
-
   return useMutation<BackendRegisterResponse, Error, BackendRegisterRequest>({
     mutationFn: async (registerPayload) => {
       const response = await api.post(`/auth/register`, registerPayload);
@@ -83,9 +103,6 @@ export function useSubmitRegister() {
         title: "Success",
         description: data.message || "Registration successful!",
       });
-      // Invalidate user queries if needed, or let the onboarding process handle user state.
-      // The backend sets HttpOnly Stytch cookies.
-      // The component calling this mutation will handle the redirect to onboarding.
       queryClient.invalidateQueries({ queryKey: ["user", "me"] });
     },
     onError: (error: any) => {

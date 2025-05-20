@@ -16,9 +16,6 @@ class Settings(BaseSettings):
     fastapi_env: str
     fastapi_secret_key: str
     fastapi_api_url: str
-    oauth2_client_id: str
-    oauth2_client_secret: str
-    oauth2_redirect_uri: str
     next_url: str
     pinecone_api_key: str
     pinecone_index_name: str

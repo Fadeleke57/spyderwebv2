@@ -1,6 +1,6 @@
 import { createContext, useContext, ReactNode } from "react";
 import { PublicUser } from "@/types/user";
-import { useCheckUserState } from "@/hooks/user";
+import { useCheckLoggedInUser } from "@/hooks/user";
 
 type UserContextType = {
   user: PublicUser | null | undefined;
@@ -11,7 +11,12 @@ type UserContextType = {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const { user, isLoading: userLoading, error, logout } = useCheckUserState();
+  const {
+    user,
+    isLoading: userLoading,
+    error,
+    logout,
+  } = useCheckLoggedInUser();
 
   if (userLoading) {
     return null;

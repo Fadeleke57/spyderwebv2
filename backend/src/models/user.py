@@ -1,11 +1,8 @@
 from pydantic import BaseModel
-from typing import Optional, List
-from datetime import datetime, timedelta
+from typing import Optional
+from datetime import datetime
 from pydantic.fields import Field
 from src.db.mongodb import get_collection
-from src.constants.credits import PLAN_CREDITS
-from src.routes.auth.utils import get_password_hash
-from uuid import uuid4
 from pytz import UTC
 from fastapi import HTTPException
 
@@ -18,7 +15,6 @@ class User(BaseModel):
     username: str
     email: str
     disabled: bool
-    hashed_password: str
     bio: str = ""
     occupation: str = ""
     company: str = ""
@@ -44,7 +40,6 @@ class CreateUser(BaseModel):
     username: str
     email: str
     fullName: Optional[str] = None
-    password: Optional[str] = None  # null for non oauth users
     profilePictureUrl: Optional[str] = None
 
 
@@ -59,9 +54,6 @@ def create_user(createUser: CreateUser):
             username=createUser.username,
             full_name=createUser.fullName or createUser.username,
             email=createUser.email,
-            hashed_password=(
-                get_password_hash(createUser.password) if createUser.password else ""
-            ),
             disabled=False,
             profile_picture_url=createUser.profilePictureUrl or "",
         )
@@ -77,7 +69,6 @@ class UpdateUser(BaseModel):  # updating user
     full_name: Optional[str] = None
     username: Optional[str] = None
     email: Optional[str] = None
-    password: Optional[str] = None
     bio: Optional[str] = None
     occupation: Optional[str] = None
     company: Optional[str] = None

@@ -1,13 +1,8 @@
 from src.lib.logger.index import logger
-from fastapi import APIRouter
-from datetime import timedelta
+from fastapi import APIRouter, Cookie
+from src.routes.auth.utils import manager
 from fastapi import Depends, HTTPException, Request
 from fastapi.responses import JSONResponse, RedirectResponse
-from src.routes.auth.utils import (
-    get_google_token,
-    get_google_user,
-    manager,
-)
 from src.core.config import settings
 from src.models.index import (
     Users,
@@ -30,17 +25,9 @@ from src.lib.stytch.index import (
     StytchUser,
     StytchCreateResponse,
 )
-from stytch.consumer.models.users import SearchUsersQueryOperator, SearchUsersQuery
 from src.routes.user.index import convert_to_public_user
 
-OAUTH2_CLIENT_SECRET = settings.oauth2_client_secret
-OAUTH2_REDIRECT_URI = settings.oauth2_redirect_uri
-OAUTH2_CLIENT_ID = settings.oauth2_client_id
-
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
-
 router = APIRouter()
-
 
 class RegisterRequest(BaseModel):
     email: str  # better pydantic types needed
@@ -66,61 +53,41 @@ def set_stytch_cookies(resp: JSONResponse, session_token: str, session_jwt: str)
     resp.set_cookie("stytch_session_jwt", session_jwt, **cookie_params)
 
 
-def Authenticate(session_token: str = None) -> StytchUser:
-    if not session_token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
+
+@router.get("/authenticate")
+def authenticate(stytch_token_type: str, token: str, background_tasks: BackgroundTasks):
+    if stytch_token_type != "oauth":
+        raise HTTPException(status_code=400, detail="Invalid token type")
+
     try:
-        resp: StytchAuthenticateResponse = stytchClient.sessions.authenticate(
-            session_token=session_token
+        stytchResp: StytchAuthenticateResponse = stytchClient.oauth.authenticate(
+            token=token, session_duration_minutes=1440
         )
-        return resp.user
-    except StytchError:
-        raise HTTPException(status_code=401, detail="Session expired or invalid")
+        logger.info(f"Login response: {stytchResp}")
+    except StytchError as e:
+        raise HTTPException(status_code=401, detail=str(e))
 
+    email = stytchResp.user.emails[0].email
 
-@router.get("/login/google")
-def login():
-    """
-    Redirect the user to Google's OAuth2 authorization page.
-
-    This endpoint is used to start the OAuth2 flow with Google. The user will be redirected to Google's authorization page, where they can grant access to their Google account.
-
-    :return: A RedirectResponse to Google's OAuth2 authorization page
-    """
-    google_auth_url = (
-        "https://accounts.google.com/o/oauth2/auth"
-        "?response_type=code"
-        f"&client_id={OAUTH2_CLIENT_ID}"
-        f"&redirect_uri={OAUTH2_REDIRECT_URI}"
-        "&scope=openid%20email%20profile"
-    )
-    return RedirectResponse(google_auth_url)
-
-
-@router.get("/callback")
-async def auth_callback(code: str, background_tasks: BackgroundTasks):
-    """
-    Handle the OAuth2 callback from Google.
-
-    Takes the authorization code, exchanges it for an access token,
-    retrieves user info from Google, checks if the user exists,
-    and creates a user, a default web, and a source node if not.
-    """
-    token_data = await get_google_token(code)
-    user_data, profile_picture_url = await get_google_user(token_data["access_token"])
-    email = user_data["email"]
-    full_name = user_data["name"]
     user = Users.find_one({"email": email})
+    userId = stytchResp.user_id
+    first_name = stytchResp.user.name.first_name
+    last_name = stytchResp.user.name.last_name
+    profile_picture_url = stytchResp.user.providers[0].profile_picture_url
+    username = generate_username() if not user else user["username"]
+
     new_web_id = None
     if not user:
         # create a new user
-        new_username = generate_username()
         create_user_data = CreateUser(
-            username=new_username,
+            userId=userId,
+            username=username,
             email=email,
-            full_name=full_name,
+            full_name=f"{first_name} {last_name}",
+            profilePictureUrl=profile_picture_url,
         )
-        user_id = create_user(create_user_data)
+
+        _ = create_user(create_user_data)
 
         # create a new welcome web for the user
         create_web_data = CreateWeb(
@@ -133,26 +100,37 @@ async def auth_callback(code: str, background_tasks: BackgroundTasks):
             enableAIConnections=False,
             showcase=False,
         )
-        new_web_id = create_web(create_web_data, user_id)
-        sourceService.create_onboarding_sources(new_web_id, user_id, background_tasks)
+        new_web_id = create_web(webToCreate=create_web_data, userId=userId)
+        sourceService.create_onboarding_sources(
+            web_id=new_web_id, user_id=userId, background_tasks=background_tasks
+        )
+    else:
+        username = user["username"]
 
-    access_token = manager.create_access_token(
-        data={"sub": email}, expires=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    frontend_redirect_url = (
+        f"{settings.next_url}/auth/google-callback"
+        f"?email={email}"
+        f"&username={username}"
+        f"&firstName={first_name or ''}"
+        f"&lastName={last_name or ''}"
+        f"&newUser={'true' if not user else 'false'}"
+        f"&newWebId={new_web_id if new_web_id else ''}"
     )
-    response = RedirectResponse(
-        url=f"""{settings.next_url}/auth/google-callback?token={access_token}&email={email}&username={new_username if not user else user['username']}&firstName={user_data.get('given_name', "")}&lastName={user_data.get('family_name', "")}&newuser={"true" if not user else ""}&newwebid={new_web_id if new_web_id else ""}""",
+    response = RedirectResponse(url=frontend_redirect_url)
+
+    set_stytch_cookies(
+        resp=response,
+        session_token=stytchResp.session_token,
+        session_jwt=stytchResp.session_jwt,
     )
-    manager.set_cookie(response, access_token)
     return response
 
 
 @router.post("/login", status_code=200)
 def login(req: LoginRequest):
     try:
-        stytchResp: StytchAuthenticateResponse = (
-            stytchClient.passwords.authenticate(
-                email=req.email, password=req.password, session_duration_minutes=1440
-            )
+        stytchResp: StytchAuthenticateResponse = stytchClient.passwords.authenticate(
+            email=req.email, password=req.password, session_duration_minutes=1440
         )
         logger.info(f"Login response: {stytchResp}")
     except StytchError as e:
@@ -190,9 +168,6 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
 
     # create the user in mongo
     userId = stytchResp.user_id
-    if Users.find_one({"email": registerRequest.email}):
-        logger.error("Email already registered")
-        raise HTTPException(status_code=400, detail="Email already registered")
 
     createUserPayload = CreateUser(
         userId=userId,
@@ -215,15 +190,15 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
         showcase=True,
     )
 
-    web_id = create_web(webToCreate=createWebPayload, userId=userId)
+    webId = create_web(webToCreate=createWebPayload, userId=userId)
     sourceService.create_onboarding_sources(
-        web_id=web_id, user_id=userId, background_tasks=background_tasks
+        web_id=webId, user_id=userId, background_tasks=background_tasks
     )
 
     # set Stytch session cookies
     response = JSONResponse(
         status_code=201,
-        content={"message": "Registered", "userId": userId, "webId": web_id},
+        content={"message": "Registered", "userId": userId, "webId": webId},
     )
     set_stytch_cookies(
         resp=response,
@@ -234,7 +209,7 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
 
 
 @router.get("/me")
-def get_current_user(stytchUser: StytchUser = Depends(Authenticate)):
+def get_current_user(stytchUser: StytchUser = Depends(manager)):
     """
     Get the current user.
 
@@ -273,7 +248,7 @@ class OnboardingPayload(BaseModel):
 
 @router.post("/onboarding")
 def complete_onboarding(
-    onboardingPayload: OnboardingPayload, stytchUser: StytchUser = Depends(Authenticate)
+    onboardingPayload: OnboardingPayload, stytchUser: StytchUser = Depends(manager)
 ):
     try:
         updates = UpdateUser(

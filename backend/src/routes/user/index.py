@@ -4,7 +4,6 @@ from fastapi.exceptions import HTTPException
 from src.routes.auth.utils import manager
 from src.lib.logger.index import logger
 from src.lib.stytch.index import client as stytchClient
-from src.utils.exceptions import check_user, checkAuthorizedUser
 from src.models.index import User, UpdateUser, Users, Webs
 from src.constants.credits import PLAN_CREDITS
 from src.utils.storage import STORAGE_LIMITS_MB
@@ -26,7 +25,7 @@ s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
 
 @router.get("/search/history")
 def get_search_history(user: User = Depends(manager)):
-    check_user(user)
+
     try:
         user = Users.find_one({"id": user["id"]})
         analytics = user["analytics"]
@@ -37,9 +36,7 @@ def get_search_history(user: User = Depends(manager)):
 
 
 @router.get("/")
-def get_user(userId: str, userMakingRequest: User = Depends(manager.optional)):
-    if userMakingRequest:
-        check_user(userMakingRequest)
+def get_user(userId: str, userMakingRequest: User = Depends(manager)):
 
     try:
         requestedUser = Users.find_one({"id": userId}, {"_id": 0})
@@ -59,10 +56,8 @@ def get_user(userId: str, userMakingRequest: User = Depends(manager.optional)):
 
 @router.get("/username/{username}")
 def get_user_by_username(
-    username: str, userMakingRequest: User = Depends(manager.optional)
+    username: str, userMakingRequest: User = Depends(manager)
 ):
-    if userMakingRequest:
-        check_user(userMakingRequest)
 
     try:
         requestedUser = Users.find_one({"username": username}, {"_id": 0})
@@ -82,7 +77,7 @@ def get_user_by_username(
 
 @router.patch("/edit/")
 def edit_user(updates: UpdateUser, user: User = Depends(manager)):
-    check_user(user)
+
     try:
         if updates.username:
             username_exists = Users.find_one({"username": updates.username})
@@ -107,7 +102,7 @@ def edit_user(updates: UpdateUser, user: User = Depends(manager)):
 
 @router.patch("/hide/web/{webId}")
 def hide_web(webId: str, user: User = Depends(manager)):
-    check_user(user)
+   
     try:
         Users.update_one({"id": user["id"]}, {"$addToSet": {"websHidden": webId}})
         return {"result": True}
@@ -119,7 +114,7 @@ def hide_web(webId: str, user: User = Depends(manager)):
 
 @router.patch("/unhide/web/{webId}")
 def unhide_web(webId: str, user: User = Depends(manager)):
-    check_user(user)
+
     try:
         Users.update_one({"id": user["id"]}, {"$pull": {"websHidden": webId}})
         return {"result": True}
@@ -130,7 +125,7 @@ def unhide_web(webId: str, user: User = Depends(manager)):
 
 @router.patch("/save/web/{webId}")
 def save_web(webId: str, user: User = Depends(manager)):
-    check_user(user)
+
     try:
         Users.update_one({"id": user["id"]}, {"$addToSet": {"websSaved": webId}})
         return {"result": True}
@@ -142,7 +137,7 @@ def save_web(webId: str, user: User = Depends(manager)):
 
 @router.patch("/unsave/web/{webId}")
 def unsave_web(webId: str, user: User = Depends(manager)):
-    check_user(user)
+
     try:
         Users.update_one({"id": user["id"]}, {"$pull": {"websSaved": webId}})
         return {"result": True}
@@ -154,7 +149,7 @@ def unsave_web(webId: str, user: User = Depends(manager)):
 
 @router.patch("/pin/web/{webId}")
 def pin_web(webId: str, user: User = Depends(manager)):
-    check_user(user)
+
     try:
         Users.update_one({"id": user["id"]}, {"$addToSet": {"websPinned": webId}})
         return {"result": True}
@@ -166,7 +161,7 @@ def pin_web(webId: str, user: User = Depends(manager)):
 
 @router.patch("/unpin/web/{webId}")
 def unpin_web(webId: str, user: User = Depends(manager)):
-    check_user(user)
+
     try:
         Users.update_one({"id": user["id"]}, {"$pull": {"websPinned": webId}})
         return {"result": True}
@@ -199,7 +194,7 @@ def check_email(email: str):
 @router.get("/usage")
 async def get_usage(user: User = Depends(manager)):
     """Get user's resource usage"""
-    check_user(user)
+
     try:
         user_data = Users.find_one({"id": user["id"]})
         if not user_data:
@@ -224,17 +219,10 @@ async def get_usage(user: User = Depends(manager)):
 
 
 @router.get("/pinned/webs/{user_id}")
-def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.optional)):
-    authorized = checkAuthorizedUser(
-        resourceUserId=user_id, userMakingRequest=userMakingRequest
-    )
+def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager)):
     profile = Users.find_one({"id": user_id})
 
     query = {"webId": {"$in": profile["websPinned"]}}
-
-    if not authorized:
-        query["visibility"] = "Public"
-
     try:
         profile = Users.find_one({"id": user_id})
 
@@ -250,12 +238,10 @@ def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.opti
 
 
 @router.get("/saved/webs/{user_id}")
-def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.optional)):
+def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager)):
     authorized = False
-    if userMakingRequest:
-        check_user(userMakingRequest)
-        if userMakingRequest["id"] == user_id:
-            authorized = True
+    if userMakingRequest["id"] == user_id:
+        authorized = True
 
     query = {"webId": {"$in": userMakingRequest["websSaved"]}}
     if not authorized:
@@ -283,8 +269,6 @@ class UploadProfilePictureRequest(BaseModel):
 async def replace_profile_picture(
     file: UploadFile = File(...), user: User = Depends(manager)
 ):
-    check_user(user)
-
     try:
         file_uuid = str(uuid4())
         filename = secure_filename(file.filename)
