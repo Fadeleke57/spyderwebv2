@@ -44,7 +44,9 @@ def configure_chat(webId: str):
 
 @router.post("/add")
 async def handle_chat_data(
-    request: Request, user: User = Depends(manager.required), protocol: str = Query("data")
+    request: Request,
+    user: User = Depends(manager.required),
+    protocol: str = Query("data"),
 ):
     """
     Handle incoming chat data from a user.
@@ -193,7 +195,7 @@ def get_all_chats(user: User = Depends(manager.required)):
 
 
 @router.get("/{chatId}")
-def get_chat(chatId: str, _ = Depends(manager.required)):
+def get_chat(chatId: str, _=Depends(manager.required)):
     """
     Retrieve messages for a specific chat ID.
 

@@ -83,7 +83,7 @@ def authenticate(stytch_token_type: str, token: str, background_tasks: Backgroun
             userId=userId,
             username=username,
             email=email,
-            full_name=f"{first_name} {last_name}",
+            fullName=f"{first_name} {last_name}",
             profilePictureUrl=profile_picture_url,
         )
 
@@ -143,23 +143,42 @@ def login(req: LoginRequest):
         raise HTTPException(status_code=401, detail=str(e))
 
     # set cookies so browser will send them on every request
-    responce = JSONResponse(content={"message": "Logged in"})
+    response = JSONResponse(
+        content={"message": f"Welcome back {stytchResp.user.name.first_name or ''}"}
+    )
     set_stytch_cookies(
-        resp=responce,
+        resp=response,
         session_token=stytchResp.session_token,
         session_jwt=stytchResp.session_jwt,
     )
-    return responce
+    return response
 
 
 @router.post("/register")
 def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks):
     """
-    Register a new user.
+    Register a new user in the system.
 
-    This endpoint registers a new user, creates a default welcome web and
-    a source node. It returns an access token for immediate login.
+    This endpoint creates a new user in both Stytch and the local MongoDB database,
+    and creates their default web.
+
+    Args:
+        registerRequest: The request payload containing the user's information.
+        background_tasks: The background tasks to run after the user is registered.
+
+    Returns:
+        A JSONResponse with the user's id and web id.
+
+    Raises:
+        HTTPException: If the user could not be registered.
     """
+    usernameCollision = Users.find_one({"username": registerRequest.username})
+    if usernameCollision:
+        logger.error(f"username already exists: {registerRequest.username}")
+        raise HTTPException(
+            status_code=400,
+            detail="Username already exists",
+        )
     try:
         # create the user in stytch auth
         stytchResp = stytchClient.passwords.create(
@@ -170,7 +189,9 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
         logger.info(f"Register response: {stytchResp}")
     except StytchError as e:
         logger.error(f"Error registering user: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+            status_code=401 if e.details.error_type == "weak_password" else 400, detail=str(e)
+        )
 
     # create the user in mongo
     userId = stytchResp.user_id
@@ -203,8 +224,13 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
 
     # set Stytch session cookies
     response = JSONResponse(
-        status_code=201,
-        content={"message": "Registered", "userId": userId, "webId": webId},
+        content={
+            "message": "Welcome to Spydr!",
+            "userId": userId,
+            "webId": webId,
+            "username": registerRequest.username,
+            "email": registerRequest.email,
+        },
     )
     set_stytch_cookies(
         resp=response,
@@ -215,7 +241,7 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
 
 
 @router.get("/me")
-def get_current_user(user = Depends(manager.required)):
+def get_current_user(user=Depends(manager.required)):
     """
     Get the current user.
 
@@ -255,8 +281,9 @@ class OnboardingPayload(BaseModel):
 
 @router.post("/onboarding")
 def complete_onboarding(
-    onboardingPayload: OnboardingPayload, user = Depends(manager.required)
+    onboardingPayload: OnboardingPayload, user=Depends(manager.required)
 ):
+    logger.info(f"user: {user}")
     try:
         updates = UpdateUser(
             full_name=f"{onboardingPayload.firstName} {onboardingPayload.lastName}",
@@ -296,9 +323,7 @@ def logout(request: Request):
     if not session_token:
         raise HTTPException(status_code=401, detail="Unauthorized")
     try:
-        resp = stytchClient.sessions.revoke(
-            session_token=session_token
-        )
+        resp = stytchClient.sessions.revoke(session_token=session_token)
         logger.info(f"Logout response: {resp}")
     except StytchError as e:
         raise HTTPException(status_code=400, detail=str(e))

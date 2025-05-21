@@ -412,7 +412,10 @@ def upload_note(
 
 @router.post("/youtube/{web_id}/{video_id}")
 def add_youtube(
-    web_id: str, video_id: str, background_tasks: BackgroundTasks, user=Depends(manager.required)
+    web_id: str,
+    video_id: str,
+    background_tasks: BackgroundTasks,
+    user=Depends(manager.required),
 ):
 
     try:
@@ -591,7 +594,7 @@ def delete_source(
         if not affected_web:
             logger.info("Web not found")
             return {"result": "Web not found"}
-        
+
         background_tasks.add_task(
             sourceService.delete_source_embeddings,
             source=sourceToDelete,

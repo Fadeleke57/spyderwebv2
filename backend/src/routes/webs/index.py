@@ -30,6 +30,7 @@ from src.models.index import (
 )
 from src.lib.logger.index import logger
 from src.core.config import settings
+from src.lib.stytch.index import StytchError
 from src.lib.pinecone.index import client as pineconeClient
 from src.service.web import service as webService
 from src.routes.chat.index import configure_chat
@@ -421,7 +422,9 @@ def get_web_images(web_id: str):
 
 
 @router.delete("/delete")
-def delete_web(webId: str, background_tasks: BackgroundTasks, user=Depends(manager.required)):
+def delete_web(
+    webId: str, background_tasks: BackgroundTasks, user=Depends(manager.required)
+):
     """
     Delete a web and all associated sources, images, documents, and embeddings.
     """
@@ -846,4 +849,3 @@ def export_graph_context(payload: ExportGraphContext, user=Depends(manager.requi
         raise HTTPException(
             status_code=500, detail=f"Error exporting graph context: {e}"
         )
-    

@@ -281,7 +281,9 @@ async def handle_payment_success(
 
 
 @router.post("/failure")
-async def handle_payment_failure(session_id: str, user: User = Depends(manager.required)):
+async def handle_payment_failure(
+    session_id: str, user: User = Depends(manager.required)
+):
     """Handle failed payment"""
     try:
         # Get the session details from Stripe

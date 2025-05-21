@@ -53,9 +53,7 @@ def get_user(userId: str, _: User = Depends(manager.optional)):
 
 
 @router.get("/username/{username}")
-def get_user_by_username(
-    username: str, _: User = Depends(manager.optional)
-):
+def get_user_by_username(username: str, _: User = Depends(manager.optional)):
 
     try:
         requestedUser = Users.find_one({"username": username}, {"_id": 0})

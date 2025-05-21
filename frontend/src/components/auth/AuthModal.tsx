@@ -137,22 +137,11 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
   };
 
   const onRegisterSubmit = async (data: RegisterSubmission) => {
-    try {
-      const result = await submitRegister({
+      await submitRegister({
         email: data.email,
         username: data.username,
         password: data.password,
       });
-
-      if (result && result.webId) {
-        setOpen(false);
-        router.push(
-          `/auth/onboarding?email=${encodeURIComponent(data.email)}&username=${encodeURIComponent(data.username)}&isGoogleSignup=false&defaultWebId=${result.webId}`
-        );
-      }
-    } catch (error) {
-      console.error("Registration submission component error:", error);
-    }
   };
 
   const handleBackToEmailStep = () => {

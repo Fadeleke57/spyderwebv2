@@ -2,6 +2,7 @@ import api from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/router";
+import { AxiosError } from "axios";
 
 type BackendRegisterRequest = {
   email: string;
@@ -19,6 +20,8 @@ type BackendRegisterResponse = {
   message: string;
   userId: string;
   webId: string;
+  email: string;
+  username: string;
 };
 
 type BackendLoginResponse = {
@@ -67,7 +70,11 @@ export function useSubmitLogin() {
 
 export function useSubmitRegister() {
   const queryClient = useQueryClient();
-  return useMutation<BackendRegisterResponse, Error, BackendRegisterRequest>({
+  return useMutation<
+    BackendRegisterResponse,
+    AxiosError,
+    BackendRegisterRequest
+  >({
     mutationFn: async (registerPayload) => {
       const response = await api.post(`/auth/register`, registerPayload);
       return response.data;
@@ -78,11 +85,13 @@ export function useSubmitRegister() {
         description: data.message || "Registration successful!",
       });
       queryClient.invalidateQueries({ queryKey: ["user"] });
+      window.location.href = `/auth/onboarding?email=${encodeURIComponent(data.email)}&username=${encodeURIComponent(data.username)}&isGoogleSignup=false&defaultWebId=${data.webId}`;
     },
-    onError: (error: any) => {
+    onError: (error: AxiosError) => {
+      console.log(error);
       toast({
-        title: "Registration Failed",
-        description: error?.response?.data?.detail || "Something went wrong.",
+        title: mapErrorCode(error.response?.status as number),
+        description: "Please try again.",
         variant: "destructive",
       });
       console.error("Registration error:", error);
@@ -102,3 +111,20 @@ export function useCompleteOnboarding() {
     },
   });
 }
+
+const mapErrorCode = (code: number) => {
+  switch (code) {
+    case 400:
+      return "Username already exists.";
+    case 401:
+      return "Please use a stronger password.";
+    case 403:
+      return "Forbidden";
+    case 404:
+      return "Not Found";
+    case 500:
+      return "Internal Server Error";
+    default:
+      return "Unknown Error";
+  }
+};

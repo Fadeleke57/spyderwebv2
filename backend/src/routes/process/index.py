@@ -10,7 +10,9 @@ router = APIRouter()
 
 
 @router.get("/all/{web_id}")
-def get_all_processes(web_id: str, _=Depends(manager.required)) -> dict[str, list[Process]]:
+def get_all_processes(
+    web_id: str, _=Depends(manager.required)
+) -> dict[str, list[Process]]:
     """
     Retrieve all processes associated with a given web ID, within the last minute.
 
