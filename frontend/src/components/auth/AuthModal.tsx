@@ -107,7 +107,7 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
   }, [step, userEmail, loginForm, registerForm]);
 
   const handleGoogleSignIn = () => {
-    window.location.href = `https://test.stytch.com/v1/public/oauth/google/start?public_token=${environment.stytch_public_token}`;
+    window.location.href = `https://${environment.environment == "dev" ? "test" : "live"}.stytch.com/v1/public/oauth/google/start?public_token=${environment.stytch_public_token}`;
   };
 
   const onEmailSubmit = async (data: EmailSubmission) => {
