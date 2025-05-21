@@ -24,18 +24,21 @@ def get_current_weather(latitude, longitude):
 
 
 def get_graph_context(
-    webId: str, query: str, sources: list[str] = []
-):  # TODO: move to agent interface to extract webId, userId, etc.
+    webId: str, query: str, sources: list[str] = [], limit: int = 15
+):
+    if limit > 30 or limit < 1:
+        limit = 15
+
     filter = {}
     if sources:
         filter = {"sourceId": {"$in": sources}}
 
     try:
         logger.info(
-            f"Fetching graph context for webId: {webId}, with filter: {filter}, and query: {query}"
+            f"Fetching graph context for webId: {webId}, with filter: {filter}, and query: {query} and limit: {limit}"
         )
         context = pineconeClient.run_semantic_source_search(
-            webId=webId, query=query, filter=filter, limit=15
+            webId=webId, query=query, filter=filter, limit=limit
         )
         logger.info(f"Graph context: {context}")
         return {"context": context}
