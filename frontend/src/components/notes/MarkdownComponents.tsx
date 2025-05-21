@@ -66,7 +66,7 @@ export const MarkdownComponents: Components = {
   a: ({ children, ...props }) => (
     <a
       {...props}
-      className="text-violet-500 underline hover:text-violet-400 my-0 py-0"
+      className="text-violet-40/80 underline hover:text-violet-400 my-0 py-0"
     >
       {children}
     </a>
