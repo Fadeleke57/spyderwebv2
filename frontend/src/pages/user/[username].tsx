@@ -171,7 +171,7 @@ function UserProfile() {
               <UserAvatar
                 userId={user.id}
                 dimension={48}
-                className="md:hidden -ml-4"
+                className="md:hidden mr-"
               />
             </div>
 
@@ -284,7 +284,7 @@ function UserProfile() {
                 className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
               >
                 <Package size={16} className="mr-2 hidden md:inline" />
-                Collections
+                Feeds
               </TabsTrigger>
               <TabsTrigger
                 value="stars"
@@ -292,9 +292,6 @@ function UserProfile() {
               >
                 <StarIcon size={16} className="mr-2 hidden md:inline" />
                 Saved{" "}
-                <span className="ml-2 bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
-                  {user.websSaved?.length || 0}
-                </span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -508,7 +505,7 @@ function UserProfile() {
               className="mt-4 md:mt-6 data-[state=active]:animate-fadeIn"
             >
               <div className="text-center py-12">
-                <h3 className="font-medium">Collections coming soon</h3>
+                <h3 className="font-medium">Feeds coming soon</h3>
                 <p className="text-muted-foreground text-sm mt-1">
                   This feature is currently in development
                 </p>

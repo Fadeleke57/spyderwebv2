@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, BackgroundTasks
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 import stripe
-from dotenv import load_dotenv
 from src.routes.auth.utils import manager
 from src.models.user import User
-from src.utils.credits import update_user_plan, reset_user_credits
+from src.utils.credits import update_user_plan
 from src.core.config import settings
 from src.lib.logger.index import logger
 from src.models.index import Users
@@ -89,7 +88,7 @@ async def get_pricing_tiers():
 
 @router.post("/create-checkout-session")
 async def create_checkout_session(
-    request: CheckoutRequest, user: User = Depends(manager)
+    request: CheckoutRequest, user: User = Depends(manager.required)
 ):
     """Create a Stripe checkout session for a subscription"""
     try:
@@ -205,7 +204,7 @@ class SuccessPaymentPayload(BaseModel):
 async def handle_payment_success(
     request: SuccessPaymentPayload,
     background_tasks: BackgroundTasks,
-    user: User = Depends(manager),
+    user: User = Depends(manager.required),
 ):
     """Handle successful payment and plan upgrade"""
     try:
@@ -282,7 +281,7 @@ async def handle_payment_success(
 
 
 @router.post("/failure")
-async def handle_payment_failure(session_id: str, user: User = Depends(manager)):
+async def handle_payment_failure(session_id: str, user: User = Depends(manager.required)):
     """Handle failed payment"""
     try:
         # Get the session details from Stripe
@@ -309,7 +308,7 @@ async def handle_payment_failure(session_id: str, user: User = Depends(manager))
 
 
 @router.post("/cancel-subscription")
-async def cancel_subscription(user: User = Depends(manager)):
+async def cancel_subscription(user: User = Depends(manager.required)):
     try:
         logger.info(f"Cancelling subscription for user: {user['id']}")
 

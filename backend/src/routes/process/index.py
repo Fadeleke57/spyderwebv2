@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 @router.get("/all/{web_id}")
-def get_all_processes(web_id: str, user=Depends(manager)) -> dict[str, list[Process]]:
+def get_all_processes(web_id: str, _=Depends(manager.required)) -> dict[str, list[Process]]:
     """
     Retrieve all processes associated with a given web ID, within the last minute.
 
@@ -41,7 +41,7 @@ def get_all_processes(web_id: str, user=Depends(manager)) -> dict[str, list[Proc
 
 
 @router.get("/process/{job_id}")
-def get_process(job_id: str, user=Depends(manager)) -> Process:
+def get_process(job_id: str, _=Depends(manager.required)) -> Process:
     """
     Retrieve a process by its ID.
 
@@ -66,7 +66,7 @@ def get_process(job_id: str, user=Depends(manager)) -> Process:
 
 
 @router.get("/status/{web_id}/{source_id}")
-def get_status(web_id: str, source_id: str, user=Depends(manager)):
+def get_status(web_id: str, source_id: str, _=Depends(manager.required)):
     process = (
         Processes.find_one(
             {"sourceId": source_id, "status": {"$in": ["processing"]}}, {"_id": 0}

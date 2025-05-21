@@ -8,14 +8,13 @@ const GoogleCallback = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    const { token, email, username, firstName, lastName, newUser, newWebId } =
+    const { email, username, firstName, lastName, newUser, newWebId } =
       router.query;
     let redirectTo = null;
     if (newWebId) {
       redirectTo = "/auth/onboarding";
     }
-    if (token && email && username) {
-      localStorage.setItem("token", token as string);
+    if (email && username) {
       window.location.href = redirectTo
         ? `${redirectTo}?firstName=${firstName}&lastName=${lastName}&username=${username}&isGoogleSignup=true&defaultWebId=${newWebId}`
         : "/home";

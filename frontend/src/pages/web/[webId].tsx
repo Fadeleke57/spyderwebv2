@@ -34,6 +34,7 @@ import { toast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import FeedbackModal from "@/components/utility/FeedbackModal";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { environment } from "@/environment/load_env";
 
 function Index() {
   const router = useRouter();
@@ -199,7 +200,7 @@ function Index() {
             )}
             {webOwner && web?.enableAIConnections && (
               <TooltipProvider>
-                <Tooltip>
+                <Tooltip delayDuration={100}>
                   <TooltipTrigger asChild>
                     <div className="relative inline-flex items-center justify-center">
                       <div className="absolute rounded-full bg-violet-400/0 animate-pulse w-6 h-6 blur-sm"></div>
@@ -286,7 +287,9 @@ function Index() {
               </>
             )}
 
-            <ShareDialog link={`${window.location.origin}/web/${webId}`} />
+            <ShareDialog
+              link={`${typeof window !== "undefined" ? window.location.origin : environment.client_url}/web/${webId}`}
+            />
           </div>
         </header>
         <div className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3 overflow-hidden scrollbar-none">

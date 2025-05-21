@@ -6,14 +6,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 
 export function useCheckLoggedInUser() {
-  const queryClient = useQueryClient();
-
-  const {
-    data: user,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["user", "me", "state"],
+  return useQuery({
+    queryKey: ["user"],
     queryFn: async (): Promise<PublicUser | null> => {
       const response = await api.get("/auth/me");
       if (response.data) {
@@ -24,11 +18,13 @@ export function useCheckLoggedInUser() {
     },
     retry: false,
   });
+}
 
-  const { mutate: logout } = useMutation({
+export function useLogout() {
+  const queryClient = useQueryClient();
+  return useMutation({
     mutationFn: async () => {
       await api.post("/auth/logout");
-      localStorage.removeItem("token");
     },
     onSuccess: () => {
       queryClient.setQueryData(["user"], null);
@@ -40,13 +36,6 @@ export function useCheckLoggedInUser() {
       });
     },
   });
-
-  return {
-    user,
-    isLoading,
-    error,
-    logout,
-  };
 }
 
 export function useFetchSearchHistory() {

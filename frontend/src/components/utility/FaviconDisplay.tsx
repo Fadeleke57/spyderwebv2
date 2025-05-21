@@ -9,8 +9,7 @@ const FaviconDisplay = ({ url }: { url: string }) => {
     if (!url) return;
 
     try {
-      const domain = new URL(url).hostname;
-
+      const domain = url ? new URL(url).hostname : "";
       const googleFavicon = `https://www.google.com/s2/favicons?domain=${domain}`;
       setFaviconUrl(googleFavicon);
     } catch (e) {

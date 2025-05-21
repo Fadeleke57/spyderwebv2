@@ -11,7 +11,7 @@ function SimpleTooltip({
   content,
   side,
   sideOffset,
-  p,
+  p = 2,
 }: {
   children: React.ReactNode;
   content: string | React.ReactNode;

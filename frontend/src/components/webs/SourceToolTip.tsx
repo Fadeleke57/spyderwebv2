@@ -73,9 +73,7 @@ const SourceTooltip = ({ children, source, position }: SourceTooltipProps) => {
       >
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm font-medium">
-            {source?.type === "website" ||
-            source?.type === "document" ||
-            source?.type === "youtube" ? (
+            {source?.type === "website" || source?.type === "youtube" ? (
               <FaviconDisplay url={source.url} />
             ) : source?.type ? (
               getTypeIcon(source?.type)

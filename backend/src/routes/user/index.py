@@ -3,12 +3,11 @@ from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from src.routes.auth.utils import manager
 from src.lib.logger.index import logger
-from src.lib.stytch.index import client as stytchClient
+from src.utils.exceptions import checkAuthorizedUser
 from src.models.index import User, UpdateUser, Users, Webs
 from src.constants.credits import PLAN_CREDITS
 from src.utils.storage import STORAGE_LIMITS_MB
 from pydantic import BaseModel
-from stytch.consumer.models.users import SearchUsersQueryOperator, SearchUsersQuery
 from src.core.config import settings
 from fastapi import File, UploadFile
 from src.lib.s3.index import S3Bucket
@@ -24,8 +23,7 @@ s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
 
 
 @router.get("/search/history")
-def get_search_history(user: User = Depends(manager)):
-
+def get_search_history(user: User = Depends(manager.required)):
     try:
         user = Users.find_one({"id": user["id"]})
         analytics = user["analytics"]
@@ -36,7 +34,7 @@ def get_search_history(user: User = Depends(manager)):
 
 
 @router.get("/")
-def get_user(userId: str, userMakingRequest: User = Depends(manager)):
+def get_user(userId: str, _: User = Depends(manager.optional)):
 
     try:
         requestedUser = Users.find_one({"id": userId}, {"_id": 0})
@@ -56,7 +54,7 @@ def get_user(userId: str, userMakingRequest: User = Depends(manager)):
 
 @router.get("/username/{username}")
 def get_user_by_username(
-    username: str, userMakingRequest: User = Depends(manager)
+    username: str, _: User = Depends(manager.optional)
 ):
 
     try:
@@ -76,7 +74,7 @@ def get_user_by_username(
 
 
 @router.patch("/edit/")
-def edit_user(updates: UpdateUser, user: User = Depends(manager)):
+def edit_user(updates: UpdateUser, user: User = Depends(manager.required)):
 
     try:
         if updates.username:
@@ -101,8 +99,8 @@ def edit_user(updates: UpdateUser, user: User = Depends(manager)):
 
 
 @router.patch("/hide/web/{webId}")
-def hide_web(webId: str, user: User = Depends(manager)):
-   
+def hide_web(webId: str, user: User = Depends(manager.required)):
+
     try:
         Users.update_one({"id": user["id"]}, {"$addToSet": {"websHidden": webId}})
         return {"result": True}
@@ -113,7 +111,7 @@ def hide_web(webId: str, user: User = Depends(manager)):
 
 
 @router.patch("/unhide/web/{webId}")
-def unhide_web(webId: str, user: User = Depends(manager)):
+def unhide_web(webId: str, user: User = Depends(manager.required)):
 
     try:
         Users.update_one({"id": user["id"]}, {"$pull": {"websHidden": webId}})
@@ -124,7 +122,7 @@ def unhide_web(webId: str, user: User = Depends(manager)):
 
 
 @router.patch("/save/web/{webId}")
-def save_web(webId: str, user: User = Depends(manager)):
+def save_web(webId: str, user: User = Depends(manager.required)):
 
     try:
         Users.update_one({"id": user["id"]}, {"$addToSet": {"websSaved": webId}})
@@ -136,7 +134,7 @@ def save_web(webId: str, user: User = Depends(manager)):
 
 
 @router.patch("/unsave/web/{webId}")
-def unsave_web(webId: str, user: User = Depends(manager)):
+def unsave_web(webId: str, user: User = Depends(manager.required)):
 
     try:
         Users.update_one({"id": user["id"]}, {"$pull": {"websSaved": webId}})
@@ -148,7 +146,7 @@ def unsave_web(webId: str, user: User = Depends(manager)):
 
 
 @router.patch("/pin/web/{webId}")
-def pin_web(webId: str, user: User = Depends(manager)):
+def pin_web(webId: str, user: User = Depends(manager.required)):
 
     try:
         Users.update_one({"id": user["id"]}, {"$addToSet": {"websPinned": webId}})
@@ -160,7 +158,7 @@ def pin_web(webId: str, user: User = Depends(manager)):
 
 
 @router.patch("/unpin/web/{webId}")
-def unpin_web(webId: str, user: User = Depends(manager)):
+def unpin_web(webId: str, user: User = Depends(manager.required)):
 
     try:
         Users.update_one({"id": user["id"]}, {"$pull": {"websPinned": webId}})
@@ -174,16 +172,8 @@ def unpin_web(webId: str, user: User = Depends(manager)):
 @router.get("/check/email")
 def check_email(email: str):
     try:
-        resp = stytchClient.users.search(
-            query=SearchUsersQuery(
-                limit=200,
-                operator=SearchUsersQueryOperator.AND,
-                operands=[
-                    {"filter_name": "email_address", "filter_value": [email]},
-                ],
-            ),
-        )
-        result = True if resp.results else False
+        user = Users.find_one({"email": email})
+        result = True if user else False
         return {"result": result}
 
     except Exception as e:
@@ -192,7 +182,7 @@ def check_email(email: str):
 
 
 @router.get("/usage")
-async def get_usage(user: User = Depends(manager)):
+async def get_usage(user: User = Depends(manager.required)):
     """Get user's resource usage"""
 
     try:
@@ -219,10 +209,17 @@ async def get_usage(user: User = Depends(manager)):
 
 
 @router.get("/pinned/webs/{user_id}")
-def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager)):
+def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.optional)):
+    authorized = checkAuthorizedUser(
+        resourceUserId=user_id, userMakingRequest=userMakingRequest
+    )
     profile = Users.find_one({"id": user_id})
 
     query = {"webId": {"$in": profile["websPinned"]}}
+
+    if not authorized:
+        query["visibility"] = "Public"
+
     try:
         profile = Users.find_one({"id": user_id})
 
@@ -238,10 +235,11 @@ def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager)):
 
 
 @router.get("/saved/webs/{user_id}")
-def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager)):
+def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.optional)):
     authorized = False
-    if userMakingRequest["id"] == user_id:
-        authorized = True
+    if userMakingRequest:
+        if userMakingRequest["id"] == user_id:
+            authorized = True
 
     query = {"webId": {"$in": userMakingRequest["websSaved"]}}
     if not authorized:
@@ -267,8 +265,9 @@ class UploadProfilePictureRequest(BaseModel):
 
 @router.post("/replace/profile/picture")
 async def replace_profile_picture(
-    file: UploadFile = File(...), user: User = Depends(manager)
+    file: UploadFile = File(...), user: User = Depends(manager.required)
 ):
+
     try:
         file_uuid = str(uuid4())
         filename = secure_filename(file.filename)

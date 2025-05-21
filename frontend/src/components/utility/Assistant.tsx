@@ -29,7 +29,7 @@ import {
   X,
 } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
-import { cn, formatText } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   useConfigureChat,
   useDeleteChat,
@@ -249,6 +249,7 @@ const CharlotteChatInterface = ({
     append,
   } = useChat({
     maxSteps: 4,
+    credentials: "include",
     initialMessages: initialMessages,
     id: chatId,
     onFinish: (_, { usage }) => {
@@ -291,10 +292,7 @@ const CharlotteChatInterface = ({
 
       stop();
     },
-    api: environment.api_url + "/chat",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    api: environment.api_url + "/chat/add/",
   });
 
   const {

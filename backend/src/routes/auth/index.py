@@ -22,12 +22,11 @@ from src.lib.stytch.index import (
     client as stytchClient,
     StytchError,
     StytchAuthenticateResponse,
-    StytchUser,
-    StytchCreateResponse,
 )
 from src.routes.user.index import convert_to_public_user
 
 router = APIRouter()
+
 
 class RegisterRequest(BaseModel):
     email: str  # better pydantic types needed
@@ -53,18 +52,19 @@ def set_stytch_cookies(resp: JSONResponse, session_token: str, session_jwt: str)
     resp.set_cookie("stytch_session_jwt", session_jwt, **cookie_params)
 
 
-
 @router.get("/authenticate")
 def authenticate(stytch_token_type: str, token: str, background_tasks: BackgroundTasks):
     if stytch_token_type != "oauth":
         raise HTTPException(status_code=400, detail="Invalid token type")
 
     try:
+        logger.info(f"Trying to authenticate with Stytch with token: {token}")
         stytchResp: StytchAuthenticateResponse = stytchClient.oauth.authenticate(
             token=token, session_duration_minutes=1440
         )
         logger.info(f"Login response: {stytchResp}")
     except StytchError as e:
+        logger.error(f"Error authenticating with Stytch: {str(e)}")
         raise HTTPException(status_code=401, detail=str(e))
 
     email = stytchResp.user.emails[0].email
@@ -107,6 +107,12 @@ def authenticate(stytch_token_type: str, token: str, background_tasks: Backgroun
     else:
         username = user["username"]
 
+    logger.info(f"Updating user with external_id: {user['id']}")
+    stytchClient.users.update(
+        user_id=stytchResp.user_id,
+        external_id=user["id"],
+    )
+
     frontend_redirect_url = (
         f"{settings.next_url}/auth/google-callback"
         f"?email={email}"
@@ -117,7 +123,7 @@ def authenticate(stytch_token_type: str, token: str, background_tasks: Backgroun
         f"&newWebId={new_web_id if new_web_id else ''}"
     )
     response = RedirectResponse(url=frontend_redirect_url)
-
+    logger.info(f"Redirecting to: {frontend_redirect_url}")
     set_stytch_cookies(
         resp=response,
         session_token=stytchResp.session_token,
@@ -126,7 +132,7 @@ def authenticate(stytch_token_type: str, token: str, background_tasks: Backgroun
     return response
 
 
-@router.post("/login", status_code=200)
+@router.post("/login")
 def login(req: LoginRequest):
     try:
         stytchResp: StytchAuthenticateResponse = stytchClient.passwords.authenticate(
@@ -209,14 +215,15 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
 
 
 @router.get("/me")
-def get_current_user(stytchUser: StytchUser = Depends(manager)):
+def get_current_user(user = Depends(manager.required)):
     """
     Get the current user.
 
     :return: The current user
     """
     try:
-        user = Users.find_one({"id": stytchUser.user_id})
+        if not user:
+            return None
         publicUser = convert_to_public_user(
             user,
             [
@@ -248,7 +255,7 @@ class OnboardingPayload(BaseModel):
 
 @router.post("/onboarding")
 def complete_onboarding(
-    onboardingPayload: OnboardingPayload, stytchUser: StytchUser = Depends(manager)
+    onboardingPayload: OnboardingPayload, user = Depends(manager.required)
 ):
     try:
         updates = UpdateUser(
@@ -262,7 +269,7 @@ def complete_onboarding(
         )
         logger.info(f"updates: {updates}")
         Users.update_one(
-            {"id": stytchUser["id"]},
+            {"id": user["id"]},
             {"$set": updates.model_dump(exclude_none=True)},
         )
         return {"result": True}
@@ -290,7 +297,7 @@ def logout(request: Request):
         raise HTTPException(status_code=401, detail="Unauthorized")
     try:
         resp = stytchClient.sessions.revoke(
-            session_token=session_token, session_duration_minutes=0
+            session_token=session_token
         )
         logger.info(f"Logout response: {resp}")
     except StytchError as e:

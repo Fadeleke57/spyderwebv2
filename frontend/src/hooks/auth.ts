@@ -50,8 +50,8 @@ export function useSubmitLogin() {
         title: "Success",
         description: data.message || "Logged in successfully!",
       });
-      queryClient.invalidateQueries({ queryKey: ["user", "me"] });
-      router.push("/home");
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      window.location.href = "/home";
     },
     onError: (error: any) => {
       toast({
@@ -61,32 +61,6 @@ export function useSubmitLogin() {
         variant: "destructive",
       });
       console.error("Login error:", error);
-    },
-  });
-}
-
-export function useAuthenticate() {
-  const queryClient = useQueryClient();
-  const router = useRouter();
-  return useMutation({
-    mutationFn: async (authPayload: {
-      token: string;
-      stytch_token_type: string;
-    }) => {
-      const response = await api.get(`/auth/authenticate`, {
-        params: {
-          token: authPayload.token,
-          stytch_token_type: authPayload.stytch_token_type,
-        },
-      });
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user", "me"] });
-      router.push("/home");
-    },
-    onError: (error: any) => {
-      console.error("Authentication error:", error);
     },
   });
 }
@@ -103,7 +77,7 @@ export function useSubmitRegister() {
         title: "Success",
         description: data.message || "Registration successful!",
       });
-      queryClient.invalidateQueries({ queryKey: ["user", "me"] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     },
     onError: (error: any) => {
       toast({

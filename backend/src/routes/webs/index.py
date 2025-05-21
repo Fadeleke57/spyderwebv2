@@ -47,7 +47,7 @@ def get_user_webs(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
     criteria: Optional[str] = None,
-    user: User = Depends(manager),
+    user: User = Depends(manager.required),
 ):
     """
     Retrieve paginated webs belonging to a user, sorted by creation date in descending order,
@@ -113,7 +113,7 @@ async def get_webs(
     cursor: str = None,
     visibility=None,
     userId=None,
-    userMakingRequest=Depends(manager),
+    userMakingRequest=Depends(manager.optional),
 ):
     """
     Retrieve public webs with cursor-based pagination.
@@ -132,7 +132,7 @@ async def get_webs(
     """
     authorized = False
     if userMakingRequest:
-        if userMakingRequest.user_id == userId:
+        if userMakingRequest["id"] == userId:
             authorized = True
     try:
         query = {}
@@ -198,7 +198,7 @@ def get_popular_webs(limit: int = 10):
 
 
 @router.get("/liked/user")  # get all liked webs belonging to a user
-def get_user_liked_webs(user: User = Depends(manager)):
+def get_user_liked_webs(user: User = Depends(manager.required)):
     """
     Retrieve all webs liked by a user.
 
@@ -223,7 +223,7 @@ def get_user_liked_webs(user: User = Depends(manager)):
 def create_web_endpoint(
     createWebPayload: CreateWeb,
     background_tasks: BackgroundTasks,
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
     """
     Create a new web.
@@ -259,7 +259,7 @@ def create_web_endpoint(
 async def upload_file(
     web_id: str,
     files: list[UploadFile] = File(..., description="Multiple files as UploadFile"),
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
     """
     Upload images to a web.
@@ -337,7 +337,7 @@ async def upload_file(
 
 
 @router.delete("/delete/image/{web_id}/{image_name}")
-def delete_image(web_id: str, image_name: str, user=Depends(manager)):
+def delete_image(web_id: str, image_name: str, user=Depends(manager.required)):
     """
     Delete an image associated with a web.
 
@@ -421,7 +421,7 @@ def get_web_images(web_id: str):
 
 
 @router.delete("/delete")
-def delete_web(webId: str, background_tasks: BackgroundTasks, user=Depends(manager)):
+def delete_web(webId: str, background_tasks: BackgroundTasks, user=Depends(manager.required)):
     """
     Delete a web and all associated sources, images, documents, and embeddings.
     """
@@ -483,7 +483,7 @@ def update_web(
     webId: str,
     updateWebPayload: UpdateWeb,
     background_tasks: BackgroundTasks,
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
     """
     Update a web.
@@ -523,7 +523,7 @@ def update_web(
 
 
 @router.get("/id")
-def get_web_by_id(webId: str, user=Depends(manager)):
+def get_web_by_id(webId: str, user=Depends(manager.optional)):
     """
     Retrieve a web by its ID.
 
@@ -557,7 +557,7 @@ def get_web_by_id(webId: str, user=Depends(manager)):
 
 
 @router.post("/like/{web_id}")
-def like_web(web_id: str, user=Depends(manager)):
+def like_web(web_id: str, user=Depends(manager.required)):
     """
     Like a web for a user.
 
@@ -589,7 +589,7 @@ def like_web(web_id: str, user=Depends(manager)):
 
 
 @router.post("/unlike/{web_id}")
-def unlike_web(web_id: str, user=Depends(manager)):
+def unlike_web(web_id: str, user=Depends(manager.required)):
     """
     Unlike a web for a user.
 
@@ -620,7 +620,7 @@ def unlike_web(web_id: str, user=Depends(manager)):
 
 
 @router.get("/saved/user")
-def get_user_saved_webs(user=Depends(manager)):
+def get_user_saved_webs(user=Depends(manager.required)):
     try:
 
         result = Webs.find({"webId": {"$in": user["websSaved"]}}, {"_id": 0})
@@ -631,7 +631,7 @@ def get_user_saved_webs(user=Depends(manager)):
 
 
 @router.patch("/add/tag/{web_id}/{tag}")
-def add_tag(web_id: str, tag: str, user=Depends(manager)):
+def add_tag(web_id: str, tag: str, user=Depends(manager.required)):
     try:
 
         formatted_tag = tag.lower()
@@ -646,7 +646,7 @@ def add_tag(web_id: str, tag: str, user=Depends(manager)):
 
 
 @router.patch("/remove/tag/{web_id}/{tag}")
-def remove_tag(web_id: str, tag: str, user=Depends(manager)):
+def remove_tag(web_id: str, tag: str, user=Depends(manager.required)):
 
     try:
 
@@ -668,7 +668,7 @@ def iterate_web(
     web_id: str,
     iteratePayload: IterateWeb,
     background_task: BackgroundTasks,
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
     """
     Iterate over a given web and create a new web with the same sources but with a new name and description.
@@ -680,7 +680,6 @@ def iterate_web(
     4. Update the new web in Mongo with the new sourceIds and iteration info.
     5. Queue embedding task.
     """
-
     try:
         # get original web + owner
         web_to_iterate: Web = Webs.find_one({"webId": web_id})
@@ -753,7 +752,7 @@ def search_webs(
     ),
     userId: Optional[str] = None,
     webId: Optional[str] = None,
-    user=Depends(manager),
+    user=Depends(manager.optional),
 ):
 
     try:
@@ -784,7 +783,7 @@ def search_webs(
 
 
 @router.get("/contributers/{web_id}")
-def get_web_contributors(web_id: str, user=Depends(manager)):
+def get_web_contributors(web_id: str, user=Depends(manager.optional)):
 
     try:
         web = Webs.find_one({"webId": web_id})
@@ -814,7 +813,7 @@ class ExportGraphContext(BaseModel):
 
 
 @router.post("/export/graph/context")
-def export_graph_context(payload: ExportGraphContext, user=Depends(manager)):
+def export_graph_context(payload: ExportGraphContext, user=Depends(manager.required)):
 
     try:
         web = Webs.find_one({"webId": payload.webId})
@@ -847,3 +846,4 @@ def export_graph_context(payload: ExportGraphContext, user=Depends(manager)):
         raise HTTPException(
             status_code=500, detail=f"Error exporting graph context: {e}"
         )
+    

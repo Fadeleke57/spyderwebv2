@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { googleIcon } from "../utility/Icons";
 import { environment } from "@/environment/load_env";
-import { DialogClose, DialogTitle } from "@radix-ui/react-dialog"; 
+import { DialogClose, DialogTitle } from "@radix-ui/react-dialog";
 import { useCheckEmailExists } from "@/hooks/user";
 import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
@@ -71,7 +71,6 @@ type RegisterSubmission = z.infer<typeof registerSchema>;
 export function AuthModal({ open, setOpen }: AuthModalProps) {
   const [step, setStep] = useState("email"); // 'email', 'login', 'register'
   const [userEmail, setUserEmail] = useState("");
-  const [isExistingUser, setIsExistingUser] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -115,7 +114,6 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
     try {
       const exists = await checkEmailExists(data.email);
       setUserEmail(data.email);
-      setIsExistingUser(exists);
 
       if (exists) {
         loginForm.setValue("email", data.email);
@@ -135,14 +133,7 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
   };
 
   const onLoginSubmit = async (data: LoginSubmission) => {
-    // The useSubmitLogin hook handles success (toast, redirect) and error
-    // It also handles invalidating queries.
-    // Backend sets HttpOnly cookies.
-    await submitLogin(data); // submitLogin hook now handles redirect
-    // If login is successful, the hook will redirect.
-    // We can close the modal if it's still open for any reason or rely on redirection.
-    // setOpen(false); // The hook's redirect will unmount this anyway if it's a full page modal.
-    // If it's a non-page-blocking dialog, this is fine.
+    await submitLogin(data);
   };
 
   const onRegisterSubmit = async (data: RegisterSubmission) => {

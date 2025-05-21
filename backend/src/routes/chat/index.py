@@ -42,9 +42,9 @@ def configure_chat(webId: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/")
+@router.post("/add")
 async def handle_chat_data(
-    request: Request, user: User = Depends(manager), protocol: str = Query("data")
+    request: Request, user: User = Depends(manager.required), protocol: str = Query("data")
 ):
     """
     Handle incoming chat data from a user.
@@ -97,7 +97,7 @@ async def handle_chat_data(
 
 
 @router.post("/{chatId}/save")
-def save_chat(chatId: str, payload: dict, user: User = Depends(manager)):
+def save_chat(chatId: str, payload: dict, user: User = Depends(manager.required)):
     """
     Save chat data for a given chat ID.
 
@@ -144,7 +144,7 @@ def save_chat(chatId: str, payload: dict, user: User = Depends(manager)):
 
 
 @router.delete("/{chatId}")
-def delete_chat(chatId: str, user: User = Depends(manager)):
+def delete_chat(chatId: str, user: User = Depends(manager.required)):
     """
     Delete a chat for a given chat ID.
 
@@ -167,7 +167,7 @@ def delete_chat(chatId: str, user: User = Depends(manager)):
 
 
 @router.get("/all")
-def get_all_chats(user: User = Depends(manager)):
+def get_all_chats(user: User = Depends(manager.required)):
     """
     Retrieve all chats for the authenticated user, sorted by the last update time in descending order.
 
@@ -193,7 +193,7 @@ def get_all_chats(user: User = Depends(manager)):
 
 
 @router.get("/{chatId}")
-def get_chat(chatId: str, user: User = Depends(manager)):
+def get_chat(chatId: str, _ = Depends(manager.required)):
     """
     Retrieve messages for a specific chat ID.
 
@@ -207,7 +207,7 @@ def get_chat(chatId: str, user: User = Depends(manager)):
     Raises:
         HTTPException: If an error occurs during retrieval, a 500 status code is raised.
     """
-    
+
     try:
         chat = Chats.find_one({"chatId": chatId}, {"_id": 0})
         return {"result": chat["messages"] if chat else []}

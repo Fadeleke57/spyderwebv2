@@ -57,21 +57,18 @@ function useSidebar() {
   if (!context) {
     throw new Error("useSidebar must be used within a SidebarProvider.");
   }
-
   return context;
 }
 
 const SidebarProvider = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
-    defaultOpen?: boolean;
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
   }
 >(
   (
     {
-      defaultOpen = true,
       open: openProp,
       onOpenChange: setOpenProp,
       className,
@@ -84,57 +81,69 @@ const SidebarProvider = React.forwardRef<
     const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false);
 
-    // This is the internal state of the sidebar.
-    // We use openProp and setOpenProp for control from outside the component.
-    let initalSate;
-    const currentOpen = localStorage.getItem(SIDEBAR_COOKIE_NAME);
-    if (currentOpen === null || currentOpen === undefined) {
-      initalSate = true;
-    } else if (currentOpen === "true") {
-      initalSate = true;
-    } else {
-      initalSate = false;
-    }
-    const [_open, _setOpen] = React.useState<boolean>(initalSate);
+    // Initial state for SSR: default to true or a sensible fallback
+    const [_open, _setOpen] = React.useState<boolean>(true);
+
+    // Use useEffect to read from localStorage only on the client-side
+    React.useEffect(() => {
+      // Only run this code in the browser
+      if (typeof window !== "undefined") {
+        const currentOpen = localStorage.getItem(SIDEBAR_COOKIE_NAME);
+        let initialStateFromStorage;
+        if (currentOpen === null || currentOpen === undefined) {
+          initialStateFromStorage = true; // Default if no value in localStorage
+        } else {
+          initialStateFromStorage = currentOpen === "true";
+        }
+        _setOpen(initialStateFromStorage);
+      }
+    }, []); // Empty dependency array ensures this runs once on mount (client-side)
+
     const open = openProp ?? _open;
 
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
         const openState = typeof value === "function" ? value(open) : value;
+
         if (setOpenProp) {
           setOpenProp(openState);
         } else {
           _setOpen(openState);
         }
 
-        // This sets the cookie to keep the sidebar state.
-        localStorage.setItem(SIDEBAR_COOKIE_NAME, openState.toString());
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+        // Set localStorage and cookie only on the client-side
+        if (typeof window !== "undefined") {
+          localStorage.setItem(SIDEBAR_COOKIE_NAME, openState.toString());
+          document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}; SameSite=Lax`; // Add SameSite for good measure
+        }
       },
-      [open]
+      [open, setOpenProp] // Add setOpenProp to dependencies
     );
 
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
       return isMobile
-        ? setOpenMobile((open) => !open)
-        : setOpen((open) => !open);
+        ? setOpenMobile((prevOpen : boolean) => !prevOpen) // Use functional update for setOpenMobile
+        : setOpen((prevOpen : boolean) => !prevOpen); // Use functional update for setOpen
     }, [isMobile, setOpen, setOpenMobile]);
 
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (
-          event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
-          (event.metaKey || event.ctrlKey)
-        ) {
-          event.preventDefault();
-          toggleSidebar();
-        }
-      };
+      // Ensure window is defined before adding event listener
+      if (typeof window !== "undefined") {
+        const handleKeyDown = (event: KeyboardEvent) => {
+          if (
+            event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
+            (event.metaKey || event.ctrlKey)
+          ) {
+            event.preventDefault();
+            toggleSidebar();
+          }
+        };
 
-      window.addEventListener("keydown", handleKeyDown);
-      return () => window.removeEventListener("keydown", handleKeyDown);
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+      }
     }, [toggleSidebar]);
 
     // We add a state so that we can do data-state="expanded" or "collapsed".
@@ -180,6 +189,7 @@ const SidebarProvider = React.forwardRef<
   }
 );
 SidebarProvider.displayName = "SidebarProvider";
+
 
 const Sidebar = React.forwardRef<
   HTMLDivElement,
