@@ -59,8 +59,8 @@ export function NavUser() {
         >
           <UserAvatar
             userId={user.id}
-            dimension={40}
-            className={`${isCollapsed && "-ml-[13px]"}`}
+            dimension={isCollapsed ? 30 : 40}
+            className={`${isCollapsed && "-ml-[8.5px]"}`}
           />
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-semibold">
