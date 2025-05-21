@@ -13,14 +13,11 @@ async def reset_user_credits(user_id: str) -> bool:
         if not user:
             return False
 
-        plan = user.get("subscription_plan", "free")
-        credits = PLAN_CREDITS.get(plan, PLAN_CREDITS["free"])
-
         Users.update_one(
             {"id": user_id},
             {
                 "$set": {
-                    "credits": credits,
+                    "credits": 0,
                     "last_credits_reset": datetime.now(UTC),
                     "updated_at": datetime.now(UTC),
                 }
@@ -85,7 +82,7 @@ async def update_user_plan(
             {
                 "$set": {
                     "subscription_plan": tier,
-                    "credits": PLAN_CREDITS[tier],
+                    "credits": 0,
                     "is_yearly": is_yearly,
                     "last_credits_reset": now,
                     "updated_at": now,

@@ -237,11 +237,11 @@
 }
 
 ::-moz-selection {
-  background: #a78bfa;
-  color: #fff;
+  background: #8d5ff94f;
+  color: #9b74f6;
 }
 
 ::selection {
-  background: #a78bfa;
-  color: #fff;
+  background: #8b5cf60d;
+  color: #9b74f6;
 }
