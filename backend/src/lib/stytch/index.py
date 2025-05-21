@@ -13,6 +13,6 @@ from stytch.consumer.models.passwords import (
 client = Client(
     project_id=settings.stytch_project_id,
     secret=settings.stytch_secret,
-    environment="test" if settings.fastapi_env == "dev" else "production",
+    environment="test" if settings.fastapi_env == "dev" else "live",
 )
 logger.info(f"STYTCH CLIENT INITIALIZED")
