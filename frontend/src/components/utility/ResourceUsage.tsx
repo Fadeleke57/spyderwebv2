@@ -2,7 +2,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Info, Zap } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PricingModal } from "@/components/pricing/PricingModal";
 import { useUser } from "@/context/UserContext";
 import SimpleTooltip from "./SimpleTooltip";
@@ -37,6 +37,9 @@ export function ResourceUsage({
   const { user } = useUser();
   const isCollapsed = state === "collapsed";
   const [showPricing, setShowPricing] = useState(false);
+  const [userPlan, setUserPlan] = useState(
+    user ? user.subscription_plan : "free"
+  );
 
   const formatStorage = (mb: number, limit?: number) => {
     if (!mb || mb === 0) return "0 MB";
@@ -58,6 +61,11 @@ export function ResourceUsage({
   const handleUpgradeClick = () => {
     setShowPricing(true);
   };
+
+  useEffect(() => {
+    if (!user) return;
+    setUserPlan(user.subscription_plan);
+  }, [user]);
 
   const storageMessage = (
     <div className="">
@@ -142,7 +150,7 @@ export function ResourceUsage({
           {user && (
             <div className="flex justify-between items-center">
               <span className="text-xs text-foreground flex items-center">
-                {mapTierToLabel(user.subscription_plan)}
+                {mapTierToLabel(userPlan)}
               </span>
               <SimpleTooltip p={2} content="Plan details">
                 <Info size={16} className=" ml-1 mt-[1px]"></Info>
