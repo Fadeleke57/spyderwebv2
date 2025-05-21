@@ -13,7 +13,7 @@ function Header() {
   const router = useRouter();
   const [typeOfAuth, setTypeOfAuth] = useState<"login" | "register">("login");
   const handleGoogleSignIn = () => {
-    window.location.href = `https://${environment.environment == "dev" ? "test" : "live"}.stytch.com/v1/public/oauth/google/start?public_token=${environment.stytch_public_token}`;
+    window.location.href = `https://${environment.environment == "dev" ? "test" : "api"}.stytch.com/v1/public/oauth/google/start?public_token=${environment.stytch_public_token}`;
   };
 
   const handleButtonClick = (typeOfAuth: "login" | "register") => {
