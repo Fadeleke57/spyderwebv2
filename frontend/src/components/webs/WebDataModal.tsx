@@ -223,8 +223,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                       className="hover:underline hover:text-violet-400 inline text-lg flex flex-row items-center gap-2"
                     >
                       {source?.type === "website" ||
-                      source?.type === "youtube" ||
-                      source?.type === "document" ? (
+                      source?.type === "youtube" ? (
                         <FaviconDisplay url={source?.url || ""} />
                       ) : source?.type ? (
                         getTypeIcon(source?.type)

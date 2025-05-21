@@ -28,10 +28,10 @@ function UserAvatar({
 }) {
   const router = useRouter();
   const { data: user } = useFetchUserById(userId);
-  
+
   const username = user?.username;
   const profilepicurl = user?.profile_picture_url;
-        
+
   const navigateOnClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -72,7 +72,13 @@ function UserAvatar({
   return (
     <TooltipProvider>
       <Tooltip delayDuration={300}>
-        <TooltipTrigger>{imageDisplay}</TooltipTrigger>
+        <TooltipTrigger>
+          {user ? (
+            imageDisplay
+          ) : (
+            <Skeleton style={{ width: dimension, height: dimension }} className="rounded-full" />
+          )}
+        </TooltipTrigger>
         {user && showTooltip && (
           <TooltipContent side="top" className="p-0">
             <div className="p-2 max-w-sm">

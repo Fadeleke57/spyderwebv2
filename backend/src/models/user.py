@@ -1,11 +1,8 @@
 from pydantic import BaseModel
-from typing import Optional, List
-from datetime import datetime, timedelta
+from typing import Optional
+from datetime import datetime
 from pydantic.fields import Field
 from src.db.mongodb import get_collection
-from src.constants.credits import PLAN_CREDITS
-from src.routes.auth.oauth2 import get_password_hash
-from uuid import uuid4
 from pytz import UTC
 from fastapi import HTTPException
 
@@ -18,7 +15,6 @@ class User(BaseModel):
     username: str
     email: str
     disabled: bool
-    hashed_password: str
     bio: str = ""
     occupation: str = ""
     company: str = ""
@@ -40,36 +36,30 @@ class User(BaseModel):
 
 
 class CreateUser(BaseModel):
+    userId: str
     username: str
     email: str
-    full_name: Optional[str] = None
-    password: Optional[str] = None  # null for non oauth users
-    profile_picture_url: Optional[str] = None
+    fullName: Optional[str] = None
+    profilePictureUrl: Optional[str] = None
 
 
-def create_user(create_user_data: CreateUser):
-    if not create_user_data:
+def create_user(createUser: CreateUser):
+    if not createUser:
         raise ValueError("User data is required")
 
     try:
-        user_id = str(uuid4())
 
         user = User(
-            id=user_id,
-            username=create_user_data.username,
-            full_name=create_user_data.full_name or create_user_data.username,
-            email=create_user_data.email,
-            hashed_password=(
-                get_password_hash(create_user_data.password)
-                if create_user_data.password
-                else ""
-            ),
+            id=createUser.userId,
+            username=createUser.username,
+            full_name=createUser.fullName or createUser.username,
+            email=createUser.email,
             disabled=False,
-            profile_picture_url=create_user_data.profile_picture_url or "",
+            profile_picture_url=createUser.profilePictureUrl or "",
         )
 
         Users.insert_one(user.model_dump())
-        return user_id
+        return True
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -79,7 +69,6 @@ class UpdateUser(BaseModel):  # updating user
     full_name: Optional[str] = None
     username: Optional[str] = None
     email: Optional[str] = None
-    password: Optional[str] = None
     bio: Optional[str] = None
     occupation: Optional[str] = None
     company: Optional[str] = None

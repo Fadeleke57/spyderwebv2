@@ -69,7 +69,7 @@ function UserWebSearch() {
   return (
     <div
       ref={searchRef}
-      className="md:w-[200px] lg:w-[336px] w-flex items-center"
+      className="md:w-[200px] lg:w-[500px] w-flex items-center"
     >
       <div className="relative">
         <SearchInput
@@ -87,7 +87,7 @@ function UserWebSearch() {
       </div>
 
       {isSearchActive && (
-        <div className="absolute top-full border z-50 mt-2 w-1/2 max-h-[400px] rounded-lg border bg-background p-2 shadow-lg overflow-y-scroll no-scrollbar">
+        <div className="absolute top-full border z-50 mt-2 md:w-[200px] lg:w-[500px] max-h-[400px] rounded-lg border bg-background p-2 shadow-lg overflow-y-scroll no-scrollbar">
           {searchResults && searchResults.length > 0 ? (
             <div className="space-y-1 truncate wrap">
               {searchResults.map((web: any) => (

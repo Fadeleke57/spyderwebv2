@@ -1,6 +1,6 @@
 /// <reference types="chrome" />
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,10 +9,12 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogHeader,
 } from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -24,24 +26,25 @@ import { environment } from "@/environment/load_env";
 import { DialogClose, DialogTitle } from "@radix-ui/react-dialog";
 import { useCheckEmailExists } from "@/hooks/user";
 import { useToast } from "@/components/ui/use-toast";
-import api from "@/lib/api";
 import Link from "next/link";
 import Image from "next/image";
+import { useSubmitLogin, useSubmitRegister } from "@/hooks/auth";
 import sLogo from "@/assets/slogonobg.png";
+import { useRouter } from "next/router";
 
 const emailSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
 });
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email(), // will be pre-filled, but good to keep for direct use
   password: z
     .string()
     .min(6, { message: "Password must be at least 6 characters" }),
 });
 
 const registerSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email(), // will be pre-filled
   username: z
     .string()
     .min(6, { message: "Username must be at least 6 characters" })
@@ -55,63 +58,69 @@ const registerSchema = z.object({
 });
 
 type AuthModalProps = {
-  type: string;
-  referrer: string;
+  type?: "login" | "register" | "like" | "iterate";
+  referrer?: string; // Optional
   open: boolean;
   setOpen: (open: boolean) => void;
 };
-type EmailSubmission = {
-  email: string;
-};
 
-type LoginSubmission = {
-  email: string;
-  password: string;
-};
+type EmailSubmission = z.infer<typeof emailSchema>;
+type LoginSubmission = z.infer<typeof loginSchema>;
+type RegisterSubmission = z.infer<typeof registerSchema>;
 
-type RegisterSubmission = {
-  email: string;
-  username: string;
-  password: string;
-};
-
-export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
-  const [step, setStep] = useState("email");
+export function AuthModal({ open, setOpen }: AuthModalProps) {
+  const [step, setStep] = useState("email"); // 'email', 'login', 'register'
   const [userEmail, setUserEmail] = useState("");
-  const [isExistingUser, setIsExistingUser] = useState(false);
+  const router = useRouter();
   const { toast } = useToast();
-  const { mutateAsync: doesEmailExist } = useCheckEmailExists();
 
-  const emailForm = useForm({
+  const { mutateAsync: checkEmailExists, isPending: isCheckingEmail } =
+    useCheckEmailExists();
+  const { mutateAsync: submitLogin, isPending: isLoggingIn } = useSubmitLogin();
+  const { mutateAsync: submitRegister, isPending: isRegistering } =
+    useSubmitRegister();
+
+  const emailForm = useForm<EmailSubmission>({
     resolver: zodResolver(emailSchema),
     defaultValues: { email: "" },
   });
 
-  const loginForm = useForm({
+  const loginForm = useForm<LoginSubmission>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
 
-  const registerForm = useForm({
+  const registerForm = useForm<RegisterSubmission>({
     resolver: zodResolver(registerSchema),
     defaultValues: { email: "", username: "", password: "" },
   });
 
+  useEffect(() => {
+    if (step === "email") {
+      loginForm.reset({ email: "", password: "" });
+      registerForm.reset({ email: "", username: "", password: "" });
+    } else if (step === "login") {
+      loginForm.setValue("email", userEmail);
+    } else if (step === "register") {
+      registerForm.setValue("email", userEmail);
+    }
+  }, [step, userEmail, loginForm, registerForm]);
+
   const handleGoogleSignIn = () => {
-    window.location.href = `${environment.api_url}/auth/login/google`;
+    window.location.href = `https://test.stytch.com/v1/public/oauth/google/start?public_token=${environment.stytch_public_token}`;
   };
 
   const onEmailSubmit = async (data: EmailSubmission) => {
     try {
-      const exists = await doesEmailExist(data.email);
+      const exists = await checkEmailExists(data.email);
       setUserEmail(data.email);
-      setIsExistingUser(exists);
-      setStep("auth");
 
       if (exists) {
         loginForm.setValue("email", data.email);
+        setStep("login");
       } else {
         registerForm.setValue("email", data.email);
+        setStep("register");
       }
     } catch (error) {
       toast({
@@ -119,70 +128,26 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
         description: "Unable to verify email. Please try again.",
         variant: "destructive",
       });
+      console.error("Email check error:", error);
     }
   };
 
   const onLoginSubmit = async (data: LoginSubmission) => {
-    try {
-      const response = await api.post(
-        "/auth/token",
-        new URLSearchParams({
-          username: data.email,
-          password: data.password,
-        }).toString(),
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        localStorage.setItem("token", response.data.access_token);
-        setOpen(false);
-        toast({
-          title: "Success",
-          description: "Login successful!",
-        });
-        window.location.href = "/home";
-      }
-    } catch (error) {
-      toast({
-        title: "Login Failed",
-        description: "Invalid email or password.",
-        variant: "destructive",
-      });
-    }
+    await submitLogin(data);
   };
-  const [registerLoading, setRegisterLoading] = useState(false);
+
   const onRegisterSubmit = async (data: RegisterSubmission) => {
-    setRegisterLoading(true);
-    try {
-      const response = await api.post("/auth/register", {
+      await submitRegister({
         email: data.email,
         username: data.username,
         password: data.password,
       });
+  };
 
-      if (response.status === 201) {
-        localStorage.setItem("token", response.data.access_token);
-        toast({
-          title: "Success",
-          description: "Registration successful!",
-        });
-        setOpen(false);
-        const demoWebId = response.data.new_web_id;
-        //window.location.href = `/web/${demoWebId}?ref=register`;
-        window.location.href = `/auth/onboarding?email=${data.email}&username=${data.username}&isGoogleSignup=false&defaultWebId=${demoWebId}`;
-      }
-    } catch (error: any) {
-      toast({
-        title: "Registration Failed",
-        description: error?.response?.data?.detail || "Something went wrong",
-        variant: "destructive",
-      });
-    }
-    setRegisterLoading(false);
+  const handleBackToEmailStep = () => {
+    setStep("email");
+    setUserEmail("");
+    emailForm.reset({ email: "" }); // Reset the email form as well
   };
 
   return (
@@ -192,219 +157,249 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <DialogClose />
-        <div className="flex flex-col items-center justify-center">
-          <Image
-            src={sLogo}
-            className="w-16 h-16 mb-4 rotate-45"
-            alt="Spydr Logo"
-          />
-          <DialogTitle className="text-center text-xl font-semibold">
-            {isExistingUser && step !== "email"
-              ? "Welcome back"
-              : "A New Age of Ideation"}
-          </DialogTitle>
-          <DialogDescription className="text-center text-sm ">
-            {isExistingUser && step === "email"
-              ? "Enter your email or continue with Google"
-              : step === "auth" && isExistingUser
-                ? "Login to continue to your account"
-                : "Join the community"}
-          </DialogDescription>
-        </div>
+        <DialogHeader className="w-full text-center mb-6">
+          <div className="flex flex-col items-center justify-center mb-4">
+            <Image
+              src={sLogo}
+              className="w-14 h-14 mb-3 rotate-45" // Slightly smaller
+              alt="Spydr Logo"
+            />
+            <DialogTitle className="text-xl font-semibold">
+              {step === "login"
+                ? "Welcome back"
+                : step === "register"
+                  ? "Create your account"
+                  : "A New Age of Ideation"}
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground mt-1">
+              {step === "login"
+                ? `Logging in as ${userEmail}`
+                : step === "register"
+                  ? `Joining with ${userEmail}`
+                  : "Enter your email or continue with Google."}
+            </DialogDescription>
+          </div>
+        </DialogHeader>
 
-        {step === "email" ? (
+        {step === "email" && (
           <Form {...emailForm}>
             <form
               onSubmit={emailForm.handleSubmit(onEmailSubmit)}
-              className="w-full md:w-[400px]"
+              className="max-w-lg w-full space-y-6"
             >
-              <div className="flex flex-col gap-6">
-                <Button
-                  type="button"
-                  className="flex flex-row gap-2"
-                  onClick={handleGoogleSignIn}
-                >
-                  {googleIcon}
-                  Continue with Google
-                </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2"
+                onClick={handleGoogleSignIn}
+              >
+                {googleIcon}
+                Continue with Google
+              </Button>
 
-                <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-                  <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                    or
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
                   </span>
                 </div>
+              </div>
 
-                <div className="flex flex-col gap-6">
-                  <FormField
-                    control={emailForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="email"
-                            placeholder="marginalia@example.com"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button variant="secondary" type="submit" className="w-full">
-                    Continue with Email
-                  </Button>
-                  <div className="text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
-                    By continuing, you agree to our{" "}
-                    <Link
-                      href="/about/terms-of-service"
-                      className="dark:text-blue-500"
-                    >
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link
-                      href="/about/privacy-policy"
-                      className="dark:text-blue-500"
-                    >
-                      Privacy Policy
-                    </Link>
-                    .
-                  </div>
-                </div>
+              <FormField
+                control={emailForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="email"
+                        placeholder="you@example.com"
+                        data-testid="email-input"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isCheckingEmail}
+                data-testid="continue-with-email"
+              >
+                {isCheckingEmail ? "Verifying..." : "Continue with Email"}
+              </Button>
+              <div className="pt-2 text-xs text-center text-muted-foreground">
+                By continuing, you agree to our{" "}
+                <Link
+                  href="/about/terms-of-service"
+                  className="underline hover:text-primary"
+                >
+                  Terms
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/about/privacy-policy"
+                  className="underline hover:text-primary"
+                >
+                  Privacy Policy
+                </Link>
+                .
               </div>
             </form>
           </Form>
-        ) : isExistingUser ? (
+        )}
+
+        {step === "login" && (
           <Form {...loginForm}>
             <form
               onSubmit={loginForm.handleSubmit(onLoginSubmit)}
-              className="w-full md:w-[400px]"
+              className="max-w-lg w-full space-y-6"
             >
-              <div className="flex flex-col gap-6">
-                <div className="grid gap-2">
-                  <FormLabel>Email</FormLabel>
-                  <div className="px-4 py-2 bg-muted rounded-md">
-                    {userEmail}
-                  </div>
-                </div>
-
-                <FormField
-                  control={loginForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter your password"
-                          {...field}
-                          type="password"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button variant="secondary" type="submit" className="w-full">
-                  Sign In
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="link"
-                  className="text-sm"
-                  onClick={() => {
-                    setStep("email");
-                    setUserEmail("");
-                    emailForm.reset();
-                    loginForm.reset();
-                  }}
-                >
-                  Use a different email
-                </Button>
-              </div>
+              {/* Email is shown in DialogDescription, no need to disable input if it's there */}
+              <FormField
+                control={loginForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="email"
+                        readOnly
+                        disabled
+                        className="bg-muted"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={loginForm.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="password"
+                        placeholder="Enter your password"
+                        data-testid="password-input"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoggingIn}
+                data-testid="login-button"
+              >
+                {isLoggingIn ? "Signing In..." : "Sign In"}
+              </Button>
+              <Button
+                type="button"
+                variant="link"
+                className="w-full text-sm"
+                onClick={handleBackToEmailStep}
+              >
+                Use a different email
+              </Button>
             </form>
           </Form>
-        ) : (
+        )}
+
+        {step === "register" && (
           <Form {...registerForm}>
             <form
               onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
-              className="w-full md:w-[400px]"
+              className="max-w-lg w-full space-y-6"
             >
-              <div className="flex flex-col gap-6">
-                <div className="grid gap-2">
-                  <FormLabel>Email</FormLabel>
-                  <div className="px-4 py-2 bg-muted rounded-md">
-                    {userEmail}
-                  </div>
-                </div>
-
-                <FormField
-                  control={registerForm.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Username</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="text"
-                          placeholder="Enter a username"
-                        />
-                      </FormControl>
-                      <FormLabel className="text-xs font-normal">
-                        Username must be unique and must be between 6-14
-                        characters long
-                      </FormLabel>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={registerForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter a password"
-                          {...field}
-                          type="password"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button
-                  disabled={registerLoading}
-                  variant="secondary"
-                  type="submit"
-                  className="w-full"
-                >
-                  {registerLoading ? "Loading..." : "Create Account"}
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="link"
-                  className="text-sm"
-                  onClick={() => {
-                    setStep("email");
-                    setUserEmail("");
-                    emailForm.reset();
-                    registerForm.reset();
-                  }}
-                >
-                  Use a different email
-                </Button>
-              </div>
+              <FormField
+                control={registerForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="email"
+                        readOnly
+                        disabled
+                        className="bg-muted"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={registerForm.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="text"
+                        placeholder="Choose a username"
+                        data-testid="username-input"
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs">
+                      {/* ShadCN UI uses FormDescription for hints */}
+                      6-14 characters. Letters, numbers, and underscores only.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={registerForm.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="password"
+                        placeholder="Create a password (min. 6 characters)"
+                        data-testid="new-password-input"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isRegistering}
+                data-testid="create-account-button"
+              >
+                {isRegistering ? "Creating Account..." : "Create Account"}
+              </Button>
+              <Button
+                type="button"
+                variant="link"
+                className="w-full text-sm"
+                onClick={handleBackToEmailStep}
+              >
+                Use a different email
+              </Button>
             </form>
           </Form>
         )}

@@ -11,14 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar";
 import { useUser } from "@/context/UserContext";
-import Router, { useRouter } from "next/router";
+import { useRouter } from "next/router";
 import { Button } from "../ui/button";
 import { AuthModal } from "../auth/AuthModal";
 import { useState } from "react";
@@ -27,7 +22,7 @@ import UserAvatar from "./UserAvatar";
 export function NavUser() {
   const { isMobile, state } = useSidebar();
   const [open, setOpen] = useState(false);
-  const { user, logout } = useUser();
+  const { user, handleLogout } = useUser();
   const isCollapsed = state === "collapsed";
   const router = useRouter();
 
@@ -55,11 +50,6 @@ export function NavUser() {
       </div>
     );
   }
-
-  const handleLogout = () => {
-    logout();
-    router.push("/explore");
-  };
 
   return (
     <DropdownMenu>

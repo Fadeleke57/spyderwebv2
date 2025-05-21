@@ -1,17 +1,31 @@
 import { createContext, useContext, ReactNode } from "react";
 import { PublicUser } from "@/types/user";
-import { useCheckUserState } from "@/hooks/user";
+import { useCheckLoggedInUser, useLogout } from "@/hooks/user";
+import { useRouter } from "next/router";
 
 type UserContextType = {
   user: PublicUser | null | undefined;
-  logout: () => void;
+  handleLogout: () => void;
   userLoading: boolean;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const { user, isLoading: userLoading, error, logout } = useCheckUserState();
+  const router = useRouter();
+  
+  const {
+    data: user,
+    isLoading: userLoading,
+    error,
+    refetch: refetchUser,
+  } = useCheckLoggedInUser();
+
+  const {
+    mutateAsync: logout,
+    isPending: logoutLoading,
+    error: logoutError,
+  } = useLogout();
 
   if (userLoading) {
     return null;
@@ -21,8 +35,17 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     console.log("Error fetching user", error);
   }
 
+  const handleLogout = async () => {
+    await logout();
+    
+    refetchUser();
+    router.push("/");
+  };
+
   return (
-    <UserContext.Provider value={{ user, logout: logout, userLoading }}>
+    <UserContext.Provider
+      value={{ user, handleLogout: handleLogout, userLoading }}
+    >
       {children}
     </UserContext.Provider>
   );

@@ -12,8 +12,7 @@ from pydantic import BaseModel, HttpUrl
 from urllib.parse import unquote
 from src.utils.storage import handleTextStorage, handleFileStorage
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, BackgroundTasks
-from src.routes.auth.oauth2 import manager
-from src.utils.exceptions import check_user
+from src.routes.auth.utils import manager
 from src.lib.logger.index import logger
 from src.lib.s3.index import S3Bucket
 from src.models.index import (
@@ -171,7 +170,7 @@ async def upload_files(
     background_tasks: BackgroundTasks,
     preserve_obsidian_links: bool,
     files: List[UploadFile] = File(...),
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
     """
     Upload multiple files to a web.
@@ -184,7 +183,6 @@ async def upload_files(
     Returns:
         dict: A JSON response with a result key containing the ID of the first uploaded source, and a process key containing the ID of the background process.
     """
-    check_user(user)
     job_id = create_process(
         web_id=web_id, type="upload", description=f"Uploading {len(files)} files..."
     )
@@ -241,7 +239,7 @@ def add_website(
     web_id: str,
     url: UrlRequest,
     background_tasks: BackgroundTasks,
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
     """
     Add a website source to a specified web (web).
@@ -260,7 +258,6 @@ def add_website(
     Returns:
         dict: A JSON response containing the structured data of the webpage.
     """
-    check_user(user)
 
     try:
 
@@ -356,7 +353,7 @@ def upload_note(
     web_id: str,
     note: CreateNote,
     background_tasks: BackgroundTasks,
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
     """
     Upload a note to a given web.
@@ -369,7 +366,6 @@ def upload_note(
     Returns:
         dict: A JSON response containing the ID of the uploaded note.
     """
-    check_user(user)
     sourceId = str(uuid4())
 
     deductTextStorageResult = handleTextStorage(
@@ -416,9 +412,11 @@ def upload_note(
 
 @router.post("/youtube/{web_id}/{video_id}")
 def add_youtube(
-    web_id: str, video_id: str, background_tasks: BackgroundTasks, user=Depends(manager)
+    web_id: str,
+    video_id: str,
+    background_tasks: BackgroundTasks,
+    user=Depends(manager.required),
 ):
-    check_user(user)
 
     try:
         info = youtubeClient.get_video_info(video_id)
@@ -489,9 +487,8 @@ def update_note(
     source_id: str,
     updateNotePayload: UpdateNote,
     background_tasks: BackgroundTasks,
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
-    check_user(user)
 
     try:
         update_data = updateNotePayload.model_dump(exclude_none=True)
@@ -534,7 +531,7 @@ def update_note(
 
 @router.delete("/delete/source/{source_id}")
 def delete_source(
-    source_id: str, background_tasks: BackgroundTasks, user=Depends(manager)
+    source_id: str, background_tasks: BackgroundTasks, user=Depends(manager.required)
 ):
     """
     Delete a source and deduct associated storage usage.
@@ -549,17 +546,14 @@ def delete_source(
     Raises:
         HTTPException: If the source is not found or user is not authorized.
     """
-    check_user(user)
 
     try:
         sourceToDelete = neo4jClient.get_source_by_id("source", source_id)
         if not sourceToDelete:
             return {"result": "Source not found"}
 
-        # === Deduct file storage (if file URL exists) ===
         try:
             if sourceToDelete.get("type") in ("document", "voice_note"):
-                # Try to extract file path from S3 URL
                 file_url = sourceToDelete.get("url", "")
                 if file_url:
                     object_key = file_url.split(f"{settings.cloudfront_domain}/")[-1]
@@ -578,7 +572,6 @@ def delete_source(
                 f"Error deleting S3 object or rolling back file storage: {e}"
             )
 
-        # === Deduct text storage ===
         try:
             content = sourceToDelete.get("content", "")
             if content:
@@ -588,12 +581,10 @@ def delete_source(
         except Exception as e:
             logger.warning(f"Error rolling back text storage: {e}")
 
-        # === Delete from Neo4j ===
         result = neo4jClient.delete_source(source_id)
         if not result:
             return {"result": "Source not found"}
 
-        # === Remove from Web ===
         affected_web = Webs.find_one_and_update(
             {"sourceIds": source_id},
             {"$pull": {"sourceIds": source_id}, "$set": {"updated": datetime.now(UTC)}},
@@ -604,7 +595,6 @@ def delete_source(
             logger.info("Web not found")
             return {"result": "Web not found"}
 
-        # === Background task: remove embeddings ===
         background_tasks.add_task(
             sourceService.delete_source_embeddings,
             source=sourceToDelete,
@@ -618,7 +608,7 @@ def delete_source(
 
 
 @router.get("/{source_id}")
-def get_source(source_id: str, user=Depends(manager.optional)):
+def get_source(source_id: str, _=Depends(manager.optional)):
     """
     Retrieve a source by its ID.
 
@@ -632,8 +622,6 @@ def get_source(source_id: str, user=Depends(manager.optional)):
     Raises:
         HTTPException: If the source is not found, raises a 404 error.
     """
-    if user:
-        check_user(user)
     try:
         source = neo4jClient.get_source_by_id("source", source_id)
         if not source:
@@ -667,9 +655,8 @@ def edit_source(
     sourceId: str,
     updatePayload: UpdateSource,
     background_tasks: BackgroundTasks,
-    user=Depends(manager),
+    _=Depends(manager.required),
 ):
-    check_user(user)
     try:
         update_data = updatePayload.model_dump(exclude_none=True)
         update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
@@ -701,9 +688,8 @@ def edit_source(
 async def upload_file_to_source(
     source_id: str,
     files: list[UploadFile] = File(..., description="Multiple files as UploadFile"),
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
-    check_user(user)
     uploaded_image_urls = []
 
     try:
@@ -763,7 +749,7 @@ async def upload_voice_note(
     web_id: str,
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
     """
     Upload a voice note, transcribe it, and create a source.
@@ -776,7 +762,6 @@ async def upload_voice_note(
     Returns:
         dict: JSON response with the source ID
     """
-    check_user(user)
 
     try:
         temp_dir = tempfile.gettempdir()
@@ -865,10 +850,8 @@ def get_link_preview(
     sourceId: str,
     url: str,
     background_tasks: BackgroundTasks,
-    user=Depends(manager.optional),
+    _=Depends(manager.optional),
 ):
-    if user:
-        check_user(user)
 
     try:
 

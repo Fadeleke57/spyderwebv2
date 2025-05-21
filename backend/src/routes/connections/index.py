@@ -3,12 +3,9 @@ from pytz import UTC
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
-from src.routes.auth.oauth2 import manager
-from src.utils.exceptions import check_user
+from src.routes.auth.utils import manager
 from src.models.connection import (
     CreateConnection,
-    UpdateConnection,
-    Connection,
 )
 from src.db.neo4j import client as neo4jClient
 from src.lib.logger.index import logger
@@ -64,8 +61,7 @@ def get_connection(web_id: str, connection_id: str):
 
 
 @router.post("/create")
-def create_connection(connection_data: CreateConnection, user=Depends(manager)):
-    check_user(user)
+def create_connection(connection_data: CreateConnection, _=Depends(manager.required)):
 
     connection = {
         "connectionId": str(uuid.uuid4()),
@@ -87,17 +83,8 @@ def create_connection(connection_data: CreateConnection, user=Depends(manager)):
     return {"result": connection}
 
 
-@router.patch("/update/{connection_id}")  # TODO
-def update_connection(
-    connection_id: str, config: UpdateConnection, user=Depends(manager)
-):
-    check_user(user)
-    pass
-
-
 @router.delete("/delete/{connection_id}")
-def delete_connection(connection_id: str, user=Depends(manager)):
-    check_user(user)
+def delete_connection(connection_id: str, _=Depends(manager.required)):
 
     try:
         neo4jClient.delete_connection(connection_id, "connection")

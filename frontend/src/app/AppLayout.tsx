@@ -186,7 +186,6 @@ export default function AppLayout({
   return (
     <SidebarProvider
       className={cn("h-screen bg-background font-sans antialiased")}
-      defaultOpen={isSidebarOpen}
     >
       <AppSidebar />
       <SidebarInset className="overflow-x-hidden">{children}</SidebarInset>

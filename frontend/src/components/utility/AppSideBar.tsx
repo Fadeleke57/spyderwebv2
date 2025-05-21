@@ -191,38 +191,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuButton>
           <SidebarIndicator show={selectedButton === "user"} />
         </div>
-        {/*
-        <div className="relative px-2">
-          <SidebarMenuButton
-            size="sm"
-            className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground rounded-none  py-4 rounded-lg`}
-            onClick={() => handleButtonClick("/chat")}
-          >
-            <div
-              className={`flex flex-row gap-2 items-center rounded-lg bg-none text-sidebar-primary-foreground`}
-            >
-              <Brain
-                className={`size-5 ${
-                  selectedButton === "chat"
-                    ? "text-muted-foreground dark:text-foreground font-semibold"
-                    : "text-muted-foreground"
-                }`}
-              />
-            </div>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span
-                className={`truncate text-xl ${
-                  selectedButton === "chat"
-                    ? "text-muted-foreground dark:text-foreground font-semibold"
-                    : "text-muted-foreground"
-                }`}
-              >
-                Charlotte AI
-              </span>
-            </div>
-          </SidebarMenuButton>
-          <SidebarIndicator show={selectedButton === "chat"} />
-        </div>*/}
         {user ? (
           <NewWebModal>
             <div className="px-2">
@@ -292,7 +260,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 computationLimit={usage?.computation.limit || 0}
               />
             )}
-            {usageError && <div className="p-2 text-sm bg-red-500/80 rounded-lg flex items-center justify-center">Something went wrong</div>}
+            {usageError && (
+              <div className="p-2 text-sm bg-red-500/80 rounded-lg flex items-center justify-center">
+                Something went wrong
+              </div>
+            )}
           </div>
         )}
         <NavUser />
