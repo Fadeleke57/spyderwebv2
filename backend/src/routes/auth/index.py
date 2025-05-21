@@ -190,7 +190,8 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
     except StytchError as e:
         logger.error(f"Error registering user: {str(e)}")
         raise HTTPException(
-            status_code=401 if e.details.error_type == "weak_password" else 400, detail=str(e)
+            status_code=401 if e.details.error_type == "weak_password" else 400,
+            detail=str(e),
         )
 
     # create the user in mongo

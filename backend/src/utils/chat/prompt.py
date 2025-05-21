@@ -125,7 +125,7 @@ def stream_text(messages: List[ChatCompletionMessageParam], protocol: str = "dat
                 "type": "function",
                 "function": {
                     "name": "get_graph_context",
-                    "description": "Get information from a knowledge graph related to a query that is beyond your knowledge. Optionally, specify source IDs to search only specific sources.",
+                    "description": "Get information from a knowledge graph related to a query that is beyond your knowledge. Optionally, specify source IDs to search only specific sources. Adjust the limit to control the number of results. If the length or quality of the response is not sufficient, you can try again with a different query and limit.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -141,6 +141,10 @@ def stream_text(messages: List[ChatCompletionMessageParam], protocol: str = "dat
                                 "type": "array",
                                 "items": {"type": "string"},
                                 "description": "Optional: The source IDs to search within the knowledge graph. If not provided, all sources will be searched.",
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "description": "Optional: The maximum number of results to return. Default is 15.",
                             },
                         },
                         "required": ["webId", "query"],
