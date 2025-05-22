@@ -45,11 +45,11 @@ const TOGGLE_MODAL_KEYBOARD_SHORTCUT = "x";
 export function NewWebModal({ children }: { children: React.ReactNode }) {
   //make the button more flexible
   const router = useRouter();
+  const [webId, setWebId] = useState<string | null>(null);
   const { toast } = useToast();
-  const { mutateAsync: createWeb, isPending: creatingWeb } =
-    useCreateWeb();
+  const { mutateAsync: createWeb, isPending: creatingWeb } = useCreateWeb();
   const { mutateAsync: uploadImages, isPending: addingImages } =
-    useUploadImageToWeb();
+    useUploadImageToWeb(webId);
   const [webConfig, setWebConfig] = useState<WebConfig>({
     name: "Untitled",
     description: "",
@@ -97,6 +97,15 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
         description: webConfig.description,
         visibility: webConfig.visibility,
       });
+      if (!webId) {
+        toast({
+          title: "Error creating web",
+          description: "Failed to create web.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setWebId(webId);
 
       setWebConfig({
         name: "Untitled",
@@ -112,7 +121,6 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
       try {
         if (imageConfig.stagedImages.length || imageConfig.stagedGifs.length) {
           const imageKeys = await uploadImages({
-            webId: webId,
             files: [...imageConfig.stagedImages, ...imageConfig.stagedGifs],
           });
         }

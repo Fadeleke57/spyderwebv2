@@ -68,9 +68,11 @@ export const useFetchSavedWebs = () => {
   });
 };
 
-export const useUploadImageToWeb = () => {
+export const useUploadImageToWeb = (webId: string | undefined | null) => {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ webId, files }: { webId: string; files: File[] }) => {
+    mutationFn: async ({ files }: { files: File[] }) => {
+      if (!webId) return;
       const formData = new FormData();
 
       files.forEach((file) => {
@@ -84,6 +86,12 @@ export const useUploadImageToWeb = () => {
       });
 
       return data.imageUrls;
+    },
+    onError: (error: any) => {
+      console.error("Image upload failed:", error);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["images", "web", webId] });
     },
   });
 };
@@ -113,6 +121,8 @@ export function useGetAllImagesForWeb(webId: string) {
       const response = await api.get(`/webs/images/web/${webId}`);
       return response.data.result;
     },
+    enabled: !!webId,
+    staleTime: Infinity,
   });
 }
 

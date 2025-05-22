@@ -56,7 +56,7 @@ function WebForm({ web, user }: FormProps) {
 
   const { mutateAsync: deleteImage } = useDeleteImageFromWeb();
   const { mutateAsync: uploadImages, isPending: addingImages } =
-    useUploadImageToWeb();
+    useUploadImageToWeb(web.webId);
   const [images, setImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -169,7 +169,7 @@ function WebForm({ web, user }: FormProps) {
         variant: "destructive",
       });
     }
-  }, [selectedImage, deleteImage, refetchImages]);
+  }, [selectedImage, deleteImage, refetchImages, toast, web.webId]);
 
   const handleOpenDeleteModal = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -213,7 +213,6 @@ function WebForm({ web, user }: FormProps) {
 
     try {
       await uploadImages({
-        webId: web.webId,
         files: imageConfig.stagedImages,
       });
 
