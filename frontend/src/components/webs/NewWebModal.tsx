@@ -248,7 +248,7 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
               What would you like to start thinking about?
             </DialogTitle>
             <DialogDescription className="text-left">
-              Create a memory store
+              Create a new memory store
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)}>

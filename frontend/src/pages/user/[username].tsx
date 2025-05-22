@@ -29,12 +29,14 @@ import { useUser } from "@/context/UserContext";
 import { NewWebModal } from "@/components/webs/NewWebModal";
 import { motion } from "framer-motion";
 import SimpleTooltip from "@/components/utility/SimpleTooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const VALID_TABS = ["overview", "webs", "packages", "stars"];
 
 function UserProfile() {
   const router = useRouter();
   const { user: viewer } = useUser();
+  const isMobile = useIsMobile();
   const { username, tab: tabParam } = router.query;
   const [tab, setTab] = useState("overview");
   const { ref, inView } = useInView();
@@ -149,7 +151,7 @@ function UserProfile() {
             <div className="relative">
               {" "}
               {isOwner && (
-                <div className="flex items-center justify-center cursor-pointer dark:bg-black/70 dark:hover:bg-black/50 rounded-full p-2 text-xs absolute -top-2 -right-2">
+                <div className="flex items-center justify-center cursor-pointer dark:bg-black/70 dark:hover:bg-black/50 rounded-full p-2 text-xs absolute -top-2 right-0 lg:-right-2">
                   <SimpleTooltip
                     content="Change your avatar"
                     side={"right"}
@@ -163,15 +165,17 @@ function UserProfile() {
                   </SimpleTooltip>
                 </div>
               )}
-              <UserAvatar
-                userId={user.id}
-                dimension={96}
-                className="hidden md:block"
-              />
+              {!isMobile && (
+                <UserAvatar
+                  userId={user.id}
+                  dimension={96}
+                  className="hidden md:block"
+                />
+              )}
               <UserAvatar
                 userId={user.id}
                 dimension={48}
-                className="md:hidden mr-"
+                className="md:hidden mr-4"
               />
             </div>
 
@@ -404,7 +408,7 @@ function UserProfile() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="w-full md:w-auto md:ml-2"
+                        className="w-full h-11 md:w-auto md:ml-2"
                       >
                         <CirclePlus size={14} className="mr-2" />
                         New

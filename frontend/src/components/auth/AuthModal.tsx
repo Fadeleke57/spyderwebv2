@@ -169,7 +169,7 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
                 ? "Welcome back"
                 : step === "register"
                   ? "Create your account"
-                  : "A New Age of Ideation"}
+                  : "A New Age of Understanding"}
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground mt-1">
               {step === "login"
