@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import HTTPException, Cookie, Depends
+from fastapi import HTTPException, Cookie
 from src.lib.stytch.index import (
     client as stytchClient,
     StytchUser,

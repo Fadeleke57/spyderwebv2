@@ -30,7 +30,7 @@ function Header() {
         <h1 className="relative text-5xl lg:text-9xl tracking-tight max-w-xs lg:max-w-full mb-2 sm:mb-4 font-extrabold lg:font-bold dark:text-white">
           Welcome to the{" "}
           <TypingAnimation
-            className="text-violet-400/80 text-5xl sm:text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tigh italic"
+            className="text-violet-400/80 text-5xl sm:text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tight italic"
             text="Web."
           />
           <span className="absolute top-0 right-0 lg:top-4 lg:right-28 text-violet-400/80 text-sm tracking-normal font-semibold">
