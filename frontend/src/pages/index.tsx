@@ -25,8 +25,8 @@ export default function Home() {
           <div className="w-full pt-20 lg:pt-0">
             <Header />
           </div>
-          <footer className="absolute lg:static bottom-0 w-full flex flex-col transition-all duration-300 ease-in-out">
-            <div className="flex justify-between items-center py-4 px-2 pb-14">
+          <footer className="absolute bottom-0 w-full lg:w-[calc(100%-5rem)] flex flex-col transition-all duration-300 ease-in-out">
+            <div className="flex justify-between items-center py-4 px-2 pb-8">
               <div className="inline-flex gap-3 items-center">
                 <small className="text-xs font-medium leading-none border-r-[1px] mt-[2px] dark:text-muted-foreground border-r-muted-foreground pr-2 py-[3px]">
                   &copy; Spydr
