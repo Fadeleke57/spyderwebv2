@@ -24,7 +24,7 @@ function Header() {
   return (
     <div className="flex flex-col gap-4 lg:flex-row items-center justify-between">
       <div className="relative mb-6 sm:mb-8 w-full lg:max-w-[44rem]">
-        <p className="text-xs sm:text-sm text-slate-500 mb-3 sm:mb-4 dark:text-white italic">
+        <p className="text-xs sm:text-sm text-slate-500 mb-3 sm:mb-4 dark:text-foreground italic">
           Your Context On the Go.
         </p>
         <h1 className="relative text-5xl lg:text-9xl tracking-tight max-w-xs lg:max-w-full mb-2 sm:mb-4 font-extrabold lg:font-bold dark:text-white">

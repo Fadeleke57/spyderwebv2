@@ -5,6 +5,8 @@ import { ReactElement } from "react";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/router";
 import * as THREE from "three";
+import { Footer } from "react-day-picker";
+import Link from "next/link";
 
 export default function Home() {
   const { user } = useUser();
@@ -20,9 +22,47 @@ export default function Home() {
     <VortexParticleSystemExact>
       <div className="relative z-10 flex min-h-screen flex-col items-start justify-between p-6 pt-20 lg:px-10 lg:pt-24">
         <div className="flex flex-col gap-8 w-full mx-auto">
-          <div className="w-full">
+          <div className="w-full pt-20 lg:pt-0">
             <Header />
           </div>
+          <footer className="absolute lg:static bottom-0 w-full flex flex-col transition-all duration-300 ease-in-out">
+            <div className="flex justify-between items-center py-4 px-2 pb-14">
+              <div className="inline-flex gap-3 items-center">
+                <small className="text-xs font-medium leading-none border-r-[1px] mt-[2px] dark:text-muted-foreground border-r-muted-foreground pr-2 py-[3px]">
+                  &copy; Spydr
+                </small>
+                <Link
+                  href="/about/terms-of-service"
+                  className="inline p-0 leading-none decoration-none dark:text-muted-foreground dark:hover:text-foreground hover:text-slate-700 border-r-[1px] border-r-muted-foreground pr-2"
+                >
+                  <small className="text-xs font-medium leading-none">
+                    Terms <span className="hidden lg:inline">of Service</span>
+                  </small>
+                </Link>
+                <Link
+                  href="/about/privacy-policy"
+                  className="inline p-0 leading-none decoration-none dark:text-muted-foreground dark:hover:text-foreground hover:text-slate-700 border-r-[1px] border-r-muted-foreground pr-2"
+                >
+                  <small className="text-xs font-medium leading-none">
+                    Privacy <span className="hidden lg:inline">Policy</span>
+                  </small>
+                </Link>
+                <Link
+                  href="#"
+                  className="inline p-0 leading-none decoration-none dark:text-muted-foreground dark:hover:text-foreground hover:text-slate-700 pr-2"
+                >
+                  <small className="text-xs font-medium leading-none">
+                    Support
+                  </small>
+                </Link>
+              </div>
+              <div>
+                <small className="hidden lg:inline text-xs font-medium leading-none text-slate-500 dark:text-muted-foreground italic">
+                  Breaking the Black Box
+                </small>
+              </div>
+            </div>
+          </footer>
         </div>
       </div>
     </VortexParticleSystemExact>
@@ -51,7 +91,7 @@ const VortexParticleSystemExact = ({
 
     // Set initial size and handle resize
     const updateSize = () => {
-      const container : any = containerRef.current;
+      const container: any = containerRef.current;
       if (!container) return;
 
       const width = container.clientWidth;
@@ -168,10 +208,10 @@ const VortexParticleSystemExact = ({
     const particleSystem = new THREE.Points(particles, particleMaterial);
     scene.add(particleSystem);
 
-    let animationId : number | null = null;
+    let animationId: number | null = null;
 
     // Animation loop
-    const animate = (time : number) => {
+    const animate = (time: number) => {
       time *= 0.0005; // Convert to seconds (half speed)
 
       // Update time uniform for vertex shader animation
@@ -201,13 +241,13 @@ const VortexParticleSystemExact = ({
       if (animationId) {
         cancelAnimationFrame(animationId);
       }
-      scene.traverse((child : any) => {
+      scene.traverse((child: any) => {
         if (child.geometry) {
           child.geometry.dispose();
         }
         if (child.material) {
           if (Array.isArray(child.material)) {
-            child.material.forEach((material : any) => material.dispose());
+            child.material.forEach((material: any) => material.dispose());
           } else {
             child.material.dispose();
           }
