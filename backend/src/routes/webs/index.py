@@ -816,7 +816,7 @@ class ExportGraphContext(BaseModel):
 
 
 @router.post("/export/graph/context")
-def export_graph_context(payload: ExportGraphContext, user=Depends(manager.required)):
+def export_graph_context(payload: ExportGraphContext, user : User =Depends(manager.optional)):
 
     try:
         web = Webs.find_one({"webId": payload.webId})

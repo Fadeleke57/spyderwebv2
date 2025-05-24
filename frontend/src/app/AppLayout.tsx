@@ -51,14 +51,14 @@ export default function AppLayout({
           "min-h-screen bg-background pt-[75px] font-sans antialiased flex flex-col relative"
         )}
       >
-        <div className="fixed top-0 z-50 h-[75px] w-[101vw] border-b bg-background dark:bg-background flex flex-row items-center justify-between px-5 border">
+        <div className="fixed left-0 top-0 z-50 h-[75px] w-[101vw] border-b bg-background dark:bg-background flex flex-row items-center justify-between px-5 border">
           <Link href="/explore">
             <Image
               src={slogo}
               alt="logo"
               width={36}
               height={36}
-              className="rounded-full"
+              className="rounded-lg"
               priority
             />
           </Link>
