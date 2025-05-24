@@ -48,7 +48,7 @@ class OpenAIClient:
         web_name, web_description, web_owner_name = (
             web["name"],
             web["description"],
-            webOwner["username"],
+            webOwner.get("full_name") or webOwner["username"],
         )
         web_context = f"Web ID: {webId}\nGraph title: {web_name}\nGraph description: {web_description}\nGraph owner: {web_owner_name}\n"
         self.system_prompt = {

@@ -23,9 +23,7 @@ def get_current_weather(latitude, longitude):
         return None
 
 
-def get_graph_context(webId: str, query: str, sources: list[str] = [], limit: int = 15):
-    if limit > 30 or limit < 1:
-        limit = 15
+def get_graph_context(webId: str, query: str, sources: list[str] = [], limit: int = 20):
 
     filter = {}
     if sources:

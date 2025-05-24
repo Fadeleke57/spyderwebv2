@@ -135,16 +135,12 @@ def stream_text(messages: List[ChatCompletionMessageParam], protocol: str = "dat
                             },
                             "query": {
                                 "type": "string",
-                                "description": "The query to search the knowledge graph for",
+                                "description": "The query to search the knowledge graph for. Be tacticful and specific.",
                             },
                             "sources": {
                                 "type": "array",
                                 "items": {"type": "string"},
                                 "description": "Optional: The source IDs to search within the knowledge graph. If not provided, all sources will be searched.",
-                            },
-                            "limit": {
-                                "type": "integer",
-                                "description": "Optional: The maximum number of results to return. Default is 15.",
                             },
                         },
                         "required": ["webId", "query"],
