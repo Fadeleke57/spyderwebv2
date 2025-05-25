@@ -66,7 +66,7 @@ function PopularWebsCard() {
           About
         </Link>
         <Link
-          href="#"
+          href="mailto:spydrdev@gmail.com"
           className="py-[1px] px-4 pr-0 mb-2 hover:underline transition-all duration-300 ease-in-out"
         >
           Help..

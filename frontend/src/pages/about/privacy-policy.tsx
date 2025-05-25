@@ -1,3 +1,4 @@
+"use client"
 import PublicLayout from "@/app/PublicLayout";
 import React, { ReactElement } from "react";
 
@@ -5,152 +6,175 @@ const PrivacyPolicy = () => {
   return (
     <>
       <div className="p-6 lg:px-10 py-10 lg:py-24 flex flex-col gap-6">
-        <h1 className="scroll-m-20 text-2xl font-extrabold tracking-tight lg:text-5xl mb-2">
+        <h1 className="scroll-m-20 text-2xl font-extrabold tracking-tight lg:text-3xl mb-2">
           Privacy Policy
         </h1>
         <p className="text-xl text-muted-foreground -mt-6">
-          <strong>Last updated: 8/18/2024</strong>
+          <strong>Last updated: 05/24/2025</strong>
         </p>
 
         <p>
-          Spydr is committed to protecting your privacy. This Privacy Policy
-          explains how we collect, use, disclose, and safeguard your information
-          when you use our application. Please read this policy carefully to
-          understand our views and practices regarding your personal data and
-          how we will treat it.
+          Spydr is committed to respecting your privacy and ensuring
+          transparency around how your information is handled. This Privacy
+          Policy outlines how we collect, process, and protect your data when
+          you use Spydr&apos;s platform to upload content, create knowledge graphs,
+          and interact with AI-based tools.
         </p>
 
         <h2>1. Information We Collect</h2>
-        <p>We may collect and process the following types of information:</p>
+        <p>We collect the following types of information:</p>
         <ul>
           <li>
-            <strong>Personal Information</strong>: Information that can be used
-            to identify you, such as your name, email address, and login
-            credentials.
+            <strong>Account Information:</strong> Name, email address,
+            authentication tokens, and account preferences.
           </li>
           <li>
-            <strong>Usage Data</strong>: Information on how you access and use
-            the app, including your interactions, preferences, and any data
-            related to the usage of features.
+            <strong>User Content:</strong> Files, web links, notes, audio,
+            video, and other content you upload or ingest into Spydr for
+            research and memory creation purposes.
           </li>
           <li>
-            <strong>Device Information</strong>: Information about your device,
-            such as IP address, browser type, operating system, and device
-            identifiers.
+            <strong>Usage Data:</strong> Interaction logs (e.g., which webs you
+            open, sources you view, edits made) used for improving system
+            performance and personalization.
+          </li>
+          <li>
+            <strong>Device & Technical Info:</strong> IP address, device type,
+            browser type, time zone, and cookies to support security, sync, and
+            analytics.
           </li>
         </ul>
 
         <h2>2. How We Use Your Information</h2>
-        <p>
-          We may use the information we collect from you in the following ways:
-        </p>
         <ul>
           <li>
-            <strong>To provide and maintain our service</strong>: Ensuring the
-            app functions as intended and improving user experience.
+            <strong>To deliver Spydr&apo;s core features:</strong> Such as
+            generating relevance scores, linking claims to sources, summarizing
+            content, and enabling semantic search across your memory graph.
           </li>
           <li>
-            <strong>To manage your account</strong>: Including the registration
-            process, login, and authentication.
+            <strong>To personalize your experience:</strong> Such as
+            recommending relevant sources, tags, or collaborators.
           </li>
           <li>
-            <strong>To send notifications</strong>: Including emails, push
-            notifications, or in-app messages for updates, security alerts, or
-            other information that may be of interest to you.
+            <strong>To improve platform performance:</strong> We use aggregated
+            and anonymized usage data to optimize how features work.
           </li>
           <li>
-            <strong>To analyze and improve our app</strong>: Understanding user
-            behavior to enhance our features and services.
+            <strong>To secure your account and content:</strong> Including
+            auditing authentication events and alerting you of suspicious
+            activity.
           </li>
         </ul>
 
         <h2>3. How We Share Your Information</h2>
         <p>
-          We do not share your personal information with third parties except in
-          the following circumstances:
+          We do not sell or share your personal or research data for
+          advertising. We only share information in the following limited cases:
         </p>
         <ul>
           <li>
-            <strong>Service Providers</strong>: We may share your information
-            with third-party service providers who assist us in operating our
-            app, such as hosting, data analysis, and customer service.
+            <strong>Service Providers:</strong> For cloud hosting, storage
+            (e.g., AWS/S3), and infrastructure processing (e.g., embeddings,
+            semantic search), under strict data processing agreements.
           </li>
           <li>
-            <strong>Legal Obligations</strong>: We may disclose your information
-            if required by law, such as in response to a subpoena or legal
-            request.
+            <strong>Legal Requirements:</strong> If required by law or to comply
+            with a legal obligation, such as a subpoena or lawful request by
+            public authorities.
           </li>
           <li>
-            <strong>Business Transfers</strong>: In the event of a merger,
-            acquisition, or sale of all or part of our assets, your information
-            may be transferred as part of that transaction.
+            <strong>Business Continuity:</strong> If Spydr is involved in a
+            merger or acquisition, you will be notified about the transfer and
+            your data options.
           </li>
         </ul>
 
-        <h2>4. Security of Your Information</h2>
+        <h2>4. Data Retention & Security</h2>
         <p>
-          We use administrative, technical, and physical security measures to
-          protect your personal information. However, please be aware that no
-          security system is impenetrable, and we cannot guarantee the security
-          of our databases.
+          We retain your data for as long as your account remains active. You
+          may delete your content or request account deletion at any time. All
+          data is encrypted in transit and at rest. We regularly monitor for
+          vulnerabilities and apply best practices to protect against
+          unauthorized access.
         </p>
 
-        <h2>5. Your Data Protection Rights</h2>
-        <p>
-          Depending on your location, you may have the following rights
-          regarding your personal information:
-        </p>
+        <h2>5. Your Rights</h2>
+        <p>You may request to:</p>
         <ul>
           <li>
-            <strong>Access</strong>: You have the right to request copies of
-            your personal data.
+            <strong>Access</strong> the personal and research data we store
+            about you.
           </li>
           <li>
-            <strong>Correction</strong>: You have the right to request that we
-            correct any information you believe is inaccurate.
+            <strong>Export</strong> your memories, webs, and linked sources as
+            structured data.
           </li>
           <li>
-            <strong>Erasure</strong>: You have the right to request that we
-            delete your personal data.
+            <strong>Correct</strong> or update inaccurate information.
           </li>
           <li>
-            <strong>Restriction of Processing</strong>: You have the right to
-            request that we restrict the processing of your personal data.
+            <strong>Delete</strong> your account and all associated data.
           </li>
           <li>
-            <strong>Objection to Processing</strong>: You have the right to
-            object to our processing of your personal data.
-          </li>
-          <li>
-            <strong>Data Portability</strong>: You have the right to request
-            that we transfer your data to another organization or directly to
-            you.
+            <strong>Limit</strong> or object to certain types of data
+            processing.
           </li>
         </ul>
         <p>
-          To exercise any of these rights, please contact spydrdev@gmail.com.
+          Please email <strong>spydrdev@gmail.com</strong> to make any of these
+          requests.
         </p>
 
         <h2>6. Children&apos;s Privacy</h2>
         <p>
-          Our app does not address anyone under the age of 13. We do not
-          knowingly collect personally identifiable information from children
-          under 13. If we become aware that we have collected personal data from
-          a child under 13, we will take steps to delete that information from
-          our servers.
+          Spydr is not intended for children under 13. We do not knowingly
+          collect data from children under 13. If we discover that a child has
+          created an account, we will promptly delete all related information.
         </p>
 
-        <h2>7. Changes to This Privacy Policy</h2>
+        <h2>7. AI & Data Processing Transparency</h2>
         <p>
-          We may update our Privacy Policy from time to time. We will notify you
-          of any changes by posting the new Privacy Policy on this page and
-          updating the &quot;Last updated&quot; date.
+          Spydr may use third-party APIs to generate embeddings or summaries of
+          your uploaded content. These services do not retain your data and are
+          used only to enhance features such as semantic search, autolinking,
+          and web insights. You can opt out of AI processing on a per-file
+          basis.
         </p>
 
-        <h2>8. Contact</h2>
+        <h2>8. Paid Tiers & Public Webs</h2>
         <p>
-          If you have any questions or concerns about this Privacy Policy,
-          please contact us at:
+          Spydr offers paid subscription tiers that provide enhanced features
+          and storage capacities. Users can also create public &ldquo;webs&rdquo; (formerly
+          known as buckets) to share content on the Explore page. Please note
+          that any information you choose to make public will be accessible to
+          other users and may be indexed by search engines. We recommend
+          exercising caution when sharing personal or sensitive information
+          publicly.
+        </p>
+
+        <h2>9. Model Context Protocol (MCP) Integration</h2>
+        <p>
+          Spydr integrates with the Model Context Protocol (MCP) to allow secure
+          access to your context by authorized clients such as Claude, Windsurf,
+          and Cursor. This integration is secured using scoped OAuth provided by
+          Stytch. You have full control over which clients can access your
+          context and can revoke access at any time through your account
+          settings.
+        </p>
+
+        <h2>10. Changes to This Policy</h2>
+        <p>
+          We may revise this Privacy Policy to reflect changes in our technology
+          or legal obligations. We will update the “Last updated” date
+          accordingly. Substantial changes will be communicated to users
+          directly.
+        </p>
+
+        <h2>11. Contact</h2>
+        <p>
+          If you have questions, concerns, or requests related to privacy or
+          data usage, contact us at:
         </p>
         <p>
           <strong>Email:</strong> spydrdev@gmail.com

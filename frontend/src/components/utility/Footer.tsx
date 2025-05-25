@@ -25,7 +25,8 @@ function Footer() {
             </small>
           </Link>
           <Link
-            href="#"
+            href="mailto:spydrdev@gmail.com"
+            target="_blank"
             className="inline p-0 decoration-none dark:hover:text-muted-foreground hover:text-slate-700"
           >
             <small className="text-sm font-medium leading-none">Support</small>
