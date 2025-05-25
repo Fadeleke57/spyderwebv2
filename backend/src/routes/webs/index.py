@@ -33,6 +33,7 @@ from src.core.config import settings
 from src.lib.stytch.index import StytchError
 from src.lib.pinecone.index import client as pineconeClient
 from src.service.web import service as webService
+from src.service.source import service as sourceService
 from src.routes.chat.index import configure_chat
 from src.utils.storage import handleFileStorage
 from src.routes.user.index import convert_to_public_user
@@ -739,6 +740,11 @@ def iterate_web(
         web_doc = Webs.find_one({"webId": new_web_id})
         if web_doc:
             background_task.add_task(webService.emebd_and_upsert_web, web_doc)
+            logger.info(f"Queued embedding for new web: {new_web_id}")
+            background_task.add_task(
+                sourceService.embed_iterated_sources, new_source_ids
+            )
+            logger.info(f"Queued embedding for new sources: {new_source_ids}")
 
         return {"result": new_web_id}
 
@@ -816,7 +822,9 @@ class ExportGraphContext(BaseModel):
 
 
 @router.post("/export/graph/context")
-def export_graph_context(payload: ExportGraphContext, user : User =Depends(manager.optional)):
+def export_graph_context(
+    payload: ExportGraphContext, user: User = Depends(manager.optional)
+):
 
     try:
         web = Webs.find_one({"webId": payload.webId})

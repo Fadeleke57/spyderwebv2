@@ -290,6 +290,7 @@ class PineconeClient:
         """
         chunks = []
 
+        logger.info(f"Transcript data for video: {transcript_data}")
         # total duration of the video
         total_duration = transcript_data[-1]["start"] + transcript_data[-1]["duration"]
 
@@ -357,7 +358,9 @@ class PineconeClient:
             autolinker.configure(webId, sourceId)
 
         embeddingStorageResult = handleEmbeddingStorage(
-            sizeBytes=source["size"],
+            sizeBytes=source.get(
+                "size", len(source.get("content", "").encode("utf-8"))
+            ),
             userId=userId,
             operation="$inc",
         )

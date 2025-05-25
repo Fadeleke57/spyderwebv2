@@ -6,6 +6,7 @@ from uuid import uuid4
 from datetime import datetime
 from fastapi import HTTPException
 from src.models.index import Source, create_process, update_process, Webs, Embeddings
+from src.lib.youtube.index import client as youtubeClient
 from src.utils.storage import handleEmbeddingStorage
 from src.db.neo4j import client as neo4jClient
 from src.lib.pinecone.index import client as pineconeClient
@@ -431,6 +432,37 @@ class SourceService:
         except Exception as e:
             logger.error(f"Error processing Pinecone embeddings: {e}")
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
+
+    def embed_iterated_sources(self, sourceIds: List[str]):
+        for sourceId in sourceIds:
+            source = neo4jClient.get_source_by_id(label="source", source_id=sourceId)
+            if source:
+                if source["type"] == "note":
+                    self.embed_and_upsert_note(source, source.get("content", ""))
+                elif source["type"] == "youtube":
+                    video_id = youtubeClient.extract_youtube_id(source["url"])
+                    if video_id:
+                        logger.info(f"Found video id: {video_id}")
+                        transcripts = youtubeClient.get_video_transcript(
+                            video_id=video_id
+                        )
+                        if transcripts:
+                            self.embed_and_upsert_youtube(source, transcripts)
+                    else:
+                        logger.info(f"[WARNING] No video id found for source: {source}")
+                elif source["type"] == "voice_note":
+                    self.embed_and_upsert_voice_note(source, source.get("content", ""))
+                elif source["type"] == "website":
+                    self.embed_and_upsert_website(source, source.get("content", ""))
+                # elif source["type"] == "document": figure out what to do with documents
+                # self.embed_and_upsert_pdf(source, source["content"])
+                else:
+                    logger.info(
+                        f"[WARNING] Unknown source type: {source['type']} or pdf document"
+                    )
+            else:
+                logger.info(f"[WARNING] No source found with id: {sourceId}")
+        logger.info(f"Embedded {len(sourceIds)} sources")
 
     def create_onboarding_sources(
         self, web_id: str, user_id: str, background_tasks: BackgroundTasks

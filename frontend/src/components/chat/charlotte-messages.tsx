@@ -122,7 +122,7 @@ const AssistantMessage = ({
 
   return (
     <motion.div
-      className="w-full max-w-md p-4 group/message text-sm hover:cursor-pointer rounded-xl hover:bg-muted/50 relative"
+      className="w-full max-w-lg p-4 group/message text-sm hover:cursor-pointer rounded-xl hover:bg-muted/50 relative"
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       data-role="assistant"

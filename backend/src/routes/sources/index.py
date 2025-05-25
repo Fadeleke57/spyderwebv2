@@ -422,11 +422,7 @@ def add_youtube(
         info = youtubeClient.get_video_info(video_id)
         title, description = info["title"], info["description"]
 
-        try:
-            transcripts = youtubeClient.get_video_transcript(video_id)
-
-        except Exception as e:
-            transcripts = []
+        transcripts = youtubeClient.get_video_transcript(video_id)
 
         logger.info(f"Transcripts: {transcripts}")
 
