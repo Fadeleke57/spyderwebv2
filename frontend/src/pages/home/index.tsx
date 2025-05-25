@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 import withAuth from "@/hoc/withAuth";
 import { TrendingSearchCarousel } from "@/components/home/TrendingSearchCarousel";
 import { ProjectsCarousel } from "@/components/home/ProjectsCarousel";
@@ -10,13 +10,36 @@ import { User } from "lucide-react";
 import sLogo from "@/assets/slogonobg.png";
 import { getTimeBasedGreeting } from "@/lib/utils";
 import Image from "next/image";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 function Index() {
-  const { user } = useUser();
   const router = useRouter();
-  const { loginSource } = router.query;
-
   const greeting = getTimeBasedGreeting("America/New_York");
+  const { user } = useUser();
+  const { src } = router.query;
+
+  const [MCPModalOpen, setMCPModalOpen] = React.useState(false);
+
+  const removeAllQueryParams = useCallback(() => {
+    router.replace(router.pathname, undefined, { shallow: true });
+  }, [router]);
+
+  useEffect(() => {
+    console.log("src", src);
+    if (src === "mcp_auth_complete") {
+      setMCPModalOpen(true);
+      setTimeout(() => {
+        setMCPModalOpen(false);
+        removeAllQueryParams();
+      }, 10000);
+    }
+  }, [src, removeAllQueryParams]);
 
   return (
     <div className="flex flex-col gap-12 lg:gap-16 p-6 pt-16 pb-36 lg:py-16 lg:px-16 min-h-screen overflow-x-hidden w-full mx-auto">
@@ -65,8 +88,31 @@ function Index() {
 
         <ProjectsCarousel />
       </div>
+      <MCPAuthCompleteModal open={MCPModalOpen} setOpen={setMCPModalOpen} />
     </div>
   );
 }
+
+const MCPAuthCompleteModal = ({
+  open,
+  setOpen,
+}: {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}) => {
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="p-10 max-h-[90dvh]">
+        <DialogHeader>
+          <DialogTitle className="text-xl">Authentication Complete</DialogTitle>
+        </DialogHeader>
+        <DialogDescription className="text-md">
+          You have successfully authenticated with your MCP account. Feel free
+          to close this window and return to your session.
+        </DialogDescription>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 export default withAuth(Index);

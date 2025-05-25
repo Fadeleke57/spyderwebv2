@@ -89,7 +89,7 @@ const FeedbackModal = ({
         {!submitted ? (
           <>
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold">
+              <DialogTitle className="text-xl font-bold">
                 We Value Your Feedback
               </DialogTitle>
               <DialogDescription className="text-gray-500">
