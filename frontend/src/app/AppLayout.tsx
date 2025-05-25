@@ -48,7 +48,7 @@ export default function AppLayout({
     return (
       <div
         className={cn(
-          "min-h-screen bg-background pt-[75px] font-sans antialiased flex flex-col relative"
+          " bg-background pt-[75px] z-80 font-sans antialiased flex flex-col relative"
         )}
       >
         <div className="fixed left-0 top-0 z-50 h-[75px] w-[101vw] border-b bg-background dark:bg-background flex flex-row items-center justify-between px-5 border">

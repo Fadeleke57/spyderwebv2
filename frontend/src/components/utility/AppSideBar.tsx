@@ -119,7 +119,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <span
                 className={`truncate text-xl ${
                   selectedButton === "home"
-                    ? "text-muted-foreground dark:text-foreground font-semibold"
+                    ? "text-muted-foreground fill-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
                 }`}
               >
@@ -141,7 +141,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <LayoutGrid
                 className={`size-5 ${
                   selectedButton === "explore"
-                    ? "text-muted-foreground dark:text-foreground font-semibold"
+                    ? "text-muted-foreground fill-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
                 }`}
               />
@@ -172,7 +172,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <User
                 className={`size-5 ${
                   selectedButton === "user"
-                    ? "text-muted-foreground dark:text-foreground font-semibold"
+                    ? "text-muted-foreground fill-foreground dark:text-foreground font-semibold"
                     : "text-muted-foreground"
                 }`}
               />

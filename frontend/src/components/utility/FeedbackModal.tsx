@@ -85,7 +85,7 @@ const FeedbackModal = ({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-xl rounded-lg border-0 shadow-lg">
+      <DialogContent className="sm:max-w-xl rounded-lg border-0 shadow-lg p-10">
         {!submitted ? (
           <>
             <DialogHeader>

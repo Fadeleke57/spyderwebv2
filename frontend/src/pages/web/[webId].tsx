@@ -177,7 +177,7 @@ function Index() {
       </Head>
       <div className="flex flex-col">
         <header
-          className={`sticky top-0 z-10 flex ${webLoading && "animate-pulse"} h-[70px] items-center justify-between gap-1 border-b bg-background px-4`}
+          className={`sticky top-0 z-10 flex ${webLoading && "animate-pulse"} h-[70px] items-center justify-between gap-1 border-b bg-background px-4 bg-background/40 backdrop-blur-md `}
         >
           <div className="flex flex-col z-40 items-center justify-start mb-3 lg:mb-0  max-w-[210px] lg:max-w-2xl">
             <div className="flex flex-col gap-2">

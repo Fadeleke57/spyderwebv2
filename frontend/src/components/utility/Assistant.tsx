@@ -196,7 +196,7 @@ const SpydrAI = () => {
           </PopoverTrigger>
         </SimpleTooltip>
         <PopoverContent
-          className="w-[250px] lg:w-[500px] lg:h-[450px] bg-background/70 border-zinc-800 backdrop-blur-md rounded-xl p-0"
+          className="w-[250px] lg:w-[40vw] lg:h-[60vh] bg-background/70 border-zinc-800 backdrop-blur-md rounded-xl p-0"
           align="end"
           side="top"
           sideOffset={-40}

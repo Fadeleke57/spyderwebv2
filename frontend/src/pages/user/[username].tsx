@@ -151,7 +151,7 @@ function UserProfile() {
             <div className="relative">
               {" "}
               {isOwner && (
-                <div className="flex items-center justify-center cursor-pointer dark:bg-black/70 dark:hover:bg-black/50 rounded-full p-2 text-xs absolute -top-2 right-0 lg:-right-2">
+                <div className="flex items-center justify-center cursor-pointer dark:bg-black/70 dark:hover:bg-black/50 rounded-full p-2 text-xs absolute -top-2 right-0 lg:-right-0">
                   <SimpleTooltip
                     content="Change your avatar"
                     side={"right"}
@@ -169,7 +169,7 @@ function UserProfile() {
                 <UserAvatar
                   userId={user.id}
                   dimension={96}
-                  className="hidden md:block"
+                  className="hidden md:block mr-2"
                 />
               )}
               <UserAvatar

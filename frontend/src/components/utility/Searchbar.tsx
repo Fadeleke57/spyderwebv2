@@ -116,7 +116,10 @@ const SearchBar = ({
   };
 
   return (
-    <div ref={searchRef} className="relative w-full lg:w-[calc(100%)]">
+    <div
+      ref={searchRef}
+      className="relative w-full bg-transparent"
+    >
       <div className="relative">
         <SearchInput
           value={query}

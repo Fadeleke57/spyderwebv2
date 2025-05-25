@@ -111,7 +111,7 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
           </Head>
 
           <UserProvider>
-            <div className="max-w-[1400px] mx-auto">
+            <div>
               {getLayout(
                 <>
                   <Analytics />
