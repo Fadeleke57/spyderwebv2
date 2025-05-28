@@ -37,7 +37,7 @@ import { SkeletonCard } from "../utility/SkeletonCard";
 import { AnimatedStarButton } from "./AnimatedStar";
 import { formatText } from "@/lib/utils";
 
-export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
+export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
   const [webLikedCount, setWebLikedCount] = useState(web.likes.length);
   const [webSaved, setWebSaved] = useState(false);
   const [webHidden, setWebHidden] = useState(false);
