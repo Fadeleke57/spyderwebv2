@@ -20,9 +20,9 @@ export default function Home() {
 
   return (
     <VortexParticleSystemExact>
-      <div className="relative z-10 flex min-h-screen flex-col items-start justify-between p-6 pt-20 lg:px-10 lg:pt-24">
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-between p-6 pt-20 lg:px-10 lg:pt-24">
         <div className="flex flex-col gap-8 w-full mx-auto">
-          <div className="w-full pt-20 lg:pt-0">
+          <div className="w-full pt-20 lg:pt-10">
             <Header />
           </div>
           <footer className="absolute bottom-0 w-full lg:w-[calc(100%-5rem)] flex flex-col transition-all duration-300 ease-in-out">

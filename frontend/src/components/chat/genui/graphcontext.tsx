@@ -44,56 +44,78 @@ export interface ReferenceMetadata {
   // Voice note specific
   voiceNoteTitle?: string;
 }
-export const getTypeIcon = (referenceType: string) => {
+export const getTypeIcon = (referenceType: string, noir?: boolean) => {
   const type = referenceType.toLowerCase();
+
+  const baseClass = "w-6 h-6 rounded-full flex items-center justify-center";
+  const noirClass = noir ? "dark:bg-neutral-700 dark:text-white" : "";
 
   switch (type) {
     case "youtube":
-      return (
-        <div className="w-6 h-6 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-          <Youtube className="w-4 h-4 text-red-500" />
-        </div>
-      );
     case "youtube video":
       return (
-        <div className="w-6 h-6 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-          <Youtube className="w-4 h-4 text-red-500" />
+        <div
+          className={`${baseClass} bg-red-100 dark:bg-red-900/30 ${noirClass}`}
+        >
+          <Youtube
+            className={`w-4 h-4 text-red-500 ${noir ? "dark:text-white" : ""}`}
+          />
         </div>
       );
+
     case "pdf document":
-      return (
-        <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-          <FileType className="w-4 h-4 text-blue-500" />
-        </div>
-      );
     case "document":
       return (
-        <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-          <FileType className="w-4 h-4 text-blue-500" />
+        <div
+          className={`${baseClass} bg-blue-100 dark:bg-blue-900/30 ${noirClass}`}
+        >
+          <FileType
+            className={`w-4 h-4 text-blue-500 ${noir ? "dark:text-white" : ""}`}
+          />
         </div>
       );
+
     case "note":
       return (
-        <div className="w-6 h-6 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
-          <FileText className="w-4 h-4 text-amber-500" />
+        <div
+          className={`${baseClass} bg-amber-100 dark:bg-amber-900/30 ${noirClass}`}
+        >
+          <FileText
+            className={`w-4 h-4 text-amber-500 ${noir ? "dark:text-white" : ""}`}
+          />
         </div>
       );
+
     case "website":
       return (
-        <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
-          <Globe className="w-4 h-4 text-emerald-500" />
+        <div
+          className={`${baseClass} bg-emerald-100 dark:bg-emerald-900/30 ${noirClass}`}
+        >
+          <Globe
+            className={`w-4 h-4 text-emerald-500 ${noir ? "dark:text-white" : ""}`}
+          />
         </div>
       );
+
     case "voice_note":
       return (
-        <div className="w-6 h-6 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center">
-          <AudioLines className="w-4 h-4 text-violet-500" />
+        <div
+          className={`${baseClass} bg-violet-100 dark:bg-violet-900/30 ${noirClass}`}
+        >
+          <AudioLines
+            className={`w-4 h-4 text-violet-500 ${noir ? "dark:text-white" : ""}`}
+          />
         </div>
       );
+
     default:
       return (
-        <div className="w-6 h-6 bg-gray-100 dark:bg-gray-900/30 rounded-full flex items-center justify-center">
-          <FileIcon className="w-4 h-4 text-muted-foreground" />
+        <div
+          className={`${baseClass} bg-gray-100 dark:bg-gray-900/30 ${noirClass}`}
+        >
+          <FileIcon
+            className={`w-4 h-4 text-muted-foreground ${noir ? "dark:text-white" : ""}`}
+          />
         </div>
       );
   }

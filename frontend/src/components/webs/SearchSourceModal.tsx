@@ -35,6 +35,9 @@ import {
 import { getTypeIcon } from "../chat/genui/graphcontext";
 import "@hackernoon/pixel-icon-library/fonts/iconfont.css";
 import { useSourceStore } from "@/store/sourceStore";
+import { useFetchWebById } from "@/hooks/webs";
+import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/router";
 
 type SearchSourceModalProps = {
   open: boolean;
@@ -68,6 +71,12 @@ function SearchSourceModal({
 }: SearchSourceModalProps) {
   const isMobile = useIsMobile();
   const { setIsUploadingSource } = useSourceStore();
+  const { user } = useUser();
+  const router = useRouter();
+  const { webId } = router.query;
+  const { data: web } = useFetchWebById(webId as string);
+  const isOwner = web && user && web.userId === user.id;
+
   const content = (
     <Tabs className="px-4" defaultValue="files">
       <TabsList className="bg-transparent rounded-none border-b w-full flex items-center justify-start">
@@ -97,18 +106,20 @@ function SearchSourceModal({
                   className="bg-muted h-10 w-64"
                 />
               </div>
-              <div>
-                <Button
-                  onClick={() => {
-                    setOpen(false);
-                    setIsUploadingSource(true);
-                  }}
-                  className="h-10 dark:bg-purple-500 dark:hover:bg-purple-500/80 dark:text-black rounded-lg"
-                >
-                  <CirclePlus size={12} className="mr-1" /> Add{" "}
-                  {value === "files" ? "file" : "link"}{" "}
-                </Button>{" "}
-              </div>
+              {isOwner && (
+                <div>
+                  <Button
+                    onClick={() => {
+                      setOpen(false);
+                      setIsUploadingSource(true);
+                    }}
+                    className="h-10 dark:bg-purple-500 dark:hover:bg-purple-500/80 dark:text-black rounded-lg"
+                  >
+                    <CirclePlus size={12} className="mr-1" /> Add{" "}
+                    {value === "files" ? "file" : "link"}{" "}
+                  </Button>{" "}
+                </div>
+              )}
             </div>
             <CommandList className="h-[50dvh] no-scroll-bg">
               <CommandEmpty className="text-muted-foreground">
@@ -125,7 +136,7 @@ function SearchSourceModal({
                         onSelect={() => handleSourceClick(source.sourceId)}
                         value={`${source.name}${id}`}
                       >
-                        {getTypeIcon(source.type)}
+                        {getTypeIcon(source.type, true)}
                         <span className="ml-1">{source.name}</span>
                       </CommandItem>
                     ))}
