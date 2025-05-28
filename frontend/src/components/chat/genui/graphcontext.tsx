@@ -5,8 +5,6 @@ import {
   FileText,
   Youtube,
   FileType,
-  Clock,
-  Calendar,
   FileIcon,
   Globe,
   AudioLines,
@@ -55,7 +53,7 @@ export const getTypeIcon = (referenceType: string, noir?: boolean) => {
     case "youtube video":
       return (
         <div
-          className={`${baseClass} bg-red-100 dark:bg-red-900/30 ${noirClass}`}
+          className={`${baseClass} ${noirClass}`}
         >
           <Youtube
             className={`w-4 h-4 text-red-500 ${noir ? "dark:text-white" : ""}`}
