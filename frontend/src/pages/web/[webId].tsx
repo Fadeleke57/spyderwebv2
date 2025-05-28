@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useFetchWebById } from "@/hooks/webs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -35,11 +35,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import FeedbackModal from "@/components/utility/FeedbackModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { environment } from "@/environment/load_env";
+import { useSourceStore } from "@/store/sourceStore";
 
 function Index() {
   const router = useRouter();
   const isMobile = useIsMobile();
   const { webId } = router.query;
+  const { user, userLoading } = useUser();
+  const { setIsUploadingSource } = useSourceStore();
+  const { mutateAsync: pinWeb, isPending: pinLoading } = usePinWeb(
+    webId as string
+  );
+  const { mutateAsync: unpinWeb, isPending: unpinLoading } = useUnpinWeb(
+    webId as string
+  );
   const {
     data: webData,
     isLoading: webLoading,
@@ -47,17 +56,26 @@ function Index() {
     refetch: refetchWeb,
   } = useFetchWebById(webId as string);
 
-  const [web, setWeb] = React.useState<Web | null>(webData || null);
-  const [feedbackModalOpen, setFeedbackModalOpen] = React.useState(false);
+  const { mutateAsync: configureCharlotte } = useConfigureChat();
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [showIterateModal, setShowIterateModal] = useState(false);
+  const [web, setWeb] = useState<Web | null>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [isPinned, setPinned] = React.useState(
+    user && user.websPinned.includes(webId as string)
+  );
+  const isOwner = user && web && user.id === web.userId;
 
-  const { mutateAsync: pinWeb, isPending: pinLoading } = usePinWeb(
-    webId as string
+  const title = webLoading ? "Loading..." : (web && web.name) || "Web Details";
+  const description = webLoading
+    ? "Getting web details..."
+    : (web && web.description) || "View and explore web details.";
+
+  const { data: webOwner, isLoading: webOwnerLoading } = useFetchUserById(
+    web && web.userId
   );
-  const { mutateAsync: unpinWeb, isPending: unpinLoading } = useUnpinWeb(
-    webId as string
-  );
-  const [showIterateModal, setShowIterateModal] = React.useState(false);
-  const [authModalOpen, setAuthModalOpen] = React.useState(false);
+
+  const { data: iteratedFromUser } = useFetchUserById(web && web.iteratedFrom);
 
   useEffect(() => {
     if (webData) {
@@ -65,44 +83,18 @@ function Index() {
     }
   }, [webData]);
 
-  const {
-    data: webOwner,
-    isLoading: webOwnerLoading,
-    error: webOwnerError,
-  } = useFetchUserById(web ? web.userId : "");
-
-  const {
-    data: iteratedFromUser,
-    isLoading: iteratedFromLoading,
-    error: iteratedFromError,
-  } = useFetchUserById(web ? web.iteratedFrom || "" : "");
-
-  const { user, userLoading } = useUser();
-
-  const [isPinned, setPinned] = React.useState(
-    user ? user.websPinned.includes(webId as string) : false
-  );
-
   useEffect(() => {
     if (user) {
       setPinned(user.websPinned.includes(webId as string));
     }
   }, [user, webId]);
 
-  const isOwner = user && webOwner && user.id === webOwner.id;
-
-  const title = webLoading ? "Loading..." : web?.name || "Web Details";
-  const description = webLoading
-    ? "Getting web details..."
-    : web?.description || "View and explore web details.";
-
-  const { mutateAsync: configureCharlotte } = useConfigureChat();
-
   useEffect(() => {
     if (webId) {
+      setIsUploadingSource(false);
       configureCharlotte(webId as string);
     }
-  }, [webId, configureCharlotte]);
+  }, [webId, configureCharlotte, setIsUploadingSource]);
 
   const handlePinToggle = async () => {
     if (!user) {
@@ -160,7 +152,6 @@ function Index() {
       </div>
     );
   }
-
   return (
     <div className="grid h-[91dvh] lg:h-screen w-full overflow-hidden scrollbar-none">
       <Head>
@@ -181,13 +172,16 @@ function Index() {
         >
           <div className="flex flex-col z-40 items-center justify-start mb-3 lg:mb-0  max-w-[210px] lg:max-w-2xl">
             <div className="flex flex-col gap-2">
-              <Button
-                variant={"link"}
+              <div
                 onClick={() => router.back()}
-                className="flex items-center gap-2 p-0 h-fit w-fit text-md font-semibold text-violet-400/80"
+                className={`flex cursor-pointer bg-transparent items-center group gap-2 p-0 h-fit w-fit text-md font-semibold text-violet-400/80`}
               >
-                <ArrowLeft strokeWidth={4} className="h-4 w-4" /> Back
-              </Button>
+                <ArrowLeft
+                  strokeWidth={4}
+                  className="h-4 w-4 group-hover:-translate-x-1 transition-all ease-linear duration-150"
+                />{" "}
+                <span>Back</span>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
@@ -224,7 +218,7 @@ function Index() {
                 </Tooltip>
               </TooltipProvider>
             )}
-            {web && <MobileWebView web={web} user={user || null} />}
+            {web && <MobileWebView webId={web.webId} />}
             {webOwner && user && webOwner.id === user.id && (
               <Button
                 size="sm"
@@ -325,7 +319,8 @@ function Index() {
                   )}
 
                   <span className="text-xs text-muted-foreground font-normal m-0">
-                    {web?.updated &&
+                    {web &&
+                      web.updated &&
                       formatDistanceToNow(new Date(web.updated + "Z"), {
                         addSuffix: true,
                       })}
@@ -333,20 +328,13 @@ function Index() {
                 </div>
               </div>
 
-              {web && user && isOwner && <WebForm web={web} user={user} />}
-              {web &&
-                !isOwner &&
-                !webLoading &&
-                !webOwnerLoading &&
-                !userLoading && <PublicWebView web={web} />}
+              {web && <WebForm webId={web.webId} />}
+              {web && <PublicWebView webId={web.webId} />}
 
               {webId && web && web.iterations.length > 0 && (
                 <>
                   <Separator className="my-4" />
-                  <ContributersBlock
-                    count={web.iterations.length}
-                    webId={webId as string}
-                  />
+                  <ContributersBlock count={web.iterations.length} />
                 </>
               )}
             </ScrollArea>
@@ -354,13 +342,7 @@ function Index() {
           {!web && (
             <Skeleton className="flex h-full lg:h-[calc(90vh-18px)] flex-col rounded-xl lg:col-span-2"></Skeleton>
           )}
-          {web && (
-            <WebPlayground
-              web={web}
-              user={user || null}
-              refetchWeb={refetchWeb}
-            />
-          )}
+          {web && <WebPlayground />}
         </div>
       </div>
       <AuthModal

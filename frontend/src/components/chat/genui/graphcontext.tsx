@@ -205,7 +205,9 @@ const ReferencesComponent: React.FC<ReferencesComponentProps> = ({
               onClick={() => onReferenceClick?.(reference)}
             >
               <div className="flex items-start gap-2">
-                {reference.url ? (
+                {(reference.type === "website" ||
+                  reference.type === "youtube video") &&
+                reference.url ? (
                   <FaviconDisplay url={reference.url} />
                 ) : reference.type ? (
                   getTypeIcon(reference.type)

@@ -59,7 +59,7 @@ function LinkPreview({ url, disabled }: { url: string; disabled: boolean }) {
       target="_blank"
       className="block transition-shadow duration-200 hover:shadow-blue-glow-sm rounded-lg"
     >
-      <div className="w-full h-full min-h-[77dvh] border rounded-lg overflow-hidden bg-black/40 text-foreground">
+      <div className="w-full h-full min-h-[79.5dvh] border rounded-lg overflow-hidden bg-black/40 text-foreground">
         <div className="p-3 rounded-lg m-2 rounded-lg">
           <div className="relative">
             <div className="w-full aspect-video rounded-lg overflow-hidden bg-background">

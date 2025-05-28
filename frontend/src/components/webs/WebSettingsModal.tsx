@@ -10,8 +10,8 @@ import {
 import { Lock, Orbit, SettingsIcon, Trash } from "lucide-react";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
-import { UpdateWeb, Web } from "@/types/web";
-import { useDeleteWeb, useUpdateWeb } from "@/hooks/webs";
+import { UpdateWeb } from "@/types/web";
+import { useDeleteWeb, useFetchWebById, useUpdateWeb } from "@/hooks/webs";
 import { Label } from "../ui/label";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import DeleteModal from "../utility/DeleteModal";
@@ -19,15 +19,10 @@ import { toast } from "sonner";
 import { useRouter } from "next/router";
 import SimpleTooltip from "../utility/SimpleTooltip";
 
-function WebSettingsModal({
-  web,
-  refetchWeb,
-}: {
-  web: Web;
-  refetchWeb: () => void;
-}) {
+function WebSettingsModal({ webId }: { webId: string }) {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
+  const { data: web, refetch: refetchWeb } = useFetchWebById(webId);
   const [webSettings, setWebSettings] = React.useState({
     enableAIConnections: web.enableAIConnections,
     visibility: web.visibility,
@@ -63,6 +58,14 @@ function WebSettingsModal({
     }
   }, [deleteWeb]);
 
+  const handleCancel = () => {
+    setWebSettings({
+      enableAIConnections: web.enableAIConnections,
+      visibility: web.visibility,
+    });
+    setOpen(false);
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
@@ -86,12 +89,6 @@ function WebSettingsModal({
                   className="text-sm font-medium flex items-center"
                 >
                   AI Connections <Orbit size={16} className="ml-2" />
-                  {/**
-                 * 
-                 *  <Badge className="ml-2 bg-violet-400 text-foreground">
-                  PRO
-                </Badge>
-                 */}
                 </Label>
                 <a className="text-xs text-gray-500">
                   Allow AI to connect to and interact with this web
@@ -144,14 +141,19 @@ function WebSettingsModal({
               </RadioGroup>
             </div>
 
-            <div className="space-y-3">
-              <Label className="text-sm font-medium flex items-center">
-                Delete Web <Trash size={16} className="ml-2" />
+            <div className="space-y-3 flex flex-row items-center justify-between">
+              <Label className="text-sm font-medium w-xs">
+                <div className="flex items-center mb-1">
+                  Delete Web <Trash size={16} className="ml-2" />
+                </div>
+                <a className="text-xs text-gray-500">
+                  Delete this web and all of its connections. <br></br>
+                  This action cannot be undone.
+                </a>
               </Label>
               <Button
-                variant="outline"
+                variant="destructive"
                 onClick={() => setDeleteModalOpen(true)}
-                className="w-full"
               >
                 Delete Web
               </Button>
@@ -167,12 +169,7 @@ function WebSettingsModal({
           <DialogFooter className="mt-6 gap-2">
             <Button
               variant="outline"
-              onClick={() =>
-                setWebSettings({
-                  enableAIConnections: web.enableAIConnections,
-                  visibility: web.visibility,
-                })
-              }
+              onClick={() => handleCancel()}
               className="mr-2"
             >
               Cancel

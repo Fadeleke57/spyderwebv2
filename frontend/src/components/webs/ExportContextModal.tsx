@@ -30,7 +30,7 @@ import {
   useExportGraph,
   useFetchWebById,
 } from "@/hooks/webs";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/router";
 import {
   Command,
@@ -90,13 +90,19 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        toast.success("Context downloaded!");
+        toast({
+          title: "Context exported",
+          description: "Context exported to clipboard",
+        });
       } else {
         const stringifiedResult =
           typeof result === "string" ? result : JSON.stringify(result, null, 2);
 
         navigator.clipboard.writeText(stringifiedResult);
-        toast.success("Context saved to clipboard!");
+        toast({
+          title: "Context exported",
+          description: "Context exported to clipboard",
+        });
       }
 
       setOpen(false);
@@ -106,7 +112,10 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
         asMarkdown: true,
       });
     } catch (error) {
-      toast.error("Failed to export context");
+      toast({
+        variant: "destructive",
+        title: "Error exporting context"
+      });
     }
   };
 
@@ -190,13 +199,16 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
         </div>
       </div>
       <Command className="bg-transparent no-scrollbar">
-        <CommandInput
-          placeholder="Search sources..."
-          className="bg-transparent"
-        />
+        <div className="mb-2">
+          <CommandInput
+            placeholder="Search sources..."
+            className="bg-transparent h-10"
+          />
+        </div>
+
         <CommandList className="h-[50dvh] no-scroll-bg">
-          <CommandEmpty>
-            No sources found.<span className="">Add one?</span>
+          <CommandEmpty className="text-muted-foreground">
+            No context found to export.
           </CommandEmpty>
           <CommandGroup>
             {sources &&
@@ -237,7 +249,7 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
           }
           className="flex items-center"
         >
-          {isExportPending
+          {isExportPending && isExportError
             ? "Exporting..."
             : `${exportConfig.asMarkdown ? "Download Markdown" : "Copy to Clipboard"}`}
           <FolderOutput size={16} className="ml-2" />

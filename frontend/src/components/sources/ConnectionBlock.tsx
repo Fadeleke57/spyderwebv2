@@ -47,8 +47,7 @@ function ConnectionBlock({
     error: deleteConnectionError,
   } = useDeleteConnection();
 
-  if (fromLoading || toLoading)
-    return <Skeleton className="h-16 w-full rounded-xl" />;
+  if (fromLoading || toLoading) return null;
 
   const handleDelete = async (id: string) => {
     try {

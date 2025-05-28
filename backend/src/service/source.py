@@ -82,7 +82,7 @@ class SourceService:
             )
 
         try:
-            chunks = pineconeClient.chunk_youtube_transcript(transcripts)
+            chunks = pineconeClient.chunk_youtube_transcript(transcript_data=transcripts)
             results = pineconeClient.embed_and_upsert_to_pinecone(
                 source=source, chunks=chunks
             )
@@ -157,6 +157,7 @@ class SourceService:
             chunks = pineconeClient.chunk_clean_text(
                 text=text, chunk_size=1000, chunk_overlap=50
             )
+            logger.info(f"Upserting {len(chunks)} chunks to Pinecone...")
             results = pineconeClient.embed_and_upsert_to_pinecone(
                 source=source, chunks=chunks
             )

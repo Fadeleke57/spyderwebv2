@@ -1,21 +1,21 @@
 import { toast } from "@/components/ui/use-toast";
 import api from "@/lib/api";
+import { useSourceStore } from "@/store/sourceStore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 type UploadFilesRequest = {
-  preserve_obsidian_links: boolean;
+  parseObsidianLinks: boolean;
   files: FileList;
 };
 
 export const useFileUpload = (webId: string) => {
   const queryClient = useQueryClient();
+  const { setIsUploadingSource } = useSourceStore();
   return useMutation({
-    mutationFn: async ({
-      preserve_obsidian_links,
-      files,
-    }: UploadFilesRequest) => {
+    mutationFn: async ({ parseObsidianLinks, files }: UploadFilesRequest) => {
       const formData = new FormData();
       Array.from(files).forEach((file) => formData.append("files", file));
+      setIsUploadingSource(true);
       const response = await api.post(
         `/sources/upload/files/${webId}/`,
         formData,
@@ -24,7 +24,7 @@ export const useFileUpload = (webId: string) => {
             "Content-Type": "multipart/form-data",
           },
           params: {
-            preserve_obsidian_links,
+            preserve_obsidian_links: parseObsidianLinks,
           },
         }
       );
@@ -39,6 +39,9 @@ export const useFileUpload = (webId: string) => {
     },
     onError: (error: any) => {
       console.error("File upload failed:", error);
+    },
+    onSettled: () => {
+      setIsUploadingSource(false);
     },
   });
 };
@@ -58,8 +61,10 @@ export const useFetchSourcesForWeb = (webId: string) => {
 
 export const useUploadWebsite = (webId: string) => {
   const queryClient = useQueryClient();
+  const { setIsUploadingSource } = useSourceStore();
   return useMutation({
     mutationFn: async (url: string) => {
+      setIsUploadingSource(true);
       const response = await api.post(`/sources/website/${webId}`, { url });
       return response.data.result;
     },
@@ -69,13 +74,18 @@ export const useUploadWebsite = (webId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sources", webId] });
     },
+    onSettled: () => {
+      setIsUploadingSource(false);
+    },
   });
 };
 
 export const useUploadYoutube = (webId: string) => {
   const queryClient = useQueryClient();
+  const { setIsUploadingSource } = useSourceStore();
   return useMutation({
     mutationFn: async (videoId: string) => {
+      setIsUploadingSource(true);
       const response = await api.post(`/sources/youtube/${webId}/${videoId}`);
       return response.data.result;
     },
@@ -84,6 +94,9 @@ export const useUploadYoutube = (webId: string) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sources", webId] });
+    },
+    onSettled: () => {
+      setIsUploadingSource(false);
     },
   });
 };

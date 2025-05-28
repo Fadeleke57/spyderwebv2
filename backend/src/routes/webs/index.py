@@ -276,6 +276,10 @@ async def upload_file(
     Raises:
         HTTPException: If the upload fails.
     """
+    web = Webs.find_one({"webId": web_id, "userId": user["id"]})
+    if not web:
+        raise HTTPException(status_code=404, detail="Web not found")
+    
     uploaded_image_urls = []
     try:
         for file in files:
@@ -820,7 +824,39 @@ class ExportGraphContext(BaseModel):
     selectedSources: list[str]
     asMarkdown: bool = False
 
+def clean_unicode(obj):
+        """
+        Clean Unicode characters from a string, dictionary, list, or tuple.
+        
+        Replaces problematic Unicode characters with ASCII equivalents, 
+        and removes any other non-ASCII characters.
+        
+        Returns a new object with the modified values.
+        """
+        if isinstance(obj, str):
+            # replace problematic Unicode characters
+            replacements = {
+                '\u2019': "'",  # Right single quotation mark
+                '\u2018': "'",  # Left single quotation mark  
+                '\u201c': '"',  # Left double quotation mark
+                '\u201d': '"',  # Right double quotation mark
+                '\u2013': '-',  # En dash
+                '\u2014': '--', # Em dash
+                '\u2026': '...', # Horizontal ellipsis
+            }
+            for unicode_char, ascii_char in replacements.items():
+                obj = obj.replace(unicode_char, ascii_char)
 
+            return obj.encode('ascii', 'ignore').decode('ascii')
+        elif isinstance(obj, dict):
+            return {clean_unicode(k): clean_unicode(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [clean_unicode(item) for item in obj]
+        elif isinstance(obj, tuple):
+            return tuple(clean_unicode(item) for item in obj)
+        else:
+            return obj
+        
 @router.post("/export/graph/context")
 def export_graph_context(
     payload: ExportGraphContext, user: User = Depends(manager.optional)
@@ -836,18 +872,23 @@ def export_graph_context(
             webId=payload.webId, selectedNodes=payload.selectedSources
         )
 
-        logger.info(f"Exported graph context for web {payload.webId}: {result}")
+        web = clean_unicode(web)
+        result = clean_unicode(result)
+
+        logger.info(f"Exported graph context for web {payload.webId}")
 
         if payload.asMarkdown:
-            markdown_content = f"# {web['name']}\n\n {json.dumps(result, indent=2)}"
+            markdown_content = f"# {web['name']}\n\n{json.dumps(result, indent=2, ensure_ascii=True)}"
+            safe_filename = clean_unicode(web['name'][:40])
+            filename = f"{safe_filename}.md"
 
-            file_stream = io.StringIO(markdown_content)
-            filename = f"{web['name'][:40]}.md"
+            def generate():
+                yield markdown_content.encode('utf-8')
 
             return StreamingResponse(
-                iter([file_stream.getvalue()]),
-                media_type="text/markdown",
-                headers={"Content-Disposition": f"attachment; filename={filename}"},
+                generate(),
+                media_type="text/markdown; charset=utf-8",
+                headers={"Content-Disposition": f'attachment; filename="{filename}"'},
             )
 
         return {"result": result}

@@ -5,10 +5,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Check, Sparkles } from "lucide-react";
+import { Check} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { useCreateCheckoutSession } from "@/hooks/usage";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 
@@ -93,7 +93,10 @@ export function PricingModal({ open, setOpen }: PricingModalProps) {
 
       if (tierId === "free") {
         setOpen(false);
-        toast.success("You are now on the Free plan!");
+        toast({
+          title: "Success",
+          description: "You have successfully subscribed to the free tier.",
+        });
         return;
       }
       if (data.url) {
@@ -104,7 +107,11 @@ export function PricingModal({ open, setOpen }: PricingModalProps) {
       }
     } catch (error) {
       console.error("Error creating checkout session:", error);
-      toast.error("Failed to start checkout process. Please try again.");
+      toast({
+        variant: "destructive",
+        title: "Error creating checkout session",
+        description: "Please try again",
+      });
     } finally {
       setIsLoading(null);
     }

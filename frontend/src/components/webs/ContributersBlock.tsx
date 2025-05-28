@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { useFetchContributers } from "@/hooks/webs";
-import Image from "next/image";
-import {
-  TooltipProvider,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { PublicUser } from "@/types/user";
 import { Skeleton } from "../ui/skeleton";
 import { Badge } from "../ui/badge";
@@ -15,14 +12,18 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import UserAvatar from "../utility/UserAvatar";
+import { useRouter } from "next/router";
 
-function ContributorsBlock({ webId, count }: { webId: string; count: number }) {
+function ContributorsBlock({ count }: { count: number }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
+  const { webId } = router.query;
+
   const {
     data: contributors,
     isLoading: isContributorsLoading,
     isError: isContributorsError,
-  } = useFetchContributers(webId);
+  } = useFetchContributers(webId as string);
 
   const MAX_VISIBLE_CONTRIBUTORS = 5;
 
@@ -105,22 +106,12 @@ function ContributorsBlock({ webId, count }: { webId: string; count: number }) {
                 </DialogHeader>
                 <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 mt-4 max-h-80 overflow-y-auto p-2">
                   {contributors.map((contributor: PublicUser) => (
-                    <div
+                    <UserAvatar
                       key={contributor.id}
-                      className="flex flex-col items-center text-center"
-                    >
-                      <div className="relative w-12 h-12 rounded-full overflow-hidden mb-2">
-                        <Image
-                          src={`https://robohash.org/${contributor.id}?size=300x300`}
-                          alt={contributor.username || "Contributor"}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <span className="text-xs font-medium truncate w-full">
-                        {contributor.username || "Anonymous"}
-                      </span>
-                    </div>
+                      userId={contributor.id}
+                      dimension={43}
+                      showTooltip
+                    />
                   ))}
                 </div>
               </DialogContent>

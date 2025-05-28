@@ -97,6 +97,7 @@ export const useUploadImageToWeb = (webId: string | undefined | null) => {
 };
 
 export const useDeleteImageFromWeb = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       webId,
@@ -111,10 +112,13 @@ export const useDeleteImageFromWeb = () => {
       );
       return response.data.result;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["images", "web"] });
+    },
   });
 };
 
-export function useGetAllImagesForWeb(webId: string) {
+export function useGetAllImagesForWeb(webId: string | null) {
   return useQuery({
     queryKey: ["images", "web", webId],
     queryFn: async () => {
@@ -142,10 +146,11 @@ export function useDeleteWeb() {
   });
 }
 
-export const useUpdateWeb = (webId: string) => {
+export const useUpdateWeb = (webId: string | null | undefined) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (config: UpdateWeb) => {
+      if (!webId) return;
       const response = await api.patch(`/webs/update/${webId}`, config, {
         headers: { "Content-Type": "application/json" },
       });
@@ -230,9 +235,10 @@ export const useFetchWebById = (webId: string) => {
   });
 };
 
-export function useLikeWeb(webId: string) {
+export function useLikeWeb(webId?: string | null) {
   return useMutation({
     mutationFn: async () => {
+      if (!webId) return;
       const response = await api.post(`/webs/like/${webId}`);
       return response.data.result;
     },
@@ -241,9 +247,10 @@ export function useLikeWeb(webId: string) {
   });
 }
 
-export function useUnlikeWeb(webId: string) {
+export function useUnlikeWeb(webId?: string | null) {
   return useMutation({
     mutationFn: async () => {
+      if (!webId) return;
       const response = await api.post(`/webs/unlike/${webId}`);
       return response.data.result;
     },
@@ -331,6 +338,7 @@ export function useFetchContributers(webId: string) {
       const response = await api.get(`/webs/contributers/${webId}`);
       return response.data.result;
     },
+    enabled: !!webId,
   });
 }
 
@@ -365,7 +373,7 @@ export function useExportGraph() {
       return response.data.result;
     },
     onError: () => {
-      toast.error("Failed to export sources.");
+      console.error();
     },
   });
 }

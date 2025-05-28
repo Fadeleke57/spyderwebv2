@@ -355,7 +355,7 @@ function UserProfile() {
                               <Badge
                                 key={tag}
                                 variant="outline"
-                                className="bg-accent/50 text-xs"
+                                className="dark:bg-purple-500 text-black text-xs"
                               >
                                 {tag}
                               </Badge>
@@ -363,7 +363,7 @@ function UserProfile() {
                             {web.tags.length > 3 && (
                               <Badge
                                 variant="outline"
-                                className="bg-accent/50 text-xs"
+                                className="dark:bg-purple-500 text-black text-xs"
                               >
                                 +{web.tags.length - 3}
                               </Badge>
@@ -459,7 +459,7 @@ function UserProfile() {
                             <Badge
                               key={tag}
                               variant="outline"
-                              className="bg-accent/50 text-xs"
+                              className="dark:bg-purple-500 text-black text-xs"
                             >
                               {tag}
                             </Badge>
@@ -467,7 +467,7 @@ function UserProfile() {
                           {web.tags.length > 3 && (
                             <Badge
                               variant="outline"
-                              className="bg-accent/50 text-xs"
+                              className="dark:bg-purple-500 text-black text-xs"
                             >
                               +{web.tags.length - 3}
                             </Badge>

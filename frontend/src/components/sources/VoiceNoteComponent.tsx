@@ -154,8 +154,8 @@ export const VoiceNoteComponent: React.FC<{ source: Source | null }> = ({
   };
 
   return (
-    <Card className="w-full">
-      <CardContent className="p-4">
+    <Card className="w-full min-h-[79.5dvh]">
+      <CardContent className="p-4 h-full">
         {source?.url && (
           <audio
             ref={audioRef}
@@ -165,7 +165,7 @@ export const VoiceNoteComponent: React.FC<{ source: Source | null }> = ({
           />
         )}
 
-        <div className="flex flex-col lg:flex-row items-center gap-2 border p-4 rounded-lg w-full">
+        <div className="flex flex-col lg:flex-row items-center gap-2 p-4 rounded-lg w-full h-full">
           <Button
             onClick={togglePlayPause}
             disabled={!isLoaded}
@@ -233,7 +233,7 @@ export const VoiceNoteComponent: React.FC<{ source: Source | null }> = ({
           <ScrollArea
             className={cn(
               "mt-4 p-3 text-sm rounded-md bg-muted/50",
-              "h-[58dvh]"
+              "h-[63dvh]"
             )}
           >
             <span className="font-semibold text-violet-400">Transcript: </span>

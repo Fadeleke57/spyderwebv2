@@ -49,6 +49,8 @@ import DeleteModal from "./DeleteModal";
 import { useUser } from "@/context/UserContext";
 import { PricingModal } from "@/components/pricing/PricingModal";
 import GroupedChats from "./GroupedChats";
+import { useSourceStore } from "@/store/sourceStore";
+import UploadStatusPopover from "../webs/UploadStatusPopover";
 
 export type viewType = "chat" | "history";
 
@@ -99,6 +101,7 @@ const SpydrAI = () => {
   const [previouslySelectedChat, setPreviouslySelectedChat] = useState<
     string | null
   >(null);
+  const { isUploadingSource, setIsUploadingSource } = useSourceStore();
 
   const { mutateAsync: configureCharlotte, isPending: isConfiguring } =
     useConfigureChat();
@@ -183,30 +186,35 @@ const SpydrAI = () => {
   }
 
   return (
-    <div className="fixed z-50 bottom-20 lg:bottom-6 lg:right-20">
-      <Popover open={open} onOpenChange={setOpen}>
-        <SimpleTooltip content="Chat with Charlotte AI">
-          <PopoverTrigger asChild className="bg-zinc-800">
-            <Button
-              variant={"link"}
-              className={`p-0 m-0 w-10 h-10 bg-background rounded-full ${open && "opacity-0"}`}
+    <div className="relative">
+      <UploadStatusPopover />
+      {!isUploadingSource && (
+        <div className="fixed z-50 bottom-20 lg:bottom-6 lg:right-20">
+          <Popover open={open} onOpenChange={setOpen}>
+            <SimpleTooltip content="Chat with Charlotte AI">
+              <PopoverTrigger asChild className="bg-zinc-800">
+                <Button
+                  variant={"link"}
+                  className={`p-0 m-0 w-10 h-10 bg-background rounded-full ${open && "opacity-0"}`}
+                >
+                  <Charlotte width={16} height={16} activeEyes={!isMobile} />
+                </Button>
+              </PopoverTrigger>
+            </SimpleTooltip>
+            <PopoverContent
+              className="w-[250px] lg:w-[35rem] lg:h-[31rem] bg-background/70 border-zinc-800 backdrop-blur-md rounded-xl p-0"
+              align="end"
+              side="top"
+              sideOffset={-40}
+              avoidCollisions={false}
+              onInteractOutside={(e) => e.preventDefault()}
+              onEscapeKeyDown={(e) => e.preventDefault()}
             >
-              <Charlotte width={16} height={16} activeEyes={!isMobile} />
-            </Button>
-          </PopoverTrigger>
-        </SimpleTooltip>
-        <PopoverContent
-          className="w-[250px] lg:w-[35rem] lg:h-[35rem] bg-background/70 border-zinc-800 backdrop-blur-md rounded-xl p-0"
-          align="end"
-          side="top"
-          sideOffset={-40}
-          avoidCollisions={false}
-          onInteractOutside={(e) => e.preventDefault()}
-          onEscapeKeyDown={(e) => e.preventDefault()}
-        >
-          {mapViewToComponent()}
-        </PopoverContent>
-      </Popover>
+              {mapViewToComponent()}
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
     </div>
   );
 };
@@ -232,6 +240,7 @@ const CharlotteChatInterface = ({
   const { mutateAsync: saveChat } = useSaveChat(chatId);
   const { webId } = router.query;
   const { user } = useUser();
+  const { isUploadingSource, setIsUploadingSource } = useSourceStore();
 
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
 
@@ -267,7 +276,6 @@ const CharlotteChatInterface = ({
           errorDetail = error.message;
         }
 
-        // Check for 402 error in either the status or the error message
         const is402Error = errorDetail.includes("Insufficient credits");
 
         if (is402Error) {

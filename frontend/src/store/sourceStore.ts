@@ -1,6 +1,5 @@
 import { create } from "zustand";
-import { Source, SourceAsNode } from "@/types/source";
-import { Connection } from "@/types/connection";
+import { SourceAsNode } from "@/types/source";
 
 interface SourceState {
   source: SourceAsNode | null;
@@ -15,6 +14,10 @@ interface SourceState {
   setSourceContent: (content: string) => void;
   isEditingSource: boolean;
   setIsEditingSource: (editing: boolean) => void;
+  isUploadingSource: boolean;
+  setIsUploadingSource: (updating: boolean) => void;
+  isWebDataModalOpen: boolean;
+  setIsWebDataModalOpen: (open: boolean) => void;
 }
 
 export const useSourceStore = create<SourceState>((set) => ({
@@ -30,4 +33,8 @@ export const useSourceStore = create<SourceState>((set) => ({
   setSourceContent: (content) => set({ sourceContent: content }),
   isEditingSource: false,
   setIsEditingSource: (editing) => set({ isEditingSource: editing }),
+  isUploadingSource: false,
+  setIsUploadingSource: (updating) => set({ isUploadingSource: updating }),
+  isWebDataModalOpen: false,
+  setIsWebDataModalOpen: (open) => set({ isWebDataModalOpen: open }),
 }));

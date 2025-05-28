@@ -359,7 +359,12 @@ class PineconeClient:
 
         embeddingStorageResult = handleEmbeddingStorage(
             sizeBytes=source.get(
-                "size", len(source.get("content", "").encode("utf-8"))
+                "size",
+                (
+                    len(source.get("content", "").encode("utf-8"))
+                    if source.get("content")
+                    else 0
+                ),
             ),
             userId=userId,
             operation="$inc",

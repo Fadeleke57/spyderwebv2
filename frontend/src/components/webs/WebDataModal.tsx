@@ -137,7 +137,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
-              className="rounded-lg min-h-[77dvh] transition-shadow duration-200 hover:shadow-blue-glow-sm"
+              className="rounded-lg min-h-[79.5dvh] transition-shadow duration-200 hover:shadow-blue-glow-sm"
             ></iframe>
           </>
         );
