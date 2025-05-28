@@ -41,19 +41,20 @@ function Index() {
   const router = useRouter();
   const isMobile = useIsMobile();
   const { webId } = router.query;
-  const { user, userLoading } = useUser();
+  const { user } = useUser();
   const { setIsUploadingSource } = useSourceStore();
   const { mutateAsync: pinWeb, isPending: pinLoading } = usePinWeb(
-    webId as string
+    webId as string,
+    user ? user.id : null
   );
   const { mutateAsync: unpinWeb, isPending: unpinLoading } = useUnpinWeb(
-    webId as string
+    webId as string,
+    user ? user.id : null
   );
   const {
     data: webData,
     isLoading: webLoading,
     error: webError,
-    refetch: refetchWeb,
   } = useFetchWebById(webId as string);
 
   const { mutateAsync: configureCharlotte } = useConfigureChat();

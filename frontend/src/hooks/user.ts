@@ -189,12 +189,19 @@ export function useSaveWeb(webId: string) {
   });
 }
 
-export function usePinWeb(webId: string) {
+export function usePinWeb(webId: string, userId: string | null) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
+      if (!userId) return;
       const response = await api.patch(`/users/pin/web/${webId}`);
       const data = await response.data.result;
       return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["user", "pinned", "webs", userId],
+      });
     },
     onError: (err: any) => {
       console.error(err);
@@ -202,9 +209,10 @@ export function usePinWeb(webId: string) {
   });
 }
 
-export function useUnpinWeb(webId: string) {
+export function useUnpinWeb(webId: string, userId: string | null) {
   return useMutation({
     mutationFn: async () => {
+      if (!userId) return;
       const response = await api.patch(`/users/unpin/web/${webId}`);
       const data = await response.data.result;
       return data;
@@ -217,7 +225,7 @@ export function useUnpinWeb(webId: string) {
 
 export function useFetchPinnedWebs(userId: string) {
   return useQuery({
-    queryKey: ["user", "pinned", "webs"],
+    queryKey: ["user", "pinned", "webs", userId],
     queryFn: async () => {
       const response = await api.get(`/users/pinned/webs/${userId}`);
       const data = await response.data.result;
