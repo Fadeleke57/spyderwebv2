@@ -377,7 +377,7 @@ function UploadStatusPopover() {
             Parse Obsidian Links
           </Label>
           <p className="text-sm max-w-[250px] text-muted-foreground">
-            Turn on to preserve inks when if uploading an Obsidian Vault.
+            Turn on to preserve links if uploading an Obsidian Vault.
           </p>
         </div>
         <Switch
