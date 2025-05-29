@@ -243,7 +243,9 @@ export function IterateModal({
           </div>
 
           <div>
-            <label className="text-sm font-medium text-muted-foreground">Support for copying connections coming soon.</label>
+            <label className="text-sm font-medium text-muted-foreground">
+              Support for copying connections coming soon.
+            </label>
           </div>
           {/* TODO:
           <div className="flex flex-col gap-2">
@@ -268,7 +270,7 @@ export function IterateModal({
 */}
           <div className="flex gap-2 mt-4">
             <Button
-              className="w-[100px] dark:bg-purple-500 dark:hover:bg-purple-500/80 dark:text-black"
+              className="w-[100px] border dark:bg-violet-400/50 dark:border-violet-200"
               onClick={handleSubmit}
               disabled={isIterating}
             >
