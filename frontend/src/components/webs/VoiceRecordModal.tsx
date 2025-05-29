@@ -20,7 +20,7 @@ function VoiceRecordModal() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
         <Button
-          className="border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40 p-1 rounded-full"
+          className="border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 p-1 rounded-full"
           size={"icon"}
         >
           <AudioLines size={16} />

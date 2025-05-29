@@ -412,7 +412,7 @@ function UploadStatusPopover() {
             disabled={
               isLinkUploading || isFileUploading || !linkUserInput.trim()
             }
-            className="border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40 rounded-l-none h-10 px-3" // Adjusted padding and height
+            className="border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 rounded-l-none h-10 px-3" // Adjusted padding and height
           >
             {isLinkUploading ? (
               <Loader size={16} className="animate-spin" />
@@ -428,7 +428,7 @@ function UploadStatusPopover() {
         </span>
         <div className="flex mt-2 items-center gap-2">
           <Button
-            className="border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40 p-1 rounded-full"
+            className="border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 p-1 rounded-full"
             size={"icon"}
             disabled={isNoteUploading}
             onClick={async () => {

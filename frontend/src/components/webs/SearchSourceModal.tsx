@@ -113,7 +113,7 @@ function SearchSourceModal({
                       setOpen(false);
                       setIsUploadingSource(true);
                     }}
-                    className="h-10 dark:bg-purple-500 dark:hover:bg-purple-500/80 dark:text-black rounded-lg"
+                    className="h-10 border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40 rounded-lg"
                   >
                     <CirclePlus size={12} className="mr-1" /> Add{" "}
                     {value === "files" ? "file" : "link"}{" "}

@@ -132,7 +132,7 @@ export const DropzoneContent = ({
 
   return (
     <div className={cn("flex flex-col items-center justify-center", className)}>
-      <div className="flex bg- size-8 items-center justify-center rounded-md border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40">
+      <div className="flex bg- size-8 items-center justify-center rounded-md border dark:bg-violet-400/50 dark:border-violet-200">
         <UploadIcon size={16} />
       </div>
       <p className="my-2 w-full truncate font-medium text-sm">
@@ -185,7 +185,7 @@ export const DropzoneEmptyState = ({
 
   return (
     <div className={cn("flex flex-col items-center justify-center", className)}>
-      <div className="flex size-8 items-center justify-center rounded-md border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40">
+      <div className="flex size-8 items-center justify-center rounded-md border dark:bg-violet-400/50 dark:border-violet-200">
         <UploadIcon size={16} />
       </div>
       <p className="my-2 w-full truncate font-medium text-sm">
