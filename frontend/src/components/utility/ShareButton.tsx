@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Copy, Check, Share } from "lucide-react";
+import { Copy, Check, Share, Forward } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +14,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "../ui/drawer";
 
 const ShareDialog = ({ link }: { link: string }) => {
   const isMobile = useIsMobile();
@@ -36,11 +43,10 @@ const ShareDialog = ({ link }: { link: string }) => {
       <Drawer>
         <DrawerTrigger asChild>
           <Button
-            
             size="sm"
-            className="ml-auto gap-1.5 text-sm"
+            className="ml-auto dark:bg-violet-400/30 border-violet-200 dark:hover:bg-violet-400/40 gap-1.5 text-sm"
           >
-            <Share className="size-3.5" />
+            <Forward size={16} />
             <span className="hidden md:inline lg:inline">Share</span>
           </Button>
         </DrawerTrigger>
@@ -48,8 +54,8 @@ const ShareDialog = ({ link }: { link: string }) => {
           <DrawerHeader className="p-6">
             <DrawerTitle className="text-left">Share link</DrawerTitle>
             <DrawerDescription className="text-left">
-              If this is a public web, you can share it with anyone.
-              Private sharing is not supported yet.
+              If this is a public web, you can share it with anyone. Private
+              sharing is not supported yet.
             </DrawerDescription>
           </DrawerHeader>
           <div className="flex items-center space-x-2 px-6">
@@ -94,8 +100,11 @@ const ShareDialog = ({ link }: { link: string }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="sm" className="ml-auto gap-1.5 text-sm">
-          <Share className="size-3.5" />
+        <Button
+          size="sm"
+          className="ml-auto gap-1.5 border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40 text-sm"
+        >
+          <Forward size={16} />
           <span className="hidden md:inline lg:inline">Share</span>
         </Button>
       </DialogTrigger>
@@ -142,9 +151,7 @@ const ShareDialog = ({ link }: { link: string }) => {
         </div>
         <DialogFooter className="sm:justify-start">
           <DialogClose asChild>
-            <Button type="button">
-              Close
-            </Button>
+            <Button type="button">Close</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

@@ -36,6 +36,7 @@ import FeedbackModal from "@/components/utility/FeedbackModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { environment } from "@/environment/load_env";
 import { useSourceStore } from "@/store/sourceStore";
+import SimpleTooltip from "@/components/utility/SimpleTooltip";
 
 function Index() {
   const router = useRouter();
@@ -221,29 +222,29 @@ function Index() {
             )}
             {web && <MobileWebView webId={web.webId} />}
             {webOwner && user && webOwner.id === user.id && (
-              <Button
-                size="sm"
-                variant={"outline"}
-                onClick={handlePinToggle}
-                disabled={pinLoading || unpinLoading}
-                className={
-                  isPinned
-                    ? "bg-violet-400/30 border-violet-200 hover:bg-violet-400/40"
-                    : ""
-                }
-              >
-                {isPinned ? (
-                  <>
-                    <PinOff className="mr-2" size={16} />
-                    Unpin
-                  </>
-                ) : (
-                  <>
-                    <Pin className="mr-2" size={16} />
-                    Pin
-                  </>
-                )}
-              </Button>
+              <SimpleTooltip content={isPinned ? "Unpin Web" : "Pin Web"}>
+                <Button
+                  size="sm"
+                  variant={"outline"}
+                  onClick={handlePinToggle}
+                  disabled={pinLoading || unpinLoading}
+                  className={
+                    isPinned
+                      ? "bg-violet-400/30 border-violet-200 dark:hover:bg-violet-400/40"
+                      : ""
+                  }
+                >
+                  {isPinned ? (
+                    <>
+                      <PinOff size={16} />
+                    </>
+                  ) : (
+                    <>
+                      <Pin size={16} />
+                    </>
+                  )}
+                </Button>
+              </SimpleTooltip>
             )}
             {user && web && webOwner ? (
               <>
@@ -260,12 +261,13 @@ function Index() {
                     size="sm"
                     variant={"outline"}
                   >
-                    <span className="hidden md:inline lg:inline">Iterate </span>
+                    {" "}
                     <IterationCcw
-                      className="md:ml-2 lg:ml-2"
+                      className="md:mr-2 lg:mr-2"
                       size={16}
                       onClick={() => setShowIterateModal(true)}
                     />
+                    <span className="hidden md:inline lg:inline">Iterate </span>
                   </Button>
                 </IterateModal>
               </>

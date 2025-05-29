@@ -20,7 +20,7 @@ function VoiceRecordModal() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>
         <Button
-          className="dark:bg-purple-500 dark:hover:bg-purple-500/80 dark:text-black p-1 rounded-full"
+          className="border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40 p-1 rounded-full"
           size={"icon"}
         >
           <AudioLines size={16} />
@@ -32,8 +32,11 @@ function VoiceRecordModal() {
         className="max-w-[100dvw] max-h-[100dvh] w-full h-full flex flex-col items-center justify-center p-0 m-0 rounded-none border-none"
       >
         <DialogHeader className="absolute top-4 right-4 z-10">
-          <Button onClick={() => setOpen(false)}>
-            <X size={16} className="mr-2"></X>Close
+          <Button
+            className="rounded-full h-12 w-12"
+            onClick={() => setOpen(false)}
+          >
+            <X size={16}></X>
           </Button>
         </DialogHeader>
         <div className="w-full h-full flex flex-col items-center justify-center relative">
@@ -239,14 +242,14 @@ function AudioVisualization({
         cancelAnimationFrame(animationId);
       }
     };
-  }, [isRecording, analyserRef]); // Dependencies
+  }, [isRecording, analyserRef]);
 
   return (
     <div className="flex items-center justify-center">
       <canvas
         ref={canvasRef}
-        width={1000} // Intrinsic width
-        height={800} // Intrinsic height
+        width={1000}
+        height={800}
         className="max-w-[70vw] max-h-[100dvh] w-auto h-auto"
       />
     </div>
@@ -389,7 +392,7 @@ function UploadVoiceNote({ setOpen }: { setOpen: (open: boolean) => void }) {
                 }
               }}
               disabled={isVoiceNoteUploading}
-              className="rounded-full h-16 w-16 flex dark:bg-purple-500 dark:hover:bg-purple-500/80 dark:text-black items-center justify-center transition-colors disabled:opacity-50"
+              className="rounded-full h-16 w-16 flex border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40 items-center justify-center transition-colors disabled:opacity-50"
             >
               {isVoiceNoteUploading ? (
                 <Loader size={24} className="animate-spin"></Loader>

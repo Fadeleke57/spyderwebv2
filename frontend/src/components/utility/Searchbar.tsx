@@ -126,7 +126,7 @@ const SearchBar = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => setIsSearchActive(true)}
-          placeholder="Search for webs..."
+          placeholder="What are you looking for?"
           className="w-full p-1 pl-6 caret-violet-500 rounded-xl text-sm"
         />
       </div>

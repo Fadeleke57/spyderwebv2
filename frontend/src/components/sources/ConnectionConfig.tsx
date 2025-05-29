@@ -93,9 +93,7 @@ function ConnectionsConfig({ isOwner }: { isOwner: boolean }) {
       <div className="flex items-center justify-between mb-4">
         <h4 className="font-mono text-sm">
           {isLoadingOutgoingConnections ||
-            (isLoadingIncomingConnections && (
-              <Skeleton className="h-4 w-32 rounded-md" />
-            ))}
+            (isLoadingIncomingConnections && null)}
           {fetchedIncomingConnections.length +
             fetchedOutgoingConnections.length >
           0

@@ -268,7 +268,7 @@ export function IterateModal({
 */}
           <div className="flex gap-2 mt-4">
             <Button
-              className="w-[100px]"
+              className="w-[100px] dark:bg-purple-500 dark:hover:bg-purple-500/80 dark:text-black"
               onClick={handleSubmit}
               disabled={isIterating}
             >
