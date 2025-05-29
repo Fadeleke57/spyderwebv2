@@ -470,7 +470,7 @@ def add_youtube(
                 "$set": {"updated": datetime.now(UTC)},
             },
         )
-        return {"result": sourceId}
+        return {"result": sourceId, "transcripts_found": not not transcripts}
 
     except Exception as e:
         logger.error(str(e))

@@ -87,7 +87,8 @@ export const useUploadYoutube = (webId: string) => {
     mutationFn: async (videoId: string) => {
       setIsUploadingSource(true);
       const response = await api.post(`/sources/youtube/${webId}/${videoId}`);
-      return response.data.result;
+      const { result, transcripts_found } = response.data;
+      return { result, transcripts_found };
     },
     onError: (error: any) => {
       console.error("YouTube upload failed:", error);

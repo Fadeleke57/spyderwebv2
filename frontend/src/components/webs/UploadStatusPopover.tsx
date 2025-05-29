@@ -104,10 +104,11 @@ function UploadStatusPopover() {
           });
           return;
         }
-        sourceId = await uploadYoutubeVideo(videoId);
+        const { result, transcripts_found } = await uploadYoutubeVideo(videoId);
+        sourceId = result;
         toast({
-          title: "YouTube video uploaded",
-          description: "Processing will begin shortly.",
+          title: `${transcripts_found ? "Transcripts found." : "No transcripts found."}`,
+          description: `${transcripts_found ? "Processing will begin shortly." : "Video saved but transcripts will not be processed."}`,
         });
         setSelectedSourceId(sourceId);
         setIsWebDataModalOpen(true);
