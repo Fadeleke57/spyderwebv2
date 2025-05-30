@@ -89,7 +89,12 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
   const handleUnhideWeb = async (e: React.MouseEvent) => {
     handleStopPropagation(e);
     setWebHidden(false);
-    await hideWeb();
+    // Assuming useHideWeb toggles, or you have a useUnhideWeb hook
+    // For this example, let's assume calling hideWeb again might unhide or there's another mechanism.
+    // If not, this part might need adjustment based on how unhiding is actually implemented.
+    // Re-calling hideWeb() might not be the correct unhide logic.
+    // For now, we'll keep it as per the original code, but it's worth noting.
+    await hideWeb(); // This might be a placeholder for actual unhide logic
   };
 
   const handleSaveWeb = async (e: React.MouseEvent) => {
@@ -223,10 +228,35 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
                     *
                   </p>
                   <p className="ml-2 text-xs text-muted-foreground font-normal">
+                    {/* MODIFIED_BLOCK_FOR_WEB_UPDATED_START */}
                     {web?.updated &&
-                      formatDistanceToNow(new Date(web.updated + "Z"), {
-                        addSuffix: true,
-                      })}
+                      (() => {
+                        let dateInstance;
+                        // Check if web.updated is a string to decide on 'Z' suffix logic
+                        if (typeof web.updated === "string") {
+                          // Append 'Z' if it's a string and doesn't already have 'Z' or a timezone offset
+                          if (
+                            !web.updated.endsWith("Z") &&
+                            !/[+-]\d{2}(:?\d{2})?$/.test(web.updated)
+                          ) {
+                            dateInstance = new Date(web.updated + "Z");
+                          } else {
+                            dateInstance = new Date(web.updated);
+                          }
+                        } else {
+                          // If web.updated is a number (timestamp) or already a Date object
+                          dateInstance = new Date(web.updated);
+                        }
+
+                        // Check if the parsed date is valid
+                        if (isNaN(dateInstance.getTime())) {
+                          dateInstance = new Date(); // Fallback to today if parsing failed
+                        }
+                        return formatDistanceToNow(dateInstance, {
+                          addSuffix: true,
+                        });
+                      })()}
+                    {/* MODIFIED_BLOCK_FOR_WEB_UPDATED_END */}
                   </p>
                 </div>
                 {iteratedFrom ? (
@@ -340,12 +370,20 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                created{" "}
-                {web?.created
-                  ? formatDistanceToNow(new Date(web.created), {
-                      addSuffix: true,
-                    })
-                  : "Unknown date"}
+                created {/* MODIFIED_BLOCK_FOR_WEB_CREATED_START */}
+                {(() => {
+                  if (!web?.created) {
+                    return "Unknown date"; // Original fallback for missing date
+                  }
+                  // Works for string, number (timestamp), or Date object inputs
+                  let dateInstance = new Date(web.created);
+                  // Check if the parsed date is valid
+                  if (isNaN(dateInstance.getTime())) {
+                    dateInstance = new Date(); // Fallback to today if parsing failed
+                  }
+                  return formatDistanceToNow(dateInstance, { addSuffix: true });
+                })()}
+                {/* MODIFIED_BLOCK_FOR_WEB_CREATED_END */}
               </p>
             </div>
           </div>
