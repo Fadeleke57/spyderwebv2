@@ -59,8 +59,7 @@ export function useSubmitLogin() {
     onError: (error: any) => {
       toast({
         title: "Login Failed",
-        description:
-          error?.response?.data?.detail || "Invalid email or password.",
+        description: mapErrorCode(error.response?.status as number),
         variant: "destructive",
       });
       console.error("Login error:", error);
@@ -117,13 +116,13 @@ const mapErrorCode = (code: number) => {
     case 400:
       return "Username already exists.";
     case 401:
-      return "Please use a stronger password.";
+      return "Invalid email or password.";
     case 403:
       return "Forbidden";
     case 404:
       return "Not Found";
     case 500:
-      return "Internal Server Error";
+      return "Please use a stronger password.";
     default:
       return "Unknown Error";
   }

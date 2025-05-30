@@ -22,7 +22,7 @@ import FaviconDisplay from "../utility/FaviconDisplay";
 import AutoLinkerIndicator from "../sources/AutoLinkerIndicator";
 import { VoiceNoteComponent } from "../sources/VoiceNoteComponent";
 import { getTypeIcon } from "../chat/genui/graphcontext";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/router";
 import LinkPreview from "../sources/LinkPreview";
 
@@ -83,7 +83,9 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
       await editSourceTitle(sourceTitle);
       refetchSource();
       setIsEditingSource(false);
-      toast.success("Changes saved");
+      toast({
+        title: "Changes Saved",
+      });
     } catch (err) {
       console.error("Failed to update note:", err);
     }
