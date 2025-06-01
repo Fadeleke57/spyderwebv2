@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Star, Check, MessageSquareText } from "lucide-react";
+import { Star, Check } from "lucide-react";
 import { useSendFeedback } from "@/hooks/feedback";
 import { useRouter } from "next/router";
 import { useUser } from "@/context/UserContext";
@@ -76,7 +76,10 @@ const FeedbackModal = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger className="transition-all duration-200 ease-in-out" asChild>
+      <DialogTrigger
+        className="transition-all duration-200 ease-in-out"
+        asChild
+      >
         <Button
           variant={"ghost"}
           className={`flex transition-all duration-200 ease-in-out items-center gap-2 text-xs ${triggerVisibile ? "" : "hidden"}`}
@@ -193,7 +196,7 @@ const FeedbackModal = ({
                   type="button"
                   onClick={handleSubmit}
                   variant={"secondary"}
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto border dark:bg-violet-400/50 dark:border-violet-200"
                 >
                   Submit Feedback
                 </Button>

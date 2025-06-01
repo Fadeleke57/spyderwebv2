@@ -33,6 +33,12 @@ const fontSans = FontSans({
 });
 
 const queryClient = new QueryClient();
+export const stytch = createStytchUIClient(environment.stytch_public_token as string, {
+  cookieOptions: {
+    availableToSubdomains: true,
+    domain: environment.client_url?.replace("https://", "").replace("www.", ""),
+  },
+});
 
 function App({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout =
@@ -83,18 +89,6 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
       window.removeEventListener("offline", handleOffline);
     };
   }, [toast, toastId]);
-
-  const stytch = createStytchUIClient(
-    environment.stytch_public_token as string,
-    {
-      cookieOptions: {
-        availableToSubdomains: true,
-        domain: environment.client_url
-          ?.replace("https://", "")
-          .replace("www.", ""),
-      },
-    }
-  );
 
   return (
     <StytchProvider stytch={stytch}>
