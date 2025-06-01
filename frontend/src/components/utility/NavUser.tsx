@@ -39,14 +39,7 @@ export function NavUser() {
         <Button onClick={handleLogin} variant={"secondary"} className="w-full">
           Sign Up
         </Button>
-        {open && (
-          <AuthModal
-            type="login"
-            referrer="nav"
-            open={open}
-            setOpen={setOpen}
-          />
-        )}
+        {open && <AuthModal open={open} setOpen={setOpen} />}
       </div>
     );
   }

@@ -12,12 +12,7 @@ from typing import Union
 class YoutubeAPIClient:
     def __init__(self):
         self.apiKey = settings.youtube_api_key
-        self.transcriptsClient = YouTubeTranscriptApi(
-            proxy_config=WebshareProxyConfig(
-                proxy_username=settings.proxy_username,
-                proxy_password=settings.proxy_password,
-            )
-        )
+        self.transcriptsClient = YouTubeTranscriptApi()
 
     def get_video_info(self, video_id: str) -> dict:
         """

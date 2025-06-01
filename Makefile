@@ -7,7 +7,7 @@ start-backend:
 
 start-frontend:
 	@echo "Starting Next.js frontend..."
-	cd $(FRONTEND_PATH) && npm run dev
+	cd $(FRONTEND_PATH) && npx next dev -p 4000
 
 start:
 	@echo "Starting both backend and frontend..."
@@ -16,4 +16,4 @@ start:
 stop:
 	@echo "Stopping all backend and frontend processes..."
 	pkill -f "uvicorn src.main:app --reload" || true
-	pkill -f "npm run dev" || true
+	pkill -f "npx next dev -p 4000" || true

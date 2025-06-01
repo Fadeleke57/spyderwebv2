@@ -13,7 +13,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
 import { useCreateWeb, useUploadImageToWeb } from "@/hooks/webs";
-import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { Textarea } from "../ui/textarea";
 import { ImageIcon, LoaderCircle, X } from "lucide-react";
@@ -43,8 +42,6 @@ type WebConfig = {
 const TOGGLE_MODAL_KEYBOARD_SHORTCUT = "x";
 
 export function NewWebModal({ children }: { children: React.ReactNode }) {
-  //make the button more flexible
-  const router = useRouter();
   const [webId, setWebId] = useState<string | null>(null);
   const { toast } = useToast();
   const { mutateAsync: createWeb, isPending: creatingWeb } = useCreateWeb();

@@ -136,8 +136,6 @@ function PublicWebView({ webId }: { webId: string }) {
       <AuthModal
         open={authModalOpen}
         setOpen={setAuthModalOpen}
-        type="like"
-        referrer="webview"
       />
     </div>
   );

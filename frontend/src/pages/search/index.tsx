@@ -139,8 +139,6 @@ function SearchPage() {
 
         {open && (
           <AuthModal
-            type="login"
-            referrer="explore"
             open={open}
             setOpen={setOpen}
           />

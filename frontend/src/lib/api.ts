@@ -9,6 +9,14 @@ const api = axios.create({
   withCredentials: true,
 });
 
+const mcpAPI = axios.create({
+  baseURL: environment.mcp_url,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true,
+})
+
 api.interceptors.response.use(
   (response) => {
     return response;
@@ -20,4 +28,4 @@ api.interceptors.response.use(
   }
 );
 
-export default api;
+export { api, mcpAPI };

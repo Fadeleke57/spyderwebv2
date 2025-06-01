@@ -2,6 +2,8 @@ import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { useEffect, useState, type ReactElement, type ReactNode } from "react";
 import type { NextPage } from "next";
+import { StytchProvider } from "@stytch/nextjs";
+import { createStytchUIClient } from "@stytch/nextjs/ui";
 import Head from "next/head";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
@@ -14,6 +16,7 @@ import { ThemeProvider } from "@/hoc/theme-provider";
 import { handleLinkedInWebView } from "@/lib/utils";
 import { Toaster as SonnerToaster } from "sonner";
 import { PostHogProvider } from "@/components/PostHogProvider";
+import { environment } from "@/environment/load_env";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -81,52 +84,60 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
     };
   }, [toast, toastId]);
 
-  return (
-    <PostHogProvider>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-        <QueryClientProvider client={queryClient}>
-          <Head>
-            <title>Bridging the Gap Between AI Models and Human Thought</title>
-            <meta
-              name="description"
-              content="An exploration into harmonizing AI capabilities with human cognition."
-            />
-            <meta
-              name="viewport"
-              content="width=device-width, initial-scale=1"
-            />
-            <meta
-              property="og:title"
-              content="Bridging the Gap Between AI Models and Human Thought"
-            />
-            <meta
-              property="og:description"
-              content="An exploration into harmonizing AI capabilities with human cognition."
-            />
-            <meta property="og:image" content="/opengraph-image.jpg" />
-            <meta property="og:url" content="https://www.spydr.ai" />
-            <meta property="og:type" content="website" />
-            <link rel="icon" href="/favicon.ico" />
-            <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-          </Head>
+  const stytch = createStytchUIClient(
+    environment.stytch_public_token as string
+  );
 
-          <UserProvider>
-            <div>
-              {getLayout(
-                <>
-                  <Analytics />
-                  <div className={`${fontSans.className}`}>
-                    <Component {...pageProps} />
-                    <Toaster />
-                    <SonnerToaster />
-                  </div>
-                </>
-              )}
-            </div>
-          </UserProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
-    </PostHogProvider>
+  return (
+    <StytchProvider stytch={stytch}>
+      <PostHogProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <QueryClientProvider client={queryClient}>
+            <Head>
+              <title>
+                Bridging the Gap Between AI Models and Human Thought
+              </title>
+              <meta
+                name="description"
+                content="An exploration into harmonizing AI capabilities with human cognition."
+              />
+              <meta
+                name="viewport"
+                content="width=device-width, initial-scale=1"
+              />
+              <meta
+                property="og:title"
+                content="Bridging the Gap Between AI Models and Human Thought"
+              />
+              <meta
+                property="og:description"
+                content="An exploration into harmonizing AI capabilities with human cognition."
+              />
+              <meta property="og:image" content="/opengraph-image.jpg" />
+              <meta property="og:url" content="https://www.spydr.ai" />
+              <meta property="og:type" content="website" />
+              <link rel="icon" href="/favicon.ico" />
+              <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+            </Head>
+
+            <UserProvider>
+              <div>
+                {getLayout(
+                  <>
+                    <Analytics />
+                    <div className={`${fontSans.className}`}>
+                      <Component {...pageProps} />
+                      <Toaster />
+                      <SonnerToaster />
+                    </div>
+                  </>
+                )}
+              </div>
+            </UserProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </PostHogProvider>
+    </StytchProvider>
   );
 }
 

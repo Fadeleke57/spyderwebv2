@@ -395,8 +395,6 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
         setIsOpen={setShowIterateModal}
       />
       <AuthModal
-        referrer="web"
-        type="login"
         open={authModalOpen}
         setOpen={setAuthModalOpen}
       />

@@ -284,7 +284,7 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
           <DrawerHeader className="mt-1 text-left pl-6">
             <DrawerTitle>Export Context</DrawerTitle>
             <DrawerDescription>
-              Export context to use with any llm.
+              Export context to use with any LLM.
             </DrawerDescription>
           </DrawerHeader>
           <Separator className="my-2" />
@@ -321,7 +321,7 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
           <FolderUp size={16} className="mr-2"></FolderUp>Export Context
         </DialogTitle>
         <DialogDescription>
-          Export context to use with any llm.
+          Export context to use with any LLM.
         </DialogDescription>
         <Separator />
         {content}

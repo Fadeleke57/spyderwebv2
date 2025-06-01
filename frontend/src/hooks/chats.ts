@@ -1,4 +1,4 @@
-import api from "@/lib/api";
+import { api } from "@/lib/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "@/components/ui/use-toast";
 import { Message } from "ai";

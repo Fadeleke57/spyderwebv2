@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import api from "@/lib/api";
+import { api } from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
 import { PublicUser, Search, UpdateUser } from "@/types/user";
 import { useQuery, useMutation } from "@tanstack/react-query";

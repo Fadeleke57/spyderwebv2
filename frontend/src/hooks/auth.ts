@@ -1,7 +1,6 @@
-import api from "@/lib/api";
+import { api, mcpAPI } from "@/lib/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/use-toast";
-import { useRouter } from "next/router";
 import { AxiosError } from "axios";
 
 type BackendRegisterRequest = {
@@ -9,11 +8,7 @@ type BackendRegisterRequest = {
   password: string;
   username: string;
   fullName?: string;
-};
-
-type BackendLoginRequest = {
-  email: string;
-  password: string;
+  stytchUserId: string;
 };
 
 type BackendRegisterResponse = {
@@ -22,10 +17,6 @@ type BackendRegisterResponse = {
   webId: string;
   email: string;
   username: string;
-};
-
-type BackendLoginResponse = {
-  message: string;
 };
 
 type OnboardingPayload = {
@@ -38,34 +29,6 @@ type OnboardingPayload = {
   purpose: string;
   interest?: string;
 };
-
-export function useSubmitLogin() {
-  const queryClient = useQueryClient();
-  const router = useRouter();
-
-  return useMutation<BackendLoginResponse, Error, BackendLoginRequest>({
-    mutationFn: async (loginPayload) => {
-      const response = await api.post(`/auth/login`, loginPayload);
-      return response.data;
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "Success",
-        description: data.message || "Logged in successfully!",
-      });
-      queryClient.invalidateQueries({ queryKey: ["user"] });
-      window.location.href = "/home";
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Login Failed",
-        description: mapErrorCode(error.response?.status as number),
-        variant: "destructive",
-      });
-      console.error("Login error:", error);
-    },
-  });
-}
 
 export function useSubmitRegister() {
   const queryClient = useQueryClient();
@@ -84,6 +47,7 @@ export function useSubmitRegister() {
         description: data.message || "Registration successful!",
       });
       queryClient.invalidateQueries({ queryKey: ["user"] });
+      toast({ title: "Registration complete", variant: "default" });
       window.location.href = `/auth/onboarding?email=${encodeURIComponent(data.email)}&username=${encodeURIComponent(data.username)}&isGoogleSignup=false&defaultWebId=${data.webId}`;
     },
     onError: (error: AxiosError) => {
@@ -94,6 +58,36 @@ export function useSubmitRegister() {
         variant: "destructive",
       });
       console.error("Registration error:", error);
+    },
+  });
+}
+
+type CompleteOauthRequest = {
+  stytchUserId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  profilePictureUrl: string;
+};
+
+export function useCompleteOauth() {
+  return useMutation({
+    mutationFn: async (payload: CompleteOauthRequest) => {
+      console.log("Sending OAuth completion request:", payload);
+      const response = await api.post(`/auth/authenticate`, payload);
+      console.log("OAuth completion response:", response.data);
+      return response.data.redirect;
+    },
+    onSuccess: (redirectUrl) => {
+      console.log("OAuth completion successful, redirect URL:", redirectUrl);
+    },
+    onError: (error: any) => {
+      console.error("OAuth completion error:", error);
+      toast({
+        title: "Authentication Error",
+        description: "Authentication failed",
+        variant: "destructive",
+      });
     },
   });
 }

@@ -1,5 +1,5 @@
 import { toast } from "@/components/ui/use-toast";
-import api from "@/lib/api";
+import { api } from "@/lib/api";
 import { useSourceStore } from "@/store/sourceStore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 

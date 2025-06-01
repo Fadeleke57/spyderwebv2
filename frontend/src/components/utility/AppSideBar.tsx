@@ -52,7 +52,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     } else {
       setSelectedButton(null);
     }
-  }, [router.pathname]);
+  }, [router.pathname, router.asPath, user]);
+
   const handleButtonClick = (route: string) => {
     if (!user) {
       setOpen(true);
@@ -271,8 +272,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
       {open && (
         <AuthModal
-          type="login"
-          referrer="sidebar"
           open={open}
           setOpen={setOpen}
         />

@@ -37,6 +37,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { environment } from "@/environment/load_env";
 import { useSourceStore } from "@/store/sourceStore";
 import SimpleTooltip from "@/components/utility/SimpleTooltip";
+import { usePreviousRoute } from "@/hooks/router";
 
 function Index() {
   const router = useRouter();
@@ -67,6 +68,26 @@ function Index() {
     user && user.websPinned.includes(webId as string)
   );
   const isOwner = user && web && user.id === web.userId;
+
+  useEffect(() => {
+    const returnTo = localStorage.getItem("returnTo");
+    if (returnTo) {
+      localStorage.removeItem("returnTo");
+      window.location.href = returnTo;
+    }
+  }, []);
+
+  const previousRoute = usePreviousRoute();
+
+  const handleBack = () => {
+    const avoidRoutes = ["/onboarding", "/payment/failed", "/payment/success"];
+
+    if (previousRoute && !avoidRoutes.includes(previousRoute)) {
+      router.back();
+    } else {
+      router.push("/explore");
+    }
+  };
 
   const title = webLoading ? "Loading..." : (web && web.name) || "Web Details";
   const description = webLoading
@@ -175,7 +196,9 @@ function Index() {
           <div className="flex flex-col z-40 items-center justify-start mb-3 lg:mb-0  max-w-[210px] lg:max-w-2xl">
             <div className="flex flex-col gap-2">
               <div
-                onClick={() => router.back()}
+                onClick={() => {
+                  handleBack();
+                }}
                 className={`flex cursor-pointer bg-transparent items-center group gap-2 p-0 h-fit w-fit text-md font-semibold text-violet-400/80`}
               >
                 <ArrowLeft
@@ -348,12 +371,7 @@ function Index() {
           {web && <WebPlayground />}
         </div>
       </div>
-      <AuthModal
-        referrer={"web"}
-        type="login"
-        open={authModalOpen}
-        setOpen={setAuthModalOpen}
-      />
+      <AuthModal open={authModalOpen} setOpen={setAuthModalOpen} />
     </div>
   );
 }

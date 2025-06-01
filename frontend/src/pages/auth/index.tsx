@@ -1,26 +1,20 @@
-import React, { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { AuthHeader } from "./AuthHeader";
-import { EmailStepForm } from "./forms/EmailStepForm";
-import { LoginForm } from "./forms/LoginForm";
-import { RegisterForm } from "./forms/RegisterForm";
-import { useToast } from "@/components/ui/use-toast";
-import { z } from "zod";
+import React, { useState, useEffect, ReactElement } from "react";
+import { useRouter } from "next/router";
+import Head from "next/head";
+import PublicLayout from "@/app/PublicLayout";
+import { AuthHeader } from "@/components/auth/AuthHeader";
+import { EmailStepForm } from "@/components/auth/forms/EmailStepForm";
+import { LoginForm } from "@/components/auth/forms/LoginForm";
+import { RegisterForm } from "@/components/auth/forms/RegisterForm";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { useStytch } from "@stytch/nextjs";
-import { useRouter } from "next/router";
+import { useToast } from "@/components/ui/use-toast";
 import { useCheckEmailExists } from "@/hooks/user";
 import { useSubmitRegister } from "@/hooks/auth";
 
-const emailSchema = z.object({
-  email: z.string().email(),
-});
+const emailSchema = z.object({ email: z.string().email() });
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -35,19 +29,14 @@ const registerSchema = z.object({
   password: z.string().min(6),
 });
 
-type AuthModalProps = {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-};
-
 export const SESSION_MINUTES = 10080;
 
-export function AuthModal({ open, setOpen }: AuthModalProps) {
+function AuthPage() {
   const [step, setStep] = useState("email");
   const [userEmail, setUserEmail] = useState("");
-  const { toast } = useToast();
   const router = useRouter();
   const client = useStytch();
+  const { toast } = useToast();
 
   const { mutateAsync: checkEmailExists, isPending: isCheckingEmail } =
     useCheckEmailExists();
@@ -58,12 +47,10 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
     resolver: zodResolver(emailSchema),
     defaultValues: { email: "" },
   });
-
   const loginForm = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
-
   const registerForm = useForm({
     resolver: zodResolver(registerSchema),
     defaultValues: { email: "", username: "", password: "" },
@@ -74,18 +61,16 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
     if (step === "register") registerForm.setValue("email", userEmail);
   }, [step, userEmail, loginForm, registerForm]);
 
+  const resetToEmail = () => {
+    setStep("email");
+    setUserEmail("");
+    emailForm.reset({ email: "" });
+  };
+
   const onEmailSubmit = async (data: any) => {
-    try {
-      const exists = await checkEmailExists(data.email);
-      setUserEmail(data.email);
-      setStep(exists ? "login" : "register");
-    } catch (err) {
-      toast({
-        title: "Error",
-        description: "Email verification failed",
-        variant: "destructive",
-      });
-    }
+    const exists = await checkEmailExists(data.email);
+    setUserEmail(data.email);
+    setStep(exists ? "login" : "register");
   };
 
   const onLoginSubmit = async (data: any) => {
@@ -96,7 +81,7 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
         session_duration_minutes: SESSION_MINUTES,
       });
       if (response.session) {
-        toast({ title: "Login successful", variant: "default" });
+        toast({ title: "Login successful" });
         const returnTo = localStorage.getItem("returnTo");
         if (returnTo) {
           localStorage.removeItem("returnTo");
@@ -129,54 +114,49 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
           stytchUserId: response.user_id,
         });
       }
-    } catch (err: any) {}
-  };
-
-  const resetToEmail = () => {
-    setStep("email");
-    setUserEmail("");
-    emailForm.reset({ email: "" });
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent
-        className="h-dvh max-w-screen rounded-none flex flex-col justify-center items-center"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <DialogClose />
-        <DialogHeader className="w-full text-center mb-6">
-          <AuthHeader step={step} email={userEmail} />
-        </DialogHeader>
-
-        {step === "email" && (
-          <EmailStepForm
-            form={emailForm}
-            onSubmit={onEmailSubmit}
-            isPending={isCheckingEmail}
-          />
-        )}
-
-        {step === "login" && (
-          <LoginForm
-            form={loginForm}
-            onSubmit={onLoginSubmit}
-            isPending={false}
-            onBack={resetToEmail}
-          />
-        )}
-
-        {step === "register" && (
-          <RegisterForm
-            form={registerForm}
-            onSubmit={onRegisterSubmit}
-            isPending={isRegistering}
-            onBack={resetToEmail}
-          />
-        )}
-      </DialogContent>
-    </Dialog>
+    <div className="h-[90dvh] flex flex-col justify-center items-center">
+      <Head>
+        <title>Sign in or create an account | Spydr</title>
+      </Head>
+      <AuthHeader step={step} email={userEmail} />
+      {step === "email" && (
+        <EmailStepForm
+          form={emailForm}
+          onSubmit={onEmailSubmit}
+          isPending={isCheckingEmail}
+        />
+      )}
+      {step === "login" && (
+        <LoginForm
+          form={loginForm}
+          onSubmit={onLoginSubmit}
+          isPending={false}
+          onBack={resetToEmail}
+        />
+      )}
+      {step === "register" && (
+        <RegisterForm
+          form={registerForm}
+          onSubmit={onRegisterSubmit}
+          isPending={isRegistering}
+          onBack={resetToEmail}
+        />
+      )}
+    </div>
   );
 }
 
-export default AuthModal;
+AuthPage.getLayout = (page: ReactElement) => (
+  <PublicLayout>{page}</PublicLayout>
+);
+export default AuthPage;

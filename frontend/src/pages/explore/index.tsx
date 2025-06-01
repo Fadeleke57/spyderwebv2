@@ -119,8 +119,6 @@ function Index() {
         </div>
         {open && (
           <AuthModal
-            type="login"
-            referrer="explore"
             open={open}
             setOpen={setOpen}
           />

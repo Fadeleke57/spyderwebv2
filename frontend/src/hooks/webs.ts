@@ -1,4 +1,4 @@
-import api from "@/lib/api";
+import { api } from "@/lib/api";
 import { UpdateWeb } from "@/types/web";
 import {
   useInfiniteQuery,
@@ -6,7 +6,6 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 export function useFetchUserWebs(criteria?: string) {
   return useInfiniteQuery({

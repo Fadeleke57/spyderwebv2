@@ -173,8 +173,6 @@ export default function AppLayout({
         {children}
         {isAuthModalOpen && (
           <AuthModal
-            type="login"
-            referrer="app"
             open={isAuthModalOpen}
             setOpen={setAuthModalOpen}
           />

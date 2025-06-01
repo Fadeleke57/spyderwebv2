@@ -1,7 +1,6 @@
 import { createContext, useContext, ReactNode } from "react";
 import { PublicUser } from "@/types/user";
 import { useCheckLoggedInUser, useLogout } from "@/hooks/user";
-import { useRouter } from "next/router";
 
 type UserContextType = {
   user: PublicUser | null | undefined;
@@ -12,8 +11,7 @@ type UserContextType = {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const router = useRouter();
-  
+
   const {
     data: user,
     isLoading: userLoading,
@@ -37,9 +35,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const handleLogout = async () => {
     await logout();
-    
+    window.location.href = "/";
     refetchUser();
-    router.push("/");
   };
 
   return (

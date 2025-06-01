@@ -7,18 +7,22 @@ import GSAPButton from "../utility/GSAPButton";
 import { useState } from "react";
 import { AuthModal } from "../auth/AuthModal";
 import Link from "next/link";
+import { useStytch } from "@stytch/nextjs";
 
 function Header() {
   const [open, setIsOpen] = useState(false);
   const router = useRouter();
-  const [typeOfAuth, setTypeOfAuth] = useState<"login" | "register">("login");
-  const handleGoogleSignIn = () => {
-    window.location.href = `https://${environment.environment == "dev" ? "test" : "api"}.stytch.com/v1/public/oauth/google/start?public_token=${environment.stytch_public_token}`;
+
+  const handleButtonClick = () => {
+    setIsOpen(true);
   };
 
-  const handleButtonClick = (typeOfAuth: "login" | "register") => {
-    setTypeOfAuth(typeOfAuth);
-    setIsOpen(true);
+  const client = useStytch();
+  const handleGoogleSignIn = () => {
+    client.oauth.google.start({
+      login_redirect_url: `${environment.client_url}/auth/authenticate`,
+      signup_redirect_url: `${environment.client_url}/auth/authenticate`,
+    });
   };
 
   return (
@@ -90,7 +94,7 @@ function Header() {
                 <GSAPButton
                   buttonClassname="border lg:justify-center"
                   classname="text-sm font-medium"
-                  onClick={() => handleButtonClick("register")}
+                  onClick={() => handleButtonClick()}
                 >
                   Create Account
                 </GSAPButton>
@@ -116,14 +120,7 @@ function Header() {
           </form>
         </div>
       </div>
-      {open && (
-        <AuthModal
-          referrer="landing"
-          type={typeOfAuth}
-          open={open}
-          setOpen={setIsOpen}
-        />
-      )}
+      {open && <AuthModal open={open} setOpen={setIsOpen} />}
     </div>
   );
 }
