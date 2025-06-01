@@ -7,9 +7,10 @@ import { useRouter } from "next/router";
 import * as THREE from "three";
 import { Footer } from "react-day-picker";
 import Link from "next/link";
+import { useStytchUser } from "@stytch/nextjs";
 
 export default function Home() {
-  const { user } = useUser();
+  const { user, fromCache } = useStytchUser();
   const router = useRouter();
 
   useEffect(() => {
