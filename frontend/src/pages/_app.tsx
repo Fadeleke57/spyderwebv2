@@ -85,7 +85,15 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
   }, [toast, toastId]);
 
   const stytch = createStytchUIClient(
-    environment.stytch_public_token as string
+    environment.stytch_public_token as string,
+    {
+      cookieOptions: {
+        availableToSubdomains: true,
+        domain: environment.client_url
+          ?.replace("https://", "")
+          .replace("www.", ""),
+      },
+    }
   );
 
   return (
