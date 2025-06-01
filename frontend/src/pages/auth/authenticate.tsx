@@ -64,7 +64,7 @@ const GoogleCallback = () => {
         } else if (redirectUrl) {
           window.location.href = redirectUrl;
         } else {
-          router.push("/home");
+          window.location.href = "/home?src=oauth";
         }
       } else {
         throw new Error("No session or user returned from Stytch");
@@ -81,7 +81,7 @@ const GoogleCallback = () => {
       });
 
       setTimeout(() => {
-        router.push("/");
+        window.location.href = "/";
       }, 2000);
     }
   }, [client, completeOauth, token, router, isProcessing]);
