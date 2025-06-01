@@ -9,7 +9,7 @@ const Authorize = () => {
 
   useEffect(() => {
     if (isInitialized && !user) {
-      localStorage.setItem("returnTo", window.location.href + "?src=mcp_auth");
+      localStorage.setItem("returnTo", window.location.href);
       window.location.href = "/auth";
     }
   }, [isInitialized, user, router]);
