@@ -77,7 +77,7 @@ function UserWebSearch() {
           onChange={handleInputChange}
           onFocus={() => setIsSearchActive(true)}
           placeholder="Search for your webs..."
-          className="w-full pl-3 caret-violet-500"
+          className="w-full bg-muted pl-3 caret-violet-500"
         />
         {isLoading && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">

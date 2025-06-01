@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { IdentityProvider, useStytchUser } from "@stytch/nextjs";
 import PublicLayout from "@/app/PublicLayout";
 import { useRouter } from "next/router";
+import Head from "next/head";
 
 const Authorize = () => {
   const router = useRouter();
@@ -18,7 +19,19 @@ const Authorize = () => {
     return null;
   }
   return (
-    <div className="flex items-center justify-center h-[87dvh]">
+    <div className="flex items-center justify-center h-[90dvh]">
+      <Head>
+        <title>{"Connect your account - spydr"}</title>
+        <meta
+          name="description"
+          content={"Connect your Spydr account to a third-party client."}
+        />
+        <meta property="og:title" content={"Connect your account - spydr"} />
+        <meta
+          property="og:description"
+          content={"Connect your Spydr account to a third-party client."}
+        />
+      </Head>
       <IdentityProvider />
     </div>
   );
