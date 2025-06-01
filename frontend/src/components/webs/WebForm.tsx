@@ -1,14 +1,12 @@
 import React, { useState, useCallback, useEffect, ChangeEvent } from "react";
-import { Web } from "@/types/web";
-import { PublicUser } from "@/types/user";
 import {
   useDeleteImageFromWeb,
+  useFetchWebById,
   useGetAllImagesForWeb,
   useUpdateWeb,
   useUploadImageToWeb,
 } from "@/hooks/webs";
 import { useToast } from "../ui/use-toast";
-import { useRouter } from "next/router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -28,11 +26,7 @@ import ConfirmImageModal from "../utility/ConfirmImageModal";
 import { ImageModal } from "../utility/ImageModal";
 import { DynamicTextarea } from "../utility/DynamicScrollbar";
 import { SHOWCASE_IMAGE } from "@/lib/consts";
-
-type FormProps = {
-  web: Web;
-  user: PublicUser | null;
-};
+import { useUser } from "@/context/UserContext";
 
 const webSchema = z.object({
   name: z.string().min(1, { message: "Claim is required" }),
@@ -48,16 +42,19 @@ type WebConfig = {
   visibility: "Private" | "Public" | "Invite";
 };
 
-function WebForm({ web, user }: FormProps) {
+function WebForm({ webId }: { webId: string }) {
+  const { data: web, refetch: refetchWeb } = useFetchWebById(webId);
+  const { user } = useUser();
+
   const {
     data: imageUrls,
     isLoading: imagesLoading,
     refetch: refetchImages,
-  } = useGetAllImagesForWeb(web.webId);
+  } = useGetAllImagesForWeb(web && web.webId);
 
   const { mutateAsync: deleteImage } = useDeleteImageFromWeb();
   const { mutateAsync: uploadImages, isPending: addingImages } =
-    useUploadImageToWeb();
+    useUploadImageToWeb(web && web.webId);
   const [images, setImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -68,6 +65,7 @@ function WebForm({ web, user }: FormProps) {
   });
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
+  const isOwner = web && user && web.userId === user.id;
 
   useEffect(() => {
     if (imageUrls) {
@@ -75,16 +73,13 @@ function WebForm({ web, user }: FormProps) {
     }
   }, [web, imageUrls, images]);
 
-  const isOwner = user?.id === web?.userId;
-
-  const { mutateAsync: updateWeb, isPending } = useUpdateWeb(web?.webId);
+  const { mutateAsync: updateWeb, isPending } = useUpdateWeb(web && web.webId);
   const { toast } = useToast();
-  const router = useRouter();
 
   const [webConfig, setWebConfig] = useState<WebConfig>({
-    name: web?.name,
-    description: web?.description,
-    visibility: web?.visibility,
+    name: web ? web.name : "",
+    description: web ? web.description : "",
+    visibility: web ? web.visibility : "Private",
   });
 
   const form = useForm<WebFormValues>({
@@ -157,12 +152,11 @@ function WebForm({ web, user }: FormProps) {
   };
 
   const handleDeleteImage = useCallback(async () => {
-    if (!selectedImage) {
+    if (!selectedImage || !web) {
       return;
     }
     try {
       await deleteImage({ webId: web.webId, imageUrl: selectedImage });
-      refetchImages();
       setDeleteModalOpen(false);
     } catch (error: any) {
       toast({
@@ -171,7 +165,7 @@ function WebForm({ web, user }: FormProps) {
         variant: "destructive",
       });
     }
-  }, [selectedImage, deleteImage, refetchImages]);
+  }, [selectedImage, deleteImage, refetchImages, toast, web]);
 
   const handleOpenDeleteModal = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -215,7 +209,6 @@ function WebForm({ web, user }: FormProps) {
 
     try {
       await uploadImages({
-        webId: web.webId,
         files: imageConfig.stagedImages,
       });
 
@@ -263,6 +256,10 @@ function WebForm({ web, user }: FormProps) {
       setConfirmModalOpen(true);
     }
   };
+
+  if (!isOwner) {
+    return null;
+  }
 
   return (
     <form className="relative grid w-full items-start">
@@ -382,7 +379,7 @@ function WebForm({ web, user }: FormProps) {
                   height={300}
                   width={500}
                   src={image}
-                  alt={web.name}
+                  alt={(web && web.name) || "web image"}
                   className="rounded-md w-full border h-auto object-cover"
                   style={{ maxHeight: "400px" }}
                   onClick={(e) => handleImageClick(e, image)}

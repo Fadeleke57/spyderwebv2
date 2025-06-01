@@ -29,7 +29,7 @@ const config = {
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
+          DEFAULT: "hsl(282, 100%, 38%)",
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
@@ -99,6 +99,10 @@ const config = {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
+      },
+      boxShadow: {
+        "blue-glow-sm": "0 4px 6px -1px rgba(59, 130, 246, 0.5)",
+        "blue-glow-md": "0 10px 15px -3px rgba(59, 130, 246, 0.5)",
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",

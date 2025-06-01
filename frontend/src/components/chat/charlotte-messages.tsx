@@ -6,7 +6,6 @@ import {
   Check,
   ThumbsUp,
   ThumbsDown,
-  Save,
   NotebookText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,6 @@ import ReferencesComponent, {
   formatLinkwithTimeStamp,
   ReferenceMetadata,
 } from "./genui/graphcontext";
-import { url } from "inspector";
 import { useUploadNote } from "@/hooks/sources";
 import { useRouter } from "next/router";
 import { useFetchWebById } from "@/hooks/webs";
@@ -100,7 +98,7 @@ const AssistantMessage = ({
   const handleMakeNote = async (message: Message) => {
     try {
       await uploadNote({
-        title: `Assistant Note: ${formatText(message.content, 50)}...`,
+        title: `Assistant Note - ${formatText(message.content, 50)}`,
         content: message.content,
       });
       toast("Message saved as note!");
@@ -124,7 +122,7 @@ const AssistantMessage = ({
 
   return (
     <motion.div
-      className="w-full max-w-md p-4 group/message text-sm hover:cursor-pointer rounded-xl hover:bg-muted/50 relative"
+      className="w-full max-w-lg p-4 group/message text-sm hover:cursor-pointer rounded-xl hover:bg-muted/50 relative"
       initial={{ y: 5, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       data-role="assistant"

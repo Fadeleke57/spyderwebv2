@@ -3,7 +3,7 @@ import logging
 import signal
 import sys
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI
 from typing import List, Callable
 from src.db.mongodb import client as mongoClient
 from src.db.neo4j import client as neo4jClient
@@ -109,7 +109,7 @@ async def lifespan(app: FastAPI):
 
         mongoClient.server_info()
         neo4jClient.verify_connectivity()
-        app.state.pinecone_index = pineconeClient.index
+        pineconeClient.index.list()
         logging.info("Successfully connected to MongoDB, Neo4j, and Pinecone!")
 
         yield

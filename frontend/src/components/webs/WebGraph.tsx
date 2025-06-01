@@ -1,10 +1,8 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
-import { CreateWeb } from "@/types/web";
 import { useState, Dispatch, SetStateAction } from "react";
 import { LoadingPage } from "@/components/utility/Loading";
-import WebDataDrawer from "./WebDataModal";
-import { useDeleteSource } from "@/hooks/sources";
+import { useDeleteSource, useFetchSourcesForWeb } from "@/hooks/sources";
 import { Source, SourceAsNode } from "@/types/source";
 import { Trash } from "lucide-react";
 import { updateTextElements, shouldUseTspans } from "@/lib/utils";
@@ -25,43 +23,55 @@ import {
 import SourceTooltip from "./SourceToolTip";
 import { Connection } from "@/types/connection";
 import SpydrAI from "../utility/Assistant";
+import { useSourceStore } from "@/store/sourceStore";
+import WebDataModal from "./WebDataModal";
+import { useRouter } from "next/router";
+import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
+import { useFetchWebById } from "@/hooks/webs";
 
 interface GraphProps {
   isOwner: boolean;
-  setConfig: (value: CreateWeb) => void;
-  webId: string;
   hasSources: boolean;
-  refetchSources: () => void;
   fetchedSources: Source[];
-  refetchWeb: () => void;
   setFetchedSources: Dispatch<SetStateAction<Source[]>>;
   sourcesLoading: boolean;
-  selectedSourceId: string | null;
-  setSelectedSourceId: Dispatch<SetStateAction<string>>;
   handleFileUpload: (files: FileList | null) => void;
-  isFileUploading: boolean;
   connections: Connection[];
   connectionsLoading: boolean;
-  refetchConnections: () => void;
 }
 
 function WebGraph({
   isOwner,
-  webId,
   hasSources,
   fetchedSources,
-  refetchSources,
-  refetchWeb,
+  
   setFetchedSources,
   sourcesLoading,
-  selectedSourceId,
-  setSelectedSourceId,
   handleFileUpload,
-  isFileUploading,
   connections,
   connectionsLoading,
-  refetchConnections,
 }: GraphProps) {
+  const router = useRouter();
+
+  const { webId } = router.query;
+
+  const {
+    refetch: refetchConnectionsForWeb,
+  } = useFetchAllConnectionsForWeb(webId as string);
+
+  const { refetch: refetchSourcesForWeb } =
+    useFetchSourcesForWeb(webId as string);
+
+  const { refetch: refetchWeb } = useFetchWebById(
+    webId as string
+  );
+
+  const {
+    setSelectedSourceId,
+    source: selectedSource,
+    setSource: setSelectedSource,
+  } = useSourceStore();
+
   const [isDragging, setIsDragging] = useState(false);
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -119,8 +129,6 @@ function WebGraph({
               resolve(entries);
             });
           });
-
-          // process all entries in the directory
           for (const childEntry of entries) {
             await processEntry(childEntry);
           }
@@ -135,7 +143,6 @@ function WebGraph({
           if (entry) {
             await processEntry(entry);
           } else {
-            // fallback for browsers without webkitGetAsEntry
             const file = item.getAsFile();
             if (file && isAcceptedFile(file)) {
               fileList.push(file);
@@ -145,13 +152,11 @@ function WebGraph({
       }
 
       if (fileList.length > 0) {
-        // convert array to FileList-like object
         const dataTransfer = new DataTransfer();
         fileList.forEach((file) => dataTransfer.items.add(file));
         handleFileUpload(dataTransfer.files);
       }
     } else if (e.dataTransfer.files.length > 0) {
-      // direct file drop handling (fallback)
       handleFileUpload(e.dataTransfer.files);
     }
   };
@@ -161,8 +166,6 @@ function WebGraph({
 
   const isMobile = useIsMobile();
   const { theme } = useTheme();
-
-  const [selectedSource, setSelectedSource] = useState<Source | null>(null);
   const [hoveredSource, setHoveredSource] = useState<Source | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{
     x: number;
@@ -179,8 +182,8 @@ function WebGraph({
       window.location.reload();
     } else {
       await deleteSource(sourceId);
-      refetchConnections();
-      refetchSources();
+      refetchConnectionsForWeb();
+      refetchSourcesForWeb();
       refetchWeb();
     }
   };
@@ -246,12 +249,19 @@ function WebGraph({
     svg.call(zoom as any);
 
     const linksGroup = g.append("g").attr("class", "links");
+    const nodeIdSet = new Set(fetchedSources.map((s) => s.sourceId));
 
     const links =
-      connections?.map((connection: Connection) => ({
-        source: connection.fromSourceId,
-        target: connection.toSourceId,
-      })) || [];
+      connections
+        ?.filter(
+          (connection: Connection) =>
+            nodeIdSet.has(connection.fromSourceId) &&
+            nodeIdSet.has(connection.toSourceId)
+        )
+        .map((connection: Connection) => ({
+          source: connection.fromSourceId,
+          target: connection.toSourceId,
+        })) || [];
 
     const nodes: SourceAsNode[] =
       fetchedSources &&
@@ -544,27 +554,29 @@ function WebGraph({
   }, [
     fetchedSources,
     deleteSource,
-    refetchSources,
+    refetchSourcesForWeb,
     trashRef,
     connections,
     theme,
   ]);
 
-  if (
-    isFileUploading ||
-    ((connectionsLoading || sourcesLoading) && hasSources)
-  ) {
+  if ((connectionsLoading || sourcesLoading) && hasSources) {
     return <LoadingPage></LoadingPage>;
   }
 
   return (
     <div
-      className={`h-full ${isDragging ? "cursor-grabbing border border-dashed border-foreground border-2 rounded-md" : ""}`}
+      className={`h-full ${isDragging ? "cursor-grabbing border border-dashed border-blue-500 border-2 rounded-md" : ""}`}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
+      {isDragging && (
+        <div className="absolute text-center rounded-md top-2 left-2 left-0 z-50 w-3/4 bg-white font-semibold text-black">
+          Drag and drop files or folders here.
+        </div>
+      )}
       {isOwner && (
         <div ref={trashRef} className="absolute left-3 top-3 cursor-pointer">
           <TooltipProvider delayDuration={100}>
@@ -588,12 +600,7 @@ function WebGraph({
       )}
       <svg ref={svgRef} className="w-full h-full hover:cursor-grab"></svg>
       {isDrawerOpen && webId && selectedSource && (
-        <WebDataDrawer
-          sourceId={selectedSource?.sourceId}
-          open={isDrawerOpen}
-          setOpen={setDrawerOpen}
-          webId={webId}
-        />
+        <WebDataModal open={isDrawerOpen} setOpen={setDrawerOpen} />
       )}
       <div className="absolute bottom-4 right-4">
         <SpydrAI />

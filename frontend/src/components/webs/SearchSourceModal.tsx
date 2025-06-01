@@ -3,6 +3,7 @@ import React from "react";
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
@@ -13,7 +14,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { Button } from "../ui/button";
-import { Search } from "lucide-react";
+import { CirclePlus, Plus, Search } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -22,10 +23,8 @@ import {
   CommandItem,
   CommandList,
 } from "../ui/command";
-import { mapSourceToIcon } from "../utility/Icons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Separator } from "../ui/separator";
-import { ScrollArea } from "../ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Drawer,
@@ -33,6 +32,12 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "../ui/drawer";
+import { getTypeIcon } from "../chat/genui/graphcontext";
+import "@hackernoon/pixel-icon-library/fonts/iconfont.css";
+import { useSourceStore } from "@/store/sourceStore";
+import { useFetchWebById } from "@/hooks/webs";
+import { useUser } from "@/context/UserContext";
+import { useRouter } from "next/router";
 
 type SearchSourceModalProps = {
   open: boolean;
@@ -41,30 +46,20 @@ type SearchSourceModalProps = {
   handleSourceClick: (sourceId: string) => void;
 };
 
-const tabs = [
+const newTabs = [
   {
     label: "Files",
-    value: "document",
+    value: "files",
     placeholder: "Search files...",
-    type: "document",
+    emptyValue: "Add a file, voice note, or note to get started.",
+    types: ["document", "voice_note", "note"],
   },
   {
     label: "Links",
-    value: "website",
+    value: "links",
     placeholder: "Search links...",
-    type: "website",
-  },
-  {
-    label: "YouTube",
-    value: "youtube",
-    placeholder: "Search YouTube videos...",
-    type: "youtube",
-  },
-  {
-    label: "Notes",
-    value: "note",
-    placeholder: "Search notes...",
-    type: "note",
+    emptyValue: "Add a link to get started. Youtube videos, websites, etc.",
+    types: ["website", "youtube"],
   },
 ];
 
@@ -75,49 +70,74 @@ function SearchSourceModal({
   handleSourceClick,
 }: SearchSourceModalProps) {
   const isMobile = useIsMobile();
+  const { setIsUploadingSource } = useSourceStore();
+  const { user } = useUser();
+  const router = useRouter();
+  const { webId } = router.query;
+  const { data: web } = useFetchWebById(webId as string);
+  const isOwner = web && user && web.userId === user.id;
 
   const content = (
-    <Tabs defaultValue="document">
-      <TabsList className="bg-transparent w-full md:w-auto">
-        {tabs.map(({ label, value }) => (
-          <TabsTrigger
-            key={value}
-            value={value}
-            className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
-          >
-            {label}
-          </TabsTrigger>
-        ))}
+    <Tabs className="px-4" defaultValue="files">
+      <TabsList className="bg-transparent rounded-none border-b w-full flex items-center justify-start">
+        <div>
+          {newTabs.map(({ label, value }) => (
+            <TabsTrigger
+              key={value}
+              value={value}
+              className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+            >
+              {label}
+            </TabsTrigger>
+          ))}
+        </div>
       </TabsList>
-
-      {tabs.map(({ value, placeholder, type }) => (
+      {newTabs.map(({ value, placeholder, emptyValue, types }) => (
         <TabsContent
           key={value}
           value={value}
           className="data-[state=active]:animate-fadeIn"
         >
           <Command className="bg-transparent no-scrollbar">
-            <CommandInput
-              placeholder={placeholder}
-              className="bg-transparent"
-            />
+            <div className="flex flex-row items-center justify-between mb-2 px-1">
+              <div>
+                <CommandInput
+                  placeholder={placeholder}
+                  className="bg-muted h-10 w-64"
+                />
+              </div>
+              {isOwner && (
+                <div>
+                  <Button
+                    onClick={() => {
+                      setOpen(false);
+                      setIsUploadingSource(true);
+                    }}
+                    className="h-10 border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40 rounded-lg"
+                  >
+                    <CirclePlus size={12} className="mr-1" /> Add{" "}
+                    {value === "files" ? "file" : "link"}{" "}
+                  </Button>{" "}
+                </div>
+              )}
+            </div>
             <CommandList className="h-[50dvh] no-scroll-bg">
-              <CommandEmpty>
-                No {type}s found. <span>Add one?</span>
+              <CommandEmpty className="text-muted-foreground">
+                {emptyValue}
               </CommandEmpty>
               <CommandGroup>
                 {sources &&
                   sources
-                    .filter((source) => source.type === type)
+                    .filter((source) => types.includes(source.type)) // Filter sources based on the 'types' array
                     .map((source: Source, id: number) => (
                       <CommandItem
                         key={id}
-                        className="cursor-pointer items-start"
+                        className="cursor-pointer items-center"
                         onSelect={() => handleSourceClick(source.sourceId)}
                         value={`${source.name}${id}`}
                       >
-                        {mapSourceToIcon(source.type, 16)}
-                        <span className="ml-2">{source.name}</span>
+                        {getTypeIcon(source.type, true)}
+                        <span className="ml-1">{source.name}</span>
                       </CommandItem>
                     ))}
               </CommandGroup>
@@ -132,7 +152,7 @@ function SearchSourceModal({
     return (
       <Drawer open={open} onOpenChange={setOpen}>
         <TooltipProvider>
-          <Tooltip>
+          <Tooltip delayDuration={100}>
             <TooltipTrigger asChild>
               <DrawerTrigger asChild>
                 <Button
@@ -153,7 +173,8 @@ function SearchSourceModal({
         <DrawerContent className="lg:max-w-2xl no-scrollbar h-[70dvh]">
           {" "}
           <DrawerTitle className="flex items-center p-4">
-            <Search size={16} className="mr-2"></Search>Search Sources
+            <Search size={16} className="mr-2"></Search>
+            <span className="font-semibold">Sources</span>
           </DrawerTitle>
           <Separator className="my-2" />
           <div className="p-4">{content}</div>
@@ -165,7 +186,7 @@ function SearchSourceModal({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <TooltipProvider>
-        <Tooltip>
+        <Tooltip delayDuration={100}>
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
               <Button
@@ -183,11 +204,13 @@ function SearchSourceModal({
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <DialogContent className="lg:max-w-2xl no-scrollbar">
-        {" "}
-        <DialogTitle className="flex items-center">
-          <Search size={16} className="mr-2"></Search>Search Sources
-        </DialogTitle>
+      <DialogContent className="lg:max-w-2xl no-scrollbar px-0">
+        <DialogHeader className="px-4">
+          <DialogTitle className="flex items-center text-lg">
+            <i className="hn hn-search mr-2"></i>{" "}
+            <span className="font-base">Sources</span>
+          </DialogTitle>
+        </DialogHeader>
         <Separator className="my-2" />
         {content}
       </DialogContent>

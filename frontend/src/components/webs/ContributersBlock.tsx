@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import { useFetchContributers } from "@/hooks/webs";
-import Image from "next/image";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { PublicUser } from "@/types/user";
 import { Skeleton } from "../ui/skeleton";
 import { Badge } from "../ui/badge";
@@ -18,14 +12,18 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import UserAvatar from "../utility/UserAvatar";
+import { useRouter } from "next/router";
 
-function ContributorsBlock({ webId, count }: { webId: string; count: number }) {
+function ContributorsBlock({ count }: { count: number }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
+  const { webId } = router.query;
+
   const {
     data: contributors,
     isLoading: isContributorsLoading,
     isError: isContributorsError,
-  } = useFetchContributers(webId);
+  } = useFetchContributers(webId as string);
 
   const MAX_VISIBLE_CONTRIBUTORS = 5;
 
@@ -55,55 +53,29 @@ function ContributorsBlock({ webId, count }: { webId: string; count: number }) {
   const visibleContributors = contributors.slice(0, MAX_VISIBLE_CONTRIBUTORS);
 
   const renderContributor = (contributor: PublicUser) => (
-    <Tooltip key={contributor.id} delayDuration={100}>
-      <TooltipTrigger>
-        <div className="relative w-10 h-10 rounded-full overflow-hidden cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all">
-          <UserAvatar
-            userId={contributor.id}
-            username={contributor.username}
-            height={32}
-            width={32}
-          />
-        </div>
-      </TooltipTrigger>
-      <TooltipContent side="bottom" className="p-0">
-        <div className="p-4 max-w-xs">
-          <div className="flex items-center mb-2">
-            <Image
-              src={`https://robohash.org/${contributor.id}?size=300x300`}
-              alt={contributor.username || "User"}
-              width={32}
-              height={32}
-              className="rounded-full mr-2"
+    <UserAvatar
+      showTooltip
+      userId={contributor.id}
+      dimension={32}
+      extraTooltipContent={
+        <div className="text-sm text-gray-400 flex items-center">
+          <svg
+            className="w-4 h-4 mr-1"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 10V3L4 14h7v7l9-11h-7z"
             />
-            <div>
-              <div className="font-bold text-foreground">
-                {contributor.username || "Anonymous"}
-              </div>
-              <div className="text-sm text-gray-400">
-                {contributor.full_name}
-              </div>
-            </div>
-          </div>
-          <div className="text-sm text-gray-400 flex items-center">
-            <svg
-              className="w-4 h-4 mr-1"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 10V3L4 14h7v7l9-11h-7z"
-              />
-            </svg>
-            Iterated this web
-          </div>
+          </svg>
+          Iterated this web
         </div>
-      </TooltipContent>
-    </Tooltip>
+      }
+    />
   );
 
   return (
@@ -134,22 +106,12 @@ function ContributorsBlock({ webId, count }: { webId: string; count: number }) {
                 </DialogHeader>
                 <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 mt-4 max-h-80 overflow-y-auto p-2">
                   {contributors.map((contributor: PublicUser) => (
-                    <div
+                    <UserAvatar
                       key={contributor.id}
-                      className="flex flex-col items-center text-center"
-                    >
-                      <div className="relative w-12 h-12 rounded-full overflow-hidden mb-2">
-                        <Image
-                          src={`https://robohash.org/${contributor.id}?size=300x300`}
-                          alt={contributor.username || "Contributor"}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <span className="text-xs font-medium truncate w-full">
-                        {contributor.username || "Anonymous"}
-                      </span>
-                    </div>
+                      userId={contributor.id}
+                      dimension={43}
+                      showTooltip
+                    />
                   ))}
                 </div>
               </DialogContent>

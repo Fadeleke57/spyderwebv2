@@ -1,4 +1,3 @@
-import { Button } from "../ui/button";
 import { useRouter } from "next/router";
 import TypingAnimation from "@/components/ui/typing-animation";
 import { cn } from "@/lib/utils";
@@ -8,31 +7,34 @@ import GSAPButton from "../utility/GSAPButton";
 import { useState } from "react";
 import { AuthModal } from "../auth/AuthModal";
 import Link from "next/link";
+import { useStytch } from "@stytch/nextjs";
 
 function Header() {
   const [open, setIsOpen] = useState(false);
   const router = useRouter();
-  const [typeOfAuth, setTypeOfAuth] = useState<"login" | "register">("login");
-  const handleGoogleSignIn = () => {
-    window.location.href = `${environment.api_url}/auth/login/google`;
+
+  const handleButtonClick = () => {
+    setIsOpen(true);
   };
 
-  const handleButtonClick = (typeOfAuth: "login" | "register") => {
-    setTypeOfAuth(typeOfAuth);
-    console.log("handleButtonClick", typeOfAuth);
-    setIsOpen(true);
+  const client = useStytch();
+  const handleGoogleSignIn = () => {
+    client.oauth.google.start({
+      login_redirect_url: `${environment.client_url}/auth/authenticate`,
+      signup_redirect_url: `${environment.client_url}/auth/authenticate`,
+    });
   };
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row items-center justify-between">
       <div className="relative mb-6 sm:mb-8 w-full lg:max-w-[44rem]">
-        <p className="text-xs sm:text-sm text-slate-500 mb-3 sm:mb-4 dark:text-white italic">
-          Breaking the Black Box
+        <p className="text-xs sm:text-sm text-slate-500 mb-3 sm:mb-4 dark:text-foreground italic">
+          Your Context On the Go.
         </p>
         <h1 className="relative text-5xl lg:text-9xl tracking-tight max-w-xs lg:max-w-full mb-2 sm:mb-4 font-extrabold lg:font-bold dark:text-white">
           Welcome to the{" "}
           <TypingAnimation
-            className="text-violet-400/80 text-5xl sm:text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tigh italic"
+            className="text-violet-400/80 text-5xl sm:text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tight italic"
             text="Web."
           />
           <span className="absolute top-0 right-0 lg:top-4 lg:right-28 text-violet-400/80 text-sm tracking-normal font-semibold">
@@ -40,9 +42,9 @@ function Header() {
           </span>
         </h1>
         <p className="leading-7 mt-4 text-base sm:text-lg font-medium max-w-full lg:max-w-xl mx-0 text-muted-foreground dark:text-white">
-          Learn. Create. Connect. Share.{" "}
+          Intake. Create. Connect. Share.{" "}
           <span className="hidden md:inline lg:inline">
-            Let AI curate your deep dives and turn them into starting points for
+            Let AI curate your context and turn them into starting points for
             discovery.
           </span>
         </p>{" "}
@@ -92,7 +94,7 @@ function Header() {
                 <GSAPButton
                   buttonClassname="border lg:justify-center"
                   classname="text-sm font-medium"
-                  onClick={() => handleButtonClick("register")}
+                  onClick={() => handleButtonClick()}
                 >
                   Create Account
                 </GSAPButton>
@@ -118,14 +120,7 @@ function Header() {
           </form>
         </div>
       </div>
-      {open && (
-        <AuthModal
-          referrer="landing"
-          type={typeOfAuth}
-          open={open}
-          setOpen={setIsOpen}
-        />
-      )}
+      {open && <AuthModal open={open} setOpen={setIsOpen} />}
     </div>
   );
 }

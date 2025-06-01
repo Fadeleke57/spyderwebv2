@@ -1,11 +1,10 @@
-//explore
 import React, { useState, useEffect } from "react";
 import { useFetchPublicWebs, useSearchWebs } from "@/hooks/webs";
 import { WebCard } from "@/components/explore/WebCard";
 import { Web } from "@/types/web";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/context/UserContext"
 import Head from "next/head";
 import useMediaQuery from "@/hooks/general";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -13,7 +12,6 @@ import SearchBar from "@/components/utility/Searchbar";
 import { Loader } from "lucide-react";
 import PopularWebsCard from "@/components/explore/PopularWebsCard";
 import ExplorePageErrorCard from "@/components/utility/ExplorePageErrorCard";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 function Index() {
   const { ref, inView } = useInView();
@@ -52,13 +50,13 @@ function Index() {
     ? `Discover webs matching your query "${query}".`
     : "Explore public webs on Spydr. Find shared research and projects.";
 
-  const handleSearch = (searchQuery: string, results: any) => {
+  const handleSearch = (searchQuery: string) => {
     setQuery(searchQuery);
   };
 
   return (
-    <div className="">
-      <ScrollArea className="flex flex-1 flex-col gap-4 w-full lg:h-[calc(108.9vh-64px)] relative">
+    <div className="lg:h-screen flex flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col gap-4 w-full relative overflow-y-auto">
         <Head>
           <title>{title}</title>
           <meta name="description" content={description} />
@@ -71,8 +69,7 @@ function Index() {
             }`}
           />
         </Head>
-        <div></div>
-        <div className="p-4 flex flex-col lg:px-8 lg:border-b-2 relative lg:sticky lg:-top-4 bg-background lg:z-50 flex justify-end">
+        <div className="p-4 flex flex-col lg:px-8 relative lg:sticky lg:top-0 z-[25] flex justify-end bg-background/60 border-zinc-800 backdrop-blur-md">
           {!user && isMobile && (
             <Button
               className="w-full mb-2"
@@ -89,17 +86,25 @@ function Index() {
           )}
           <SearchBar onSearch={handleSearch} initialQuery={query} />
         </div>
-        <div className="w-full h-full lg:px-8 lg:pt-6 pb-10 flex flex-row gap-6 relative">
+        <div className="w-full lg:px-8 pb-10 flex flex-row gap-6 relative">
           <div className="w-full flex flex-col lg:gap-1">
             {error && <ExplorePageErrorCard />}
-            {isLoading ? (
-              <Loader className="animate-spin mx-auto" />
+            {isLoading || isSearchLoading ? (
+              <Loader className="animate-spin mx-auto my-16" /> 
             ) : (
-              displayWebs.map((web: Web) => (
-                <div key={web.webId} className="cursor-pointer">
-                  <WebCard user={user || null} web={web} />
-                </div>
-              ))
+              displayWebs.length > 0 ? (
+                displayWebs.map((web: Web) => (
+                  <div key={web.webId} className="cursor-pointer">
+                    <WebCard user={user || null} web={web} />
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground mt-16">
+                  {query
+                    ? `No webs found for "${query}".`
+                    : "No public webs available."}
+                </p>
+              )
             )}
 
             <div ref={ref} className="h-10 w-full">
@@ -114,13 +119,11 @@ function Index() {
         </div>
         {open && (
           <AuthModal
-            type="login"
-            referrer="explore"
             open={open}
             setOpen={setOpen}
           />
         )}
-      </ScrollArea>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Web } from "@/types/web";
-import { useGetAllImagesForWeb, useLikeWeb, useUnlikeWeb } from "@/hooks/webs";
+import {
+  useFetchWebById,
+  useGetAllImagesForWeb,
+  useLikeWeb,
+  useUnlikeWeb,
+} from "@/hooks/webs";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import Image from "next/image";
 import { ImageModal } from "../utility/ImageModal";
@@ -8,21 +12,25 @@ import { AnimatedStarButton } from "../explore/AnimatedStar";
 import { useUser } from "@/context/UserContext";
 import AuthModal from "../auth/AuthModal";
 
-function PublicWebView({ web }: { web: Web }) {
+function PublicWebView({ webId }: { webId: string }) {
+  const { data: web } = useFetchWebById(webId);
   const { data: imageUrls, isLoading: imagesLoading } = useGetAllImagesForWeb(
-    web.webId
+    web && web.webId
   );
   const { user } = useUser();
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [webLikedCount, setWebLikedCount] = useState(web.likes.length);
+  const [webLikedCount, setWebLikedCount] = useState(
+    (web && web.likes.length) || 0
+  );
   const [webLiked, setWebLiked] = useState(false);
-  const { mutateAsync: likeWeb } = useLikeWeb(web.webId);
-  const { mutateAsync: unlikeWeb } = useUnlikeWeb(web.webId);
-  const [images, setImages] = React.useState<string[]>([]);
-  const [imageModalOpen, setImageModalOpen] = React.useState(false);
-  const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
+  const { mutateAsync: likeWeb } = useLikeWeb(web && web.webId);
+  const { mutateAsync: unlikeWeb } = useUnlikeWeb(web && web.webId);
+  const [images, setImages] = useState<string[]>([]);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const isOwner = web && user && web.userId === user.id;
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (imageUrls) {
       setImages(imageUrls);
     }
@@ -57,6 +65,9 @@ function PublicWebView({ web }: { web: Web }) {
   };
 
   useEffect(() => {
+    if (!web) {
+      return;
+    }
     setWebLiked(web.likes.includes(user?.id as string));
     setWebLikedCount(web.likes.length);
 
@@ -64,6 +75,10 @@ function PublicWebView({ web }: { web: Web }) {
       setImages(imageUrls);
     }
   }, [web, user, imageUrls]);
+
+  if (isOwner) {
+    return null;
+  }
 
   return (
     <div className="grid w-full items-start gap-6">
@@ -101,7 +116,7 @@ function PublicWebView({ web }: { web: Web }) {
                   height={300}
                   width={500}
                   src={image}
-                  alt={web.name}
+                  alt={(web && web.name) || "web image"}
                   className="rounded-md w-full border h-auto object-cover"
                   style={{ maxHeight: "400px" }}
                   onClick={(e) => handleImageClick(e, image)}
@@ -121,8 +136,6 @@ function PublicWebView({ web }: { web: Web }) {
       <AuthModal
         open={authModalOpen}
         setOpen={setAuthModalOpen}
-        type="like"
-        referrer="webview"
       />
     </div>
   );

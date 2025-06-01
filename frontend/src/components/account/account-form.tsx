@@ -39,6 +39,7 @@ import { PublicUser } from "@/types/user";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/router";
 import { PricingModal } from "../pricing/PricingModal";
+import { environment } from "@/environment/load_env";
 
 const accountFormSchema = z.object({
   name: z
@@ -67,19 +68,14 @@ export function AccountForm({ user }: { user: PublicUser }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const { theme, setTheme } = useTheme();
   const router = useRouter();
-  const { logout } = useUser();
+  const { handleLogout } = useUser();
   const [showPricingModal, setShowPricingModal] = useState(false);
-  console.log(user);
-  const handleLogout = async () => {
-    await logout();
-    router.push("/explore");
-  };
 
   const handleDeleteSubscription = async () => {
     try {
       setIsDeleting(true);
       const apiUrl =
-        process.env.NEXT_PUBLIC_LOCAL_API_URL || "http://localhost:8000";
+        environment.api_url || "http://localhost:8000";
       const response = await fetch(`${apiUrl}/payment/cancel-subscription`, {
         method: "POST",
         headers: {

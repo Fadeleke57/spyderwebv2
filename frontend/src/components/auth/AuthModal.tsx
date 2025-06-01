@@ -1,86 +1,58 @@
-/// <reference types="chrome" />
-
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
+  DialogHeader,
+  DialogClose,
 } from "@/components/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { googleIcon } from "../utility/Icons";
-import { environment } from "@/environment/load_env";
-import { DialogClose, DialogTitle } from "@radix-ui/react-dialog";
-import { useCheckEmailExists } from "@/hooks/user";
+import { AuthHeader } from "./AuthHeader";
+import { EmailStepForm } from "./forms/EmailStepForm";
+import { LoginForm } from "./forms/LoginForm";
+import { RegisterForm } from "./forms/RegisterForm";
 import { useToast } from "@/components/ui/use-toast";
-import api from "@/lib/api";
-import Link from "next/link";
-import Image from "next/image";
-import sLogo from "@/assets/slogonobg.png";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useStytch } from "@stytch/nextjs";
+import { useRouter } from "next/router";
+import { useCheckEmailExists } from "@/hooks/user";
+import { useSubmitRegister } from "@/hooks/auth";
 
 const emailSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
+  email: z.string().email(),
 });
-
 const loginSchema = z.object({
   email: z.string().email(),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" }),
+  password: z.string().min(6),
 });
-
 const registerSchema = z.object({
   email: z.string().email(),
   username: z
     .string()
-    .min(6, { message: "Username must be at least 6 characters" })
-    .max(14, { message: "Username must be less than 14 characters" })
-    .regex(/^[a-zA-Z0-9_]+$/, {
-      message: "Username can only contain letters, numbers, and underscores",
-    }),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" }),
+    .min(6)
+    .max(14)
+    .regex(/^[a-zA-Z0-9_]+$/),
+  password: z.string().min(6),
 });
 
 type AuthModalProps = {
-  type: string;
-  referrer: string;
   open: boolean;
   setOpen: (open: boolean) => void;
 };
-type EmailSubmission = {
-  email: string;
-};
 
-type LoginSubmission = {
-  email: string;
-  password: string;
-};
+export const SESSION_MINUTES = 10080;
 
-type RegisterSubmission = {
-  email: string;
-  username: string;
-  password: string;
-};
-
-export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
+export function AuthModal({ open, setOpen }: AuthModalProps) {
   const [step, setStep] = useState("email");
   const [userEmail, setUserEmail] = useState("");
-  const [isExistingUser, setIsExistingUser] = useState(false);
   const { toast } = useToast();
-  const { mutateAsync: doesEmailExist } = useCheckEmailExists();
+  const router = useRouter();
+  const client = useStytch();
+
+  const { mutateAsync: checkEmailExists, isPending: isCheckingEmail } =
+    useCheckEmailExists();
+  const { mutateAsync: submitRegister, isPending: isRegistering } =
+    useSubmitRegister();
 
   const emailForm = useForm({
     resolver: zodResolver(emailSchema),
@@ -97,92 +69,73 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
     defaultValues: { email: "", username: "", password: "" },
   });
 
-  const handleGoogleSignIn = () => {
-    window.location.href = `${environment.api_url}/auth/login/google`;
-  };
+  useEffect(() => {
+    if (step === "login") loginForm.setValue("email", userEmail);
+    if (step === "register") registerForm.setValue("email", userEmail);
+  }, [step, userEmail, loginForm, registerForm]);
 
-  const onEmailSubmit = async (data: EmailSubmission) => {
+  const onEmailSubmit = async (data: any) => {
     try {
-      const exists = await doesEmailExist(data.email);
+      const exists = await checkEmailExists(data.email);
       setUserEmail(data.email);
-      setIsExistingUser(exists);
-      setStep("auth");
-
-      if (exists) {
-        loginForm.setValue("email", data.email);
-      } else {
-        registerForm.setValue("email", data.email);
-      }
-    } catch (error) {
+      setStep(exists ? "login" : "register");
+    } catch (err) {
       toast({
         title: "Error",
-        description: "Unable to verify email. Please try again.",
+        description: "Email verification failed",
         variant: "destructive",
       });
     }
   };
 
-  const onLoginSubmit = async (data: LoginSubmission) => {
+  const onLoginSubmit = async (data: any) => {
     try {
-      const response = await api.post(
-        "/auth/token",
-        new URLSearchParams({
-          username: data.email,
-          password: data.password,
-        }).toString(),
-        {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        localStorage.setItem("token", response.data.access_token);
-        setOpen(false);
-        toast({
-          title: "Success",
-          description: "Login successful!",
-        });
-        window.location.href = "/home";
-      }
-    } catch (error) {
-      toast({
-        title: "Login Failed",
-        description: "Invalid email or password.",
-        variant: "destructive",
-      });
-    }
-  };
-  const [registerLoading, setRegisterLoading] = useState(false);
-  const onRegisterSubmit = async (data: RegisterSubmission) => {
-    setRegisterLoading(true);
-    try {
-      const response = await api.post("/auth/register", {
+      const response = await client.passwords.authenticate({
         email: data.email,
-        username: data.username,
         password: data.password,
+        session_duration_minutes: SESSION_MINUTES,
       });
-
-      if (response.status === 201) {
-        localStorage.setItem("token", response.data.access_token);
-        toast({
-          title: "Success",
-          description: "Registration successful!",
-        });
-        setOpen(false);
-        const demoWebId = response.data.new_web_id;
-        //window.location.href = `/web/${demoWebId}?ref=register`;
-        window.location.href = `/auth/onboarding?email=${data.email}&username=${data.username}&isGoogleSignup=false&defaultWebId=${demoWebId}`;
+      if (response.session) {
+        toast({ title: "Login successful", variant: "default" });
+        const returnTo = localStorage.getItem("returnTo");
+        if (returnTo) {
+          localStorage.removeItem("returnTo");
+          window.location.href = returnTo;
+        } else {
+          window.location.href = "/home?src=login";
+        }
       }
-    } catch (error: any) {
+    } catch (err: any) {
       toast({
-        title: "Registration Failed",
-        description: error?.response?.data?.detail || "Something went wrong",
+        title: "Error",
+        description: err.message,
         variant: "destructive",
       });
     }
-    setRegisterLoading(false);
+  };
+
+  const onRegisterSubmit = async (data: any) => {
+    try {
+      const response = await client.passwords.create({
+        email: data.email,
+        password: data.password,
+        session_duration_minutes: SESSION_MINUTES,
+      });
+      if (response.session) {
+        await submitRegister({
+          email: data.email,
+          username: data.username,
+          password: data.password,
+          stytchUserId: response.user_id,
+        });
+      }
+    } catch (err: any) {}
+  };
+
+  const resetToEmail = () => {
+    setStep("email");
+    setUserEmail("");
+    emailForm.reset({ email: "" });
   };
 
   return (
@@ -192,221 +145,34 @@ export function AuthModal({ type, referrer, open, setOpen }: AuthModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <DialogClose />
-        <div className="flex flex-col items-center justify-center">
-          <Image
-            src={sLogo}
-            className="w-16 h-16 mb-4 rotate-45"
-            alt="Spydr Logo"
+        <DialogHeader className="w-full text-center mb-6">
+          <AuthHeader step={step} email={userEmail} />
+        </DialogHeader>
+
+        {step === "email" && (
+          <EmailStepForm
+            form={emailForm}
+            onSubmit={onEmailSubmit}
+            isPending={isCheckingEmail}
           />
-          <DialogTitle className="text-center text-xl font-semibold">
-            {isExistingUser && step !== "email"
-              ? "Welcome back"
-              : "A New Age of Ideation"}
-          </DialogTitle>
-          <DialogDescription className="text-center text-sm ">
-            {isExistingUser && step === "email"
-              ? "Enter your email or continue with Google"
-              : step === "auth" && isExistingUser
-                ? "Login to continue to your account"
-                : "Join the community"}
-          </DialogDescription>
-        </div>
+        )}
 
-        {step === "email" ? (
-          <Form {...emailForm}>
-            <form
-              onSubmit={emailForm.handleSubmit(onEmailSubmit)}
-              className="w-full md:w-[400px]"
-            >
-              <div className="flex flex-col gap-6">
-                <Button
-                  type="button"
-                  className="flex flex-row gap-2"
-                  onClick={handleGoogleSignIn}
-                >
-                  {googleIcon}
-                  Continue with Google
-                </Button>
+        {step === "login" && (
+          <LoginForm
+            form={loginForm}
+            onSubmit={onLoginSubmit}
+            isPending={false}
+            onBack={resetToEmail}
+          />
+        )}
 
-                <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-                  <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                    or
-                  </span>
-                </div>
-
-                <div className="flex flex-col gap-6">
-                  <FormField
-                    control={emailForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="email"
-                            placeholder="marginalia@example.com"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button variant="secondary" type="submit" className="w-full">
-                    Continue with Email
-                  </Button>
-                  <div className="text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
-                    By continuing, you agree to our{" "}
-                    <Link
-                      href="/about/terms-of-service"
-                      className="dark:text-blue-500"
-                    >
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link
-                      href="/about/privacy-policy"
-                      className="dark:text-blue-500"
-                    >
-                      Privacy Policy
-                    </Link>
-                    .
-                  </div>
-                </div>
-              </div>
-            </form>
-          </Form>
-        ) : isExistingUser ? (
-          <Form {...loginForm}>
-            <form
-              onSubmit={loginForm.handleSubmit(onLoginSubmit)}
-              className="w-full md:w-[400px]"
-            >
-              <div className="flex flex-col gap-6">
-                <div className="grid gap-2">
-                  <FormLabel>Email</FormLabel>
-                  <div className="px-4 py-2 bg-muted rounded-md">
-                    {userEmail}
-                  </div>
-                </div>
-
-                <FormField
-                  control={loginForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter your password"
-                          {...field}
-                          type="password"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button variant="secondary" type="submit" className="w-full">
-                  Sign In
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="link"
-                  className="text-sm"
-                  onClick={() => {
-                    setStep("email");
-                    setUserEmail("");
-                    emailForm.reset();
-                    loginForm.reset();
-                  }}
-                >
-                  Use a different email
-                </Button>
-              </div>
-            </form>
-          </Form>
-        ) : (
-          <Form {...registerForm}>
-            <form
-              onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
-              className="w-full md:w-[400px]"
-            >
-              <div className="flex flex-col gap-6">
-                <div className="grid gap-2">
-                  <FormLabel>Email</FormLabel>
-                  <div className="px-4 py-2 bg-muted rounded-md">
-                    {userEmail}
-                  </div>
-                </div>
-
-                <FormField
-                  control={registerForm.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Username</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          type="text"
-                          placeholder="Enter a username"
-                        />
-                      </FormControl>
-                      <FormLabel className="text-xs font-normal">
-                        Username must be unique and must be between 6-14
-                        characters long
-                      </FormLabel>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={registerForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter a password"
-                          {...field}
-                          type="password"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button
-                  disabled={registerLoading}
-                  variant="secondary"
-                  type="submit"
-                  className="w-full"
-                >
-                  {registerLoading ? "Loading..." : "Create Account"}
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="link"
-                  className="text-sm"
-                  onClick={() => {
-                    setStep("email");
-                    setUserEmail("");
-                    emailForm.reset();
-                    registerForm.reset();
-                  }}
-                >
-                  Use a different email
-                </Button>
-              </div>
-            </form>
-          </Form>
+        {step === "register" && (
+          <RegisterForm
+            form={registerForm}
+            onSubmit={onRegisterSubmit}
+            isPending={isRegistering}
+            onBack={resetToEmail}
+          />
         )}
       </DialogContent>
     </Dialog>

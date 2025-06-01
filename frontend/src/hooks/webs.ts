@@ -1,4 +1,4 @@
-import api from "@/lib/api";
+import { api } from "@/lib/api";
 import { UpdateWeb } from "@/types/web";
 import {
   useInfiniteQuery,
@@ -67,9 +67,11 @@ export const useFetchSavedWebs = () => {
   });
 };
 
-export const useUploadImageToWeb = () => {
+export const useUploadImageToWeb = (webId: string | undefined | null) => {
+  const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ webId, files }: { webId: string; files: File[] }) => {
+    mutationFn: async ({ files }: { files: File[] }) => {
+      if (!webId) return;
       const formData = new FormData();
 
       files.forEach((file) => {
@@ -84,10 +86,17 @@ export const useUploadImageToWeb = () => {
 
       return data.imageUrls;
     },
+    onError: (error: any) => {
+      console.error("Image upload failed:", error);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["images", "web", webId] });
+    },
   });
 };
 
 export const useDeleteImageFromWeb = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
       webId,
@@ -102,16 +111,21 @@ export const useDeleteImageFromWeb = () => {
       );
       return response.data.result;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["images", "web"] });
+    },
   });
 };
 
-export function useGetAllImagesForWeb(webId: string) {
+export function useGetAllImagesForWeb(webId: string | null) {
   return useQuery({
     queryKey: ["images", "web", webId],
     queryFn: async () => {
       const response = await api.get(`/webs/images/web/${webId}`);
       return response.data.result;
     },
+    enabled: !!webId,
+    staleTime: Infinity,
   });
 }
 
@@ -131,10 +145,11 @@ export function useDeleteWeb() {
   });
 }
 
-export const useUpdateWeb = (webId: string) => {
+export const useUpdateWeb = (webId: string | null | undefined) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (config: UpdateWeb) => {
+      if (!webId) return;
       const response = await api.patch(`/webs/update/${webId}`, config, {
         headers: { "Content-Type": "application/json" },
       });
@@ -219,9 +234,10 @@ export const useFetchWebById = (webId: string) => {
   });
 };
 
-export function useLikeWeb(webId: string) {
+export function useLikeWeb(webId?: string | null) {
   return useMutation({
     mutationFn: async () => {
+      if (!webId) return;
       const response = await api.post(`/webs/like/${webId}`);
       return response.data.result;
     },
@@ -230,9 +246,10 @@ export function useLikeWeb(webId: string) {
   });
 }
 
-export function useUnlikeWeb(webId: string) {
+export function useUnlikeWeb(webId?: string | null) {
   return useMutation({
     mutationFn: async () => {
+      if (!webId) return;
       const response = await api.post(`/webs/unlike/${webId}`);
       return response.data.result;
     },
@@ -319,6 +336,43 @@ export function useFetchContributers(webId: string) {
     queryFn: async () => {
       const response = await api.get(`/webs/contributers/${webId}`);
       return response.data.result;
+    },
+    enabled: !!webId,
+  });
+}
+
+export type ExportGraphPayload = {
+  webId: string;
+  selectedSources: string[];
+  asMarkdown: boolean;
+};
+
+export function useExportGraph() {
+  return useMutation({
+    mutationFn: async ({
+      webId,
+      selectedSources,
+      asMarkdown,
+    }: ExportGraphPayload) => {
+      const response = await api.post(
+        `/webs/export/graph/context`,
+        {
+          webId,
+          selectedSources,
+          asMarkdown,
+        },
+        {
+          responseType: asMarkdown ? "blob" : "json",
+        }
+      );
+      if (asMarkdown) {
+        return response.data;
+      }
+
+      return response.data.result;
+    },
+    onError: () => {
+      console.error();
     },
   });
 }

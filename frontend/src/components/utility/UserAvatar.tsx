@@ -1,5 +1,4 @@
 import React from "react";
-import { Button } from "../ui/button";
 import Image from "next/image";
 import { Skeleton } from "../ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -10,69 +9,91 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { useRouter } from "next/router";
+import { useFetchUserById } from "@/hooks/user";
 
 function UserAvatar({
-  profilepicurl,
   userId,
   className,
-  width,
-  height,
-  username,
+  deactive,
+  dimension = 48,
+  showTooltip,
+  extraTooltipContent,
 }: {
-  profilepicurl?: string;
   userId?: string;
-  username?: string;
   className?: string;
-  width?: number;
-  height?: number;
+  dimension?: number;
+  deactive?: boolean;
+  showTooltip?: boolean;
+  extraTooltipContent?: React.ReactNode;
 }) {
   const router = useRouter();
+  const { data: user } = useFetchUserById(userId);
+
+  const username = user?.username;
+  const profilepicurl = user?.profile_picture_url;
+
   const navigateOnClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
+    if (deactive) {
+      return;
+    }
     if (username) {
       router.push(`/user/${username}`);
     }
   };
+
+  const imageDisplay = (
+    <div
+      className={cn(
+        "rounded-full overflow-hidden border dark:bg-muted hover:border-blue-500 transition-all duration-200 ease-in-out",
+        className
+      )}
+      style={{ width: dimension, height: dimension }}
+      onClick={navigateOnClick}
+    >
+      {userId ? (
+        <Image
+          src={profilepicurl || `https://robohash.org/${userId}?size=300x300`}
+          alt="Avatar"
+          width={dimension}
+          height={dimension}
+          className="object-cover w-full h-full"
+        />
+      ) : (
+        <Skeleton
+          style={{ width: dimension, height: dimension }}
+          className="rounded-full"
+        />
+      )}
+    </div>
+  );
+
   return (
     <TooltipProvider>
-      <Tooltip>
+      <Tooltip delayDuration={300}>
         <TooltipTrigger>
-          <Button
-            variant="outline"
-            size="icon"
-            className={cn(
-              "rounded-full dark:bg-muted",
-              className,
-              `w-[${width}px] h-[${height}px]`
-            )}
-            onClick={navigateOnClick}
-          >
-            {userId ? (
-              <Image
-                src={
-                  profilepicurl || `https://robohash.org/${userId}?size=300x300`
-                }
-                alt="Avatar"
-                width={width || 36}
-                height={height || 36}
-                className="rounded-full"
-              />
-            ) : (
-              <Skeleton className="w-[36px] h-[36px]" />
-            )}
-          </Button>
+          {user ? (
+            imageDisplay
+          ) : (
+            <Skeleton style={{ width: dimension, height: dimension }} className="rounded-full" />
+          )}
         </TooltipTrigger>
-        {username && (
-          <TooltipContent side="bottom" className="p-0">
-            <div className="p-4 max-w-xs flex flex-col">
-              <Button
-                variant={"link"}
-                onClick={(e: React.MouseEvent) => navigateOnClick(e)}
-                className="text-sm text-muted-foreground p-0 m-0 h-fit w-fit"
-              >
-                View profile
-              </Button>
+        {user && showTooltip && (
+          <TooltipContent side="top" className="p-0">
+            <div className="p-2 max-w-sm">
+              <div className="flex items-center mb-2 mt-1">
+                <div className="mr-2">{imageDisplay}</div>
+                <div>
+                  <div className="font-bold text-foreground truncate">
+                    {user.full_name || "Anonymous"}
+                  </div>
+                  <div className="text-sm text-gray-400 truncate">
+                    @{user.username}
+                  </div>
+                </div>
+              </div>
+              {extraTooltipContent}
             </div>
           </TooltipContent>
         )}

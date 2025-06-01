@@ -13,14 +13,11 @@ async def reset_user_credits(user_id: str) -> bool:
         if not user:
             return False
 
-        plan = user.get("subscription_plan", "free")
-        credits = PLAN_CREDITS.get(plan, PLAN_CREDITS["free"])
-
         Users.update_one(
             {"id": user_id},
             {
                 "$set": {
-                    "credits": credits,
+                    "credits": 0,
                     "last_credits_reset": datetime.now(UTC),
                     "updated_at": datetime.now(UTC),
                 }
@@ -32,7 +29,7 @@ async def reset_user_credits(user_id: str) -> bool:
         return False
 
 
-async def deduct_credits(user_id: str, operation: str) -> tuple[bool, Optional[str]]:
+def deduct_credits(user_id: str, operation: str) -> tuple[bool, Optional[str]]:
     """
     Deduct credits for an operation.
     Returns (success, error_message)
@@ -40,18 +37,19 @@ async def deduct_credits(user_id: str, operation: str) -> tuple[bool, Optional[s
     try:
         cost = OPERATION_COSTS.get(operation, 1)
         user = Users.find_one({"id": user_id})
+        plan = user.get("subscription_plan", "free")
 
         if not user:
             return False, "User not found"
 
         current_credits = user.get("credits", 0)
 
-        if current_credits < cost:
+        if current_credits + cost > PLAN_CREDITS.get(plan, 0):
             return False, "Insufficient credits"
 
         Users.update_one(
             {"id": user_id},
-            {"$inc": {"credits": -cost}, "$set": {"updated_at": datetime.now(UTC)}},
+            {"$inc": {"credits": cost}, "$set": {"updated_at": datetime.now(UTC)}},
         )
 
         return True, None
@@ -84,7 +82,7 @@ async def update_user_plan(
             {
                 "$set": {
                     "subscription_plan": tier,
-                    "credits": PLAN_CREDITS[tier],
+                    "credits": 0,
                     "is_yearly": is_yearly,
                     "last_credits_reset": now,
                     "updated_at": now,

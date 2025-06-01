@@ -26,12 +26,10 @@ import {
   MoveLeft,
   PlusCircle,
   SquarePen,
-  Trash2,
-  Waypoints,
   X,
 } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
-import { cn, formatText } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   useConfigureChat,
   useDeleteChat,
@@ -50,17 +48,20 @@ import { useRouter } from "next/router";
 import DeleteModal from "./DeleteModal";
 import { useUser } from "@/context/UserContext";
 import { PricingModal } from "@/components/pricing/PricingModal";
+import GroupedChats from "./GroupedChats";
+import { useSourceStore } from "@/store/sourceStore";
+import UploadStatusPopover from "../webs/UploadStatusPopover";
 
-type viewType = "chat" | "history";
+export type viewType = "chat" | "history";
 
-type DBMessage = Message & {
+export type DBMessage = Message & {
   chatId: string;
   userId: string;
   createdAt: Date;
   messages: Message[];
 };
 
-type CharlotteAIProps = {
+export type CharlotteAIProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
   view: viewType;
@@ -99,11 +100,12 @@ const SpydrAI = () => {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [previouslySelectedChat, setPreviouslySelectedChat] = useState<
     string | null
-    >(null);
-  
+  >(null);
+  const { isUploadingSource, setIsUploadingSource } = useSourceStore();
+
   const { mutateAsync: configureCharlotte, isPending: isConfiguring } =
     useConfigureChat();
-  
+
   const router = useRouter();
   const { webId } = router.query;
   const isMobile = useIsMobile();
@@ -153,9 +155,16 @@ const SpydrAI = () => {
   };
 
   useEffect(() => {
-    if (router.isReady && webId) {
+    if (!router.isReady || !webId) return;
+
+    // call it once immediately
+    configureCharlotte(webId as string);
+
+    const interval = setInterval(() => {
       configureCharlotte(webId as string);
-    }
+    }, 3000);
+
+    return () => clearInterval(interval);
   }, [router.isReady, webId, configureCharlotte]);
 
   if (isMobile) {
@@ -177,30 +186,35 @@ const SpydrAI = () => {
   }
 
   return (
-    <div className="fixed z-50 bottom-20 lg:bottom-6 lg:right-20">
-      <Popover open={open} onOpenChange={setOpen}>
-        <SimpleTooltip content="Chat with Charlotte AI">
-          <PopoverTrigger asChild className="bg-zinc-800">
-            <Button
-              variant={"link"}
-              className={`p-0 m-0 w-10 h-10 bg-background rounded-full ${open && "opacity-0"}`}
+    <div className="relative">
+      <UploadStatusPopover />
+      {!isUploadingSource && (
+        <div className="fixed z-50 bottom-20 lg:bottom-6 lg:right-20">
+          <Popover open={open} onOpenChange={setOpen}>
+            <SimpleTooltip content="Chat with Charlotte AI">
+              <PopoverTrigger asChild className="bg-zinc-800">
+                <Button
+                  variant={"link"}
+                  className={`p-0 m-0 w-10 h-10 bg-background rounded-full ${open && "opacity-0"}`}
+                >
+                  <Charlotte width={16} height={16} activeEyes={!isMobile} />
+                </Button>
+              </PopoverTrigger>
+            </SimpleTooltip>
+            <PopoverContent
+              className="w-[250px] lg:w-[35rem] lg:h-[31rem] bg-background/70 border-zinc-800 backdrop-blur-md rounded-xl p-0"
+              align="end"
+              side="top"
+              sideOffset={-40}
+              avoidCollisions={false}
+              onInteractOutside={(e) => e.preventDefault()}
+              onEscapeKeyDown={(e) => e.preventDefault()}
             >
-              <Charlotte width={16} height={16} activeEyes={!isMobile} />
-            </Button>
-          </PopoverTrigger>
-        </SimpleTooltip>
-        <PopoverContent
-          className="w-[250px] lg:w-[500px] lg:h-[450px] bg-background/70 border-zinc-800 backdrop-blur-md rounded-xl p-0"
-          align="end"
-          side="top"
-          sideOffset={-40}
-          avoidCollisions={false}
-          onInteractOutside={(e) => e.preventDefault()}
-          onEscapeKeyDown={(e) => e.preventDefault()}
-        >
-          {mapViewToComponent()}
-        </PopoverContent>
-      </Popover>
+              {mapViewToComponent()}
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
     </div>
   );
 };
@@ -226,8 +240,7 @@ const CharlotteChatInterface = ({
   const { mutateAsync: saveChat } = useSaveChat(chatId);
   const { webId } = router.query;
   const { user } = useUser();
-
-  const token = localStorage.getItem("token") || "";
+  const { isUploadingSource, setIsUploadingSource } = useSourceStore();
 
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
 
@@ -243,6 +256,7 @@ const CharlotteChatInterface = ({
     append,
   } = useChat({
     maxSteps: 4,
+    credentials: "include",
     initialMessages: initialMessages,
     id: chatId,
     onFinish: (_, { usage }) => {
@@ -262,7 +276,6 @@ const CharlotteChatInterface = ({
           errorDetail = error.message;
         }
 
-        // Check for 402 error in either the status or the error message
         const is402Error = errorDetail.includes("Insufficient credits");
 
         if (is402Error) {
@@ -285,10 +298,7 @@ const CharlotteChatInterface = ({
 
       stop();
     },
-    api: environment.api_url + "/chat",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    api: environment.api_url + "/chat/add/",
   });
 
   const {
@@ -698,46 +708,13 @@ const ChatHistoryInterface = ({
         </div>
       </div>
 
-      <ScrollArea className="flex-grow flex justify-center p-2 pt-0 space-y-2 px-3">
-        <motion.div
-          className="w-full space-y-2"
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-        >
-          {allChats &&
-            allChats.map((chat: DBMessage, index: number) => (
-              <motion.div
-                key={index}
-                variants={itemVariants}
-                className="relative border w-full p-2 bg-muted/80 hover:bg-muted cursor-pointer rounded-md text-muted-foreground flex flex-col transition-all duration-200 ease-in-out"
-                onClick={() => handleSelectChat(chat.chatId)}
-                onMouseEnter={() => setDeleteVisible(index)}
-                onMouseLeave={() => setDeleteVisible(-1)}
-              >
-                <span className="text-sm font-semibold text-foreground">
-                  {formatText(chat.messages[0].content, 50)}
-                </span>
-                <span className="text-xs">
-                  {formatDate(chat.createdAt, "MMM dd, yyyy hh:mm a")}
-                </span>
-                <Button
-                  variant={"link"}
-                  className={`absolute top-4 right-4 h-fit w-fit p-1 ${deleteVisible === index ? "opacity-100" : "opacity-0"} transition-all duration-200 ease-in-out hover:text-red-400`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    setDeleteChatId(chat.chatId);
-                    setDeleteModalOpen(true);
-                  }}
-                >
-                  <Trash2 size={16} />
-                </Button>
-              </motion.div>
-            ))}
-        </motion.div>
-        <ScrollBar />
-      </ScrollArea>
+      <GroupedChats
+        allChats={allChats}
+        handleSelectChat={handleSelectChat}
+        setDeleteChatId={setDeleteChatId}
+        setDeleteModalOpen={setDeleteModalOpen}
+      />
+
       {deleteModalOpen && (
         <DeleteModal
           open={deleteModalOpen}

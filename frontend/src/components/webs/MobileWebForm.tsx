@@ -1,5 +1,4 @@
 import React from "react";
-import { Web } from "@/types/web";
 import {
   Drawer,
   DrawerContent,
@@ -7,19 +6,18 @@ import {
   DrawerTrigger,
 } from "../ui/drawer";
 import { Button } from "../ui/button";
-import { Info, Scroll } from "lucide-react";
-import { PublicUser } from "@/types/user";
+import { Info } from "lucide-react";
 import WebForm from "./WebForm";
 import PublicWebView from "./PublicWebView";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { ScrollBar } from "../ui/scroll-area";
+import { useUser } from "@/context/UserContext";
+import { useFetchWebById } from "@/hooks/webs";
 
-type ViewProps = {
-  web: Web;
-  user: PublicUser | null;
-};
-
-function MobileWebView({ web, user }: ViewProps) {
+function MobileWebView({ webId }: { webId: string }) {
+  const { data: web } = useFetchWebById(webId);
+  const { user } = useUser();
+  const isOwner = web && user && web.userId === user.id;
   return (
     <Drawer>
       <DrawerTrigger asChild>
@@ -32,10 +30,10 @@ function MobileWebView({ web, user }: ViewProps) {
         <DrawerTitle hidden>Title</DrawerTitle>
         <ScrollArea className="h-[60vh]">
           <ScrollBar orientation="horizontal" />
-          {web?.userId === user?.id ? (
-            <WebForm web={web} user={user} />
+          {isOwner ? (
+            <WebForm webId={webId} />
           ) : (
-            <PublicWebView web={web} />
+            <PublicWebView webId={webId} />
           )}
         </ScrollArea>
       </DrawerContent>

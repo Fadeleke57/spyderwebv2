@@ -9,6 +9,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { DialogDescription } from "@radix-ui/react-dialog";
+
 export default function OnboardingPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -22,18 +23,6 @@ export default function OnboardingPage() {
   });
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to continue.",
-        variant: "destructive",
-      });
-      router.push("/");
-      return;
-    }
-
     const username = (router.query.username as string) || "";
     const firstName = (router.query.firstName as string) || "";
     const lastName = (router.query.lastName as string) || "";

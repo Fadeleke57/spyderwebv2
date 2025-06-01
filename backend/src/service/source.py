@@ -6,11 +6,14 @@ from uuid import uuid4
 from datetime import datetime
 from fastapi import HTTPException
 from src.models.index import Source, create_process, update_process, Webs, Embeddings
+from src.lib.youtube.index import client as youtubeClient
+from src.utils.storage import handleEmbeddingStorage
 from src.db.neo4j import client as neo4jClient
 from src.lib.pinecone.index import client as pineconeClient
 from src.lib.logger.index import logger
 from fastapi import BackgroundTasks
 import uuid
+import time
 from pytz import UTC
 
 
@@ -18,14 +21,42 @@ class SourceService:
     def __init__(self):
         pass
 
-    def embed_and_upsert_website(self, source: Source, md: str):
+    def addLinkMetaData(self, sourceId: str, metadata: dict):
+        """
+        Updates source metadata in the Neo4j database.
 
+        Args:
+            sourceId (str): The ID of the source to update.
+            metadata (dict): The metadata to update.
+
+        Returns:
+            bool: Whether the update was successful.
+        """
+        try:
+            neo4jClient.update_source(sourceId, metadata)
+            logger.info(f"Updated source {sourceId} metadata: {metadata}")
+            return True
+        except Exception as e:
+            logger.error(f"Error updating source metadata: {e}")
+            return False
+
+    def embed_and_upsert_website(self, source: Source, md: str):
+        """
+        Embed a website's markdown content using Pinecone and upsert it directly.
+
+        Args:
+            source (Source): The source document
+            md (str): The markdown content of the website
+
+        Returns:
+            None
+        """
         try:
 
             chunks = pineconeClient.chunk_clean_text(md)
 
             results = pineconeClient.embed_and_upsert_to_pinecone(
-                source=source, chunks=chunks, user_id=source["userId"]
+                source=source, chunks=chunks
             )
 
             logger.info(f"Pinecone results: {results}")
@@ -35,15 +66,27 @@ class SourceService:
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
 
     def embed_and_upsert_youtube(self, source: Source, transcripts: List[str]):
+        """
+        Embed a YouTube video's transcripts using Pinecone and upsert them directly.
+
+        Args:
+            source (Source): The source document
+            transcripts (List[str]): The transcripts of the YouTube video
+
+        Returns:
+            None
+        """
         if not source or not transcripts:
             raise HTTPException(
                 status_code=404, detail="Source item not created or found"
             )
 
         try:
-            chunks = pineconeClient.chunk_youtube_transcript(transcripts)
+            chunks = pineconeClient.chunk_youtube_transcript(
+                transcript_data=transcripts
+            )
             results = pineconeClient.embed_and_upsert_to_pinecone(
-                source=source, chunks=chunks, user_id=source["userId"]
+                source=source, chunks=chunks
             )
             logger.info(f"Pinecone results: {results}")
         except Exception as e:
@@ -51,6 +94,21 @@ class SourceService:
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
 
     def embed_and_upsert_pdf(self, file_path: str, source: Source):
+        """
+        Extracts text from a PDF file, converts it to markdown, and upserts the
+        resulting embeddings into Pinecone.
+
+        Args:
+            file_path (str): The path to the PDF file.
+            source (Source): The source document metadata.
+
+        This function processes each page of the PDF, extracting text as markdown,
+        chunking the text, and creating embeddings. The embeddings are then upserted
+        into Pinecone, with each page's results logged.
+
+        Raises:
+            RuntimeError: If there is an error during the embedding process.
+        """
         try:
 
             # extract Markdown for each page as a list of dictionaries
@@ -73,9 +131,9 @@ class SourceService:
                 results = pineconeClient.embed_and_upsert_to_pinecone(
                     source=source,
                     chunks=chunks,
-                    user_id=source["userId"],
-                    page_number=page_number,
+                    pageNumber=page_number,
                 )
+                time.sleep(1)
 
             logger.info(f"Pinecone results: {results}")
 
@@ -84,6 +142,16 @@ class SourceService:
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
 
     def embed_and_upsert_note(self, source: Source, text: str):
+        """
+        Embed and upsert a note's text chunks into Pinecone.
+
+        Args:
+            source (Source): The source document
+            text (str): The note's text content
+
+        Raises:
+            RuntimeError: If there is an error during the embedding process.
+        """
         if not text:
             logger.info("No text found in note. Skipping...")
             return
@@ -91,8 +159,9 @@ class SourceService:
             chunks = pineconeClient.chunk_clean_text(
                 text=text, chunk_size=1000, chunk_overlap=50
             )
+            logger.info(f"Upserting {len(chunks)} chunks to Pinecone...")
             results = pineconeClient.embed_and_upsert_to_pinecone(
-                source=source, chunks=chunks, user_id=source["userId"]
+                source=source, chunks=chunks
             )
 
             logger.info(f"Pinecone results: {results}")
@@ -101,6 +170,18 @@ class SourceService:
             raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
 
     def refresh_note_embeddings(self, source: Source, content: str):
+        """
+        Refresh the embeddings of a note in Pinecone by deleting existing embeddings
+        and creating new ones from the provided content.
+
+        Args:
+            source (Source): The source document containing metadata for the embeddings.
+            content (str): The note's content to generate new embeddings from.
+
+        Returns:
+            bool: True if the embeddings were successfully refreshed, False otherwise.
+        """
+
         try:
 
             noteEmbeddings = list(Embeddings.find({"sourceId": source["sourceId"]}))
@@ -117,6 +198,11 @@ class SourceService:
                 )
                 Embeddings.delete_many({"sourceId": source["sourceId"]})
                 logger.info("Deleted previous note embeddings!")
+                embeddingsDeleteResult = handleEmbeddingStorage(
+                    sizeBytes=source.get("size", 0),
+                    userId=source["userId"],
+                    operation="$dec",
+                )
 
             self.embed_and_upsert_note(source, content)
             logger.info("Refreshed note chunks successfully")
@@ -127,14 +213,29 @@ class SourceService:
             return False
 
     def delete_source_embeddings(self, source: Source):
-        try:
+        """
+        Delete all embeddings associated with a given source document.
 
+        Args:
+            source (Source): The source document containing metadata for the embeddings.
+
+        Returns:
+            bool: True if the embeddings were successfully deleted, False otherwise.
+        """
+        try:
             sourceEmbeddings = Embeddings.find({"sourceId": source["sourceId"]})
             sourceEmbeddingsToDelete = [e["embeddingId"] for e in sourceEmbeddings]
 
             logger.info(f"Deleting {len(sourceEmbeddingsToDelete)} embeddings")
 
             if sourceEmbeddingsToDelete:
+
+                embeddingsStorageResult = handleEmbeddingStorage(
+                    sizeBytes=source["size"],
+                    userId=source["userId"],
+                    operation="$dec",
+                )
+
                 pineconeClient.index.delete(
                     ids=sourceEmbeddingsToDelete,
                     namespace="sources",
@@ -150,6 +251,17 @@ class SourceService:
             return False
 
     def refresh_metadata(self, webId: str, sourceId: str, metadata: dict):
+        """
+        Updates the metadata of all embeddings associated with a given source document.
+
+        Args:
+            webId (str): The ID of the web containing the source document.
+            sourceId (str): The ID of the source document containing the embeddings.
+            metadata (dict): A dictionary containing the new metadata to update.
+
+        Returns:
+            bool: True if the embeddings metadata were successfully updated, False otherwise.
+        """
         logger.info(f"Updating source metadata: {metadata}")
         try:
             pinecone_safe_metadata = metadata.copy()
@@ -173,6 +285,22 @@ class SourceService:
             return False
 
     def parse_obsidian_links(self, web_id: str, sources: List[Source]) -> bool:
+        """
+        Parse Obsidian links from a list of sources and create connections between them.
+
+        This function will iterate over all sources in the given list, and for each source,
+        it will search for Obsidian-style links in the source content. If the target of a link
+        is found in the same list of sources, a connection will be created between the two
+        sources in the Neo4j database.
+
+        Args:
+            web_id (str): The ID of the web containing the sources.
+            sources (List[Source]): A list of sources to parse.
+
+        Returns:
+            bool: True if the function was successful, False otherwise.
+        """
+
         connection_proccess_id = create_process(
             web_id=web_id,
             type="connect",
@@ -285,6 +413,60 @@ class SourceService:
             logger.error(str(e))
             return False
 
+    def embed_and_upsert_voice_note(self, source: Source, text: str):
+        """
+        Create embeddings for voice note transcription and store in Pinecone.
+        Following the same pattern as notes since we're dealing with text content.
+
+        Args:
+            source (Source): The source document
+            text (str): The transcribed text (similar to note content)
+        """
+        try:
+            # same chunking as notes
+            chunks = pineconeClient.chunk_clean_text(
+                text=text, chunk_size=1000, chunk_overlap=50
+            )
+            results = pineconeClient.embed_and_upsert_to_pinecone(
+                source=source, chunks=chunks
+            )
+
+            logger.info(f"Pinecone results: {results}")
+        except Exception as e:
+            logger.error(f"Error processing Pinecone embeddings: {e}")
+            raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
+
+    def embed_iterated_sources(self, sourceIds: List[str]):
+        for sourceId in sourceIds:
+            source = neo4jClient.get_source_by_id(label="source", source_id=sourceId)
+            if source:
+                if source["type"] == "note":
+                    self.embed_and_upsert_note(source, source.get("content", ""))
+                elif source["type"] == "youtube":
+                    video_id = youtubeClient.extract_youtube_id(source["url"])
+                    if video_id:
+                        logger.info(f"Found video id: {video_id}")
+                        transcripts = youtubeClient.get_video_transcript(
+                            video_id=video_id
+                        )
+                        if transcripts:
+                            self.embed_and_upsert_youtube(source, transcripts)
+                    else:
+                        logger.info(f"[WARNING] No video id found for source: {source}")
+                elif source["type"] == "voice_note":
+                    self.embed_and_upsert_voice_note(source, source.get("content", ""))
+                elif source["type"] == "website":
+                    self.embed_and_upsert_website(source, source.get("content", ""))
+                # elif source["type"] == "document": figure out what to do with documents
+                # self.embed_and_upsert_pdf(source, source["content"])
+                else:
+                    logger.info(
+                        f"[WARNING] Unknown source type: {source['type']} or pdf document"
+                    )
+            else:
+                logger.info(f"[WARNING] No source found with id: {sourceId}")
+        logger.info(f"Embedded {len(sourceIds)} sources")
+
     def create_onboarding_sources(
         self, web_id: str, user_id: str, background_tasks: BackgroundTasks
     ):
@@ -312,7 +494,7 @@ class SourceService:
             ),
             "url": None,
             "type": "note",
-            "size": None,
+            "size": 0,
             "created": now,
             "updated": now,
         }
@@ -342,7 +524,7 @@ class SourceService:
             ),
             "url": None,
             "type": "note",
-            "size": None,
+            "size": 0,
             "created": now,
             "updated": now,
         }
@@ -350,7 +532,7 @@ class SourceService:
         source_to_insert3 = {
             "sourceId": source_id3,
             "webId": web_id,
-            "size": 300000,
+            "size": 0,
             "created": now,
             "name": "Tracing the thoughts of a large language model",
             "type": "youtube",
@@ -368,7 +550,7 @@ class SourceService:
         source_to_insert4 = {
             "sourceId": source_id4,
             "webId": web_id,
-            "size": 1000,
+            "size": 0,
             "created": now,
             "name": "Yann Lecun On The Merits of Open Source Ideas",
             "type": "website",
@@ -381,7 +563,7 @@ class SourceService:
         source_to_insert5 = {
             "sourceId": source_id5,
             "webId": web_id,
-            "size": 959000,
+            "size": 0,
             "created": now,
             "name": "The Consumer Internet Is Dated It’s Time Gen Z Transformed It - General Catalyst",
             "type": "website",
@@ -394,7 +576,7 @@ class SourceService:
         source_to_insert6 = {
             "sourceId": source_id6,
             "webId": web_id,
-            "size": 3841800,
+            "size": 0,
             "created": now,
             "name": "Weaving the Annotated Web - Jon Udell",
             "type": "website",

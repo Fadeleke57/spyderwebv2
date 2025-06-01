@@ -2,14 +2,13 @@ from pytz import UTC
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query, HTTPException
 from fastapi.responses import StreamingResponse
-from src.routes.auth.oauth2 import manager
-from src.utils.exceptions import check_user
+from src.routes.auth.utils import manager
 from src.lib.logger.index import logger
 from src.lib.openai.index import client as openaiClient
 from src.utils.chat.prompt import convert_to_openai_messages, stream_text
 from src.models.index import Request, User, Chats
 from src.utils.credits import deduct_credits, get_user_credits
-from src.constants.credits import OPERATION_COSTS
+from src.constants.credits import OPERATION_COSTS, PLAN_CREDITS
 
 router = APIRouter()
 
@@ -43,9 +42,11 @@ def configure_chat(webId: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/")
+@router.post("/add")
 async def handle_chat_data(
-    request: Request, user: User = Depends(manager), protocol: str = Query("data")
+    request: Request,
+    user: User = Depends(manager.required),
+    protocol: str = Query("data"),
 ):
     """
     Handle incoming chat data from a user.
@@ -61,7 +62,6 @@ async def handle_chat_data(
     Raises:
         HTTPException: If an error occurs during processing, a 500 status code is raised.
     """
-    check_user(user)
 
     # Check credits before processing
     current_credits = await get_user_credits(user["id"])
@@ -70,7 +70,7 @@ async def handle_chat_data(
     if current_credits is None:
         raise HTTPException(status_code=500, detail="Error checking credits")
 
-    if current_credits < chat_cost:
+    if current_credits + chat_cost > PLAN_CREDITS.get(user["subscription_plan"], 0):
         # Return a 402 Payment Required status with a clear message
         raise HTTPException(
             status_code=402,  # Payment Required
@@ -79,7 +79,7 @@ async def handle_chat_data(
 
     try:
         # Deduct credits if sufficient
-        success, error = await deduct_credits(user["id"], "chatbot")
+        success, error = deduct_credits(user["id"], "chatbot")
         if not success:
             raise HTTPException(status_code=400, detail=error)
 
@@ -99,7 +99,7 @@ async def handle_chat_data(
 
 
 @router.post("/{chatId}/save")
-def save_chat(chatId: str, payload: dict, user: User = Depends(manager)):
+def save_chat(chatId: str, payload: dict, user: User = Depends(manager.required)):
     """
     Save chat data for a given chat ID.
 
@@ -114,7 +114,6 @@ def save_chat(chatId: str, payload: dict, user: User = Depends(manager)):
     Raises:
         HTTPException: If an error occurs during saving, a 500 status code is raised.
     """
-    check_user(user)
     try:
         messages_to_save = payload.get("messages")
 
@@ -147,7 +146,7 @@ def save_chat(chatId: str, payload: dict, user: User = Depends(manager)):
 
 
 @router.delete("/{chatId}")
-def delete_chat(chatId: str, user: User = Depends(manager)):
+def delete_chat(chatId: str, user: User = Depends(manager.required)):
     """
     Delete a chat for a given chat ID.
 
@@ -161,7 +160,6 @@ def delete_chat(chatId: str, user: User = Depends(manager)):
     Raises:
         HTTPException: If an error occurs during deletion, a 500 status code is raised.
     """
-    check_user(user)
     try:
         Chats.delete_one({"chatId": chatId, "userId": user["id"]})
         return {"result": True}
@@ -171,7 +169,7 @@ def delete_chat(chatId: str, user: User = Depends(manager)):
 
 
 @router.get("/all")
-def get_all_chats(user: User = Depends(manager)):
+def get_all_chats(user: User = Depends(manager.required)):
     """
     Retrieve all chats for the authenticated user, sorted by the last update time in descending order.
 
@@ -185,7 +183,6 @@ def get_all_chats(user: User = Depends(manager)):
         HTTPException: If an error occurs during retrieval, a 500 status code is raised.
     """
 
-    check_user(user)
     try:
         chats = (
             list(Chats.find({"userId": user["id"]}, {"_id": 0}).sort("updatedAt", -1))
@@ -198,7 +195,7 @@ def get_all_chats(user: User = Depends(manager)):
 
 
 @router.get("/{chatId}")
-def get_chat(chatId: str, user: User = Depends(manager)):
+def get_chat(chatId: str, _=Depends(manager.required)):
     """
     Retrieve messages for a specific chat ID.
 
@@ -213,7 +210,6 @@ def get_chat(chatId: str, user: User = Depends(manager)):
         HTTPException: If an error occurs during retrieval, a 500 status code is raised.
     """
 
-    check_user(user)
     try:
         chat = Chats.find_one({"chatId": chatId}, {"_id": 0})
         return {"result": chat["messages"] if chat else []}

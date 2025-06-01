@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useFetchWebById } from "@/hooks/webs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -34,68 +34,90 @@ import { toast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import FeedbackModal from "@/components/utility/FeedbackModal";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { environment } from "@/environment/load_env";
+import { useSourceStore } from "@/store/sourceStore";
+import SimpleTooltip from "@/components/utility/SimpleTooltip";
+import { usePreviousRoute } from "@/hooks/router";
 
 function Index() {
   const router = useRouter();
   const isMobile = useIsMobile();
   const { webId } = router.query;
+  const { user } = useUser();
+  const { setIsUploadingSource } = useSourceStore();
+  const { mutateAsync: pinWeb, isPending: pinLoading } = usePinWeb(
+    webId as string,
+    user ? user.id : null
+  );
+  const { mutateAsync: unpinWeb, isPending: unpinLoading } = useUnpinWeb(
+    webId as string,
+    user ? user.id : null
+  );
   const {
     data: webData,
     isLoading: webLoading,
-    error,
-    refetch,
+    error: webError,
   } = useFetchWebById(webId as string);
 
-  const [web, setWeb] = React.useState<Web | null>(webData || null);
-  const [feedbackModalOpen, setFeedbackModalOpen] = React.useState(false);
+  const { mutateAsync: configureCharlotte } = useConfigureChat();
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [showIterateModal, setShowIterateModal] = useState(false);
+  const [web, setWeb] = useState<Web | null>(null);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [isPinned, setPinned] = React.useState(
+    user && user.websPinned.includes(webId as string)
+  );
+  const isOwner = user && web && user.id === web.userId;
 
-  const { mutateAsync: pinWeb, isPending: pinLoading } = usePinWeb(
-    webId as string
+  useEffect(() => {
+    const returnTo = localStorage.getItem("returnTo");
+    if (returnTo) {
+      localStorage.removeItem("returnTo");
+      window.location.href = returnTo;
+    }
+  }, []);
+
+  const previousRoute = usePreviousRoute();
+
+  const handleBack = () => {
+    const avoidRoutes = ["/onboarding", "/payment/failed", "/payment/success"];
+
+    if (previousRoute && !avoidRoutes.includes(previousRoute)) {
+      router.back();
+    } else {
+      router.push("/explore");
+    }
+  };
+
+  const title = webLoading ? "Loading..." : (web && web.name) || "Web Details";
+  const description = webLoading
+    ? "Getting web details..."
+    : (web && web.description) || "View and explore web details.";
+
+  const { data: webOwner, isLoading: webOwnerLoading } = useFetchUserById(
+    web && web.userId
   );
-  const { mutateAsync: unpinWeb, isPending: unpinLoading } = useUnpinWeb(
-    webId as string
-  );
-  const [showIterateModal, setShowIterateModal] = React.useState(false);
-  const [authModalOpen, setAuthModalOpen] = React.useState(false);
+
+  const { data: iteratedFromUser } = useFetchUserById(web && web.iteratedFrom);
+
   useEffect(() => {
     if (webData) {
       setWeb(webData);
     }
   }, [webData]);
 
-  const { data: webOwner, isLoading: webOwnerLoading } = useFetchUserById(
-    web?.userId as string
-  );
-
-  const { data: iteratedFromUser, isLoading: iteratedFromLoading } =
-    useFetchUserById(web?.iteratedFrom ? web?.iteratedFrom : "");
-
-  const { user } = useUser();
-
-  const [isPinned, setPinned] = React.useState(
-    user?.websPinned?.includes(webId as string) || false
-  );
-
   useEffect(() => {
     if (user) {
-      setPinned(user.websPinned?.includes(webId as string) || false);
+      setPinned(user.websPinned.includes(webId as string));
     }
   }, [user, webId]);
 
-  const isOwner = user?.id === webOwner?.id;
-
-  const title = webLoading ? "Loading..." : web?.name || "Web Details";
-  const description = webLoading
-    ? "Getting web details..."
-    : web?.description || "View and explore web details.";
-
-  const { mutateAsync: configureCharlotte } = useConfigureChat();
-
   useEffect(() => {
     if (webId) {
+      setIsUploadingSource(false);
       configureCharlotte(webId as string);
     }
-  }, [webId, configureCharlotte]);
+  }, [webId, configureCharlotte, setIsUploadingSource]);
 
   const handlePinToggle = async () => {
     if (!user) {
@@ -129,7 +151,7 @@ function Index() {
     }
   };
 
-  if (error) {
+  if (webError) {
     return (
       <div className="grid h-screen w-full overflow-hidden scrollbar-none">
         <Head>
@@ -153,7 +175,6 @@ function Index() {
       </div>
     );
   }
-
   return (
     <div className="grid h-[91dvh] lg:h-screen w-full overflow-hidden scrollbar-none">
       <Head>
@@ -170,17 +191,22 @@ function Index() {
       </Head>
       <div className="flex flex-col">
         <header
-          className={`sticky top-0 z-10 flex ${webLoading && "animate-pulse"} h-[70px] items-center justify-between gap-1 border-b bg-background px-4`}
+          className={`sticky top-0 z-10 flex ${webLoading && "animate-pulse"} h-[70px] items-center justify-between gap-1 border-b bg-background px-4 bg-background/40 backdrop-blur-md `}
         >
           <div className="flex flex-col z-40 items-center justify-start mb-3 lg:mb-0  max-w-[210px] lg:max-w-2xl">
             <div className="flex flex-col gap-2">
-              <Button
-                variant={"link"}
-                onClick={() => router.back()}
-                className="flex items-center gap-2 p-0 h-fit w-fit text-md font-semibold text-violet-400/80"
+              <div
+                onClick={() => {
+                  handleBack();
+                }}
+                className={`flex cursor-pointer bg-transparent items-center group gap-2 p-0 h-fit w-fit text-md font-semibold text-violet-400/80`}
               >
-                <ArrowLeft strokeWidth={4} className="h-4 w-4" /> Back
-              </Button>
+                <ArrowLeft
+                  strokeWidth={4}
+                  className="h-4 w-4 group-hover:-translate-x-1 transition-all ease-linear duration-150"
+                />{" "}
+                <span>Back</span>
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
@@ -193,7 +219,7 @@ function Index() {
             )}
             {webOwner && web?.enableAIConnections && (
               <TooltipProvider>
-                <Tooltip>
+                <Tooltip delayDuration={100}>
                   <TooltipTrigger asChild>
                     <div className="relative inline-flex items-center justify-center">
                       <div className="absolute rounded-full bg-violet-400/0 animate-pulse w-6 h-6 blur-sm"></div>
@@ -217,31 +243,31 @@ function Index() {
                 </Tooltip>
               </TooltipProvider>
             )}
-            {web && <MobileWebView web={web} user={user || null} />}
-            {webOwner?.id === user?.id && (
-              <Button
-                size="sm"
-                variant={"outline"}
-                onClick={handlePinToggle}
-                disabled={pinLoading || unpinLoading}
-                className={
-                  isPinned
-                    ? "bg-violet-400/30 border-violet-200 hover:bg-violet-400/40"
-                    : ""
-                }
-              >
-                {isPinned ? (
-                  <>
-                    <PinOff className="mr-2" size={16} />
-                    Unpin
-                  </>
-                ) : (
-                  <>
-                    <Pin className="mr-2" size={16} />
-                    Pin
-                  </>
-                )}
-              </Button>
+            {web && <MobileWebView webId={web.webId} />}
+            {webOwner && user && webOwner.id === user.id && (
+              <SimpleTooltip content={isPinned ? "Unpin Web" : "Pin Web"}>
+                <Button
+                  size="sm"
+                  variant={"outline"}
+                  onClick={handlePinToggle}
+                  disabled={pinLoading || unpinLoading}
+                  className={
+                    isPinned
+                      ? "bg-violet-400/30 border-violet-200 dark:hover:bg-violet-400/40"
+                      : ""
+                  }
+                >
+                  {isPinned ? (
+                    <>
+                      <PinOff size={16} />
+                    </>
+                  ) : (
+                    <>
+                      <Pin size={16} />
+                    </>
+                  )}
+                </Button>
+              </SimpleTooltip>
             )}
             {user && web && webOwner ? (
               <>
@@ -258,12 +284,13 @@ function Index() {
                     size="sm"
                     variant={"outline"}
                   >
-                    <span className="hidden md:inline lg:inline">Iterate </span>
+                    {" "}
                     <IterationCcw
-                      className="md:ml-2 lg:ml-2"
+                      className="md:mr-2 lg:mr-2"
                       size={16}
                       onClick={() => setShowIterateModal(true)}
                     />
+                    <span className="hidden md:inline lg:inline">Iterate </span>
                   </Button>
                 </IterateModal>
               </>
@@ -280,7 +307,9 @@ function Index() {
               </>
             )}
 
-            <ShareDialog link={`${window.location.origin}/web/${webId}`} />
+            <ShareDialog
+              link={`${typeof window !== "undefined" ? window.location.origin : environment.client_url}/web/${webId}`}
+            />
           </div>
         </header>
         <div className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3 overflow-hidden scrollbar-none">
@@ -295,17 +324,16 @@ function Index() {
               x-chunk="dashboard-03-chunk-0"
             >
               <div className="flex items-center gap-2 px-3">
-                <UserAvatar
-                  username={webOwner?.username}
-                  userId={web?.userId}
-                  height={28}
-                  width={28}
-                />
+                <UserAvatar showTooltip userId={web?.userId} dimension={38} />
                 <div className="flex flex-col gap-0">
-                  <h1 className="text-xs md:text-base lg:text-sm font-semibold m-0">
-                    {webOwner?.username || ""}{" "}
+                  <h1 className="text-xs md:text-base flex items-center lg:text-sm font-semibold m-0">
+                    {webOwnerLoading ? "Loading..." : ""}
+                    {(webOwner && webOwner.full_name) || ""}{" "}
                   </h1>
-                  {web?.iteratedFrom ? (
+                  <span className="text-foreground font-semibold text-xs">
+                    @{webOwner && webOwner.username}
+                  </span>
+                  {web && web.iteratedFrom ? (
                     <p className="text-xs font-normal text-muted-foreground">
                       Iterated From{" "}
                       <span className="font-semibold text-violet-400/80 dark:text-violet-400/80">
@@ -317,7 +345,8 @@ function Index() {
                   )}
 
                   <span className="text-xs text-muted-foreground font-normal m-0">
-                    {web?.updated &&
+                    {web &&
+                      web.updated &&
                       formatDistanceToNow(new Date(web.updated + "Z"), {
                         addSuffix: true,
                       })}
@@ -325,16 +354,13 @@ function Index() {
                 </div>
               </div>
 
-              {web && isOwner && <WebForm web={web} user={user || null} />}
-              {web && !isOwner && <PublicWebView web={web} />}
+              {web && <WebForm webId={web.webId} />}
+              {web && <PublicWebView webId={web.webId} />}
 
               {webId && web && web.iterations.length > 0 && (
                 <>
                   <Separator className="my-4" />
-                  <ContributersBlock
-                    count={web.iterations.length}
-                    webId={webId as string}
-                  />
+                  <ContributersBlock count={web.iterations.length} />
                 </>
               )}
             </ScrollArea>
@@ -342,17 +368,10 @@ function Index() {
           {!web && (
             <Skeleton className="flex h-full lg:h-[calc(90vh-18px)] flex-col rounded-xl lg:col-span-2"></Skeleton>
           )}
-          {web && (
-            <WebPlayground web={web} user={user || null} refetch={refetch} />
-          )}
+          {web && <WebPlayground />}
         </div>
       </div>
-      <AuthModal
-        referrer={"web"}
-        type="login"
-        open={authModalOpen}
-        setOpen={setAuthModalOpen}
-      />
+      <AuthModal open={authModalOpen} setOpen={setAuthModalOpen} />
     </div>
   );
 }

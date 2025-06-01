@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import spydrLogo from "@/assets/slogonobg.png";
-import onboardingGraphic from "@/assets/Sig up/Group.svg";
+import onboardingGraphic from "@/assets/onboardingGraphic.svg";
 import { useCompleteOnboarding } from "@/hooks/auth";
 
 const stepOneSchema = z.object({
@@ -155,7 +155,7 @@ export default function OnboardingFlow({
       logo: spydrLogo,
       quote:
         "Spydr helps me organize my research and connect ideas in ways I never thought possible.",
-      over: "Over 100,000 knowledge webs created",
+      over: "Over 10,000 memeory stores created",
       author: "Alex Chen",
       title: "UX Researcher",
     },
@@ -163,17 +163,17 @@ export default function OnboardingFlow({
       logo: spydrLogo,
       quote:
         "We needed a tool that could handle our complex information architecture while meeting strict performance requirements.",
-      over: "Over 500 teams collaborating daily",
+      over: "Over 20 teams collaborating daily",
       author: "Sarah Johnson",
       title: "Product Manager",
     },
     {
       logo: spydrLogo,
       quote:
-        "The introduction of Spydr has led to amazing performance and efficiency improvements in our knowledge management.",
-      over: "Over 10 million connections made",
+        "Spydr has been a game-changer for our team. My videos are blowing up.",
+      over: "Over 50,000 connections made",
       author: "Michael Torres",
-      title: "Knowledge Management Expert",
+      title: "Content Creator",
     },
   ];
 

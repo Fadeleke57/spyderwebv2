@@ -9,8 +9,12 @@ const prod_client_url = process.env.NEXT_PUBLIC_PROD_CLIENT_URL;
 export const environment = {
   environment: where,
   api_url: where === "dev" ? local_api_url : prod_api_url,
+  mcp_url: process.env.NEXT_PUBLIC_MCP_URL,
   client_url: where === "dev" ? local_client_url : prod_client_url,
   next_auth_secret: process.env.NEXT_AUTH_SECRET,
   google_client_id: process.env.GOOGLE_CLIENT_ID,
-  google_client_secret: process.env.GOOGLE_CLIENT_SECRET
+  google_client_secret: process.env.GOOGLE_CLIENT_SECRET,
+  posthog_key: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+  posthog_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+  stytch_public_token: process.env.NEXT_PUBLIC_STYTCH_TOKEN,
 };

@@ -13,7 +13,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
 import { useCreateWeb, useUploadImageToWeb } from "@/hooks/webs";
-import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { Textarea } from "../ui/textarea";
 import { ImageIcon, LoaderCircle, X } from "lucide-react";
@@ -43,13 +42,11 @@ type WebConfig = {
 const TOGGLE_MODAL_KEYBOARD_SHORTCUT = "x";
 
 export function NewWebModal({ children }: { children: React.ReactNode }) {
-  //make the button more flexible
-  const router = useRouter();
+  const [webId, setWebId] = useState<string | null>(null);
   const { toast } = useToast();
-  const { mutateAsync: createWeb, isPending: creatingWeb } =
-    useCreateWeb();
+  const { mutateAsync: createWeb, isPending: creatingWeb } = useCreateWeb();
   const { mutateAsync: uploadImages, isPending: addingImages } =
-    useUploadImageToWeb();
+    useUploadImageToWeb(webId);
   const [webConfig, setWebConfig] = useState<WebConfig>({
     name: "Untitled",
     description: "",
@@ -97,6 +94,15 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
         description: webConfig.description,
         visibility: webConfig.visibility,
       });
+      if (!webId) {
+        toast({
+          title: "Error creating web",
+          description: "Failed to create web.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setWebId(webId);
 
       setWebConfig({
         name: "Untitled",
@@ -112,7 +118,6 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
       try {
         if (imageConfig.stagedImages.length || imageConfig.stagedGifs.length) {
           const imageKeys = await uploadImages({
-            webId: webId,
             files: [...imageConfig.stagedImages, ...imageConfig.stagedGifs],
           });
         }
@@ -248,7 +253,7 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
               What would you like to start thinking about?
             </DialogTitle>
             <DialogDescription className="text-left">
-              Create a knowledge base.
+              Create a new memory store
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -271,7 +276,7 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
                 <Textarea
                   id="description"
                   rows={1}
-                  placeholder="Enter a brief description of your web..."
+                  placeholder="Enter a brief description of this memory store..."
                   {...form.register("description")}
                   className="w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-muted-foreground"
                   onInput={(e: any) => {

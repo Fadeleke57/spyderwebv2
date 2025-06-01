@@ -11,14 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { useSidebar } from "@/components/ui/sidebar";
 import { useUser } from "@/context/UserContext";
-import Router, { useRouter } from "next/router";
+import { useRouter } from "next/router";
 import { Button } from "../ui/button";
 import { AuthModal } from "../auth/AuthModal";
 import { useState } from "react";
@@ -27,7 +22,8 @@ import UserAvatar from "./UserAvatar";
 export function NavUser() {
   const { isMobile, state } = useSidebar();
   const [open, setOpen] = useState(false);
-  const { user, logout } = useUser();
+  const { user, handleLogout } = useUser();
+  const isCollapsed = state === "collapsed";
   const router = useRouter();
 
   const handleLogin = () => {
@@ -43,90 +39,77 @@ export function NavUser() {
         <Button onClick={handleLogin} variant={"secondary"} className="w-full">
           Sign Up
         </Button>
-        {open && (
-          <AuthModal
-            type="login"
-            referrer="nav"
-            open={open}
-            setOpen={setOpen}
-          />
-        )}
+        {open && <AuthModal open={open} setOpen={setOpen} />}
       </div>
     );
   }
 
-  const handleLogout = () => {
-    logout();
-    router.push("/explore");
-  };
-
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            asChild
-            className={`${state === "collapsed" && "ml-1"}`}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild className={`${isCollapsed && "ml-1"}`}>
+        <div
+          className={`flex items-center gap-2 px-1 py-1.5 text-left text-sm cursor-pointer ${!isCollapsed && "hover:bg-muted rounded-lg"}`}
+        >
+          <UserAvatar
+            userId={user.id}
+            dimension={isCollapsed ? 30 : 40}
+            className={`${isCollapsed && "-ml-[8.5px]"}`}
+          />
+          <div className="grid flex-1 text-left text-sm leading-tight">
+            <span className="truncate font-semibold">
+              {user.full_name || user.username}
+            </span>
+            <span className="truncate text-xs text-muted-foreground">
+              {user.email}
+            </span>
+          </div>
+          <Ellipsis className={`ml-auto size-4 ${isCollapsed && "hidden"}`} />
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+        side={isMobile ? "bottom" : "right"}
+        align="end"
+        sideOffset={4}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <UserAvatar deactive userId={user.id} dimension={35} />
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-semibold">
+                {user.full_name || user.username}
+              </span>
+              <span className="truncate text-xs text-muted-foreground">
+                @{user.username}
+              </span>
+            </div>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            className="flex flex-row items-center gap-2 cursor-pointer"
+            onClick={() => router.push("/settings?tab=account")}
           >
-            <SidebarMenuButton size="lg" isActive={false}>
-              <UserAvatar userId={user.id} />
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{user.username}</span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {user.email}
-                </span>
-              </div>
-              <Ellipsis
-                className={`ml-auto size-4 ${state === "collapsed" && "hidden"}`}
-              />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
-            align="end"
-            sideOffset={4}
+            <BadgeCheck size={16} />
+            Account
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="flex flex-row items-center gap-2 cursor-pointer"
+            onClick={() => router.push("/settings?tab=profile")}
           >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <UserAvatar username={user.username} userId={user.id} />
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">
-                    {user.username}
-                  </span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {user.email}
-                  </span>
-                </div>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuGroup>
-              <DropdownMenuItem
-                className="flex flex-row items-center gap-2 cursor-pointer"
-                onClick={() => router.push("/settings?tab=account")}
-              >
-                <BadgeCheck size={16} />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="flex flex-row items-center gap-2 cursor-pointer"
-                onClick={() => router.push("/settings?tab=profile")}
-              >
-                <Settings size={16} />
-                Settings
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="flex flex-row items-center gap-2 cursor-pointer"
-              onClick={handleLogout}
-            >
-              <LogOut className="text-red-500" size={16} />
-              <span className="text-red-500">Log out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
+            <Settings size={16} />
+            Settings
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="flex flex-row items-center gap-2 cursor-pointer"
+          onClick={handleLogout}
+        >
+          <LogOut className="text-red-500" size={16} />
+          <span className="text-red-500">Log out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

@@ -9,18 +9,13 @@ const api = axios.create({
   withCredentials: true,
 });
 
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
-    return config;
+const mcpAPI = axios.create({
+  baseURL: environment.mcp_url,
+  headers: {
+    "Content-Type": "application/json",
   },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+  withCredentials: true,
+})
 
 api.interceptors.response.use(
   (response) => {
@@ -33,4 +28,4 @@ api.interceptors.response.use(
   }
 );
 
-export default api;
+export { api, mcpAPI };

@@ -1,24 +1,14 @@
 import { useState, useEffect } from "react";
-import api from "@/lib/api";
+import { api } from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
 import { PublicUser, Search, UpdateUser } from "@/types/user";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
 
-export function useCheckUserState() {
-  const queryClient = useQueryClient();
-
-  const {
-    data: user,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["user", "me", "state"],
+export function useCheckLoggedInUser() {
+  return useQuery({
+    queryKey: ["user"],
     queryFn: async (): Promise<PublicUser | null> => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        return null;
-      }
       const response = await api.get("/auth/me");
       if (response.data) {
         return response.data;
@@ -26,13 +16,15 @@ export function useCheckUserState() {
         return null;
       }
     },
-    retry: false, //dont retry when error
+    retry: false,
   });
+}
 
-  const { mutate: logout } = useMutation({
+export function useLogout() {
+  const queryClient = useQueryClient();
+  return useMutation({
     mutationFn: async () => {
       await api.post("/auth/logout");
-      localStorage.removeItem("token");
     },
     onSuccess: () => {
       queryClient.setQueryData(["user"], null);
@@ -44,13 +36,6 @@ export function useCheckUserState() {
       });
     },
   });
-
-  return {
-    user,
-    isLoading,
-    error,
-    logout,
-  };
 }
 
 export function useFetchSearchHistory() {
@@ -106,7 +91,7 @@ export function useClearSearchHistory() {
   return { loading, error, clearSearchHistory };
 }
 
-export function useFetchUserById(userId: string) {
+export function useFetchUserById(userId: string | null | undefined) {
   return useQuery({
     queryKey: ["user", userId],
     queryFn: async () => {
@@ -118,6 +103,7 @@ export function useFetchUserById(userId: string) {
       return data;
     },
     enabled: !!userId,
+    staleTime: 120000, //2 minute stale time
   });
 }
 
@@ -203,12 +189,19 @@ export function useSaveWeb(webId: string) {
   });
 }
 
-export function usePinWeb(webId: string) {
+export function usePinWeb(webId: string, userId: string | null) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
+      if (!userId) return;
       const response = await api.patch(`/users/pin/web/${webId}`);
       const data = await response.data.result;
       return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["user", "pinned", "webs", userId],
+      });
     },
     onError: (err: any) => {
       console.error(err);
@@ -216,9 +209,10 @@ export function usePinWeb(webId: string) {
   });
 }
 
-export function useUnpinWeb(webId: string) {
+export function useUnpinWeb(webId: string, userId: string | null) {
   return useMutation({
     mutationFn: async () => {
+      if (!userId) return;
       const response = await api.patch(`/users/unpin/web/${webId}`);
       const data = await response.data.result;
       return data;
@@ -231,7 +225,7 @@ export function useUnpinWeb(webId: string) {
 
 export function useFetchPinnedWebs(userId: string) {
   return useQuery({
-    queryKey: ["user", "pinned", "webs"],
+    queryKey: ["user", "pinned", "webs", userId],
     queryFn: async () => {
       const response = await api.get(`/users/pinned/webs/${userId}`);
       const data = await response.data.result;
@@ -265,3 +259,33 @@ export function useFetchSavedWebs(userId: string) {
     enabled: !!userId,
   });
 }
+
+export const useUploadProfileImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+
+      formData.append("file", file);
+
+      const { data } = await api.post(
+        `/users/replace/profile/picture`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return data.result;
+    },
+    onError: (error: any) => {
+      console.error("Image upload failed:", error);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+};

@@ -1,17 +1,20 @@
 import os
+import io
 import uuid
+import json
 import boto3
 from pytz import UTC
 from datetime import datetime
 from typing import Optional, Literal
 from pymongo import ReturnDocument
 from fastapi import APIRouter, Depends, UploadFile, File, Query, BackgroundTasks
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 from fastapi.exceptions import HTTPException
 from botocore.exceptions import ClientError
 from werkzeug.utils import secure_filename
-from src.routes.auth.oauth2 import manager
+from src.routes.auth.utils import manager
 from src.lib.s3.index import S3Bucket
-from src.utils.exceptions import check_user
 from src.db.neo4j import client as neo4jClient
 from src.models.index import (
     Webs,
@@ -27,9 +30,13 @@ from src.models.index import (
 )
 from src.lib.logger.index import logger
 from src.core.config import settings
+from src.lib.stytch.index import StytchError
 from src.lib.pinecone.index import client as pineconeClient
 from src.service.web import service as webService
+from src.service.source import service as sourceService
 from src.routes.chat.index import configure_chat
+from src.utils.storage import handleFileStorage
+from src.routes.user.index import convert_to_public_user
 
 router = APIRouter()
 
@@ -42,7 +49,7 @@ def get_user_webs(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
     criteria: Optional[str] = None,
-    user: User = Depends(manager),
+    user: User = Depends(manager.required),
 ):
     """
     Retrieve paginated webs belonging to a user, sorted by creation date in descending order,
@@ -57,7 +64,6 @@ def get_user_webs(
     Returns:
         dict: A JSON response containing the paginated list of webs and pagination metadata.
     """
-    check_user(user)
 
     try:
 
@@ -128,7 +134,6 @@ async def get_webs(
     """
     authorized = False
     if userMakingRequest:
-        check_user(userMakingRequest)
         if userMakingRequest["id"] == userId:
             authorized = True
     try:
@@ -195,7 +200,7 @@ def get_popular_webs(limit: int = 10):
 
 
 @router.get("/liked/user")  # get all liked webs belonging to a user
-def get_user_liked_webs(user: User = Depends(manager)):
+def get_user_liked_webs(user: User = Depends(manager.required)):
     """
     Retrieve all webs liked by a user.
 
@@ -205,7 +210,6 @@ def get_user_liked_webs(user: User = Depends(manager)):
     Returns:
         dict: A JSON response containing a list of liked webs sorted by creation date in descending order.
     """
-    check_user(user)
     try:
         likedWebs = list(
             Webs.find({"likes": user["id"]}, {"_id": 0}, sort=[("created", -1)])
@@ -221,7 +225,7 @@ def get_user_liked_webs(user: User = Depends(manager)):
 def create_web_endpoint(
     createWebPayload: CreateWeb,
     background_tasks: BackgroundTasks,
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
     """
     Create a new web.
@@ -237,7 +241,6 @@ def create_web_endpoint(
     Raises:
         HTTPException: If web creation fails.
     """
-    check_user(user)
     try:
 
         web_id = create_web(createWebPayload, user["id"])
@@ -258,10 +261,25 @@ def create_web_endpoint(
 async def upload_file(
     web_id: str,
     files: list[UploadFile] = File(..., description="Multiple files as UploadFile"),
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
+    """
+    Upload images to a web.
 
-    check_user(user)
+    Args:
+        web_id (str): The ID of the web to upload images to.
+        files (list[UploadFile]): The images to upload.
+
+    Returns:
+        dict: A JSON response containing the URLs of the uploaded images.
+
+    Raises:
+        HTTPException: If the upload fails.
+    """
+    web = Webs.find_one({"webId": web_id, "userId": user["id"]})
+    if not web:
+        raise HTTPException(status_code=404, detail="Web not found")
+
     uploaded_image_urls = []
     try:
         for file in files:
@@ -278,6 +296,15 @@ async def upload_file(
                 contents = await file.read()
                 with open(temp_path, "wb") as buffer:
                     buffer.write(contents)
+
+                fileStorageResult = handleFileStorage(
+                    fileSizeBytes=len(contents), userId=user["id"], operation="$inc"
+                )
+
+                if not fileStorageResult:
+                    raise HTTPException(
+                        status_code=400, detail="Storage limit exceeded"
+                    )
 
                 s3_bucket.upload_file(
                     temp_path,
@@ -316,11 +343,34 @@ async def upload_file(
 
 
 @router.delete("/delete/image/{web_id}/{image_name}")
-def delete_image(web_id: str, image_name: str, user=Depends(manager)):
-    check_user(user)
+def delete_image(web_id: str, image_name: str, user=Depends(manager.required)):
+    """
+    Delete an image associated with a web.
+
+    Args:
+        web_id (str): The ID of the web the image belongs to.
+        image_name (str): The name of the image to delete.
+        user (User): The authenticated user making the request.
+
+    Returns:
+        dict: A JSON response with a result key indicating success.
+
+    Raises:
+        HTTPException: If the image is not found in S3, the web is not found, or if any other error occurs during the operation.
+    """
+
     try:
 
         filepath = f"files/{user['id']}/{web_id}/images/{image_name}"
+
+        try:
+            response = s3_session_client.head_object(
+                Bucket=s3_bucket.bucket_name, Key=filepath
+            )
+            file_size_bytes = response["ContentLength"]
+        except ClientError as e:
+            logger.error(f"Error retrieving object metadata: {e}")
+            raise HTTPException(status_code=404, detail="Image not found in S3")
 
         result = Webs.update_one(
             {"webId": web_id, "userId": user["id"], "imageKeys": filepath},
@@ -331,6 +381,11 @@ def delete_image(web_id: str, image_name: str, user=Depends(manager)):
             raise HTTPException(status_code=404, detail="Web not found")
 
         s3_session_client.delete_object(Bucket=s3_bucket.bucket_name, Key=filepath)
+
+        fileStorageResult = handleFileStorage(
+            fileSizeBytes=file_size_bytes, userId=user["id"], operation="$dec"
+        )
+
         return {"result": True}
 
     except Exception as e:
@@ -372,22 +427,12 @@ def get_web_images(web_id: str):
 
 
 @router.delete("/delete")
-def delete_web(webId: str, background_tasks: BackgroundTasks, user=Depends(manager)):
+def delete_web(
+    webId: str, background_tasks: BackgroundTasks, user=Depends(manager.required)
+):
     """
-    Delete a web.
-
-    Args:
-        webId (str): The ID of the web to delete.
-        user (User): The user making the request.
-
-    Returns:
-        dict: A JSON response with a result key.
-
-    Raises:
-        HTTPException: If the web is not found or the user is not the owner of the web.
-
+    Delete a web and all associated sources, images, documents, and embeddings.
     """
-    check_user(user)
     try:
         webToDelete = Webs.find_one_and_delete({"webId": webId, "userId": user["id"]})
         if not webToDelete:
@@ -396,25 +441,43 @@ def delete_web(webId: str, background_tasks: BackgroundTasks, user=Depends(manag
 
         logger.info(f"Web {webId} deleted by user {user['id']}")
 
-        background_tasks.add_task(webService.delete_web_embeddings, webId)
-
-        neo4jClient.delete_nodes_by_properties("source", {"webId": webId})
-        logger.info(f"Sources {webId} attached to web deleted from Neo4j")
-
-        images_path = f"files/{user['id']}/{webId}/images"
-        pages = s3_session_client.get_paginator("list_objects_v2").paginate(
-            Bucket=s3_bucket.bucket_name, Prefix=images_path
+        # === handle background tasks
+        background_tasks.add_task(
+            webService.delete_web_embeddings, webId=webId, userId=user["id"]
         )
+
+        # === Paths to clean up in S3
+        paths = [
+            f"files/{user['id']}/{webId}/images",
+            f"files/{user['id']}/{webId}/document",
+        ]
+
         delete_keys = []
-        for page in pages:
-            if "Contents" in page:
-                for obj in page["Contents"]:
-                    delete_keys.append({"Key": obj["Key"]})
+        total_bytes_to_decrement = 0
+
+        for prefix in paths:
+            paginator = s3_session_client.get_paginator("list_objects_v2").paginate(
+                Bucket=s3_bucket.bucket_name, Prefix=prefix
+            )
+
+            for page in paginator:
+                if "Contents" in page:
+                    for obj in page["Contents"]:
+                        delete_keys.append({"Key": obj["Key"]})
+                        total_bytes_to_decrement += obj["Size"]
+
         if delete_keys:
             s3_session_client.delete_objects(
                 Bucket=s3_bucket.bucket_name, Delete={"Objects": delete_keys}
             )
-            logger.info(f"Deleted {len(delete_keys)} images from S3 for web {webId}")
+            logger.info(f"Deleted {len(delete_keys)} files from S3 for web {webId}")
+
+            # === Deduct combined storage from user's account
+            handleFileStorage(
+                fileSizeBytes=total_bytes_to_decrement,
+                userId=user["id"],
+                operation="$dec",
+            )
 
         return {"result": True}
 
@@ -428,7 +491,7 @@ def update_web(
     webId: str,
     updateWebPayload: UpdateWeb,
     background_tasks: BackgroundTasks,
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
     """
     Update a web.
@@ -441,7 +504,6 @@ def update_web(
     Returns:
         dict: A JSON response with a result key.
     """
-    check_user(user)
     try:
         web = Webs.find_one({"webId": webId, "userId": user["id"]})
         if not web:
@@ -483,8 +545,6 @@ def get_web_by_id(webId: str, user=Depends(manager.optional)):
     Raises:
         HTTPException: If the web is not found, raises a 404 error.
     """
-    if user:
-        check_user(user)
 
     try:
         web: Web = Webs.find_one({"webId": webId}, {"_id": 0})
@@ -505,7 +565,7 @@ def get_web_by_id(webId: str, user=Depends(manager.optional)):
 
 
 @router.post("/like/{web_id}")
-def like_web(web_id: str, user=Depends(manager)):
+def like_web(web_id: str, user=Depends(manager.required)):
     """
     Like a web for a user.
 
@@ -519,7 +579,6 @@ def like_web(web_id: str, user=Depends(manager)):
     Returns:
         dict: A JSON response with the updated number of likes for the web.
     """
-    check_user(user)
 
     try:
         result = Webs.find_one_and_update(
@@ -538,7 +597,7 @@ def like_web(web_id: str, user=Depends(manager)):
 
 
 @router.post("/unlike/{web_id}")
-def unlike_web(web_id: str, user=Depends(manager)):
+def unlike_web(web_id: str, user=Depends(manager.required)):
     """
     Unlike a web for a user.
 
@@ -552,7 +611,6 @@ def unlike_web(web_id: str, user=Depends(manager)):
     Returns:
         dict: A JSON response with the updated number of likes for the web.
     """
-    check_user(user)
     try:
         result = Webs.find_one_and_update(
             {"webId": web_id, "likes": user["id"]},
@@ -570,8 +628,7 @@ def unlike_web(web_id: str, user=Depends(manager)):
 
 
 @router.get("/saved/user")
-def get_user_saved_webs(user=Depends(manager)):
-    check_user(user)
+def get_user_saved_webs(user=Depends(manager.required)):
     try:
 
         result = Webs.find({"webId": {"$in": user["websSaved"]}}, {"_id": 0})
@@ -582,8 +639,7 @@ def get_user_saved_webs(user=Depends(manager)):
 
 
 @router.patch("/add/tag/{web_id}/{tag}")
-def add_tag(web_id: str, tag: str, user=Depends(manager)):
-    check_user(user)
+def add_tag(web_id: str, tag: str, user=Depends(manager.required)):
     try:
 
         formatted_tag = tag.lower()
@@ -598,8 +654,7 @@ def add_tag(web_id: str, tag: str, user=Depends(manager)):
 
 
 @router.patch("/remove/tag/{web_id}/{tag}")
-def remove_tag(web_id: str, tag: str, user=Depends(manager)):
-    check_user(user)
+def remove_tag(web_id: str, tag: str, user=Depends(manager.required)):
 
     try:
 
@@ -621,7 +676,7 @@ def iterate_web(
     web_id: str,
     iteratePayload: IterateWeb,
     background_task: BackgroundTasks,
-    user=Depends(manager),
+    user=Depends(manager.required),
 ):
     """
     Iterate over a given web and create a new web with the same sources but with a new name and description.
@@ -633,8 +688,6 @@ def iterate_web(
     4. Update the new web in Mongo with the new sourceIds and iteration info.
     5. Queue embedding task.
     """
-    check_user(user)
-
     try:
         # get original web + owner
         web_to_iterate: Web = Webs.find_one({"webId": web_id})
@@ -691,6 +744,11 @@ def iterate_web(
         web_doc = Webs.find_one({"webId": new_web_id})
         if web_doc:
             background_task.add_task(webService.emebd_and_upsert_web, web_doc)
+            logger.info(f"Queued embedding for new web: {new_web_id}")
+            background_task.add_task(
+                sourceService.embed_iterated_sources, new_source_ids
+            )
+            logger.info(f"Queued embedding for new sources: {new_source_ids}")
 
         return {"result": new_web_id}
 
@@ -709,8 +767,6 @@ def search_webs(
     webId: Optional[str] = None,
     user=Depends(manager.optional),
 ):
-    if user:
-        check_user(user)
 
     try:
         filter = {}
@@ -741,8 +797,6 @@ def search_webs(
 
 @router.get("/contributers/{web_id}")
 def get_web_contributors(web_id: str, user=Depends(manager.optional)):
-    if user:
-        check_user(user)
 
     try:
         web = Webs.find_one({"webId": web_id})
@@ -753,13 +807,7 @@ def get_web_contributors(web_id: str, user=Depends(manager.optional)):
         for iteration in web["iterations"]:
             user = Users.find_one({"id": iteration}, {"_id": 0})
             if user:
-                publicUser = {
-                    "id": user["id"],
-                    "username": user["username"],
-                    "email": user["email"],
-                    "bio": user["bio"],
-                    "full_name": user["full_name"],
-                }
+                publicUser = convert_to_public_user(user)
                 contributers.append(publicUser)
 
         return {"result": contributers}
@@ -768,4 +816,89 @@ def get_web_contributors(web_id: str, user=Depends(manager.optional)):
         logger.error(f"Error getting web contributers: {e}")
         raise HTTPException(
             status_code=500, detail=f"Error getting web contributers: {e}"
+        )
+
+
+class ExportGraphContext(BaseModel):
+    webId: str
+    selectedSources: list[str]
+    asMarkdown: bool = False
+
+
+def clean_unicode(obj):
+    """
+    Clean Unicode characters from a string, dictionary, list, or tuple.
+
+    Replaces problematic Unicode characters with ASCII equivalents,
+    and removes any other non-ASCII characters.
+
+    Returns a new object with the modified values.
+    """
+    if isinstance(obj, str):
+        # replace problematic Unicode characters
+        replacements = {
+            "\u2019": "'",  # Right single quotation mark
+            "\u2018": "'",  # Left single quotation mark
+            "\u201c": '"',  # Left double quotation mark
+            "\u201d": '"',  # Right double quotation mark
+            "\u2013": "-",  # En dash
+            "\u2014": "--",  # Em dash
+            "\u2026": "...",  # Horizontal ellipsis
+        }
+        for unicode_char, ascii_char in replacements.items():
+            obj = obj.replace(unicode_char, ascii_char)
+
+        return obj.encode("ascii", "ignore").decode("ascii")
+    elif isinstance(obj, dict):
+        return {clean_unicode(k): clean_unicode(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [clean_unicode(item) for item in obj]
+    elif isinstance(obj, tuple):
+        return tuple(clean_unicode(item) for item in obj)
+    else:
+        return obj
+
+
+@router.post("/export/graph/context")
+def export_graph_context(
+    payload: ExportGraphContext, user: User = Depends(manager.optional)
+):
+
+    try:
+        web = Webs.find_one({"webId": payload.webId})
+
+        if not web:
+            raise HTTPException(status_code=404, detail=f"Web not found!")
+
+        result = neo4jClient.retreive_graph(
+            webId=payload.webId, selectedNodes=payload.selectedSources
+        )
+
+        web = clean_unicode(web)
+        result = clean_unicode(result)
+
+        logger.info(f"Exported graph context for web {payload.webId}")
+
+        if payload.asMarkdown:
+            markdown_content = (
+                f"# {web['name']}\n\n{json.dumps(result, indent=2, ensure_ascii=True)}"
+            )
+            safe_filename = clean_unicode(web["name"][:40])
+            filename = f"{safe_filename}.md"
+
+            def generate():
+                yield markdown_content.encode("utf-8")
+
+            return StreamingResponse(
+                generate(),
+                media_type="text/markdown; charset=utf-8",
+                headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+            )
+
+        return {"result": result}
+
+    except Exception as e:
+        logger.error(f"Error exporting graph context: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Error exporting graph context: {e}"
         )

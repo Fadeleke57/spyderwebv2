@@ -382,3 +382,35 @@ export const mapToolNameToBreadcrumb = (toolName: string) => {
       return "Thinking...";
   }
 };
+
+/**
+ * Given a URL, determine whether it's a YouTube link, a website link,
+ * or something unknown.
+ *
+ * @param {string} url The URL to check
+ * @returns {"youtube"|"website"|"unknown"} The type of link
+ *
+ * This function does a simple check on the hostname of the URL to determine
+ * whether it's a YouTube link or not. If the hostname doesn't contain a valid
+ * TLD (e.g., "example.com"), or if the URL isn't a web URL (e.g., "mailto:"),
+ * it will return "unknown".
+ */
+export const getLinkType = (url: string): "youtube" | "website" | "unknown" => {
+  try {
+    const parsedUrl = new URL(url);
+    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+      return "unknown"; // Not a web URL
+    }
+    const hostname = parsedUrl.hostname.toLowerCase();
+    if (hostname.includes("youtube.com") || hostname.includes("youtu.be")) {
+      return "youtube";
+    }
+    // Basic check for a valid TLD, not exhaustive but better than nothing
+    if (hostname.includes(".") && hostname.split(".").pop()!.length >= 2) {
+      return "website";
+    }
+    return "unknown";
+  } catch (error) {
+    return "unknown";
+  }
+};

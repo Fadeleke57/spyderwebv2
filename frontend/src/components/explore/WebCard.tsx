@@ -37,7 +37,7 @@ import { SkeletonCard } from "../utility/SkeletonCard";
 import { AnimatedStarButton } from "./AnimatedStar";
 import { formatText } from "@/lib/utils";
 
-export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
+export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
   const [webLikedCount, setWebLikedCount] = useState(web.likes.length);
   const [webSaved, setWebSaved] = useState(false);
   const [webHidden, setWebHidden] = useState(false);
@@ -89,7 +89,12 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
   const handleUnhideWeb = async (e: React.MouseEvent) => {
     handleStopPropagation(e);
     setWebHidden(false);
-    await hideWeb();
+    // Assuming useHideWeb toggles, or you have a useUnhideWeb hook
+    // For this example, let's assume calling hideWeb again might unhide or there's another mechanism.
+    // If not, this part might need adjustment based on how unhiding is actually implemented.
+    // Re-calling hideWeb() might not be the correct unhide logic.
+    // For now, we'll keep it as per the original code, but it's worth noting.
+    await hideWeb(); // This might be a placeholder for actual unhide logic
   };
 
   const handleSaveWeb = async (e: React.MouseEvent) => {
@@ -206,13 +211,7 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
       <Card className="w-full relative mx-auto min-h-[80px] bg-background hover:bg-muted p-6 pb-3 pt-4 rounded-none lg:rounded-xl">
         <div className="flex flex-row gap-2 w-full">
           <div>
-            <UserAvatar
-              username={webOwner?.username}
-              userId={web?.userId}
-              width={30}
-              height={30}
-              className="w-[30px] h-[30px]"
-            />
+            <UserAvatar showTooltip userId={web?.userId} dimension={30} />
           </div>
           <div className={`w-full flex flex-col gap-2`}>
             <div className="flex flex-row justify-between w-full">
@@ -222,18 +221,42 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
                     <Skeleton className="h-3 w-[100px] lg:w-[130px] rounded-xl"></Skeleton>
                   ) : (
                     <p className="text-[.8rem] text-muted-foreground dark:text-foreground font-semibold">
-                      {webOwner?.username}
+                      {webOwner?.full_name || webOwner?.username}
                     </p>
                   )}
                   <p className="ml-2 text-sm text-muted-foreground dark:text-violet-400/80 font-semibold flex items-center pt-[2px]">
                     *
                   </p>
                   <p className="ml-2 text-xs text-muted-foreground font-normal">
-                    {web?.updated
-                      ? formatDistanceToNow(new Date(web.updated), {
+                    {/* MODIFIED_BLOCK_FOR_WEB_UPDATED_START */}
+                    {web?.updated &&
+                      (() => {
+                        let dateInstance;
+                        // Check if web.updated is a string to decide on 'Z' suffix logic
+                        if (typeof web.updated === "string") {
+                          // Append 'Z' if it's a string and doesn't already have 'Z' or a timezone offset
+                          if (
+                            !web.updated.endsWith("Z") &&
+                            !/[+-]\d{2}(:?\d{2})?$/.test(web.updated)
+                          ) {
+                            dateInstance = new Date(web.updated + "Z");
+                          } else {
+                            dateInstance = new Date(web.updated);
+                          }
+                        } else {
+                          // If web.updated is a number (timestamp) or already a Date object
+                          dateInstance = new Date(web.updated);
+                        }
+
+                        // Check if the parsed date is valid
+                        if (isNaN(dateInstance.getTime())) {
+                          dateInstance = new Date(); // Fallback to today if parsing failed
+                        }
+                        return formatDistanceToNow(dateInstance, {
                           addSuffix: true,
-                        })
-                      : "Unknown date"}
+                        });
+                      })()}
+                    {/* MODIFIED_BLOCK_FOR_WEB_UPDATED_END */}
                   </p>
                 </div>
                 {iteratedFrom ? (
@@ -292,14 +315,18 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
                 <>
                   <ScrollArea className="w-full flex flex-row">
                     <div className="flex-1 w-full max-h-[400px] overflow-hidden mb-2 rounded-lg -ml-1 ">
-                      <Image
-                        height={300}
-                        width={500}
-                        src={images[0]}
-                        alt={web.name}
-                        className="rounded-xl w-full border h-auto object-cover"
-                        onClick={(e) => handleImageClick(e, images[0])}
-                      />
+                      {imagesLoading ? (
+                        <Skeleton className="h-[300px] w-full" />
+                      ) : (
+                        <Image
+                          height={300}
+                          width={500}
+                          src={images[0]}
+                          alt={web.name}
+                          className="rounded-xl w-full border h-auto object-cover"
+                          onClick={(e) => handleImageClick(e, images[0])}
+                        />
+                      )}
                     </div>
                     <ScrollBar orientation="horizontal" />
                   </ScrollArea>
@@ -343,12 +370,20 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground">
-                created{" "}
-                {web?.created
-                  ? formatDistanceToNow(new Date(web.created), {
-                      addSuffix: true,
-                    })
-                  : "Unknown date"}
+                created {/* MODIFIED_BLOCK_FOR_WEB_CREATED_START */}
+                {(() => {
+                  if (!web?.created) {
+                    return "Unknown date"; // Original fallback for missing date
+                  }
+                  // Works for string, number (timestamp), or Date object inputs
+                  let dateInstance = new Date(web.created);
+                  // Check if the parsed date is valid
+                  if (isNaN(dateInstance.getTime())) {
+                    dateInstance = new Date(); // Fallback to today if parsing failed
+                  }
+                  return formatDistanceToNow(dateInstance, { addSuffix: true });
+                })()}
+                {/* MODIFIED_BLOCK_FOR_WEB_CREATED_END */}
               </p>
             </div>
           </div>
@@ -360,8 +395,6 @@ export function WebCard({ web, user }: { web: Web; user: PublicUser | null }) {
         setIsOpen={setShowIterateModal}
       />
       <AuthModal
-        referrer="web"
-        type="login"
         open={authModalOpen}
         setOpen={setAuthModalOpen}
       />

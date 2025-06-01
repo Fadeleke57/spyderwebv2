@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import api from "@/lib/api";
+import { api } from "@/lib/api";
 
 export function useResourceUsage(userId?: string) {
   return useQuery({

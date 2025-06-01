@@ -1,21 +1,21 @@
 import { toast } from "@/components/ui/use-toast";
-import api from "@/lib/api";
+import { api } from "@/lib/api";
+import { useSourceStore } from "@/store/sourceStore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 type UploadFilesRequest = {
-  preserve_obsidian_links: boolean;
+  parseObsidianLinks: boolean;
   files: FileList;
 };
 
 export const useFileUpload = (webId: string) => {
   const queryClient = useQueryClient();
+  const { setIsUploadingSource } = useSourceStore();
   return useMutation({
-    mutationFn: async ({
-      preserve_obsidian_links,
-      files,
-    }: UploadFilesRequest) => {
+    mutationFn: async ({ parseObsidianLinks, files }: UploadFilesRequest) => {
       const formData = new FormData();
       Array.from(files).forEach((file) => formData.append("files", file));
+      setIsUploadingSource(true);
       const response = await api.post(
         `/sources/upload/files/${webId}/`,
         formData,
@@ -24,7 +24,7 @@ export const useFileUpload = (webId: string) => {
             "Content-Type": "multipart/form-data",
           },
           params: {
-            preserve_obsidian_links,
+            preserve_obsidian_links: parseObsidianLinks,
           },
         }
       );
@@ -39,6 +39,9 @@ export const useFileUpload = (webId: string) => {
     },
     onError: (error: any) => {
       console.error("File upload failed:", error);
+    },
+    onSettled: () => {
+      setIsUploadingSource(false);
     },
   });
 };
@@ -58,8 +61,10 @@ export const useFetchSourcesForWeb = (webId: string) => {
 
 export const useUploadWebsite = (webId: string) => {
   const queryClient = useQueryClient();
+  const { setIsUploadingSource } = useSourceStore();
   return useMutation({
     mutationFn: async (url: string) => {
+      setIsUploadingSource(true);
       const response = await api.post(`/sources/website/${webId}`, { url });
       return response.data.result;
     },
@@ -69,21 +74,30 @@ export const useUploadWebsite = (webId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sources", webId] });
     },
+    onSettled: () => {
+      setIsUploadingSource(false);
+    },
   });
 };
 
 export const useUploadYoutube = (webId: string) => {
   const queryClient = useQueryClient();
+  const { setIsUploadingSource } = useSourceStore();
   return useMutation({
     mutationFn: async (videoId: string) => {
+      setIsUploadingSource(true);
       const response = await api.post(`/sources/youtube/${webId}/${videoId}`);
-      return response.data.result;
+      const { result, transcripts_found } = response.data;
+      return { result, transcripts_found };
     },
     onError: (error: any) => {
       console.error("YouTube upload failed:", error);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["sources", webId] });
+    },
+    onSettled: () => {
+      setIsUploadingSource(false);
     },
   });
 };
@@ -167,9 +181,10 @@ export const useFetchSource = (sourceId: string, contextId?: string) => {
       const response = await api.get(`/sources/${sourceId}`);
       return response.data;
     },
-    staleTime: 60000, //1 minute stale time
+    staleTime: 0, // Change this to 0 to always refetch
     retry: 2,
     enabled: !!sourceId,
+    refetchOnMount: true, // Add this to ensure refetch on mount
   });
 };
 
@@ -229,5 +244,68 @@ export const useUploadImageToSource = () => {
         queryKey: ["source", variables.sourceId],
       });
     },
+  });
+};
+
+export const useUploadVoiceNote = (webId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (blob: Blob) => {
+      const formData = new FormData();
+      formData.append(
+        "file",
+        new File([blob], "voice-note.webm", { type: "audio/webm" })
+      );
+
+      const response = await api.post(
+        `/sources/upload/voice-note/${webId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      return response.data.result;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["sources", webId] });
+      // Invalidate this specific source if it exists in cache
+      if (data && data.id) {
+        queryClient.invalidateQueries({ queryKey: ["source", data.id] });
+      }
+    },
+    onError: (error: any) => {
+      console.error("Voice note upload failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Error uploading voice note",
+        description: "Please try again",
+      });
+    },
+  });
+};
+
+export const useFetchLinkPreviewData = (
+  url: string,
+  sourceId: string,
+  disabled: boolean
+) => {
+  return useQuery({
+    queryKey: ["link-preview", url],
+    queryFn: async () => {
+      const response = await api.get(`/sources/link/preview/`, {
+        params: {
+          url,
+          sourceId,
+        },
+      });
+      return response.data.result;
+    },
+    staleTime: 5000,
+    retry: 2,
+    enabled: !disabled && (!!url || !!sourceId),
+    refetchOnMount: true,
   });
 };

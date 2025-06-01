@@ -76,21 +76,20 @@ const FeedbackModal = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger className="transition-all duration-200 ease-in-out" asChild>
         <Button
-          variant={"link"}
-          className={`flex items-center gap-2 text-xs ${triggerVisibile ? "" : "hidden"}`}
+          variant={"ghost"}
+          className={`flex transition-all duration-200 ease-in-out items-center gap-2 text-xs ${triggerVisibile ? "" : "hidden"}`}
         >
-          <MessageSquareText size={14} />
-          Share Feedback
+          Feedback
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-xl rounded-lg border-0 shadow-lg">
+      <DialogContent className="sm:max-w-xl rounded-lg border-0 shadow-lg p-10">
         {!submitted ? (
           <>
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold">
+              <DialogTitle className="text-xl font-bold">
                 We Value Your Feedback
               </DialogTitle>
               <DialogDescription className="text-gray-500">
@@ -117,7 +116,7 @@ const FeedbackModal = ({
                         size={26}
                         className={`${
                           rating >= value
-                            ? "text-yellow-400 fill-yellow-400"
+                            ? "text-violet-400/80 fill-violet-400/80"
                             : "text-gray-300"
                         }`}
                       />
@@ -158,7 +157,7 @@ const FeedbackModal = ({
 
               <div className="space-y-2">
                 <Label className="text-sm font-medium">
-                  Would you recommend us to others?
+                  Would you recommend Spydr to others?
                 </Label>
                 <RadioGroup
                   defaultValue="yes"

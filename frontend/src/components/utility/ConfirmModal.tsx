@@ -31,7 +31,7 @@ export function ConfirmModal({
   const { user } = useUser();
 
   const handleAction = () => {
-    // Validate username before allowing action
+    // validate username before allowing action
     if (!user) {
       return;
     }
@@ -41,7 +41,7 @@ export function ConfirmModal({
       return;
     }
 
-    // Reset error and perform action
+    // reset error and perform action
     setUsernameError("");
     action();
     setIsOpen(false);
@@ -62,7 +62,7 @@ export function ConfirmModal({
         </DialogHeader>
 
         <div className="space-y-2">
-          <p className="text-sm">To confirm, please enter your username:</p>
+          <p className="text-sm">To confirm, please enter your username <span className="font-semibold text-violet-400/80">&ldquo;{user.username}&rdquo;</span>:</p>
           <Input
             type="text"
             placeholder="Enter your username"

@@ -29,7 +29,7 @@ const SearchInput = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div
         className={cn(
-          "rounded-md flex items-center border-2 transition-all duration-150 ease-in-out",
+          "rounded-md border border-red-500 flex items-center border-2 transition-all duration-150 ease-in-out",
           active
             ? "border-foreground shadow-[0_0_10px_rgba(var(--foreground),0.3)] dark:shadow-[0_0_10px_rgba(var(--foreground),0.2)]"
             : "border-input",
@@ -50,7 +50,7 @@ const SearchInput = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           type={type}
           className={cn(
-            "flex h-10 w-full rounded-md bg-background px-3 py-2 text-sm focus-visible:outline-none file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 autofill:bg-none",
+            "flex h-10 w-full rounded-md px-3 py-2 text-sm focus-visible:outline-none file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 autofill:bg-none bg-transparent",
             className
           )}
           ref={ref}

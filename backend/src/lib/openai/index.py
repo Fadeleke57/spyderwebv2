@@ -48,7 +48,7 @@ class OpenAIClient:
         web_name, web_description, web_owner_name = (
             web["name"],
             web["description"],
-            webOwner["username"],
+            webOwner.get("full_name") or webOwner["username"],
         )
         web_context = f"Web ID: {webId}\nGraph title: {web_name}\nGraph description: {web_description}\nGraph owner: {web_owner_name}\n"
         self.system_prompt = {
@@ -80,6 +80,20 @@ class OpenAIClient:
                 """,
         }
         self.webId = webId
+
+    def get_audio_transcript(self, audio_file_path: str):
+        try:
+
+            with open(audio_file_path, "rb") as audio_file:
+                response = self.client.audio.transcriptions.create(
+                    file=audio_file,
+                    model="whisper-1",
+                )
+                return response.text
+
+        except Exception as e:
+            logger.error(f"Transcription failed: {str(e)}")
+            raise Exception(f"Transcription failed: {str(e)}")
 
 
 client = OpenAIClient()

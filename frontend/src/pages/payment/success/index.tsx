@@ -3,11 +3,13 @@ import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { useProcessPayment } from "@/hooks/usage";
+import { useUser } from "@/context/UserContext";
 
 export default function PaymentSuccessPage() {
   const router = useRouter();
+  const { user } = useUser();
   const { session_id } = router.query;
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,13 +26,20 @@ export default function PaymentSuccessPage() {
       try {
         const data = await processSuccessPayment({ session_id });
         console.log("Response data:", data);
-        toast.success("Your subscription has been activated!");
+        toast({
+          title: "Success",
+          description: "Subscription activated successfully",
+        });
         setIsLoading(false);
       } catch (err: any) {
         console.error("Payment processing error:", err);
         setError(err.message || "Failed to activate subscription");
         setIsLoading(false);
-        toast.error(err.message || "Failed to activate subscription");
+        toast({
+          title: "Error",
+          description: "Failed to activate subscription",
+          variant: "destructive",
+        });
       }
     };
 
@@ -58,10 +67,10 @@ export default function PaymentSuccessPage() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[70vh] p-4">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
       <div className="text-center max-w-md">
         <div className="flex justify-center mb-6">
-          <CheckCircle className="h-16 w-16 text-green-500" />
+          <CheckCircle className="h-16 w-16 text-green-500/40" />
         </div>
         <h1 className="text-2xl font-bold mb-2">Payment Successful!</h1>
         <p className="text-muted-foreground mb-6">
@@ -75,7 +84,7 @@ export default function PaymentSuccessPage() {
               <Link href="/home">Go to Home</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link href="/webs">Start Creating Webs</Link>
+              <Link href={`/user/${user?.username}`}>Start Creating</Link>
             </Button>
           </div>
         )}

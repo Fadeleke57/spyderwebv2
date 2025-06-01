@@ -1,18 +1,22 @@
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { useUser } from "@/context/UserContext";
+import { useStytchUser } from "@stytch/nextjs";
+
 export default function withAuth(Component: any) {
   return function AuthenticatedComponent(props: any) {
     const router = useRouter();
-    const { user } = useUser();
+    const { user, isInitialized } = useStytchUser();
+
     useEffect(() => {
-
-      if (!user) {
-        router.push("/explore");
+      if (isInitialized && !user) {
+        localStorage.setItem("returnTo", window.location.href);
+        window.location.href = "/auth";
       }
-    }, [router, user]);
-
-
+    }, [isInitialized, user, router]);
+    
+    if (!user) {
+      return null;
+    }
     return <Component {...props} />;
   };
 }

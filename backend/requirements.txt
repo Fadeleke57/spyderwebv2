@@ -18,3 +18,5 @@ firecrawl>=2.1.2
 pymupdf4llm
 stripe
 google-genai
+stytch
+pytest
