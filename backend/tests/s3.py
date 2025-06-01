@@ -1,6 +1,4 @@
-from pytest import fixture
 from fastapi.testclient import TestClient
-
 import pytest
 from src.lib.s3.index import S3Bucket
 

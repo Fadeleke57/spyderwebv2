@@ -19,3 +19,4 @@ pymupdf4llm
 stripe
 google-genai
 stytch
+pytest
