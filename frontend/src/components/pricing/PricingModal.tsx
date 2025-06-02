@@ -162,7 +162,7 @@ export function PricingModal({ open, setOpen }: PricingModalProps) {
                 className={cn(
                   "rounded-xl p-4 ring-1 ring-border relative",
                   tier.highlighted
-                    ? "bg-violet-400/80 text-white ring-violet-500"
+                    ? "border dark:bg-violet-400/40 dark:border-violet-200"
                     : "bg-card"
                 )}
               >
@@ -253,8 +253,8 @@ export function PricingModal({ open, setOpen }: PricingModalProps) {
                   className={cn(
                     "w-full mt-3",
                     tier.highlighted
-                      ? "dark:bg-white dark:text-violet-400 dark:hover:bg-violet-50"
-                      : "dark:bg-violet-400/80 dark:text-white dark:hover:bg-violet-400/60"
+                      ? " dark:text-foreground"
+                      : "border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/50"
                   )}
                   onClick={() => handleSubscribe(tier)}
                   disabled={isLoading === tier.name}

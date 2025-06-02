@@ -87,7 +87,7 @@ def authenticate(
                 enableAIConnections=False,
                 showcase=False,
             )
-            
+
             try:
                 new_web_id = create_web(webToCreate=create_web_data, userId=userId)
                 sourceService.create_onboarding_sources(

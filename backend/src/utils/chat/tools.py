@@ -1,6 +1,7 @@
 import requests
 from src.lib.pinecone.index import client as pineconeClient
 from src.lib.logger.index import logger
+from typing import Optional
 
 
 def get_current_weather(latitude, longitude):
@@ -23,18 +24,28 @@ def get_current_weather(latitude, longitude):
         return None
 
 
-def get_graph_context(webId: str, query: str, sources: list[str] = [], limit: int = 20):
+def get_graph_context(
+    webId: str,
+    query: str,
+    sources: list[str] = [],
+    limit: int = 20,
+    boundary: bool = True,
+    userId: Optional[str] = None,
+):
 
     filter = {}
     if sources:
         filter = {"sourceId": {"$in": sources}}
+
+    if userId:
+        filter["userId"] = userId
 
     try:
         logger.info(
             f"Fetching graph context for webId: {webId}, with filter: {filter}, and query: {query} and limit: {limit}"
         )
         context = pineconeClient.run_semantic_source_search(
-            webId=webId, query=query, filter=filter, limit=limit
+            webId=webId, query=query, filter=filter, limit=limit, boundary=boundary
         )
         logger.info(f"Graph context: {context}")
         return {"context": context}
