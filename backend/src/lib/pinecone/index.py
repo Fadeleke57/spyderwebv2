@@ -160,23 +160,29 @@ class PineconeClient:
         return results
 
     def run_semantic_source_search(
-        self, webId: str, query: str, filter: Dict[str, Any] = {}, limit: int = 10
+        self,
+        webId: str,
+        query: str,
+        filter: Dict[str, Any] = {},
+        limit: int = 10,
+        boundary: bool = True,
     ):
         """
-        Runs a semantic search over the Pinecone index for a given web ID.
+        Runs a semantic search on the Pinecone index for sources, given a query string, web ID, and an optional filter.
 
         Args:
-        - webId (str): The ID of the web to search within.
-        - query (str): The query string to search for.
-        - limit (int): The maximum number of results to return.
-        - filter (Dict[str, Any]): A filter to apply on the results. The filter should be a dictionary
-            where each key is a metadata key and the value is a filter value.
+            webId (str): The ID of the web to search within.
+            query (str): The query string to search for.
+            filter (Dict[str, Any]): A filter to apply on the results. The filter should be a dictionary
+                where each key is a metadata key and the value is a filter value.
+            limit (int): The number of results to return. Defaults to 10.
+            boundary (bool): Whether to apply the web ID as a filter or not. Defaults to True.
 
         Returns:
-        - List[Dict[str, Any]]: A list of dictionaries, each representing a result. The dictionary will
-            contain the metadata of the result, as well as an "id" key containing the ID of the result.
+            list: A list of dictionaries, each containing the metadata of a result, as well as its ID.
         """
-        filter["webId"] = webId
+        if boundary:
+            filter["webId"] = webId
 
         query_embedding = self.get_query_embedding(query)
         pinecone_response = self.index.query(

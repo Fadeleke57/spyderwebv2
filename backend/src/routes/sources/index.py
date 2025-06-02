@@ -14,6 +14,7 @@ from src.utils.storage import handleTextStorage, handleFileStorage
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, BackgroundTasks
 from src.routes.auth.utils import manager
 from src.lib.logger.index import logger
+from src.utils.chat.tools import get_graph_context
 from src.lib.s3.index import S3Bucket
 from src.models.index import (
     Webs,
@@ -675,6 +676,44 @@ def edit_source(
 
         return {"result": True}
 
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/search/all")
+def search_sources_semantic(
+    webId: str,
+    query: str,
+    sources: list[str] = [],
+    limit: int = 20,
+    boundary: bool = True,
+    user=Depends(manager.required),
+):
+    """
+    Search all sources in a web using a semantic search.
+
+    Args:
+        webId (str): The ID of the web to search in.
+        query (str): The query string to search for.
+        sources (list[str], optional): A list of source IDs to filter by. Defaults to [].
+        limit (int, optional): The number of results to return. Defaults to 20.
+        boundary (bool, optional): Whether to apply the web ID as a filter or not. Defaults to True.
+
+    Returns:
+        dict: A JSON response containing a list of dictionaries, each containing the metadata of a result, as well as its ID.
+    """
+    
+    try:
+        sources = get_graph_context(
+            webId=webId,
+            query=query,
+            sources=sources,
+            limit=limit,
+            boundary=boundary,
+            userId=user["id"],
+        )
+        return {"result": sources}
     except Exception as e:
         logger.error(str(e))
         raise HTTPException(status_code=500, detail=str(e))

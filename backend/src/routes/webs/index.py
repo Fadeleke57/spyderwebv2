@@ -768,6 +768,19 @@ def search_webs(
     user=Depends(manager.optional),
 ):
 
+    """
+    Run a semantic search for webs.
+
+    Args:
+        query (str): The search query to run.
+        visibility (Optional[Literal["Public", "Private"]], optional): Filter search results by visibility. Defaults to None.
+        userId (Optional[str], optional): Filter search results by user ID. Defaults to None.
+        webId (Optional[str], optional): Filter search results by web ID. Defaults to None.
+        user (User, optional): The user making the request. Defaults to None.
+
+    Returns:
+        dict: A JSON response containing the search results.
+    """
     try:
         filter = {}
         if visibility:
