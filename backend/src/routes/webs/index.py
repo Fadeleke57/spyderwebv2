@@ -767,7 +767,6 @@ def search_webs(
     webId: Optional[str] = None,
     user=Depends(manager.optional),
 ):
-
     """
     Run a semantic search for webs.
 

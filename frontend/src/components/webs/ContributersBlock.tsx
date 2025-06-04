@@ -35,8 +35,10 @@ function ContributorsBlock({ count }: { count: number }) {
       <div className="px-4 py-2">
         <h2 className="text-md mb-4">Contributors</h2>
         <div className="flex flex-wrap gap-2">
-          {[...Array(num_skeletons)].map((_, i) => (
-            <Skeleton key={i} className="w-12 h-12 rounded-full" />
+          {[...Array(num_skeletons)].map((_, i: number) => (
+            <div key={i}>
+              <Skeleton className="w-12 h-12 rounded-full" />
+            </div>
           ))}
         </div>
       </div>

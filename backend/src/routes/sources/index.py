@@ -703,7 +703,7 @@ def search_sources_semantic(
     Returns:
         dict: A JSON response containing a list of dictionaries, each containing the metadata of a result, as well as its ID.
     """
-    
+
     try:
         sources = get_graph_context(
             webId=webId,
