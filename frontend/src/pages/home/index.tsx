@@ -63,7 +63,7 @@ function Index() {
       <div className="flex flex-col lg:flex-row gap-2 w-full items-center justify-center">
         <Image src={sLogo} alt="spydr logo" className="w-12 h-12" />
         <h1 className="text-2xl text-center lg:text-3xl font-extrabold tracking-tight">
-          {greeting}, {user?.username}
+          {greeting}, {user?.full_name}
         </h1>
       </div>
 

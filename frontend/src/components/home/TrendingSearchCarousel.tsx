@@ -11,17 +11,14 @@ import {
 import { useFetchPopularWebs } from "@/hooks/webs";
 import { Skeleton } from "../ui/skeleton";
 import TrendingSearchItem from "./TrendingSearchItem";
+import { Web } from "@/types/web";
 
 export function TrendingSearchCarousel() {
   const { data: webs, isLoading: loading, error } = useFetchPopularWebs(10);
   const [websRendered, setWebsRendered] = useState<boolean>(false);
-  const [displayWebs, setDisplayWebs] = useState<any[]>(
-    Array.from({ length: 9 })
-  );
 
   useEffect(() => {
     if (webs && !loading) {
-      setDisplayWebs(webs);
       setWebsRendered(true);
     }
   }, [webs, loading]);
@@ -38,10 +35,12 @@ export function TrendingSearchCarousel() {
           {!websRendered
             ? Array.from({ length: 9 }).map((_, index) => (
                 <CarouselItem key={index} className="basis-1/2 lg:basis-1/5">
-                  <Skeleton className="md:w-[250px] md:h-[250px] lg:w-[150px] lg:h-[150px] rounded-xl" />
+                  <div className="p-1 h-[200px] md:h-[250px] lg:h-[200px]">
+                    <Skeleton className="w-full h-full rounded-xl" />
+                  </div>
                 </CarouselItem>
               ))
-            : displayWebs.map((web, index) => (
+            : (webs || []).map((web: Web, index: number) => (
                 <CarouselItem key={index} className="basis-1/2 lg:basis-1/5">
                   <TrendingSearchItem web={web} />
                 </CarouselItem>
