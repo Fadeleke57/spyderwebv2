@@ -59,9 +59,7 @@ function UploadStatusPopover() {
   const router = useRouter();
   const { webId } = router.query;
   const {
-    selectedSourceId,
     setSelectedSourceId,
-    isWebDataModalOpen,
     setIsWebDataModalOpen,
     isUploadingSource,
     setIsUploadingSource,
@@ -133,7 +131,7 @@ function UploadStatusPopover() {
       toast({
         variant: "destructive",
         title: `Error submitting ${type} link`,
-        description: error.message || "An unexpected error occurred.",
+        description: "This website may not be supported.",
       });
     } finally {
       if (sourceId) {
