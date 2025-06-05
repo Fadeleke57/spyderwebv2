@@ -36,7 +36,10 @@ export function NavUser() {
         <Button onClick={handleLogin} className="w-full">
           Login
         </Button>
-        <Button onClick={handleLogin} variant={"secondary"} className="w-full">
+        <Button
+          onClick={handleLogin}
+          className="w-full border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60"
+        >
           Sign Up
         </Button>
         {open && <AuthModal open={open} setOpen={setOpen} />}
