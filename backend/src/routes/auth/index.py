@@ -53,30 +53,41 @@ def authenticate(
     auth_request: CompleteAuthenticationRequest,
     background_tasks: BackgroundTasks,
 ):
-
     try:
+        # Extract and validate required fields
         email = auth_request.email
-        user = Users.find_one({"email": email})
+        if not email:
+            raise HTTPException(status_code=400, detail="Email is required")
+            
         userId = auth_request.stytchUserId
-        first_name = auth_request.firstName
-        last_name = auth_request.lastName
-        profile_picture_url = auth_request.profilePictureUrl
-        username = generate_username() if not user else user["username"]
+        if not userId:
+            raise HTTPException(status_code=400, detail="Stytch user ID is required")
+            
+        first_name = auth_request.firstName or ""
+        last_name = auth_request.lastName or ""
+        profile_picture_url = auth_request.profilePictureUrl or ""
+
+        # Find existing user
+        user = Users.find_one({"email": email})
+        username = generate_username() if not user else user.get("username")
 
         new_web_id = None
+        
         if not user:
-            # create a new user
+            # Create a new user
             create_user_data = CreateUser(
                 userId=userId,
                 username=username,
                 email=email,
-                fullName=f"{first_name} {last_name}",
+                fullName=f"{first_name} {last_name}".strip(),
                 profilePictureUrl=profile_picture_url,
             )
 
-            _ = create_user(create_user_data)
+            created_user = create_user(create_user_data)
+            if not created_user:
+                raise HTTPException(status_code=500, detail="Failed to create user")
 
-            # create a new welcome web for the user
+            # Create welcome web for new user
             create_web_data = CreateWeb(
                 name="Welcome to Spydr!",
                 description="This is your first web! Create a new web to get started.",
@@ -90,39 +101,52 @@ def authenticate(
 
             try:
                 new_web_id = create_web(webToCreate=create_web_data, userId=userId)
-                sourceService.create_onboarding_sources(
-                    web_id=new_web_id, user_id=userId, background_tasks=background_tasks
-                )
+                if new_web_id:
+                    sourceService.create_onboarding_sources(
+                        web_id=new_web_id, 
+                        user_id=userId, 
+                        background_tasks=background_tasks
+                    )
             except Exception as e:
                 logger.error(f"Error creating welcome web: {str(e)}")
-
+                # Don't fail the authentication if web creation fails
         else:
-            username = user["username"]
+            # Use existing user's username
+            username = user.get("username", generate_username())
 
-        logger.info(f"Updating user with external_id: {user['id']}")
-        stytchClient.users.update(
-            user_id=userId,
-            external_id=user["id"],
-        )
+        # Update Stytch user with external_id (only if user exists and has id)
+        if user and user.get("id"):
+            try:
+                logger.info(f"Updating user with external_id: {user['id']}")
+                stytchClient.users.update(
+                    user_id=userId,
+                    external_id=user["id"],
+                )
+            except Exception as e:
+                logger.error(f"Error updating Stytch user: {str(e)}")
+                # Don't fail authentication if Stytch update fails
 
-        redirect = "/auth/onboarding" if new_web_id else "/home"
-        params = (
-            f"?firstName={first_name}&lastName={last_name}&username=${username}&isGoogleSignup=true&defaultWebId={new_web_id}"
-            if new_web_id
-            else "?src=oauth"
-        )
+        # Build redirect URL
+        if new_web_id:
+            redirect = "/auth/onboarding"
+            params = f"?firstName={first_name}&lastName={last_name}&username={username}&isGoogleSignup=true&defaultWebId={new_web_id}"
+        else:
+            redirect = "/home"
+            params = "?src=oauth"
 
         full_redirect_url = f"{settings.next_url}{redirect}{params}"
 
-        return JSONResponse(content={"redirect": full_redirect_url, "success": True})
+        return JSONResponse(content={
+            "redirect": full_redirect_url, 
+            "success": True
+        })
 
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
         logger.error(f"Authentication error: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
-
-    except Exception as e:
-        logger.error(f"Exception in /auth/authenticate: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/register")
@@ -143,70 +167,109 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
     Raises:
         HTTPException: If the user could not be registered.
     """
-
-    usernameCollision = Users.find_one({"username": registerRequest.username})
-    if usernameCollision:
-        logger.error(f"username already exists: {registerRequest.username}")
-        raise HTTPException(
-            status_code=400,
-            detail="Username already exists",
-        )
-
-    # create the user in mongo
-    userId = registerRequest.stytchUserId
-
-    createUserPayload = CreateUser(
-        userId=userId,
-        username=registerRequest.username,
-        email=registerRequest.email,
-        password=registerRequest.password,
-        fullName=registerRequest.fullName,
-    )
-    _ = create_user(createUserPayload)
-
-    # create their default web
-    createWebPayload = CreateWeb(
-        name="Welcome to Spydr!",
-        description="This is your first web! Create a new web to get started.",
-        visibility="Private",
-        tags=[],
-        sourceIds=[],
-        imageKeys=[],
-        enableAIConnections=False,
-        showcase=True,
-    )
-
     try:
-        webId = create_web(webToCreate=createWebPayload, userId=userId)
-        sourceService.create_onboarding_sources(
-            web_id=webId, user_id=userId, background_tasks=background_tasks
-        )
-    except Exception as e:
-        logger.error(f"Exception in /auth/register: {e}")
-        raise HTTPException(status_code=500, detail="Error creating default web")
+        # Validate required fields
+        if not registerRequest.username:
+            raise HTTPException(status_code=400, detail="Username is required")
+        if not registerRequest.email:
+            raise HTTPException(status_code=400, detail="Email is required")
+        if not registerRequest.stytchUserId:
+            raise HTTPException(status_code=400, detail="Stytch user ID is required")
 
-    response = JSONResponse(
-        content={
+        # Check for username collision
+        usernameCollision = Users.find_one({"username": registerRequest.username})
+        if usernameCollision:
+            logger.error(f"Username already exists: {registerRequest.username}")
+            raise HTTPException(
+                status_code=400,
+                detail="Username already exists",
+            )
+
+        # Check for email collision
+        emailCollision = Users.find_one({"email": registerRequest.email})
+        if emailCollision:
+            logger.error(f"Email already exists: {registerRequest.email}")
+            raise HTTPException(
+                status_code=400,
+                detail="Email already exists",
+            )
+
+        userId = registerRequest.stytchUserId
+
+        # Create the user in mongo
+        createUserPayload = CreateUser(
+            userId=userId,
+            username=registerRequest.username,
+            email=registerRequest.email,
+            password=getattr(registerRequest, 'password', None),
+            fullName=getattr(registerRequest, 'fullName', ''),
+        )
+        
+        created_user = create_user(createUserPayload)
+        if not created_user:
+            raise HTTPException(status_code=500, detail="Failed to create user")
+
+        # Create their default web
+        createWebPayload = CreateWeb(
+            name="Welcome to Spydr!",
+            description="This is your first web! Create a new web to get started.",
+            visibility="Private",
+            tags=[],
+            sourceIds=[],
+            imageKeys=[],
+            enableAIConnections=False,
+            showcase=True,
+        )
+
+        webId = None
+        try:
+            webId = create_web(webToCreate=createWebPayload, userId=userId)
+            if not webId:
+                logger.error("create_web returned None or falsy value")
+                raise HTTPException(status_code=500, detail="Failed to create default web")
+                
+            # Create onboarding sources in background
+            sourceService.create_onboarding_sources(
+                web_id=webId, user_id=userId, background_tasks=background_tasks
+            )
+        except Exception as e:
+            logger.error(f"Error creating default web: {str(e)}")
+            # If web creation fails, we should still return success for user creation
+            # but log the error for investigation
+
+        response_content = {
             "message": "Welcome to Spydr!",
             "userId": userId,
-            "webId": webId,
             "username": registerRequest.username,
             "email": registerRequest.email,
-        },
-    )
-    return response
+        }
+        
+        # Only include webId if it was successfully created
+        if webId:
+            response_content["webId"] = webId
+
+        return JSONResponse(content=response_content)
+
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error in register endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/me")
-def get_current_user(user=Depends(manager.required)):
+def get_current_user(user=Depends(manager.optional)):
     """
     Get the current user.
 
     :return: The current user
     """
+    
+    if not user:
+        return None
+    
     try:
-        if not user:
-            return None
         publicUser = convert_to_public_user(
             user,
             [
@@ -220,9 +283,10 @@ def get_current_user(user=Depends(manager.required)):
         )
         logger.debug(f"User found in /auth/me: {publicUser}")
         return publicUser
+
     except Exception as e:
         logger.error(f"Exception in /auth/me: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        return None
 
 
 class OnboardingPayload(BaseModel):

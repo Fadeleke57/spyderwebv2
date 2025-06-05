@@ -220,12 +220,11 @@ export default function OnboardingFlow({
   ];
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen">
-      {/* Left Section - Form */}
-      <div className="w-full md:w-1/2 p-6 md:p-8 lg:p-12 flex flex-col justify-center">
+    <div className="flex items-start">
+      <div className="w-full p-8 md:p-8 lg:p-12 flex flex-col justify-center">
         {step === 1 && (
           <>
-            <h1 className="text-2xl md:text-3xl font-semibold mb-2">
+            <h1 className="text-xl font-semibold mb-2">
               Let&apos;s customize your Spydr setup
             </h1>
             <p className="text-muted-foreground mb-8">
@@ -319,7 +318,7 @@ export default function OnboardingFlow({
 
         {step === 2 && (
           <>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">
+            <h1 className="text-xl font-bold mb-2">
               Tell us about your work
             </h1>
             <p className="text-muted-foreground mb-8">
@@ -421,7 +420,7 @@ export default function OnboardingFlow({
 
         {step === 3 && (
           <>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">
+            <h1 className="text-xl font-bold mb-2">
               One last thing
             </h1>
             <p className="text-muted-foreground mb-8">
@@ -505,41 +504,6 @@ export default function OnboardingFlow({
             </Form>
           </>
         )}
-      </div>
-
-      {/* Right Section - Testimonial */}
-      <div className="w-full md:w-1/2 bg-violet-400/80 text-white p-6 md:p-8 lg:p-12 flex flex-col justify-between items-start h-full border relative lg:rounded-r-md">
-        <div className="w-full mx-auto mt-16 fadeIn">
-          <div className="text-sm bg-slate-800/50 text-foreground px-3 py-1 rounded-full inline-block mb-4">
-            {currentTestimonial.over}
-          </div>
-
-          <blockquote className="text-lg md:text-xl font-medium mb-6">
-            &ldquo;{currentTestimonial.quote}&rdquo;
-          </blockquote>
-
-          <div>
-            <div className="font-medium">{currentTestimonial.author}</div>
-            <div className="text-foreground text-sm">
-              {currentTestimonial.title}
-            </div>
-          </div>
-        </div>{" "}
-        <Image
-          src={onboardingGraphic}
-          alt="Onboarding Graphic"
-          height={200}
-          width={200}
-        />
-        <div className="absolute bottom-6 right-6">
-          <Button
-            variant="link"
-            className="text-white hover:text-slate-300"
-            onClick={skipRegistration}
-          >
-            Skip Registration
-          </Button>
-        </div>
       </div>
     </div>
   );

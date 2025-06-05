@@ -26,13 +26,17 @@ const loginSchema = z.object({
   password: z.string().min(6),
 });
 const registerSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email().describe("Please enter a valid email address."),
   username: z
     .string()
     .min(6)
     .max(14)
-    .regex(/^[a-zA-Z0-9_]+$/),
-  password: z.string().min(6),
+    .regex(/^[a-zA-Z0-9_]+$/)
+    .describe("Username can only contain letters, numbers, and underscores."),
+  password: z
+    .string()
+    .min(6)
+    .describe("Password must be at least 6 characters"),
 });
 
 type AuthModalProps = {
@@ -114,22 +118,48 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
     }
   };
 
+  const mapStytchErrorToToast = (message: string) => {
+    if (message.includes("invalid_email")) {
+      toast({
+        title: "Error Creating Account",
+        description: "Invalid email",
+        variant: "destructive",
+      });
+    } else if (message.includes("weak_password")) {
+      toast({
+        title: "Error Creating Account",
+        description: "Please use a stronger password.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Error Creating Account",
+        description: "Failed to create account",
+        variant: "destructive",
+      });
+    }
+  };
+
   const onRegisterSubmit = async (data: any) => {
+    let response;
     try {
-      const response = await client.passwords.create({
+      response = await client.passwords.create({
         email: data.email,
         password: data.password,
         session_duration_minutes: SESSION_MINUTES,
       });
-      if (response.session) {
-        await submitRegister({
-          email: data.email,
-          username: data.username,
-          password: data.password,
-          stytchUserId: response.user_id,
-        });
-      }
-    } catch (err: any) {}
+    } catch (err: any) {
+      mapStytchErrorToToast(err.message);
+    }
+
+    if (response && response.session) {
+      await submitRegister({
+        email: data.email,
+        username: data.username,
+        password: data.password,
+        stytchUserId: response.user_id,
+      });
+    }
   };
 
   const resetToEmail = () => {
