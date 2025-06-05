@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { CirclePlus, Home, LayoutGrid, User, Waypoints } from "lucide-react";
+import { CirclePlus, Home, LayoutGrid, User } from "lucide-react";
 import { NewWebModal } from "../webs/NewWebModal";
 import { AuthModal } from "../auth/AuthModal";
 import { ResourceUsage } from "./ResourceUsage";

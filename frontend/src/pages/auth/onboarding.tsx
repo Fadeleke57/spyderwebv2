@@ -51,16 +51,27 @@ export default function OnboardingPage() {
   return (
     <Dialog open={true}>
       <DialogClose hidden className="hidden"></DialogClose>
-      <DialogContent hideClose className="w-full max-w-[100vw] h-full p-0">
-        <DialogTitle hidden></DialogTitle>
-        <DialogDescription hidden></DialogDescription>
-        <OnboardingFlow
-          firstName={router.query.firstName as string}
-          lastName={router.query.lastName as string}
-          username={userData.username}
-          isGoogleSignup={userData.isGoogleSignup}
-          defaultWebId={userData.defaultWebId}
-        />
+      <DialogContent
+        hideClose
+        className="p-0 lg:min-w-[600px] h-[90dvh] lg:h-[80dvh]"
+      >
+        <div className="relative">
+          <DialogTitle hidden></DialogTitle>
+          <DialogDescription hidden></DialogDescription>
+          <OnboardingFlow
+            firstName={router.query.firstName as string}
+            lastName={router.query.lastName as string}
+            username={userData.username}
+            isGoogleSignup={userData.isGoogleSignup}
+            defaultWebId={userData.defaultWebId}
+          />
+          <span
+            className="absolute bottom-6 right-6 lg:right-12 text-muted-foreground hover:underline cursor-pointer text-sm"
+            onClick={() => router.push(`/web/${userData.defaultWebId}`)}
+          >
+            Skip Onboarding
+          </span>
+        </div>
       </DialogContent>
     </Dialog>
   );
