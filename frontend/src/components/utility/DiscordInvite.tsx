@@ -13,7 +13,7 @@ function DiscordInvite() {
       onClick={() => {
         window.open("https://discord.gg/jnr4EXvn", "_blank");
       }}
-      className="p-3 h-fit mb-2 bg-card border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 rounded-lg w-full border border-border flex flex-col font-semibold"
+      className="p-3 py-1 h-fit mb-2 bg-card border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 rounded-lg w-full border border-border flex flex-col font-semibold"
     >
       <span className="flex items-center gap-2">
         <i className="hn hn-discord"></i> Community
