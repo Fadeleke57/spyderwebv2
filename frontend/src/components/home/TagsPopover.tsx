@@ -1,44 +1,125 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, Hash } from "lucide-react";
-import { Web, WebTag } from "@/types/web";
+import { Tags, Plus } from "lucide-react";
+import { WebTag } from "@/types/web";
 import { tagsList } from "@/lib/consts";
-import { useAddTagToWeb } from "@/hooks/webs";
-import { useRemoveTagFromWeb } from "@/hooks/webs";
+import { useRouter } from "next/router";
+import { useUser } from "@/context/UserContext";
+import {
+  useAddTagToWeb,
+  useFetchWebById,
+  useRemoveTagFromWeb,
+} from "@/hooks/webs";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { useUser } from "@/context/UserContext";
+import { Input } from "../ui/input";
+import { toast } from "../ui/use-toast";
 
-export function TagsPopover({ web }: { web: Web }) {
+export function TagsPopover() {
   const { user } = useUser();
+  const router = useRouter();
+  const { webId } = router.query;
+
+  const {
+    data: web,
+    isLoading: webLoading,
+    error: webError,
+    refetch: refetchWeb,
+  } = useFetchWebById(webId as string);
+
   const {
     mutateAsync: addTagToWeb,
     isPending: tagLoading,
-    error,
-  } = useAddTagToWeb(web?.webId);
+    error: tagError,
+  } = useAddTagToWeb(webId as string);
+
   const {
     mutateAsync: removeTagFromWeb,
     isPending: removeTagLoading,
     error: removeTagError,
-  } = useRemoveTagFromWeb(web?.webId);
+  } = useRemoveTagFromWeb(webId as string);
 
-  const [selectedTags, setSelectedTags] = useState<string[]>(
-    web?.tags || []
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [customTag, setCustomTag] = useState("");
+
+  const isOwner = web && user && web.userId === user.id;
+
+  // get predefined tag labels for comparison
+  const predefinedTagLabels = tagsList.map((tag) => tag.label);
+
+  // separate custom tags from predefined tags
+  const customTags = selectedTags.filter(
+    (tag) => !predefinedTagLabels.includes(tag)
   );
 
-  const toggleTag = (tag: string) => {
-    if (web.userId !== user?.id) {
+  // sync selectedTags with web data when it loads
+  useEffect(() => {
+    if (web && web.tags) {
+      setSelectedTags(web.tags);
+    }
+  }, [web]);
+
+  const toggleTag = async (tag: string) => {
+    if (!isOwner) {
       return;
     }
-    if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter((t) => t !== tag));
-      removeTagFromWeb(tag);
+
+    try {
+      if (selectedTags.includes(tag)) {
+        // remove tag
+        setSelectedTags((prev) => prev.filter((t) => t !== tag));
+        await removeTagFromWeb(tag);
+      } else {
+        // add tag
+        if (web && web.tags.length < 10) {
+          setSelectedTags((prev) => [...prev, tag]);
+          await addTagToWeb(tag);
+        } else {
+          toast({
+            title: "Tag limit reached",
+            description: "You can have a maximum of 10 tags.",
+            variant: "destructive",
+          });
+        }
+      }
+      // refetch to ensure sync with backend
+      refetchWeb();
+    } catch (error) {
+      console.error("Error toggling tag:", error);
+      // revert optimistic update on error
+      refetchWeb();
+    }
+  };
+
+  const handleCustomTagSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customTag.trim() || !isOwner) return;
+
+    const newTag = customTag.trim();
+    if (!selectedTags.includes(newTag)) {
+      try {
+        if (web && web.tags.length < 10) {
+          setSelectedTags((prev) => [...prev, newTag]);
+          setCustomTag("");
+          await addTagToWeb(newTag);
+          refetchWeb();
+        } else {
+          toast({
+            title: "Tag limit reached",
+            description: "You can have a maximum of 10 tags.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error adding custom tag:", error);
+        // revert optimistic update on error
+        setSelectedTags((prev) => prev.filter((tag) => tag !== newTag));
+      }
     } else {
-      setSelectedTags([...selectedTags, tag]);
-      addTagToWeb(tag);
+      setCustomTag(""); // clear input if tag already exists
     }
   };
 
@@ -49,43 +130,110 @@ export function TagsPopover({ web }: { web: Web }) {
           variant={"link"}
           className="rounded-full w-fit -ml-2 px-0 m-0 h-fit bg-transparent"
         >
-          <Hash size={16} className="mr-1" />
-          Tags
+          <Tags size={16} className="mr-1" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         side="right"
         sideOffset={4}
-        className={`${web?.userId !== user?.id ? "w-40" : "w-80"} p-4`}
+        className={`w-[400px] p-4`}
       >
         <div className="w-full h-fit rounded-md inline-flex justify-start flex-wrap gap-2">
-          {web?.userId === user?.id ? (
-            tagsList.map((tag: WebTag) => {
-              const isSelected = selectedTags.includes(tag.label);
-              return (
-                <div
-                  key={tag.label}
-                  onClick={() => toggleTag(tag.label)}
-                  className={`cursor-pointer px-2 py-1 rounded-xl ${
-                    isSelected
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-900"
-                  } flex items-center space-x-2`}
-                >
-                  {isSelected && <Check size={16} />}
-                  <small>{tag.value}</small>
+          {isOwner ? (
+            <>
+              {/* predefined tags */}
+              {tagsList.map((tag: WebTag) => {
+                const isSelected = selectedTags.includes(tag.label);
+                return (
+                  <div
+                    key={tag.label}
+                    onClick={() => toggleTag(tag.label)}
+                    className={`cursor-pointer px-2 py-1 rounded-full ${
+                      isSelected
+                        ? "border dark:bg-violet-400/50 dark:border-violet-200 text-foreground"
+                        : "bg-muted"
+                    } flex items-center space-x-2 transition-colors`}
+                  >
+                    <small>{tag.value}</small>
+                  </div>
+                );
+              })}
+
+              {/* custom tags */}
+              <>
+                <div className="w-full border-t pt-2 mt-2">
+                  <small className="text-muted-foreground">Custom Tags:</small>{" "}
+                  {/* custom tag input */}
+                  <form
+                    onSubmit={handleCustomTagSubmit}
+                    className="w-full my-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="text"
+                        value={customTag}
+                        onChange={(e) => setCustomTag(e.target.value)}
+                        placeholder="Add custom tag..."
+                      />
+                      <Button
+                        type="submit"
+                        variant="outline"
+                        size="sm"
+                        disabled={!customTag.trim() || tagLoading}
+                      >
+                        <Plus size={16} />
+                      </Button>
+                    </div>
+                  </form>
                 </div>
-              );
-            })
-          ) : web?.tags.length ? (
-            web?.tags?.map((tag: string) => (
-              <div
-                key={tag}
-                className="cursor-pointer px-2 py-1 rounded-xl bg-blue-500  text-white flex items-center space-x-2"
-              >
-                <small>{tag}</small>
-              </div>
-            ))
+
+                {customTags.map((tag: string) => {
+                  const isSelected = selectedTags.includes(tag);
+                  return (
+                    <div
+                      key={tag}
+                      onClick={() => toggleTag(tag)}
+                      className={`cursor-pointer px-2 py-1 rounded-full ${
+                        isSelected
+                          ? "border dark:bg-violet-400/50 dark:border-violet-200 text-foreground"
+                          : "bg-muted"
+                      } flex items-center space-x-2 transition-colors`}
+                    >
+                      <small>
+                        {tag.charAt(0).toUpperCase() + tag.slice(1)}
+                      </small>
+                    </div>
+                  );
+                })}
+              </>
+            </>
+          ) : selectedTags.length ? (
+            <>
+              {/* display predefined tags for non-owners */}
+              {selectedTags
+                .filter((tag) => predefinedTagLabels.includes(tag))
+                .map((tagLabel: string) => {
+                  const tagObject = tagsList.find((t) => t.label === tagLabel);
+                  return (
+                    <div
+                      key={tagLabel}
+                      className="px-2 py-1 rounded-xl border dark:bg-violet-400/50 dark:border-violet-200 text-foreground flex items-center space-x-2"
+                    >
+                      <small>{tagObject?.value || tagLabel}</small>
+                    </div>
+                  );
+                })}
+
+              {/* display custom tags for non-owners */}
+              {customTags.map((tag: string) => (
+                <div
+                  key={tag}
+                  className="px-2 py-1 rounded-xl border dark:bg-violet-400/50 dark:border-violet-200 text-foreground flex items-center space-x-2"
+                >
+                  <small>{tag.charAt(0).toUpperCase() + tag.slice(1)}</small>
+                </div>
+              ))}
+            </>
           ) : (
             <div>
               <small>No tags</small>

@@ -13,8 +13,8 @@ export const colorOptions = [
 
 export const tagsList: WebTag[] = [
   {
-    value: "Research",
-    label: "research",
+    value: "Preferences",
+    label: "preferences",
   },
   {
     value: "AI",
@@ -37,32 +37,16 @@ export const tagsList: WebTag[] = [
     label: "business",
   },
   {
-    value: "Economy",
-    label: "economy",
+    value: "Research",
+    label: "research",
   },
   {
-    value: "Food",
-    label: "food",
-  },
-  {
-    value: "Travel",
-    label: "travel",
-  },
-  {
-    value: "Health",
-    label: "health",
+    value: "Documentation",
+    label: "documentation",
   },
   {
     value: "Entertainment",
     label: "entertainment",
-  },
-  {
-    value: "Sports",
-    label: "sports",
-  },
-  {
-    value: "World",
-    label: "world",
   },
   {
     value: "Other",
