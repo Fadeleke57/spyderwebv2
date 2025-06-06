@@ -134,11 +134,7 @@ export function TagsPopover() {
           <Tags size={16} className="mr-1 hover:text-neon/70" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        side="right"
-        sideOffset={4}
-        className={`w-[400px] p-4`}
-      >
+      <PopoverContent side="right" sideOffset={4} className={`w-[400px] p-4`}>
         <div className="w-full h-fit rounded-md inline-flex justify-start flex-wrap gap-2">
           {isOwner ? (
             <>
@@ -165,10 +161,7 @@ export function TagsPopover() {
                 <div className="w-full border-t pt-2 mt-2">
                   <small className="text-muted-foreground">Custom Tags:</small>{" "}
                   {/* custom tag input */}
-                  <form
-                    onSubmit={handleCustomTagSubmit}
-                    className="w-full my-2"
-                  >
+                  <form className="w-full my-2">
                     <div className="flex items-center gap-2">
                       <Input
                         type="text"
@@ -177,10 +170,10 @@ export function TagsPopover() {
                         placeholder="Add custom tag..."
                       />
                       <Button
-                        type="submit"
                         variant="outline"
                         size="sm"
                         disabled={!customTag.trim() || tagLoading}
+                        onClick={handleCustomTagSubmit}
                       >
                         <Plus size={16} />
                       </Button>
