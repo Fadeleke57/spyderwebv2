@@ -66,16 +66,9 @@ def get_user_webs(
     """
 
     try:
-
+        visibility = None
         if criteria:
-            if criteria == "public":
-                visibility = "Public"
-            elif criteria == "private":
-                visibility = "Private"
-            else:
-                visibility = None
-        else:
-            visibility = None
+            visibility = criteria[0].upper() + criteria[1:]
 
         if visibility:
             webs = list(

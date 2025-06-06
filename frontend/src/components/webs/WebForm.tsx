@@ -97,6 +97,7 @@ function WebForm({ webId }: { webId: string }) {
           description: config.description,
           visibility: config.visibility,
         });
+        refetchWeb();
         toast({ title: "Changes saved." });
       } catch (error: any) {
         toast({
@@ -141,6 +142,7 @@ function WebForm({ webId }: { webId: string }) {
         ...webConfig,
         visibility,
       });
+      refetchWeb();
       toast({
         title: `Web visibility updated to ${visibility.toLowerCase()}.`,
       });
@@ -167,7 +169,7 @@ function WebForm({ webId }: { webId: string }) {
         variant: "destructive",
       });
     }
-  }, [selectedImage, deleteImage, refetchImages, toast, web]);
+  }, [selectedImage, deleteImage, toast, web]);
 
   const handleOpenDeleteModal = (imageUrl: string) => {
     setSelectedImage(imageUrl);
