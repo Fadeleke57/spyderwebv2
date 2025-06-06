@@ -23,6 +23,7 @@ import ExportContextModal from "./ExportContextModal";
 import { useRouter } from "next/router";
 import { useUser } from "@/context/UserContext";
 import { useFetchWebById } from "@/hooks/webs";
+import SimpleTooltip from "../utility/SimpleTooltip";
 
 const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
 
@@ -239,20 +240,22 @@ function WebPlayground() {
             <div
               className={`absolute ${isExpanded ? "right-6" : "right-3"} top-12`}
             >
-              <Button
-                size={"icon"}
-                onClick={() => {
-                  handleOrientationChange(!isUploadingSource);
-                  setIsUploadingSource(!isUploadingSource);
-                }}
-                className="dark:bg-violet-400/80 hidden lg:block dark:hover:bg-violet-400 rounded-full p-1 h-fit w-fit"
-              >
-                <Plus
-                  strokeWidth={3}
-                  size={16}
-                  className={`rotate-${addIconOrientation} transition-transform ease-in-out duration-300`}
-                />
-              </Button>
+              <SimpleTooltip content="Add source" side="left">
+                <Button
+                  size={"icon"}
+                  onClick={() => {
+                    handleOrientationChange(!isUploadingSource);
+                    setIsUploadingSource(!isUploadingSource);
+                  }}
+                  className="dark:bg-violet-400/80 hidden lg:block dark:hover:bg-violet-400 rounded-full p-1 h-fit w-fit"
+                >
+                  <Plus
+                    strokeWidth={3}
+                    size={16}
+                    className={`rotate-${addIconOrientation} transition-transform ease-in-out duration-300`}
+                  />
+                </Button>
+              </SimpleTooltip>
             </div>
           )}
         {isOwner &&
