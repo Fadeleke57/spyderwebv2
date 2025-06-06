@@ -11,6 +11,7 @@ import { ImageModal } from "../utility/ImageModal";
 import { AnimatedStarButton } from "../explore/AnimatedStar";
 import { useUser } from "@/context/UserContext";
 import AuthModal from "../auth/AuthModal";
+import { TagsPopover } from "../home/TagsPopover";
 
 function PublicWebView({ webId }: { webId: string }) {
   const { data: web } = useFetchWebById(webId);
@@ -97,7 +98,9 @@ function PublicWebView({ webId }: { webId: string }) {
                 />
               </div>
             </div>
-
+            <div>
+              <TagsPopover />
+            </div>
             <span id="name" className="text-md font-semibold">
               {web?.name || "Untitled"}
             </span>
@@ -133,10 +136,7 @@ function PublicWebView({ webId }: { webId: string }) {
         onClose={() => setImageModalOpen(false)}
         imageUrl={selectedImage || ""}
       />
-      <AuthModal
-        open={authModalOpen}
-        setOpen={setAuthModalOpen}
-      />
+      <AuthModal open={authModalOpen} setOpen={setAuthModalOpen} />
     </div>
   );
 }

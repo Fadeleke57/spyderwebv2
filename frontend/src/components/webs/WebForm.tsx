@@ -27,6 +27,8 @@ import { ImageModal } from "../utility/ImageModal";
 import { DynamicTextarea } from "../utility/DynamicScrollbar";
 import { SHOWCASE_IMAGE } from "@/lib/consts";
 import { useUser } from "@/context/UserContext";
+import { TagsPopover } from "../home/TagsPopover";
+import SimpleTooltip from "../utility/SimpleTooltip";
 
 const webSchema = z.object({
   name: z.string().min(1, { message: "Claim is required" }),
@@ -303,27 +305,34 @@ function WebForm({ webId }: { webId: string }) {
                   </ConfirmModal>
                 )}
               </small>
-              <Button
-                type="button"
-                variant="ghost"
-                className="hover:bg-transparent w-fit p-0"
-              >
-                <label htmlFor="image-file">
-                  <ImageIcon
-                    size={17}
-                    className="cursor-pointer hover:text-muted-foreground"
-                  />
-                </label>
-                <input
-                  type="file"
-                  id="image-file"
-                  multiple
-                  accept="image/jpeg,image/png,image/webp"
-                  className="absolute inset-0 opacity-0 cursor-pointer p-0"
-                  hidden
-                  onChange={(e) => handleStageImage(e.target.files)}
-                />
-              </Button>
+              <div className="flex flex-row items-center gap-2">
+                <SimpleTooltip content="Upload images" sideOffset={0}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="hover:bg-transparent w-fit p-0"
+                  >
+                    <label htmlFor="image-file">
+                      <ImageIcon
+                        size={17}
+                        className="cursor-pointer hover:text-muted-foreground"
+                      />
+                    </label>
+                    <input
+                      type="file"
+                      id="image-file"
+                      multiple
+                      accept="image/jpeg,image/png,image/webp"
+                      className="absolute inset-0 opacity-0 cursor-pointer p-0"
+                      hidden
+                      onChange={(e) => handleStageImage(e.target.files)}
+                    />
+                  </Button>
+                </SimpleTooltip>
+                <SimpleTooltip content="Tags" sideOffset={0}>
+                  <TagsPopover />
+                </SimpleTooltip>
+              </div>
             </div>
             <DynamicTextarea
               id="name"
