@@ -22,35 +22,35 @@ const Authorize = () => {
 
   const styles: StyleConfig = {
     container: {
-      backgroundColor: "#fff",
-      borderColor: "#ccc",
-      borderRadius: "5px",
-      width: "100%",
+      backgroundColor: "#1F1F1F",
+      borderColor: "#3f3f46",
+      borderRadius: "10px",
+      width: "400",
     },
     colors: {
-      primary: "#007bff",
-      secondary: "#6c757d",
-      success: "#28a745",
-      error: "#dc3545",
+      primary: "#d4d4d4",
+      secondary: "#e2e8f0",
+      success: "#4ade80",
+      error: "#ef4444",
     },
     buttons: {
       primary: {
-        backgroundColor: "#007bff",
-        textColor: "#fff",
-        borderColor: "#007bff",
-        borderRadius: "5px",
+        backgroundColor: "#564A77",
+        textColor: "#E8E8E8",
+        borderColor: "#E8E8E8",
+        borderRadius: "10px",
       },
       secondary: {
-        backgroundColor: "#6c757d",
+        backgroundColor: "#282727",
         textColor: "#fff",
         borderColor: "#6c757d",
-        borderRadius: "5px",
+        borderRadius: "10px",
       },
       disabled: {
-        backgroundColor: "#ccc",
-        textColor: "#fff",
+        backgroundColor: "#e2e8f0",
+        textColor: "#3f3f46",
         borderColor: "#ccc",
-        borderRadius: "5px",
+        borderRadius: "10px",
       },
     },
     inputs: {
@@ -62,7 +62,7 @@ const Authorize = () => {
     },
     fontFamily: "Arial, sans-serif",
     logo: {
-      logoImageUrl: "/logo.svg",
+      logoImageUrl: "/slogonobg.png",
     },
     hideHeaderText: false,
   };
