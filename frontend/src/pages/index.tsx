@@ -19,6 +19,10 @@ export default function Home() {
     }
   }, [router, user]);
 
+  if (user) {
+    return null;
+  }
+
   return (
     <VortexParticleSystemExact>
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-between p-6 pt-20 lg:px-10 lg:pt-24">

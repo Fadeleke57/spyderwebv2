@@ -310,12 +310,12 @@ function WebForm({ webId }: { webId: string }) {
                   <Button
                     type="button"
                     variant="ghost"
-                    className="hover:bg-transparent w-fit p-0"
+                    className="text-neon w-fit h-fit p-0"
                   >
                     <label htmlFor="image-file">
                       <ImageIcon
                         size={17}
-                        className="cursor-pointer hover:text-muted-foreground"
+                        className="cursor-pointer hover:text-neon/70"
                       />
                     </label>
                     <input

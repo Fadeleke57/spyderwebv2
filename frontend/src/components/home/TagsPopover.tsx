@@ -17,6 +17,7 @@ import {
 } from "../ui/dropdown-menu";
 import { Input } from "../ui/input";
 import { toast } from "../ui/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 
 export function TagsPopover() {
   const { user } = useUser();
@@ -124,16 +125,16 @@ export function TagsPopover() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+    <Popover>
+      <PopoverTrigger asChild>
         <Button
           variant={"link"}
-          className="rounded-full w-fit -ml-2 px-0 m-0 h-fit bg-transparent"
+          className="rounded-full text-neon w-fit -ml-2 px-0 m-0 h-fit bg-transparent"
         >
-          <Tags size={16} className="mr-1" />
+          <Tags size={16} className="mr-1 hover:text-neon/70" />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
+      </PopoverTrigger>
+      <PopoverContent
         side="right"
         sideOffset={4}
         className={`w-[400px] p-4`}
@@ -240,7 +241,7 @@ export function TagsPopover() {
             </div>
           )}
         </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </PopoverContent>
+    </Popover>
   );
 }
