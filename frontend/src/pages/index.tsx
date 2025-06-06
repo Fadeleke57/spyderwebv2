@@ -2,15 +2,13 @@ import Header from "@/components/landing/Header";
 import { useEffect, useRef } from "react";
 import PublicLayout from "@/app/PublicLayout";
 import { ReactElement } from "react";
-import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/router";
 import * as THREE from "three";
-import { Footer } from "react-day-picker";
 import Link from "next/link";
 import { useStytchUser } from "@stytch/nextjs";
 
 export default function Home() {
-  const { user, fromCache } = useStytchUser();
+  const { user } = useStytchUser();
   const router = useRouter();
 
   useEffect(() => {
