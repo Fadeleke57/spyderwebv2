@@ -1,10 +1,6 @@
 from typing import Optional, Tuple
 from fastapi import HTTPException, Cookie, Header
-from src.lib.stytch.index import (
-    client as stytchClient,
-    StytchError,
-    StytchUser
-)
+from src.lib.stytch.index import client as stytchClient, StytchError, StytchUser
 from src.lib.logger.index import logger
 from src.models.index import Users, User
 
@@ -37,17 +33,19 @@ class TokenExtractor:
         """
         if not authorization:
             return None
-            
+
         parts = authorization.split()
         if len(parts) != 2 or parts[0] != "Bearer":
             raise AuthenticationError(
                 "Invalid Authorization header format. Expected 'Bearer <token>'."
             )
-        
+
         return parts[1], "Bearer token"
-    
+
     @staticmethod
-    def extract_cookie_token(stytch_session_jwt: Optional[str]) -> Optional[Tuple[str, str]]:
+    def extract_cookie_token(
+        stytch_session_jwt: Optional[str],
+    ) -> Optional[Tuple[str, str]]:
         """
         Extract the Stytch session JWT from the stytch_session_jwt cookie.
 
@@ -64,7 +62,7 @@ class TokenExtractor:
 
 class StytchAuthenticator:
     """Handles Stytch authentication operations"""
-    
+
     @staticmethod
     def authenticate_bearer_token(token: str) -> StytchUser:
         """
@@ -81,14 +79,12 @@ class StytchAuthenticator:
         """
         resp = stytchClient.idp.introspect_access_token_local(access_token=token)
         stytch_user = stytchClient.users.get(user_id=resp.subject)
-        
+
         if not stytch_user:
-            raise AuthenticationError(
-                "User not found in Stytch after authentication"
-            )
-        
+            raise AuthenticationError("User not found in Stytch after authentication")
+
         return stytch_user
-    
+
     @staticmethod
     def authenticate_session_jwt(token: str) -> any:
         """
@@ -107,7 +103,7 @@ class StytchAuthenticator:
         return resp.user
 
 
-class UserRepository:    
+class UserRepository:
     @staticmethod
     def find_user_by_stytch_data(stytch_user: StytchUser) -> User:
         """
@@ -125,16 +121,16 @@ class UserRepository:
 
         user_id = stytch_user.external_id or stytch_user.user_id
         user = Users.find_one({"id": user_id})
-        
+
         if not user:
             raise AuthenticationError(
                 "User not found in local system after authentication"
             )
-        
+
         return user
 
 
-class AuthService:    
+class AuthService:
     def __init__(self):
         """
         Initializes the AuthService with necessary components for authentication.
@@ -146,8 +142,10 @@ class AuthService:
         self.token_extractor = TokenExtractor()
         self.stytch_auth = StytchAuthenticator()
         self.user_repo = UserRepository()
-    
-    def _authenticate_token(self, token: str, auth_method: str, is_bearer: bool) -> User:
+
+    def _authenticate_token(
+        self, token: str, auth_method: str, is_bearer: bool
+    ) -> User:
         """
         Authenticates a user using a given token and authentication method.
 
@@ -167,38 +165,42 @@ class AuthService:
                 stytch_user = self.stytch_auth.authenticate_bearer_token(token)
             else:
                 stytch_user = self.stytch_auth.authenticate_session_jwt(token)
-            
+
             user = self.user_repo.find_user_by_stytch_data(stytch_user)
-            
+
             user_id = stytch_user.external_id or stytch_user.user_id
             logger.info(
                 f"Successfully authenticated user_id: {user_id} via {auth_method}"
             )
-            
+
             return user
-            
+
         except StytchError as e:
             logger.warning(f"Stytch authentication error with {auth_method}: {e}")
-            detail = f"Authentication failed: {e.details.model_dump()}" if hasattr(e, 'details') else f"Stytch authentication error with {auth_method}: {e}"
+            detail = (
+                f"Authentication failed: {e.details.model_dump()}"
+                if hasattr(e, "details")
+                else f"Stytch authentication error with {auth_method}: {e}"
+            )
             raise AuthenticationError(detail)
-    
+
     def authenticate_user(
         self,
         authorization: Optional[str] = None,
-        stytch_session_jwt: Optional[str] = None
+        stytch_session_jwt: Optional[str] = None,
     ) -> User:
         """
         Authenticates a user using either a Bearer token or a session JWT.
 
-        This method attempts to extract and authenticate a Bearer token from the 
-        Authorization header or a session JWT from a cookie. If a valid token is 
-        found and authenticated, the corresponding user is returned. If no valid 
+        This method attempts to extract and authenticate a Bearer token from the
+        Authorization header or a session JWT from a cookie. If a valid token is
+        found and authenticated, the corresponding user is returned. If no valid
         token is found, an AuthenticationError is raised.
 
         Args:
-            authorization (Optional[str]): The Authorization header value, potentially 
+            authorization (Optional[str]): The Authorization header value, potentially
                                         containing a Bearer token.
-            stytch_session_jwt (Optional[str]): The cookie value potentially containing 
+            stytch_session_jwt (Optional[str]): The cookie value potentially containing
                                                 a session JWT.
 
         Returns:
@@ -212,18 +214,22 @@ class AuthService:
             token, auth_method = bearer_result
             logger.info(f"Received Bearer token: {token}")
             return self._authenticate_token(token, auth_method, is_bearer=True)
-        
+
         # try cookie token
         cookie_result = self.token_extractor.extract_cookie_token(stytch_session_jwt)
         if cookie_result:
             token, auth_method = cookie_result
             return self._authenticate_token(token, auth_method, is_bearer=False)
-        
+
         # no valid token found
-        logger.warning("Missing authentication token (neither Bearer token nor cookie found).")
+        logger.warning(
+            "Missing authentication token (neither Bearer token nor cookie found)."
+        )
         raise AuthenticationError("Not authenticated: Missing token")
 
+
 auth_service = AuthService()
+
 
 async def get_current_user_from_token(
     authorization: Optional[str] = Header(

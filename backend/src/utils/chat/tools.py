@@ -25,27 +25,24 @@ def get_current_weather(latitude, longitude):
 
 
 def get_graph_context(
-    webId: str,
     query: str,
     sources: list[str] = [],
     limit: int = 20,
-    boundary: bool = True,
-    userId: Optional[str] = None,
+    webId: Optional[str] = None,
 ):
-
+    # TODO: Do something cool with neo4j
     filter = {}
     if sources:
         filter = {"sourceId": {"$in": sources}}
-
-    if userId:
-        filter["userId"] = userId
+    if webId:
+        filter["webId"] = webId
 
     try:
         logger.info(
-            f"Fetching graph context for webId: {webId}, with filter: {filter}, and query: {query} and limit: {limit}"
+            f"Fetching graph context with filter: {filter}, and query: {query} and limit: {limit}"
         )
         context = pineconeClient.run_semantic_source_search(
-            webId=webId, query=query, filter=filter, limit=limit, boundary=boundary
+            query=query, filter=filter, limit=limit
         )
         logger.info(f"Graph context: {context}")
         return {"context": context}

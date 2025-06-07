@@ -38,9 +38,10 @@ import { formatText } from "@/lib/utils";
 import { useRouter } from "next/router";
 
 export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
+  const [webLikedCount, setWebLikedCount] = useState(
+    (web && web.likes.length) || 0
+  );
   const router = useRouter();
-  
-  const [webLikedCount, setWebLikedCount] = useState(web.likes.length);
   const [webSaved, setWebSaved] = useState(false);
   const [webHidden, setWebHidden] = useState(false);
   const [webLiked, setWebLiked] = useState(false);

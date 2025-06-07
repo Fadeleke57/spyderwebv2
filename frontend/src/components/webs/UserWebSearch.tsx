@@ -4,11 +4,10 @@ import { useSearchWebs } from "@/hooks/webs";
 import { useUser } from "@/context/UserContext";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { useOnClickOutside } from "@/hooks/general";
 import { cn, formatText } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ScrollArea } from "../ui/scroll-area";
+import router from "next/router";
 
 const HighlightedText = ({
   text,
@@ -67,10 +66,7 @@ function UserWebSearch() {
   };
 
   return (
-    <div
-      ref={searchRef}
-      className="md:w-[200px] lg:w-full w-flex items-center"
-    >
+    <div ref={searchRef} className="md:w-[200px] lg:w-full w-flex items-center">
       <div className="relative">
         <SearchInput
           value={query}
@@ -91,22 +87,22 @@ function UserWebSearch() {
           {searchResults && searchResults.length > 0 ? (
             <div className="space-y-1 truncate wrap">
               {searchResults.map((web: any) => (
-                <Link key={web.id} href={`/web/${web.id}`} className="block">
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start text-left items-start text-sm flex flex-col h-fit dark:hover:bg-muted truncate"
-                  >
-                    <HighlightedText
-                      text={formatText(web.name, isMobile ? 40 : 55)}
-                      highlight={query}
-                    />
-                    <HighlightedText
-                      text={formatText(web.description, isMobile ? 40 : 55)}
-                      highlight={query}
-                      className="text-muted-foreground"
-                    />
-                  </Button>
-                </Link>
+                <Button
+                  key={web.webId}
+                  variant="ghost"
+                  className="w-full block justify-start text-left items-start text-sm flex flex-col h-fit dark:hover:bg-muted truncate"
+                  onClick={() => router.push(`/web/${web.webId}`)}
+                >
+                  <HighlightedText
+                    text={formatText(web.name, isMobile ? 40 : 55)}
+                    highlight={query}
+                  />
+                  <HighlightedText
+                    text={formatText(web.description, isMobile ? 40 : 55)}
+                    highlight={query}
+                    className="text-muted-foreground"
+                  />
+                </Button>
               ))}
             </div>
           ) : (

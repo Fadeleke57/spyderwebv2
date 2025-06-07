@@ -15,6 +15,7 @@ from src.routes.index import (
     payment_router,
     feedback_router,
 )
+from src.api.v1.index import router as api_v1_router
 
 logging.basicConfig(level=logging.INFO)
 
@@ -98,6 +99,9 @@ app.include_router(chat_router, prefix="/chat")
 app.include_router(process_router, prefix="/processes")
 app.include_router(payment_router, prefix="/payment")
 app.include_router(feedback_router, prefix="/feedback")
+
+# API V1
+app.include_router(api_v1_router, prefix="/api/v1")
 
 
 @app.get("/")

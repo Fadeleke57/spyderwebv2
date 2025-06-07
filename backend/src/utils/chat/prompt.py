@@ -143,7 +143,7 @@ def stream_text(messages: List[ChatCompletionMessageParam], protocol: str = "dat
                                 "description": "Optional: The source IDs to search within the knowledge graph. If not provided, all sources will be searched.",
                             },
                         },
-                        "required": ["webId", "query"],
+                        "required": ["query", "webId"],
                     },
                 },
             },

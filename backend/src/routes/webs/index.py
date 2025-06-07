@@ -30,7 +30,6 @@ from src.models.index import (
 )
 from src.lib.logger.index import logger
 from src.core.config import settings
-from src.lib.stytch.index import StytchError
 from src.lib.pinecone.index import client as pineconeClient
 from src.service.web import service as webService
 from src.service.source import service as sourceService
