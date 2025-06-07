@@ -58,11 +58,11 @@ def authenticate(
         email = auth_request.email
         if not email:
             raise HTTPException(status_code=400, detail="Email is required")
-            
+
         userId = auth_request.stytchUserId
         if not userId:
             raise HTTPException(status_code=400, detail="Stytch user ID is required")
-            
+
         first_name = auth_request.firstName or ""
         last_name = auth_request.lastName or ""
         profile_picture_url = auth_request.profilePictureUrl or ""
@@ -72,7 +72,7 @@ def authenticate(
         username = generate_username() if not user else user.get("username")
 
         new_web_id = None
-        
+
         if not user:
             # Create a new user
             create_user_data = CreateUser(
@@ -103,9 +103,9 @@ def authenticate(
                 new_web_id = create_web(webToCreate=create_web_data, userId=userId)
                 if new_web_id:
                     sourceService.create_onboarding_sources(
-                        web_id=new_web_id, 
-                        user_id=userId, 
-                        background_tasks=background_tasks
+                        web_id=new_web_id,
+                        user_id=userId,
+                        background_tasks=background_tasks,
                     )
             except Exception as e:
                 logger.error(f"Error creating welcome web: {str(e)}")
@@ -136,10 +136,7 @@ def authenticate(
 
         full_redirect_url = f"{settings.next_url}{redirect}{params}"
 
-        return JSONResponse(content={
-            "redirect": full_redirect_url, 
-            "success": True
-        })
+        return JSONResponse(content={"redirect": full_redirect_url, "success": True})
 
     except HTTPException:
         # Re-raise HTTP exceptions as-is
@@ -201,10 +198,9 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
             userId=userId,
             username=registerRequest.username,
             email=registerRequest.email,
-            password=getattr(registerRequest, 'password', None),
-            fullName=getattr(registerRequest, 'fullName', ''),
+            fullName=registerRequest.fullName,
         )
-        
+
         created_user = create_user(createUserPayload)
         if not created_user:
             raise HTTPException(status_code=500, detail="Failed to create user")
@@ -226,8 +222,10 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
             webId = create_web(webToCreate=createWebPayload, userId=userId)
             if not webId:
                 logger.error("create_web returned None or falsy value")
-                raise HTTPException(status_code=500, detail="Failed to create default web")
-                
+                raise HTTPException(
+                    status_code=500, detail="Failed to create default web"
+                )
+
             # Create onboarding sources in background
             sourceService.create_onboarding_sources(
                 web_id=webId, user_id=userId, background_tasks=background_tasks
@@ -243,7 +241,7 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
             "username": registerRequest.username,
             "email": registerRequest.email,
         }
-        
+
         # Only include webId if it was successfully created
         if webId:
             response_content["webId"] = webId
@@ -265,10 +263,10 @@ def get_current_user(user=Depends(manager.optional)):
 
     :return: The current user
     """
-    
+
     if not user:
         return None
-    
+
     try:
         publicUser = convert_to_public_user(
             user,

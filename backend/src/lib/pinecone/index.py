@@ -11,6 +11,7 @@ from src.models.index import Source, Embeddings
 from src.utils.storage import handleEmbeddingStorage
 from src.utils.credits import deduct_credits
 from fastapi import HTTPException
+from src.utils.context import clean_metadata
 
 
 class PineconeClient:
@@ -111,12 +112,14 @@ class PineconeClient:
         return metadata
 
     @staticmethod
-    def _map_type_to_batch_size(type: Literal["website", "youtube", "document"]) -> int:
+    def _map_type_to_batch_size(
+        type: Literal["website", "youtube", "document", "note", "voice_note"]
+    ) -> int:
         """
         Maps the given type to the batch size for uploading to Pinecone.
 
         Args:
-        - type (Literal["website", "youtube", "document"]): The type of data to upload.
+        - type (Literal["website", "youtube", "document", "note", "voice_note"]: The type of data to upload.
 
         Returns:
         - int: The batch size for uploading the given type of data.
@@ -127,7 +130,10 @@ class PineconeClient:
             return 20
         elif type == "document":
             return 50
-        return 40
+        elif type == "note":
+            return 50
+        elif type == "voice_note":
+            return 50
 
     def run_semantic_web_search(
         self, query: str, filter: Dict[str, Any] = {}, limit: int = 10
@@ -145,6 +151,11 @@ class PineconeClient:
             list: A list of dictionaries, each containing the metadata of a result, as well as its ID.
         """
         query_embedding = self.get_query_embedding(query)
+
+        logger.info(
+            f"Performing semantic search for query: {query}, filter: {filter}, limit: {limit}"
+        )
+
         pinecone_response = self.index.query(
             vector=query_embedding,
             top_k=limit,
@@ -157,33 +168,22 @@ class PineconeClient:
             result = match["metadata"]
             result["id"] = match["id"]
             results.append(result)
-        return results
+
+        to_clean = []
+        for result in results:
+            to_clean.append(clean_metadata(result))
+
+        return to_clean
 
     def run_semantic_source_search(
         self,
-        webId: str,
         query: str,
         filter: Dict[str, Any] = {},
         limit: int = 10,
-        boundary: bool = True,
     ):
-        """
-        Runs a semantic search on the Pinecone index for sources, given a query string, web ID, and an optional filter.
-
-        Args:
-            webId (str): The ID of the web to search within.
-            query (str): The query string to search for.
-            filter (Dict[str, Any]): A filter to apply on the results. The filter should be a dictionary
-                where each key is a metadata key and the value is a filter value.
-            limit (int): The number of results to return. Defaults to 10.
-            boundary (bool): Whether to apply the web ID as a filter or not. Defaults to True.
-
-        Returns:
-            list: A list of dictionaries, each containing the metadata of a result, as well as its ID.
-        """
-        if boundary:
-            filter["webId"] = webId
-
+        logger.info(
+            f"Performing semantic search for query: {query}, filter: {filter}, limit: {limit}"
+        )
         query_embedding = self.get_query_embedding(query)
         pinecone_response = self.index.query(
             vector=query_embedding,
@@ -197,7 +197,13 @@ class PineconeClient:
             result = match["metadata"]
             result["id"] = match["id"]
             results.append(result)
-        return results
+
+        to_clean = []
+        for result in results:
+            to_clean.append(clean_metadata(result))
+
+        logger.info(f"Semantic search results: {to_clean}")
+        return to_clean
 
     def get_query_embedding(self, query: str):
         """
@@ -416,7 +422,7 @@ class PineconeClient:
                 autolinker.add_vector_to_stage((chunk_id, embedding, metadata))
             vectors.append((chunk_id, embedding, metadata))
 
-        batch_size = self._map_type_to_batch_size(type)
+        batch_size = self._map_type_to_batch_size(source["type"])
         results = []
 
         for i in range(0, len(vectors), batch_size):

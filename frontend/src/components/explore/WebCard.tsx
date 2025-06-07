@@ -38,7 +38,9 @@ import { AnimatedStarButton } from "./AnimatedStar";
 import { formatText } from "@/lib/utils";
 
 export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
-  const [webLikedCount, setWebLikedCount] = useState(web.likes.length);
+  const [webLikedCount, setWebLikedCount] = useState(
+    (web && web.likes.length) || 0
+  );
   const [webSaved, setWebSaved] = useState(false);
   const [webHidden, setWebHidden] = useState(false);
   const [webLiked, setWebLiked] = useState(false);
@@ -60,7 +62,6 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
   const [iteratedFrom, setIteratedFrom] = useState<any | null>(null);
   const [showIterateModal, setShowIterateModal] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [imageModalOpen, setImageModalOpen] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string>("");
 
@@ -394,10 +395,7 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
         open={showIterateModal}
         setIsOpen={setShowIterateModal}
       />
-      <AuthModal
-        open={authModalOpen}
-        setOpen={setAuthModalOpen}
-      />
+      <AuthModal open={authModalOpen} setOpen={setAuthModalOpen} />
     </Link>
   );
 }
