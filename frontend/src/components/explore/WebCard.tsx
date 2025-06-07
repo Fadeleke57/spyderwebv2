@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -36,11 +35,13 @@ import { ImageModal } from "../utility/ImageModal";
 import { SkeletonCard } from "../utility/SkeletonCard";
 import { AnimatedStarButton } from "./AnimatedStar";
 import { formatText } from "@/lib/utils";
+import { useRouter } from "next/router";
 
 export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
   const [webLikedCount, setWebLikedCount] = useState(
     (web && web.likes.length) || 0
   );
+  const router = useRouter();
   const [webSaved, setWebSaved] = useState(false);
   const [webHidden, setWebHidden] = useState(false);
   const [webLiked, setWebLiked] = useState(false);
@@ -205,8 +206,8 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
   }
 
   return (
-    <Link
-      href={`/web/${web.webId}`}
+    <div
+      onClick={() => router.push(`/web/${web.webId}`)}
       className="flex flex-col hover:cursor-pointer"
     >
       <Card className="w-full relative mx-auto min-h-[80px] bg-background hover:bg-muted p-6 pb-3 pt-4 rounded-none lg:rounded-xl">
@@ -395,7 +396,10 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
         open={showIterateModal}
         setIsOpen={setShowIterateModal}
       />
-      <AuthModal open={authModalOpen} setOpen={setAuthModalOpen} />
-    </Link>
+      <AuthModal
+        open={authModalOpen}
+        setOpen={setAuthModalOpen}
+      />
+    </div>
   );
 }

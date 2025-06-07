@@ -21,6 +21,7 @@ import { AuthModal } from "../auth/AuthModal";
 import { ResourceUsage } from "./ResourceUsage";
 import { useResourceUsage } from "@/hooks/usage";
 import { Skeleton } from "../ui/skeleton";
+import DiscordInvite from "./DiscordInvite";
 
 const SidebarIndicator = ({ show }: { show: boolean }) => {
   const { state } = useSidebar();
@@ -247,35 +248,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
       <SidebarFooter
         hideWhen={user ? null : "collapsed"}
-        className="mb-2 relative"
+        className="mb-2 px-2 relative"
       >
         {user && (
-          <div className="px-2 mb-4">
-            {usageLoading ? (
-              <Skeleton className="h-32 w-full rounded-xl" />
-            ) : (
-              <ResourceUsage
-                storageUsed={usage?.storage.used || 0}
-                storageLimit={usage?.storage.limit || 0}
-                computationUsed={usage?.computation.used || 0}
-                computationLimit={usage?.computation.limit || 0}
-              />
-            )}
-            {usageError && (
-              <div className="p-2 text-sm bg-red-500/80 rounded-lg flex items-center justify-center">
-                Something went wrong
-              </div>
-            )}
-          </div>
+          <>
+            <DiscordInvite />
+            <div className="mb-4">
+              {" "}
+              {usageLoading ? (
+                <Skeleton className="h-32 w-full rounded-xl" />
+              ) : (
+                <ResourceUsage
+                  storageUsed={usage?.storage.used || 0}
+                  storageLimit={usage?.storage.limit || 0}
+                  computationUsed={usage?.computation.used || 0}
+                  computationLimit={usage?.computation.limit || 0}
+                />
+              )}
+              {usageError && (
+                <div className="p-2 text-sm bg-red-500/80 rounded-lg flex items-center justify-center">
+                  Something went wrong
+                </div>
+              )}
+            </div>
+          </>
         )}
         <NavUser />
       </SidebarFooter>
-      {open && (
-        <AuthModal
-          open={open}
-          setOpen={setOpen}
-        />
-      )}
+      {open && <AuthModal open={open} setOpen={setOpen} />}
     </Sidebar>
   );
 }
