@@ -102,7 +102,7 @@ function Index() {
           }`}
         />
       </Head>
-      <div className="max-w-7xl mx-auto px-8 sm:px-10 p-16">
+      <div className=" mx-auto px-8 sm:px-10 p-16 px-0">
         <motion.div
           className="mb-16 lg:my-16 py-0 flex flex-col space-y-4 max-w-xl"
           variants={headerVariants}
