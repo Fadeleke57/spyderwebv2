@@ -35,7 +35,7 @@ def version():
 )  # scope to all public webs (inclusive of the user's public and private webs) or all of the user's webs (inclusive of the user's public and private webs)
 def search_webs(
     query: str,
-    scope: Literal["User.all", "All"] = Query("User.all", alias="scope"),
+    scope: Literal["User.all", "All"] = Query("All", alias="scope"),
     userMakingRequest=Depends(manager.required),
 ):
 
@@ -112,7 +112,7 @@ def search_memories(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/add/chat/memory")  # TODO: This would be the start of "feeds"
+@router.post("/add/memory")  # TODO: This would be the start of "feeds"
 def add_chat_to_memory(
     userMakingRequest=Depends(manager.required),
 ):
