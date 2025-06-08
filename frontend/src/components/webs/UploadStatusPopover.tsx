@@ -440,6 +440,7 @@ function UploadStatusPopover() {
                 refetchSources();
                 refetchWeb();
                 setIsWebDataModalOpen(true);
+                setIsUploadingSource(false);
               } catch (error) {
                 toast({
                   variant: "destructive",
