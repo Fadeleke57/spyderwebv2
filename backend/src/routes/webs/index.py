@@ -682,11 +682,11 @@ def iterate_web(
     """
     try:
         # get original web + owner
-        web_to_iterate: Web = Webs.find_one({"webId": web_id})
+        web_to_iterate: Web | None = Webs.find_one({"webId": web_id})
         if not web_to_iterate:
             raise HTTPException(status_code=404, detail="Original web not found")
 
-        associated_user = Users.find_one({"id": web_to_iterate["userId"]}, {"_id": 0})
+        associated_user: User | None = Users.find_one({"id": web_to_iterate["userId"]}, {"_id": 0})
         if not associated_user:
             raise HTTPException(status_code=404, detail="Owner not found")
 
@@ -696,7 +696,7 @@ def iterate_web(
             description=iteratePayload.description,
             visibility="Private",
             tags=web_to_iterate.get("tags", []),
-            sourceIds=[],  # will update this after Neo4j step
+            sourceIds=[],
             imageKeys=[],
             enableAIConnections=False,
             showcase=False,

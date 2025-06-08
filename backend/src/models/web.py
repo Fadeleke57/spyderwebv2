@@ -89,7 +89,7 @@ class UpdateWeb(BaseModel):
 class IterateWeb(BaseModel):
     name: str
     description: str
-    withConnections: bool
+    withConnections: bool = False
 
 
 class LikeWeb(BaseModel):

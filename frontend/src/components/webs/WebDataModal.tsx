@@ -321,7 +321,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                   </div>
 
                   <SimpleTooltip
-                    content="Copy memory identifier to use in your chat"
+                    content="Copy memory identifier to use with any LLM"
                     side="top"
                   >
                     <div
