@@ -219,7 +219,7 @@ function Index() {
           </div>
           {web && (
             <SimpleTooltip
-              content="Copy web identifier to use in your chat"
+              content="Copy web identifier to use with any LLM"
               side="bottom"
               sideOffset={6}
             >
