@@ -16,7 +16,14 @@ import {
 } from "@/components/utility/SkeletonCard";
 import Head from "next/head";
 import { Web } from "@/types/web";
-import { ArrowLeft, IterationCcw, Pin, PinOff } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  CopyIcon,
+  IterationCcw,
+  Pin,
+  PinOff,
+} from "lucide-react";
 import { IterateModal } from "@/components/utility/IterateModal";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -64,6 +71,7 @@ function Index() {
   const [showIterateModal, setShowIterateModal] = useState(false);
   const [web, setWeb] = useState<Web | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [isPinned, setPinned] = React.useState(
     user && user.websPinned.includes(webId as string)
   );
@@ -209,6 +217,39 @@ function Index() {
               </div>
             </div>
           </div>
+          {web && (
+            <SimpleTooltip
+              content="Copy web identifier to use in your chat"
+              side="bottom"
+              sideOffset={6}
+            >
+              <div
+                className="border hidden dark:bg-violet-400/50 text-sm text-foreground dark:border-violet-200 p-2 py-1 rounded-b-lg z-10 md:flex items-center cursor-pointer font-semibold hover:bg-violet-50 dark:hover:bg-violet-400/60 transition-colors -mt-10"
+                onClick={() => {
+                  const textToCopy = `@Web-${web.webId}`;
+                  navigator.clipboard.writeText(textToCopy).then(() => {
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  });
+                }}
+              >
+                {web && `@Web-${web.webId}`}{" "}
+                {copied ? (
+                  <Check
+                    strokeWidth={3}
+                    size={16}
+                    className="ml-2 text-foreground transition-transform"
+                  />
+                ) : (
+                  <CopyIcon
+                    strokeWidth={3}
+                    size={16}
+                    className="ml-2 text-foreground transition-transform"
+                  />
+                )}
+              </div>
+            </SimpleTooltip>
+          )}
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
             {!isMobile && (
               <FeedbackModal

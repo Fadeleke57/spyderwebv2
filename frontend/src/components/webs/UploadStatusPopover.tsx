@@ -330,7 +330,7 @@ function UploadStatusPopover() {
     <div className="h-[390px] flex flex-col gap-2 p-2 pt-4">
       {isFileUploading ? (
         <div className="flex items-center justify-center h-full">
-          <Loader size={24} className="animate-spin text-purple-500" />
+          <Loader size={24} className="animate-spin text-violet-400/50" />
         </div>
       ) : (
         <Dropzone

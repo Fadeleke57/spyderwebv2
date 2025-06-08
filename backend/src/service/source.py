@@ -486,10 +486,11 @@ class SourceService:
             "content": (
                 "## Welcome to Spydr, your personal memory store and digital navigator.\n"
                 "### Some things to know:\n"
-                "- Spydr transforms how you interact with information by creating a dynamic 'web' of knowledge that mirrors your unique thought processes.\n"
-                "- Our platform empowers you with ultra-personalized recommendations, delivering information before you even ask for it.\n"
-                "- Share and collaborate with ease, democratizing access to structured insights and context to use with ANY AI model.\n"
-                "- Spydr is your universal memory store, crafting a seamless bridge between human understanding and AI reliability, making it the ultimate tool to organize, explore, and personalize just about anything.\n"
+                "- Spydr is your universal context store - creating a centralized hub where all your context lives and can be accessed by ANY AI model, anywhere.\n"
+                "- We're building toward an interoperable future where instead of paying for siloed apps, you store your memory centrally and bring it to whichever AI platform is most convenient.\n"
+                "- Our platform transforms how you interact with information by creating dynamic 'webs' of knowledge that mirror your unique thought processes, eliminating the copy-and-paste bottleneck of traditional RAG systems.\n"
+                "- Share and collaborate with ease, democratizing access to structured insights and context across all AI interactions.\n"
+                "- Spydr bridges human understanding and AI reliability, positioning you ahead of the paradigm shift toward standardized AI tool and data integration.\n"
                 "- Our Philosophy: Everything is Linkable.\n"
             ),
             "url": None,
@@ -506,7 +507,7 @@ class SourceService:
             "name": "How to use Spydr and Charlotte AI",
             "content": (
                 "### Create a new web:\n"
-                "1. Create a new web on the sidebar (navbar if on mobile) by clicking the '' icon.\n"
+                "1. Create a new web on the sidebar (navbar if on mobile) by clicking the plus icon or '⌘ + x' on Mac ('^ + x' on Windows).\n"
                 "2. Your AI assistant has access to all aspects of your web, so try to keep the title and description relevant and descriptive as possible.\n"
                 "3. Using the '+' button, add any number of sources to your web.\n"
                 "4. The Autolinker will automatically find relevant connections for your sources.\n"
@@ -519,8 +520,6 @@ class SourceService:
                 "- Charlotte is your personal AI assistant. She's here to help you understand, explore, and leverage your memory stores.\n"
                 "- She is located in the bottom right corner of the screen.\n"
                 "- Click on her to start a conversation.\n"
-                "\n"
-                "**Note**: If there are items in your web that Charlotte cannot find, try refreshing the page.\n"
             ),
             "url": None,
             "type": "note",

@@ -1,4 +1,4 @@
-import { PostHogProvider } from "@/components/PostHogProvider";
+import { PostHogProvider } from "@/hoc/PostHogProvider";
 
 export const metadata = {
   title: "Next.js",

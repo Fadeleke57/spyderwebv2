@@ -1,8 +1,8 @@
 import { useEditSourceTitle, useFetchSource } from "@/hooks/sources";
 import { useSourceStore } from "@/store/sourceStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, Edit, X } from "lucide-react";
+import { ArrowLeft, Check, CopyIcon, Edit, X } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { Textarea } from "../ui/textarea";
 import { useUser } from "@/context/UserContext";
@@ -25,6 +25,7 @@ import { getTypeIcon } from "../chat/genui/graphcontext";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/router";
 import LinkPreview from "../sources/LinkPreview";
+import SimpleTooltip from "../utility/SimpleTooltip";
 
 interface WebDataModalProps {
   open: boolean;
@@ -32,6 +33,7 @@ interface WebDataModalProps {
 }
 
 export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
+  const [copied, setCopied] = useState(false);
   const {
     selectedSourceId: sourceId,
     source,
@@ -289,32 +291,65 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                 </div>
               )}
             </DialogTitle>
-            <DialogDescription className="text-left pb-1 font-semibold text-muted-foreground flex flex-col gap-2 justify-start border-b border-b-muted">
+            <DialogDescription className="text-left font-semibold text-muted-foreground flex flex-col gap-2 justify-start border-b border-b-muted">
               {sourceLoading || !source ? (
                 <div className="flex flex-row justify-between items-center">
                   <Skeleton className="h-4 w-24 rounded-lg" />
-                  <Skeleton className="h-4 w-32 rounded-lg" />
+                  <Skeleton className="h-10 w-32 lg:w-80 rounded-tl-lg rounded-tr-lg" />
                 </div>
               ) : (
-                <div className="flex flex-row justify-between items-center">
-                  <span className="text-violet-400">{source.type}</span>
-                  <div className="flex flex-col items-end space-y-1">
-                    <AutoLinkerIndicator
-                      sourceId={sourceId}
-                      webId={webId as string}
-                    />
-                    {source?.updated && (
-                      <small>
-                        {formatDate(source?.updated.toString(), {
-                          onlyDate: true,
-                        })}{" "}
-                        at{" "}
-                        {formatDate(source?.updated.toString(), {
-                          onlyTime: true,
-                        })}
-                      </small>
-                    )}
+                <div className="flex flex-row justify-between relative">
+                  <div className="flex flex-row items-end gap-2 my-1 text-xs">
+                    <span className="text-violet-400">
+                      {source?.type.charAt(0).toUpperCase() +
+                        source?.type.slice(1)}
+                    </span>
+                    <div className="flex flex-col">
+                      {source?.updated && (
+                        <span>
+                          Last updated:{" "}
+                          {formatDate(source?.updated.toString(), {
+                            onlyDate: true,
+                          })}{" "}
+                          at{" "}
+                          {formatDate(source?.updated.toString(), {
+                            onlyTime: true,
+                          })}
+                        </span>
+                      )}
+                    </div>
                   </div>
+
+                  <SimpleTooltip
+                    content="Copy memory identifier to use in your chat"
+                    side="top"
+                  >
+                    <div
+                      className="border absolute bottom-0 right-0 dark:bg-violet-400/50 text-foreground dark:border-violet-200 p-2 rounded-tl-lg rounded-tr-lg z-10 flex items-center cursor-pointer font-semibold hover:bg-violet-50 dark:hover:bg-violet-400/60 transition-colors"
+                      onClick={() => {
+                        if (source) {
+                          const textToCopy = `@Memory-${source.sourceId}`;
+                          navigator.clipboard.writeText(textToCopy).then(() => {
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                          });
+                        }
+                      }}
+                    >
+                      {source && `@Memory-${source.sourceId}`}{" "}
+                      {copied ? (
+                        <Check
+                          size={16}
+                          className="ml-2 text-foreground transition-transform"
+                        />
+                      ) : (
+                        <CopyIcon
+                          size={16}
+                          className="ml-2 text-foreground transition-transform"
+                        />
+                      )}
+                    </div>
+                  </SimpleTooltip>
                 </div>
               )}
             </DialogDescription>

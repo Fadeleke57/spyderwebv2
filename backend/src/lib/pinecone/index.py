@@ -413,7 +413,7 @@ class PineconeClient:
 
             embeddings = self.client.inference.embed(
                 model="multilingual-e5-large",
-                inputs=[chunk],
+                inputs=[chunk + " " + source["name"] + " " + source.get("type", "")],
                 parameters={"input_type": "passage", "truncate": "END"},
             )
             embedding = embeddings.data[0].values

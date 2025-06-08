@@ -44,8 +44,6 @@ function WebGraph({
   isOwner,
   hasSources,
   fetchedSources,
-  
-  setFetchedSources,
   sourcesLoading,
   handleFileUpload,
   connections,
@@ -67,6 +65,7 @@ function WebGraph({
   );
 
   const {
+    setIsUploadingSource,
     setSelectedSourceId,
     source: selectedSource,
     setSource: setSelectedSource,
@@ -159,6 +158,7 @@ function WebGraph({
     } else if (e.dataTransfer.files.length > 0) {
       handleFileUpload(e.dataTransfer.files);
     }
+    setIsUploadingSource(false);
   };
 
   const trashRef = useRef<HTMLDivElement | null>(null);
