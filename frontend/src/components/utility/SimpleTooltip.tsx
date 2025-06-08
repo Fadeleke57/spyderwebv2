@@ -26,7 +26,7 @@ function SimpleTooltip({
         <TooltipContent
           sideOffset={sideOffset || 4}
           side={side || "top"}
-          className={`max-w-xs p-${p || 4}`}
+          className={`max-w-xs p-${p || 4} font-semibold`}
         >
           {content}
         </TooltipContent>

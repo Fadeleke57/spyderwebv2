@@ -15,7 +15,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/hoc/theme-provider";
 import { handleLinkedInWebView } from "@/lib/utils";
 import { Toaster as SonnerToaster } from "sonner";
-import { PostHogProvider } from "@/components/PostHogProvider";
+import { PostHogProvider } from "@/hoc/PostHogProvider";
 import { environment } from "@/environment/load_env";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
@@ -33,12 +33,17 @@ const fontSans = FontSans({
 });
 
 const queryClient = new QueryClient();
-export const stytch = createStytchUIClient(environment.stytch_public_token as string, {
-  cookieOptions: {
-    availableToSubdomains: true,
-    domain: environment.client_url?.replace("https://", "").replace("www.", ""),
-  },
-});
+export const stytch = createStytchUIClient(
+  environment.stytch_public_token as string,
+  {
+    cookieOptions: {
+      availableToSubdomains: true,
+      domain: environment.client_url
+        ?.replace("https://", "")
+        .replace("www.", ""),
+    },
+  }
+);
 
 function App({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout =

@@ -179,12 +179,12 @@ function Index() {
         transition={{ duration: 0.6 }}
         className="text-center mb-12"
       >
-        <h1 className="text-xl font-extrabold tracking-tight lg:text-2xl mb-4">
+        <h1 className="text-xl font-extrabold tracking-tight lg:text-2xl mb-2">
           Help Center
         </h1>
         <p className="text-md text-muted-foreground max-w- mx-auto">
           Watch these step-by-step video tutorials to learn how to make the most
-          of our app&apos;s features
+          of our platform&apos;s features
         </p>
       </motion.div>
 

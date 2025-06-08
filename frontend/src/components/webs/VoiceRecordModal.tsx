@@ -47,7 +47,6 @@ function VoiceRecordModal() {
   );
 }
 
-// Audio visualization component
 function AudioVisualization({
   isRecording,
   analyserRef,
@@ -57,7 +56,7 @@ function AudioVisualization({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dataArrayRef = useRef<Uint8Array | null>(null);
-  // const [audioLevel, setAudioLevel] = useState(0); // Kept if used, though getAudioData handles normalization
+  // const [audioLevel, setAudioLevel] = useState(0); // kept if used, though getAudioData handles normalization
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -80,7 +79,7 @@ function AudioVisualization({
       const bufferLength = analyserRef.current.frequencyBinCount;
       dataArrayRef.current = new Uint8Array(bufferLength);
     } else if (!isRecording) {
-      // Clear dataArrayRef when not recording so it's reinitialized if recording starts again
+      // clear dataArrayRef when not recording so it's reinitialized if recording starts again
       dataArrayRef.current = null;
     }
 
@@ -90,30 +89,30 @@ function AudioVisualization({
         const sum = dataArrayRef.current.reduce((a, b) => a + b, 0);
         const average = sum / dataArrayRef.current.length;
         const normalized = average / 255;
-        // setAudioLevel(normalized); // Uncomment if audioLevel state is needed elsewhere
+        // setAudioLevel(normalized); // uncomment if audioLevel state is needed elsewhere
         return normalized;
       }
-      return 0; // Return 0 when not recording or if refs are null
+      return 0; // return 0 when not recording or if refs are null
     }
 
     function draw() {
       if (!ctx) return;
       ctx.clearRect(0, 0, width, height);
 
-      time += 0.002; // Base time increment
-      const audioIntensity = getAudioData(); // Will be 0 if not recording
+      time += 0.002; // base time increment
+      const audioIntensity = getAudioData(); // will be 0 if not recording
 
-      // --- Unified Visual Scale Calculation ---
-      // This scale factor affects the overall size and dynamism of the shapes.
-      // It aims to provide a continuous, noticeable animation in resting state,
+      // --- unified visual scale calculation ---
+      // this scale factor affects the overall size and dynamism of the shapes.
+      // it aims to provide a continuous, noticeable animation in resting state,
       // and enhance with audio intensity when recording.
-      const baseTimePulse = Math.sin(time * 0.85) * 0.2; // More pronounced time-based pulse
+      const baseTimePulse = Math.sin(time * 0.85) * 0.2; // more pronounced time-based pulse
       let currentVisualScale;
       if (isRecording) {
         currentVisualScale = 1.1 + baseTimePulse + audioIntensity * 1.8;
       } else {
-        // Resting state: more active than before
-        currentVisualScale = 0.95 + baseTimePulse; // Was 0.8 + Math.sin(time * 0.5) * 0.1
+        // resting state: more active than before
+        currentVisualScale = 0.95 + baseTimePulse; // was 0.8 + Math.sin(time * 0.5) * 0.1
       }
 
       const centerX = width / 2;
@@ -124,20 +123,20 @@ function AudioVisualization({
         const offsetX =
           Math.sin(shapePhase * 0.3) *
           30 *
-          currentVisualScale * // Use new scale
+          currentVisualScale * // use new scale
           visualizationScaleMultiplier *
           0.5;
         const offsetY =
           Math.cos(shapePhase * 0.25) *
           30 *
-          currentVisualScale * // Use new scale
+          currentVisualScale * // use new scale
           visualizationScaleMultiplier *
           0.5;
 
         for (let contour = 0; contour < contoursPerShape; contour++) {
           const baseContourRadius = 25 * visualizationScaleMultiplier;
           const perContourRadiusStep = 2.5 * visualizationScaleMultiplier;
-          // Scale for each contour, driven by currentVisualScale
+          // scale for each contour, driven by currentVisualScale
           const scale =
             (baseContourRadius + contour * perContourRadiusStep) *
             currentVisualScale;
@@ -145,19 +144,19 @@ function AudioVisualization({
           const contourOffsetX =
             Math.sin(contour * 0.15 + shapePhase) *
             8 *
-            currentVisualScale * // Use new scale
+            currentVisualScale * // use new scale
             visualizationScaleMultiplier *
             0.5;
           const contourOffsetY =
             Math.cos(contour * 0.15 + shapePhase) *
             8 *
-            currentVisualScale * // Use new scale
+            currentVisualScale * // use new scale
             visualizationScaleMultiplier *
             0.5;
 
           ctx.beginPath();
 
-          // --- Unified Opacity and LineWidth ---
+          // --- unified opacity and linewidth ---
           const timeOpacityFactor = Math.sin(time * 0.7) * 0.05;
           const timeLineWidthFactor = Math.sin(time * 0.8) * 0.05;
 
@@ -176,8 +175,8 @@ function AudioVisualization({
             const angle = (i / points) * Math.PI * 2;
             let radius = scale;
 
-            // --- Unified Radius Perturbation Logic ---
-            // General undulation terms - these make it "move" consistently
+            // --- unified radius perturbation logic ---
+            // general undulation terms - these make it "move" consistently
             radius +=
               12 *
               visualizationScaleMultiplier *
@@ -197,24 +196,24 @@ function AudioVisualization({
               currentVisualScale *
               0.85;
 
-            // Audio-specific reactivity OR a pronounced resting animation
+            // audio-specific reactivity OR a pronounced resting animation
             if (isRecording && audioIntensity > 0.01) {
-              // Threshold to avoid reacting to tiny noise
+              // threshold to avoid reacting to tiny noise
               radius +=
                 audioIntensity *
-                25 * // Strength of audio reaction
+                25 * // strength of audio reaction
                 visualizationScaleMultiplier *
-                Math.sin(angle * 2 + time * 4); // "Bumping" to audio
+                Math.sin(angle * 2 + time * 4); // "bumping" to audio
             } else if (!isRecording) {
-              // Add a distinct, continuous morphing effect for the resting state
-              // This ensures it's always visibly "alive" and moving with complexity.
+              // add a distinct, continuous morphing effect for the resting state
+              // this ensures it's always visibly "alive" and moving with complexity.
               radius +=
-                (Math.sin(angle * 2.5 + time * 1.7) * 0.6 + // Adjusted time multiplier for different feel
+                (Math.sin(angle * 2.5 + time * 1.7) * 0.6 + // adjusted time multiplier for different feel
                   Math.cos(angle * 3.5 - time * 1.2) * 0.4) *
                 visualizationScaleMultiplier *
-                3.5 * // Amplitude of this resting morphing, slightly increased
+                3.5 * // amplitude of this resting morphing, slightly increased
                 currentVisualScale *
-                0.6; // Modulate by currentVisualScale, but keep it distinct
+                0.6; // modulate by currentVisualScale, but keep it distinct
             }
 
             const x =
@@ -257,7 +256,8 @@ function AudioVisualization({
 }
 
 function UploadVoiceNote({ setOpen }: { setOpen: (open: boolean) => void }) {
-  const { setSelectedSourceId, setIsWebDataModalOpen } = useSourceStore();
+  const { setSelectedSourceId, setIsWebDataModalOpen, setIsUploadingSource } =
+    useSourceStore();
   const router = useRouter();
   const { webId } = router.query;
   const { mutateAsync: uploadVoiceNote, isPending: isVoiceNoteUploading } =
@@ -286,6 +286,7 @@ function UploadVoiceNote({ setOpen }: { setOpen: (open: boolean) => void }) {
       setSelectedSourceId(sourceId);
       setIsWebDataModalOpen(true);
       setOpen(false);
+      setIsUploadingSource(false);
     } catch (error) {
       console.error("Error uploading voice note:", error);
     }
@@ -295,12 +296,12 @@ function UploadVoiceNote({ setOpen }: { setOpen: (open: boolean) => void }) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      // Setup MediaRecorder for recording
+      // setup media recorder for recording
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
 
-      // Setup AudioContext for visualization
+      // setup audio context for visualization
       audioContextRef.current = new (window.AudioContext ||
         (window as any).webkitAudioContext)();
       analyserRef.current = audioContextRef.current.createAnalyser();
@@ -320,12 +321,12 @@ function UploadVoiceNote({ setOpen }: { setOpen: (open: boolean) => void }) {
         setAudioBlob(blob);
         setAudioUrl(URL.createObjectURL(blob));
 
-        // Cleanup audio context
+        // cleanup audio context
         if (audioContextRef.current) {
           audioContextRef.current.close();
         }
 
-        // Stop all tracks
+        // stop all tracks
         stream.getTracks().forEach((track) => track.stop());
       };
 
@@ -350,7 +351,7 @@ function UploadVoiceNote({ setOpen }: { setOpen: (open: boolean) => void }) {
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-center relative px-8 py-16">
-      {/* Audio Visualization - Centered and sized appropriately */}
+      {/* audio visualization - centered and sized appropriately */}
       <div className="flex-1 flex items-center justify-center mb-16">
         <AudioVisualization
           isRecording={isRecording}
@@ -358,9 +359,9 @@ function UploadVoiceNote({ setOpen }: { setOpen: (open: boolean) => void }) {
         />
       </div>
 
-      {/* Bottom Controls */}
+      {/* bottom controls */}
       <div className="flex absolute bottom-8 items-center gap-6">
-        {/* Recording Button */}
+        {/* recording button */}
         {!isRecording ? (
           <SimpleTooltip content="Start Recording">
             <Button
@@ -382,7 +383,7 @@ function UploadVoiceNote({ setOpen }: { setOpen: (open: boolean) => void }) {
           </SimpleTooltip>
         )}
 
-        {/* Upload Button - Only visible when there's a recording */}
+        {/* upload button - only visible when there's a recording */}
         {audioUrl && (
           <SimpleTooltip content="Upload Voice Note">
             <Button
@@ -404,7 +405,7 @@ function UploadVoiceNote({ setOpen }: { setOpen: (open: boolean) => void }) {
         )}
       </div>
 
-      {/* Hidden audio element for playback */}
+      {/* hidden audio element for playback */}
       {audioUrl && <audio src={audioUrl} className="hidden" />}
     </div>
   );
