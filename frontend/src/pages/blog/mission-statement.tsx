@@ -1,25 +1,11 @@
 import PublicLayout from "@/app/PublicLayout";
 import Head from "next/head";
 import Image from "next/image";
-import Link from "next/link";
 import React, { ReactElement } from "react";
 import BGImage from "@/assets/slogobbg.png";
 import { motion } from "framer-motion";
-
-const AnimatedHeader = () => {
-  return (
-    <motion.div
-      className="max-w-2xl"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
-    >
-      <h1 className="scroll-m-20 lg:text-4xl font-extrabold tracking-tight lg:text-5xl text-foreground mb-14">
-        The Beginnings of an Annotated Internet
-      </h1>
-    </motion.div>
-  );
-};
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 const staggerContainer = {
   hidden: { opacity: 0 },
@@ -27,7 +13,7 @@ const staggerContainer = {
     opacity: 1,
     transition: {
       staggerChildren: 0.2,
-      delayChildren: 0.8, // Start after header animation completes
+      delayChildren: 0.8,
     },
   },
 };
@@ -60,13 +46,24 @@ function Index() {
           }`}
         />
       </Head>
-      <div className="px-8 lg:px-0 mt-10 z-20 max-w-4xl mx-auto py-12 flex flex-col gap-8">
+      <div className="px-8 lg:px-0 lg:mt-10 z-20 max-w-4xl mx-auto py-12 flex flex-col gap-8">
         <motion.div
           variants={staggerContainer}
           initial="hidden"
           animate="show"
           className="flex flex-col gap-8"
         >
+          <Link
+            href="/blog"
+            className="flex items-center gap-2 hover:underline group text-violet-400 font-extrabold mb-2"
+          >
+            <ArrowLeft
+              strokeWidth={4}
+              className="group-hover:-translate-x-1 transition-all ease-in-out duration-300"
+              size={16}
+            />
+            Back to Blog
+          </Link>
           <motion.div
             variants={fadeInItem}
             className="rounded-lg overflow-hidden bg-[#131313] border"
@@ -85,27 +82,27 @@ function Index() {
           </motion.h2>
 
           <motion.p variants={fadeInItem}>
-            Spydr empowers innovators, researchers, and learners to build upon
-            each other&apos;s knowledge by creating an interconnected layer of human
-            insight across the digital world. We&apos;re democratizing innovation by
-            enabling users to create, connect, and share webs of knowledge
-            through semantic linking of diverse content - from documents to
-            videos, websites to personal notes. Our mission is to break down the
-            barriers between ideation and innovation. In a world where AI is
-            removing technical constraints, we believe that the ability to
-            discover, iterate, and build upon ideas will become the key
-            differentiator. Spydr serves as a GitHub for ideas, creating a
-            collaborative ecosystem where the pure form of human thinking and
-            ideation can flourish.
+            We believe that the future of AI lies not just in smarter models,
+            but in giving them better access to the right information at the
+            right time. Spydr is building a universal context layer that
+            connects your knowledge seamlessly across any AI platform or tool
+            you use. Instead of constantly uploading documents, copying and
+            pasting context, or switching between different knowledge silos,
+            we&apos;re creating a world where your structured information
+            follows you everywhere. Our mission is to democratize access to
+            structured information by making it truly portable and
+            interoperable. When context becomes effortless, innovation becomes
+            limitless.
           </motion.p>
 
           <motion.div
             variants={fadeInItem}
             className="border w-full p-4 rounded-md"
           >
-            We envision a future in which no one has to start from scratch,
-            where knowledge builds upon knowledge, and where humanity&apos;s
-            collective intelligence becomes more than the sum of its parts.
+            We envision a future where your knowledge works as hard as you do -
+            where information flows freely between the tools you love, and where
+            no one has to start from scratch because the context they need is
+            always within reach.
           </motion.div>
 
           <motion.h3
@@ -120,27 +117,32 @@ function Index() {
             className="ml-6 list-disc [&>li]:mt-2"
           >
             <li>
-              <strong>Open Collaboration:</strong> Creating a platform where
-              ideas can be freely shared and built upon
+              <strong>Universal Access:</strong> Your information should work
+              everywhere, not just in one app
             </li>
             <li>
-              <strong>Knowledge Democracy:</strong> Making innovation and
-              learning accessible to everyone
+              <strong>Seamless Integration:</strong> Context should flow
+              effortlessly between the tools you use
             </li>
             <li>
-              <strong>Innovation Through Connection:</strong> Enabling semantic
-              and intuitive linking between ideas
+              <strong>Open Standards:</strong> Building on protocols that
+              connect rather than divide
             </li>
             <li>
-              <strong>Human-Centered Design:</strong> Preserving the nuance and
-              context of human thought processes
+              <strong>User Empowerment:</strong> You own your data and decide
+              how it&apos;s used
             </li>
           </motion.ul>
 
           <motion.p variants={fadeInItem}>
-            At Spydr, we&apos;re not just building a tool - we&apos;re creating an
-            annotative layer over the Internet ecosystem that transforms how
-            people learn, ideate, and innovate together.
+            We&apos;re creating the connective tissue that makes all your
+            information work together, everywhere you need it.
+          </motion.p>
+
+          <motion.p variants={fadeInItem} className="italic mt-4">
+            Made with love,
+            <br />
+            -spydr team
           </motion.p>
         </motion.div>
       </div>

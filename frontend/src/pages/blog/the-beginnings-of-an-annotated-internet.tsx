@@ -5,18 +5,35 @@ import Link from "next/link";
 import React, { ReactElement } from "react";
 import BGImage from "@/assets/question.jpg";
 import { motion } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
 
 const AnimatedHeader = () => {
   return (
     <motion.div
-      className="max-w-2xl"
+      className="max-w-2xl lg:mb-14 flex flex-col"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
     >
-      <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-foreground mb-14">
+      <Link
+        href="/blog"
+        className="flex items-center gap-2 hover:underline group text-violet-400 font-extrabold"
+      >
+        <ArrowLeft
+          strokeWidth={4}
+          className="group-hover:-translate-x-1 transition-all ease-in-out duration-300"
+          size={16}
+        />
+        Back to Blog
+      </Link>
+      <h1 className="scroll-m-20 mt-2 text-4xl font-extrabold tracking-tight lg:text-5xl text-foreground">
         The Theory of an Annotated Internet
       </h1>
+      <span className="text-foreground mt-2 font-bold">
+        Author: <span>Farouk Adeleke</span>
+      </span>
+      <span className="text-foreground mt-2 font-bold">Theory</span>
+      <span className="text-foreground mt-2 font-bold">Dec 20, 2024</span>
     </motion.div>
   );
 };
@@ -69,11 +86,11 @@ function Index() {
           }`}
         />
       </Head>
-      <div className="w-full relative h-[60vh] rounded-3xl">
+      <div className="w-full relative h-[20vh] lg:h-[60vh] rounded-3xl">
         <Image src={BGImage} alt="bg" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black opacity-50"></div>
       </div>
-      <div className="-mt-52 lg:-mt-44 px-8 lg:px-0 z-20 max-w-4xl mx-auto py-12 flex flex-col gap-8">
+      <div className="lg:-mt-72 px-8 lg:px-0 z-20 max-w-4xl mx-auto py-12 flex flex-col gap-8">
         <AnimatedHeader />
 
         <motion.div
@@ -217,8 +234,8 @@ function Index() {
           </motion.p>
 
           <motion.p variants={fadeInItem}>
-            This system would allow users to collect and organize information from
-            across the web while benefiting from the insights of others
+            This system would allow users to collect and organize information
+            from across the web while benefiting from the insights of others
             exploring similar topics. Through persistent annotation layers,
             every website becomes enriched with community-generated context,
             corrections, and additional perspectives.
