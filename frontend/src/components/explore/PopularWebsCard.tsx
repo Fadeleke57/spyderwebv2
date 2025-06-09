@@ -73,9 +73,15 @@ function PopularWebsCard() {
         </Link>{" "}
         <Link
           href="mailto:spydrdev@gmail.com"
-          className="py-[1px] px-4 pr-0 mb-2 hover:underline transition-all duration-300 ease-in-out"
+          className="py-[1px] px-4 mb-2 border-r-[2px] border-border hover:underline transition-all duration-300 ease-in-out"
         >
-          Support..
+          Support
+        </Link>{" "}
+        <Link
+          href={`${window.location.origin}/memory`}
+          className="py-[1px] px-4 cursor-pointer pr-0 mb-2 hover:underline transition-all duration-300 ease-in-out"
+        >
+          MCP
         </Link>{" "}
         <span className="py-[1px] px-4 mb-2">&copy; 2025 Spydr.</span>
       </div>

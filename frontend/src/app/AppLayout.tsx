@@ -172,10 +172,7 @@ export default function AppLayout({
         </div>
         {children}
         {isAuthModalOpen && (
-          <AuthModal
-            open={isAuthModalOpen}
-            setOpen={setAuthModalOpen}
-          />
+          <AuthModal open={isAuthModalOpen} setOpen={setAuthModalOpen} />
         )}
       </div>
     );
