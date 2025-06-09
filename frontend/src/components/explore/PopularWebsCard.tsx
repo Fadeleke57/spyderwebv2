@@ -30,11 +30,11 @@ function PopularWebsCard() {
                 </div>
               ))
             ) : (
-              <div className="flex flex-col gap-4">
-                <Skeleton className="h-8 w-full rounded-xl" />
-                <Skeleton className="h-8 w-full rounded-xl" />
-                <Skeleton className="h-8 w-full rounded-xl" />
-                <Skeleton className="h-8 w-full rounded-xl" />
+              <div className="flex flex-col gap-4 my-4">
+                <Skeleton className="h-6 w-full rounded-xl" />
+                <Skeleton className="h-6 w-full rounded-xl" />
+                <Skeleton className="h-6 w-full rounded-xl" />
+                <Skeleton className="h-6 w-full rounded-xl" />
               </div>
             )}
           </div>

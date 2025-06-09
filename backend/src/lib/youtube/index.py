@@ -14,15 +14,8 @@ class YoutubeAPIClient:
     def __init__(self):
         self.apiKey = settings.youtube_api_key
         
-        # Create a persistent session for better connection management
-        self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-        })
-        
         # Initialize transcript client with session and proxy config
         self.transcriptsClient = YouTubeTranscriptApi(
-            http_client=self.session,
             proxy_config=WebshareProxyConfig(
                 proxy_username=settings.proxy_username,
                 proxy_password=settings.proxy_password,
@@ -50,11 +43,11 @@ class YoutubeAPIClient:
 
         for attempt in range(max_retries):
             try:
-                response = self.session.get(url, timeout=30)
+                response = requests.get(url, timeout=10)
                 response.raise_for_status()
                 
                 data = response.json()
-                if not data.get("items"):
+                if not data.get("items"):   
                     raise HTTPException(
                         status_code=404, 
                         detail="Video not found or is private/deleted"
@@ -80,7 +73,7 @@ class YoutubeAPIClient:
                 logger.warning(f"Attempt {attempt + 1} failed, retrying in {wait_time}s: {str(e)}")
                 time.sleep(wait_time)
 
-    def get_video_transcript(self, video_id: str, max_retries: int = 3, languages: List[str] = None) -> list:
+    def get_video_transcript(self, video_id: str, max_retries: int = 2, languages: List[str] = None) -> list:
         """
         Given a video id, returns a list of transcripts from the YouTube video.
         Includes retry logic with exponential backoff and better error handling.
@@ -188,10 +181,5 @@ class YoutubeAPIClient:
         # Fallback: try to extract 11-character alphanumeric ID with regex
         match = re.search(r"[a-zA-Z0-9_-]{11}", url)
         return match.group(0) if match else None
-    
-    def __del__(self):
-        """Clean up session when object is destroyed"""
-        if hasattr(self, 'session'):
-            self.session.close()
 
 client = YoutubeAPIClient()
