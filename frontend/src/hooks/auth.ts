@@ -48,7 +48,13 @@ export function useSubmitRegister() {
       });
       queryClient.invalidateQueries({ queryKey: ["user"] });
       toast({ title: "Registration complete", variant: "default" });
-      window.location.href = `/auth/onboarding?email=${encodeURIComponent(data.email)}&username=${encodeURIComponent(data.username)}&isGoogleSignup=false&defaultWebId=${data.webId}`;
+      const returnTo = localStorage.getItem("returnTo");
+      if (returnTo) {
+        localStorage.removeItem("returnTo");
+        window.location.href = returnTo;
+      } else {
+        window.location.href = `/auth/onboarding?email=${encodeURIComponent(data.email)}&username=${encodeURIComponent(data.username)}&isGoogleSignup=false&defaultWebId=${data.webId}`;
+      }
     },
     onError: (error: AxiosError) => {
       console.log(error);
