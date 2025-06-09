@@ -15,7 +15,7 @@ const AnimatedHeader = () => {
       transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
     >
       <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-foreground mb-14">
-        The Beginnings of an Annotated Internet
+        The Theory of an Annotated Internet
       </h1>
     </motion.div>
   );
@@ -48,11 +48,20 @@ function Index() {
   return (
     <div className="min-h-screen flex flex-col">
       <Head>
-        <title>{"the beginnings of an annotated internet - spydr"}</title>
-        <meta name="description" content={"Learn more about spydr"} />
+        <title>{"the theory of an annotated internet"}</title>
+        <meta
+          name="description"
+          content={"Exploring the future of collaborative information sharing"}
+        />
         <link rel="icon" href="/favicon.ico" />
-        <meta property="og:title" content={"about - spydr"} />
-        <meta property="og:description" content={"Learn more about spydr"} />
+        <meta
+          property="og:title"
+          content={"the theory of an annotated internet"}
+        />
+        <meta
+          property="og:description"
+          content={"Exploring the future of collaborative information sharing"}
+        />
         <meta
           property="og:url"
           content={`${
@@ -77,12 +86,12 @@ function Index() {
             variants={fadeInItem}
             className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0"
           >
-            <span className="">The Model For Search is Inherently Flawed</span>
+            <span className="">The Fundamental Flaw in Information Access</span>
           </motion.h2>
 
           <motion.p variants={fadeInItem}>
-            The internet&#39;s current search standard is hindered by two major
-            issues:
+            The internet&#39;s current information landscape is dominated by two
+            critical problems:
           </motion.p>
 
           <motion.ul
@@ -90,138 +99,136 @@ function Index() {
             className="ml-6 list-disc [&>li]:mt-2"
           >
             <li>
-              <strong>Ads and SEO</strong> - A &ldquo;pay-to-play&rdquo; system
-              dominated by large corporations and creators manipulating SEO to
-              serve their interests, not users&apos;.
+              <strong>The Pay-to-Play Problem</strong> - Search results are
+              increasingly dominated by advertisements and SEO manipulation,
+              where large corporations and content creators game the system to
+              serve their interests rather than users&apos; genuine information
+              needs.
             </li>
             <li>
-              <strong>AI Overviews</strong> - While promising, AI often provides{" "}
+              <strong>The AI Feedback Loop Crisis</strong> - While AI-powered
+              answer engines offer{" "}
               <Link
-                className="underline text-blue-500"
+                className="underline text-violet-400"
                 href="https://www.blindfiveyearold.com/its-goog-enough"
                 target="_blank"
               >
                 &lsquo;good enough&rsquo;
               </Link>{" "}
-              answers, missing nuances in web data and undermining original
-              content creators. This model is unsustainable and risks degrading
-              the quality of online information.
+              responses, they risk creating a dangerous cycle where users rely
+              on AI for answers while AI becomes increasingly dependent on
+              diminishing human input, ultimately degrading both user experience
+              and information quality.
             </li>
           </motion.ul>
 
           <motion.p variants={fadeInItem}>
-            Google Search has become a cluttered ecosystem where ads overshadow
-            organic results, prioritizing revenue over usability. Similarly,
+            Modern search has become a cluttered ecosystem where visibility is
+            determined by financial interests rather than accuracy or value.
             AI-powered answer engines, such as{" "}
             <Link
               href="https://www.perplexity.ai/"
-              className="underline text-blue-500"
+              className="underline text-violet-400"
               target="_blank"
             >
               Perplexity.ai
             </Link>
-            , while innovative, risk devaluing discussion-promoted sites by
-            reducing incentives to contribute to these sources. As AI is only as
-            good as the data it&#39;s trained on, this creates a feedback loop
-            where users rely on AI for answers, and AI relies on users for data.
-            Eventually, this feedback loop degrades both the user experience and
-            the AI ecosystem.
+            , while innovative, risk devaluing discussion-rich platforms by
+            reducing incentives for human contribution. As AI depends entirely
+            on human-generated content for training data, this creates a
+            feedback loop where users increasingly rely on AI for answers while
+            the quality of source material degrades over time.
           </motion.p>
 
           <motion.h2
             variants={fadeInItem}
             className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0"
           >
-            <span className="">Introducing a New Context Layer</span>
+            <span className="">
+              Envisioning a Collaborative Knowledge Layer
+            </span>
           </motion.h2>
 
           <motion.blockquote
             variants={fadeInItem}
             className="mt-6 border-l-2 pl-6 italic"
           >
-            &ldquo;SEO&rdquo; is about understanding the USER. How do they
-            search? And what is the intent behind those searches?<br></br>AJ
-            Kohn - Digital Marketer and Start-Up Advisor.
+            &ldquo;The future of information isn&apos;t just about what we
+            search for, but understanding the context and intent behind our need
+            to know.&rdquo;
           </motion.blockquote>
 
           <motion.p variants={fadeInItem}>
-            Spydr is pioneering an annotative layer for the internet that shifts
-            the focus from &ldquo;what&rdquo; users search for to
-            &ldquo;why.&rdquo;
-            <br></br>
-            <br></br>No more ads. No more SEO manipulation. No more content
-            driven by metrics like clicks or backlinks. Imagine an internet
-            where looking for information doesn&apos;t mean hours or days of
-            useless information. Every website and article is{" "}
+            Imagine an internet where finding quality information doesn&apos;t
+            require hours of sifting through unreliable content. Picture a web
+            where every article, webpage, and resource is enriched by a
+            collaborative layer of human insight—tagged, highlighted, and{" "}
             <a
-              className="underline text-blue-500"
+              className="underline text-violet-400"
               href="https://www.productboard.com/blog/how-medium-highlights-feature-changed-publishing/?"
               target="_blank"
             >
-              tagged and annotated
+              annotated
             </a>{" "}
-            by users just like you, with the same goal as you - finding quality
-            answers. Think of it as a comment section for the entire web, with
-            limitless applications. AI companies training models on internet
-            data would gain not only the content of a webpage but also an
-            additional layer of nuanced, human-driven insights as a precursor to
-            semantics. Researchers filtering through articles could benefit from
-            the collective foresight of hundreds of contributors before them.
+            by users who share your goal of finding accurate, valuable
+            information.
+            <br></br>
+            <br></br>
+            This represents a fundamental shift: transforming the web from a
+            collection of isolated content silos into an interconnected
+            knowledge network where human intelligence enhances every piece of
+            information. AI systems training on internet data would gain not
+            only content but also nuanced, human-driven insights. Researchers
+            could benefit from the collective wisdom of hundreds of contributors
+            who came before them.
           </motion.p>
 
           <motion.h2
             variants={fadeInItem}
             className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0"
           >
-            How Spydr Works
+            The Mechanics of Collective Intelligence
           </motion.h2>
 
           <motion.p variants={fadeInItem}>
-            Inspired by online discussion platform,{" "}
+            Inspired by collaborative platforms like{" "}
             <Link
               href="https://www.reddit.com/"
               target="_blank"
-              className="underline text-blue-500"
+              className="underline text-violet-400"
             >
               Reddit
-            </Link>
-            , and Medium&apos;s{" "}
+            </Link>{" "}
+            and Medium&apos;s{" "}
             <Link
               href={
                 "https://help.medium.com/hc/en-us/articles/214406358-About-highlights"
               }
               target="_blank"
-              className="underline text-blue-500"
+              className="underline text-violet-400"
             >
               highlight feature
             </Link>
             {", "}
-            Spydr plans to make search a community-driven process. Whether that
-            be looking for reputable informtion for a research project or just
-            looking for your newest sofa. Instead of working in isolation, you
-            can reuse and expand on the work of others. Spydr allows you to
-            start with a private mind map, called a &apos;web&apos; of what you
-            are looking for. As you traverse either Spydr or the web, you can
-            collect and add information such as notes, youtube videos,
-            documents, and websites to your web. You can then share your web
-            with others, and even publish it for others to explore and build
-            upon.
+            an annotated internet would make information discovery a
+            community-driven process. Whether researching for academic purposes
+            or finding the perfect product, users could build upon the work of
+            others rather than starting from scratch.
           </motion.p>
 
           <motion.p variants={fadeInItem}>
-            Outside of Spydr, through the use of an extension, you can
-            anonymously highlight and tag content from any site you visit or add
-            it to a web. Other people can then view your highlights and see what
-            you were looking for and if you were successful. In Spydr, you can
-            also find a published web and use it as a jumping off point for
-            whatever you&apos;d like to explore.
+            This system would allow users to collect and organize information from
+            across the web while benefiting from the insights of others
+            exploring similar topics. Through persistent annotation layers,
+            every website becomes enriched with community-generated context,
+            corrections, and additional perspectives.
           </motion.p>
 
           <motion.h3
             variants={fadeInItem}
             className="scroll-m-20 text-2xl font-semibold tracking-tight"
           >
-            Features
+            Core Components
           </motion.h3>
 
           <motion.ul
@@ -229,17 +236,16 @@ function Index() {
             className="ml-6 list-disc [&>li]:mt-2"
           >
             <li>
-              <strong>In-House Discussion and Search Platform: </strong> Spydr
-              fosters a community-driven approach to search by allowing users to
-              create and publish &ldquo;webs,&rdquo; or mind maps, for their
-              research or exploration.
+              <strong>Collaborative Knowledge Networks: </strong>{" "}
+              Community-driven platforms that allow users to create, share, and
+              build upon research collections, turning individual exploration
+              into collective intelligence.
             </li>
             <li>
-              <strong>External Annotated Web Tool:</strong> With a browser
-              extension, users can anonymously highlight, tag, and comment on
-              content from any website. Others visiting the same page can view
-              these highlights, gaining insights from the contributor&apos;s
-              annotations and assessing the quality of the content.
+              <strong>Universal Annotation Layer:</strong> Browser-based tools
+              that enable users to anonymously highlight, tag, and comment on
+              content from any website, with these insights visible to others
+              visiting the same pages.
             </li>
           </motion.ul>
 
@@ -247,18 +253,19 @@ function Index() {
             variants={fadeInItem}
             className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0"
           >
-            Democratizing How Information is Gathered and Shared
+            Democratizing Information Discovery
           </motion.h2>
 
           <motion.p variants={fadeInItem}>
-            We stand at the brink of redefining how humanity interacts with
-            knowledge. The future of information is either dictated by
-            algorithms and clickbait or reclaimed by empowered individuals
-            collaborating to build a smarter, annotated web. Over the next
-            decade, the question isn&apos;t whether we can access data, but
-            whether we can trust it. Our mission is to arm people with the tools
-            to elevate their understanding, democratize discovery, and create an
-            internet that amplifies human insight rather than commodifies it.
+            We stand at a crossroads in how humanity interacts with knowledge.
+            The future of information will be shaped by one of two paths: either
+            dictated by algorithms and clickbait economics, or reclaimed by
+            empowered individuals collaborating to build a smarter, more
+            trustworthy web. Over the next decade, the question isn&apos;t
+            whether we can access data, but whether we can trust it. The goal is
+            to create tools that elevate understanding, democratize discovery,
+            and build an internet that amplifies human insight rather than
+            commodifying it.
           </motion.p>
         </motion.div>
       </div>
