@@ -6,67 +6,144 @@ from src.core.config import settings
 from src.lib.logger.index import logger
 import re
 from urllib.parse import urlparse, parse_qs, ParseResult, ParseResultBytes
-from typing import Union
-
+from typing import Union, List
+import time
+from youtube_transcript_api import NoTranscriptFound, TranscriptsDisabled, VideoUnavailable
 
 class YoutubeAPIClient:
     def __init__(self):
         self.apiKey = settings.youtube_api_key
+        
+        # Create a persistent session for better connection management
+        self.session = requests.Session()
+        self.session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        })
+        
+        # Initialize transcript client with session and proxy config
         self.transcriptsClient = YouTubeTranscriptApi(
+            http_client=self.session,
             proxy_config=WebshareProxyConfig(
                 proxy_username=settings.proxy_username,
                 proxy_password=settings.proxy_password,
             )
         )
 
-    def get_video_info(self, video_id: str) -> dict:
+    def get_video_info(self, video_id: str, max_retries: int = 3) -> dict:
         """
         Get the information of a YouTube video from its video ID.
 
         This function will call the YouTube API to retrieve the information of the video
-        and return it as a dict.
+        and return it as a dict with retry logic.
 
         Args:
             video_id (str): The ID of the video to retrieve.
+            max_retries (int): Maximum number of retry attempts (default: 3).
 
         Returns:
             dict: A dict containing the video information.
 
         Raises:
-            HTTPException: If there is an error with the API call.
+            HTTPException: If there is an error with the API call after all retries.
         """
         url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={self.apiKey}"
 
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error getting video info: {str(e)}")
-            raise HTTPException(
-                status_code=400, detail="Could not retrieve the webpage"
-            )
+        for attempt in range(max_retries):
+            try:
+                response = self.session.get(url, timeout=30)
+                response.raise_for_status()
+                
+                data = response.json()
+                if not data.get("items"):
+                    raise HTTPException(
+                        status_code=404, 
+                        detail="Video not found or is private/deleted"
+                    )
+                
+                video = data["items"][0]
+                formatted = {
+                    "title": video["snippet"]["title"],
+                    "description": video["snippet"]["description"],
+                }
+                return formatted
 
-        video = response.json().get("items")[0]
-        formatted = {
-            "title": video["snippet"]["title"],
-            "description": video["snippet"]["description"],
-        }
-        return formatted
+            except requests.exceptions.RequestException as e:
+                if attempt == max_retries - 1:
+                    logger.error(f"Error getting video info after {max_retries} attempts: {str(e)}")
+                    raise HTTPException(
+                        status_code=400, 
+                        detail="Could not retrieve the video information"
+                    )
+                
+                # Exponential backoff: 1s, 2s, 4s
+                wait_time = 2 ** attempt
+                logger.warning(f"Attempt {attempt + 1} failed, retrying in {wait_time}s: {str(e)}")
+                time.sleep(wait_time)
 
-    def get_video_transcript(self, video_id: str) -> list:
+    def get_video_transcript(self, video_id: str, max_retries: int = 3, languages: List[str] = None) -> list:
         """
         Given a video id, returns a list of transcripts from the YouTube video.
-        Raises a 400 error if an exception occurs.
+        Includes retry logic with exponential backoff and better error handling.
+        
+        Args:
+            video_id (str): The YouTube video ID
+            max_retries (int): Maximum number of retry attempts (default: 3)
+            languages (list): Preferred languages in order of preference (default: ['en'])
+            
+        Returns:
+            list: List of transcript segments or empty list if unavailable
         """
-        try:
+        if languages is None:
+            languages = ['en']
+            
+        for attempt in range(max_retries):
+            try:
+                # First, check if transcripts are available
+                transcript_list = self.transcriptsClient.list(video_id)
+                
+                # Try to find transcript in preferred languages
+                try:
+                    transcript = transcript_list.find_transcript(languages)
+                except NoTranscriptFound:
+                    # If preferred languages not found, try any available transcript
+                    try:
+                        transcript = transcript_list.find_generated_transcript(languages)
+                    except NoTranscriptFound:
+                        # Get any available transcript
+                        available_transcripts = list(transcript_list)
+                        if available_transcripts:
+                            transcript = available_transcripts[0]
+                        else:
+                            logger.warning(f"No transcripts available for video {video_id}")
+                            return []
+                
+                # Fetch the transcript data
+                response = transcript.fetch()
+                return response.to_raw_data()
 
-            response = self.transcriptsClient.fetch(video_id)
-            response = response.to_raw_data()
-            return response
+            except TranscriptsDisabled:
+                logger.warning(f"Transcripts are disabled for video {video_id}")
+                return []
+                
+            except VideoUnavailable:
+                logger.warning(f"Video {video_id} is unavailable")
+                return []
+                
+            except NoTranscriptFound:
+                logger.warning(f"No transcript found for video {video_id}")
+                return []
+        
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    logger.error(f"Error getting video transcript after {max_retries} attempts: {str(e)}")
+                    return []
+                
+                # Standard exponential backoff for other errors
+                wait_time = 2 ** attempt
+                logger.warning(f"Transcript fetch attempt {attempt + 1} failed, retrying in {wait_time}s: {str(e)}")
+                time.sleep(wait_time)
 
-        except Exception as e:
-            logger.error(f"Error getting video transcript: {str(e)}")
-            return []
+        return []
 
     def extract_youtube_id(self, url: str) -> Union[str, None]:
         """
@@ -111,6 +188,10 @@ class YoutubeAPIClient:
         # Fallback: try to extract 11-character alphanumeric ID with regex
         match = re.search(r"[a-zA-Z0-9_-]{11}", url)
         return match.group(0) if match else None
-
+    
+    def __del__(self):
+        """Clean up session when object is destroyed"""
+        if hasattr(self, 'session'):
+            self.session.close()
 
 client = YoutubeAPIClient()

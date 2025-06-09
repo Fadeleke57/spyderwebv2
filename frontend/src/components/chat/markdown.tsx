@@ -7,7 +7,7 @@ import { Button } from "../ui/button";
 import { Check, Copy } from "lucide-react";
 import SimpleTooltip from "../utility/SimpleTooltip";
 
-const languageColors: Record<string, string> = {
+export const languageColors: Record<string, string> = {
   python: "bg-zinc-700 text-green-400",
   javascript: "bg-zinc-700 text-yellow-300",
   typescript: "bg-zinc-700 text-blue-400",
@@ -20,23 +20,27 @@ const languageColors: Record<string, string> = {
 };
 
 // Default color for languages not in the map
-const defaultLanguageColor = "bg-zinc-700 text-gray-300";
+const defaultLanguageColor = "bg-zinc-800 text-gray-300";
 
-interface CodeBlockProps {
+export interface CodeBlockProps {
   className?: string;
+  decorations?: boolean;
   match: RegExpExecArray | null;
   children: React.ReactNode;
+  fallbackLanguage?: string;
   [key: string]: any;
 }
 
-const CodeBlock: React.FC<CodeBlockProps> = ({
+export const CodeBlock: React.FC<CodeBlockProps> = ({
   className,
+  decorations = true,
   match,
   children,
+  fallbackLanguage,
   ...props
 }) => {
   const [isCopied, setIsCopied] = useState(false);
-  const language = match?.[1] || "text";
+  const language = match?.[1] || fallbackLanguage || "bash";
 
   const handleCopy = () => {
     const code = typeof children === "string" ? children : String(children);
@@ -48,9 +52,10 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   const languageColorClass = languageColors[language] || defaultLanguageColor;
 
   return (
-    <div className="relative group my-4 bg-zinc-900 rounded-md">
-      {/* Language badge */}
-
+    <div
+      onClick={handleCopy}
+      className="relative group my-4 bg-black/60 rounded-md cursor-pointer"
+    >
       <ScrollArea className="w-full rounded-lg overflow-hidden">
         <div className="absolute top-2 left-0 -translate-y-1/2 px-3 py-1 rounded-md text-xs font-mono">
           <span className={`px-3 py-1 rounded-md ${languageColorClass}`}>
@@ -59,9 +64,9 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
         </div>
         <pre
           {...props}
-          className={`${className} text-sm w-full bg-zinc-900 rounded-lg mt-1 pt-10 pb-4 px-4 overflow-x-auto`}
+          className={`${className} text-sm w-full bg-black/60 rounded-lg mt-1 pt-10 pb-4 px-4 overflow-x-auto`}
         >
-          <code className={`language-${language} font-mono`}>{children}</code>
+          <code className={`language-${language} font-mono`}>{decorations ? ">> " : ""}{children}</code>
         </pre>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
@@ -69,7 +74,6 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
       <SimpleTooltip content={isCopied ? "Copied!" : "Copy"}>
         <Button
           size="sm"
-          onClick={handleCopy}
           className="absolute top-2 right-2 h-fit w-fit p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         >
           <div className="relative w-4 h-4">
@@ -88,7 +92,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({
   );
 };
 
-const NonMemoizedMarkdown = ({ children }: { children: string }) => {
+export const NonMemoizedMarkdown = ({ children }: { children: string }) => {
   const components: Partial<Components> = {
     // @ts-expect-error
     code: ({ node, inline, className, children, ...props }) => {
@@ -99,7 +103,7 @@ const NonMemoizedMarkdown = ({ children }: { children: string }) => {
         </CodeBlock>
       ) : (
         <code
-          className={`${className} text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md`}
+          className={`${className} text-sm bg-slate-700 dark:bg-zinc-800 py-0.5 px-1 rounded-md`}
           {...props}
         >
           {children}

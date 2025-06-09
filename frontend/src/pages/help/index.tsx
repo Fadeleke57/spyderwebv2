@@ -300,7 +300,16 @@ function Index() {
         <h2 className="text-2xl font-bold mb-4">Need more help?</h2>
         <p className="text-muted-foreground mb-6">
           Can&apos;t find what you&apos;re looking for? Reach out to our support
-          team.
+          team or join our{" "}
+          <span
+            className="font-semibold cursor-pointer text-violet-400 hover:underline"
+            onClick={() => {
+              window.open("https://discord.gg/jnr4EXvn", "_blank");
+            }}
+          >
+            Discord
+          </span>
+          .
         </p>
         <Button
           onClick={() => {

@@ -19,7 +19,6 @@ import ConnectionsConfig from "../sources/ConnectionConfig";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import FaviconDisplay from "../utility/FaviconDisplay";
-import AutoLinkerIndicator from "../sources/AutoLinkerIndicator";
 import { VoiceNoteComponent } from "../sources/VoiceNoteComponent";
 import { getTypeIcon } from "../chat/genui/graphcontext";
 import { toast } from "@/components/ui/use-toast";
@@ -42,7 +41,6 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
     setIsEditingSource,
     sourceTitle,
     setSourceTitle,
-    sourceContent,
     setSourceContent,
     presignedUrl,
     setPresignedUrl,
@@ -328,7 +326,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                       className="border absolute bottom-0 right-0 dark:bg-violet-400/50 text-foreground dark:border-violet-200 p-2 rounded-tl-lg rounded-tr-lg z-10 flex items-center cursor-pointer font-semibold hover:bg-violet-50 dark:hover:bg-violet-400/60 transition-colors"
                       onClick={() => {
                         if (source) {
-                          const textToCopy = `@Memory-${source.sourceId}`;
+                          const textToCopy = `Refer to this memory: @Memory-${source.sourceId}\n`;
                           navigator.clipboard.writeText(textToCopy).then(() => {
                             setCopied(true);
                             setTimeout(() => setCopied(false), 2000);

@@ -226,7 +226,7 @@ function Index() {
               <div
                 className="border hidden dark:bg-violet-400/50 text-sm text-foreground dark:border-violet-200 p-2 py-1 rounded-b-lg z-10 md:flex items-center cursor-pointer font-semibold hover:bg-violet-50 dark:hover:bg-violet-400/60 transition-colors -mt-10"
                 onClick={() => {
-                  const textToCopy = `@Web-${web.webId}`;
+                  const textToCopy = `Refer to this web: @Web-${web.webId}\n`;
                   navigator.clipboard.writeText(textToCopy).then(() => {
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
