@@ -275,7 +275,7 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
 
               <div className="-mt-2">
                 <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger className="rounded-full hover:bg-slate-300 dark:hover:bg-violet-400/80 p-2 border-none focus:outline-none text-muted-foreground dark:text-foreground">
+                  <DropdownMenuTrigger className="rounded-full hover:bg-slate-300 dark:hover:bg-violet-400/50 p-2 border-none focus:outline-none text-muted-foreground dark:text-foreground">
                     <EllipsisIcon onClick={handleStopPropagation} />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent onClick={handleStopPropagation}>
