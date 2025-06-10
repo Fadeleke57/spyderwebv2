@@ -101,12 +101,10 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <QueryClientProvider client={queryClient}>
             <Head>
-              <title>
-                Bridging the Gap Between AI Models and Human Thought
-              </title>
+              <title>One Memory, Infinite Possibilities.</title>
               <meta
                 name="description"
-                content="An exploration into harmonizing AI capabilities with human cognition."
+                content="One Memory, Infinite Possibilities."
               />
               <meta
                 name="viewport"
@@ -114,11 +112,11 @@ function App({ Component, pageProps }: AppPropsWithLayout) {
               />
               <meta
                 property="og:title"
-                content="Bridging the Gap Between AI Models and Human Thought"
+                content="One Memory, Infinite Possibilities."
               />
               <meta
                 property="og:description"
-                content="An exploration into harmonizing AI capabilities with human cognition."
+                content="One Memory, Infinite Possibilities."
               />
               <meta property="og:image" content="/opengraph-image.jpg" />
               <meta property="og:url" content="https://www.spydr.ai" />

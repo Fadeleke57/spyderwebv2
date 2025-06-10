@@ -8,6 +8,8 @@ import { toast } from "@/components/ui/use-toast";
 
 import { ArrowRight, Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Head from "next/head";
+import { environment } from "@/environment/load_env";
 
 function Index() {
   const { theme } = useTheme();
@@ -238,13 +240,34 @@ function Index() {
 
   return (
     <motion.div
-      className="relative min-h-screen overflow-hidden pl-6 lg:pl-10 py-20 flex flex-col gap-14 transition-all duration-300"
+      className="relative min-h-screen overflow-hidden pl-6 lg:pl-10 py-10 lg:py-32 flex flex-col gap-14 transition-all duration-300"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
+      <Head>
+        <title>Memory - Spydr</title>
+        <meta
+          name="description"
+          content="Detailed Context Management and Orchestration for your AI applications."
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta property="og:title" content="Memory - Spydr" />
+        <meta
+          property="og:description"
+          content="Detailed Context Management and Orchestration for your AI applications."
+        />
+        <meta
+          property="og:image"
+          content={`${environment.client_url}/opengraph-image.png`}
+        />
+        <meta property="og:url" content={`${environment.client_url}/memory`} />
+        <meta property="og:type" content="website" />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      </Head>
       <motion.div
-        className="z-20 absolute top-20 md:top-20 lg:top-34 w-[500px] h-[200px] -right-10"
+        className="z-20 absolute top-20 md:top-20 lg:top-34 hidden md:block lg:w-[500px] h-[200px] -right-10"
         variants={videoVariants}
       >
         <span className="text-sm text-muted-foreground font-bold">
@@ -321,7 +344,10 @@ function Index() {
         </div>
       </motion.div>
 
-      <motion.div className="max-w-3xl" variants={itemVariants}>
+      <motion.div
+        className="max-w-[300px] md:max-w-3xl"
+        variants={itemVariants}
+      >
         <div className="flex gap-4 border-b mb-4">
           <button
             onClick={() => setInstallType("CLI")}
