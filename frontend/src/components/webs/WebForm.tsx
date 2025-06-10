@@ -369,14 +369,6 @@ function WebForm({ webId }: { webId: string }) {
             onClick={(e) => handleImageClick(e, SHOWCASE_IMAGE)}
             priority
           />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 h-6 w-6 bg-black/50 hover:bg-black/70"
-            onClick={() => handleOpenDeleteModal(SHOWCASE_IMAGE)}
-          >
-          </Button>
         </div>
       )}
 
