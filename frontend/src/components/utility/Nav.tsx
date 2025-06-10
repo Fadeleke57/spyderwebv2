@@ -15,6 +15,7 @@ import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 
 import useMediaQuery from "@/hooks/general";
+import { useRouter } from "next/router";
 
 const components = [
   {
@@ -81,6 +82,7 @@ export function Navbar() {
   const [showNav, setShowNav] = useState(true);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const logoRef = useRef<HTMLImageElement>(null);
+  const router = useRouter();
 
   useGSAP(() => {
     setIsMounted(true);
@@ -136,6 +138,9 @@ export function Navbar() {
               spydr
             </span>
           </div>
+          {router.pathname === "/memory" && (
+            <span className="text-lg font-semibold font-mono text-neon -mb-[5.7px]">Memory MCP</span>
+          )}
         </div>
       </Link>
       <NavigationMenuFull />

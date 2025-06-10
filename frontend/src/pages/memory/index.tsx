@@ -1,118 +1,206 @@
 import React, { ReactElement } from "react";
+import { motion } from "framer-motion";
 import PublicLayout from "@/app/PublicLayout";
+import { LineShadowText } from "@/components/magicui/line-shadow-text";
+import { useTheme } from "next-themes";
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
-import Image from "next/image";
-import { CodeBlock } from "@/components/chat/markdown";
-import { cn } from "@/lib/utils";
-import { mcp_clients, match } from "@/components/utility/MCPOnboardModal";
+import { toast } from "@/components/ui/use-toast";
+
+import { ArrowRight, Check, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 function Index() {
-  const [selectedClient, setSelectedClient] = React.useState("claude");
+  const { theme } = useTheme();
+  const shadowColor = theme === "dark" ? "white" : "black";
+  const [selectedClient, setSelectedClient] = React.useState("Claude");
+  const [selectedPackageManager, setSelectedPackageManager] = React.useState({
+    name: "npm",
+    command: "npx",
+  });
+  const [installType, setInstallType] = React.useState("CLI");
+
   const [isCopied, setIsCopied] = React.useState(false);
-  const handleCopy = (children: React.ReactNode) => {
-    const text = typeof children === "string" ? children : String(children);
+
+  const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
+    toast({
+      title: "Copied to clipboard",
+    });
   };
-  return (
-    <div className="container min-h-screen mx-auto py-16">
-      <div className="grid grid-cols-2 gap-8">
-        {/* Left Column - Title/Description */}
-        <div>
-          <h1 className="text-5xl font-[1000] mt-10">
-            Build Once. Use Everywhere.
-          </h1>
-          <p className="max-w-xl text-lg text-muted-foreground mt-4">
-            Break free from the constant copy-paste cycle. The siloed nature of
-            how you interact with AI is a thing of the past. With{" "}
-            <span className="font-semibold text-foreground">
-              Spydr Memory MCP
-            </span>
-            , your knowledge flows seamlessly across{" "}
-            <Link
-              href="https://claude.ai/download"
-              className="hover:underline text-violet-400"
-              target="_blank"
-            >
-              Claude
-            </Link>
-            ,{" "}
-            <Link
-              href="https://windsurf.com/"
-              className="hover:underline text-violet-400"
-              target="_blank"
-            >
-              Windsurf
-            </Link>
-            ,{" "}
-            <Link
-              href="https://cursor.sh/"
-              className="hover:underline text-violet-400"
-              target="_blank"
-            >
-              Cursor
-            </Link>
-            , and every MCP-compatible platform.{" "}
-            <span className="font-semibold text-foreground ">Multi-modal,</span>{" "}
-            <span className="font-semibold text-foreground ">Efficient,</span>{" "}
-            <span className="font-semibold text-foreground ">Simple,</span> and{" "}
-            <span className="font-semibold text-foreground ">Free</span>.
-          </p>
+
+  const clients = [
+    "Claude",
+    "Cursor",
+    "Windsurf",
+    "Cline",
+    "Roo-Cline",
+    "Witsy",
+    "Encovo",
+  ];
+  const packageManagers = [
+    {
+      name: "pnpm",
+      command: "pnpm dlx",
+    },
+    {
+      name: "npm",
+      command: "npx",
+    },
+    {
+      name: "yarn",
+      command: "npx",
+    },
+    {
+      name: "bun",
+      command: "bun x --bun",
+    },
+  ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+      },
+    },
+  };
+
+  const videoVariants = {
+    hidden: { opacity: 0, x: 100 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.8,
+        ease: "easeOut",
+        delay: 0.3,
+      },
+    },
+  };
+
+  const renderCliInstall = () => (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center w-8 h-8 bg-muted rounded-full text-foreground font-bold">
+          1
         </div>
-        {/* Right Column - Steps */}
-        <div className="flex flex-col gap-2">
-          <span className="text-md font-semibold">
-            Select the client you&apos;d like to install this for:
-          </span>
-          <div className="flex flex-wrap gap-4 max-w-2xl mt-4">
-            {mcp_clients.map((client, index) => (
-              <Card
-                className={cn(
-                  "relative cursor-pointer transition-all h-[135px] w-[135px] bg-foreground duration-150 ease-in-out overflow-hidden group",
-                  selectedClient === client.name &&
-                    "border border-violet-400 dark:border-violet-400 border-[3px]"
-                )}
+        <h2 className="text-md font-semibold">Installation</h2>
+      </div>
+      <div className="pl-12 flex flex-col gap-4">
+        <div className="flex gap-6 border-b">
+          {clients.map((client) => (
+            <button
+              key={client}
+              onClick={() => setSelectedClient(client)}
+              className={`py-2 text-md font-semibold transition-all duration-200 ease-in-out transform ${
+                selectedClient === client
+                  ? "border-b-2 border-foreground font-bold text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {client}
+            </button>
+          ))}
+        </div>
+        <div
+          className="bg-black text-foreground rounded-lg p-4 font-mono relative group cursor-pointer"
+          onClick={() =>
+            handleCopy(
+              `${selectedPackageManager.command} -y @spydr/mcp-i https://memory.spydr.dev/sse --client ${selectedClient.toLowerCase()}`
+            )
+          }
+        >
+          <div className="flex gap-4 mb-4 border-b border-slate-700">
+            {packageManagers.map((pm, index) => (
+              <button
                 key={index}
-                onClick={() => setSelectedClient(client.name)}
+                onClick={() => setSelectedPackageManager(pm)}
+                className={`pb-1 transition-all duration-200 ease-in-out ${
+                  selectedPackageManager.name === pm.name
+                    ? "border-b-2 border-foreground font-bold text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
-                <Image
-                  src={client.image}
-                  alt={client.name}
-                  width={135}
-                  height={135}
-                  objectFit="cover"
-                  className="bg-foreground relative z-0 absolute inset-0"
-                />
-                <div
-                  className={`absolute inset-0 bg-black/70 font-semibold opacity-0 group-hover:opacity-100 scale-0 flex items-center justify-center text-lg text-violet-400 group-hover:scale-100 transition-all z-30 duration-300 origin-bottom-left rounded-tr-md ${selectedClient === client.name ? "opacity-100 scale-100" : ""}`}
-                >
-                  {client.name}
-                </div>
-              </Card>
+                {pm.name}
+              </button>
             ))}
           </div>
-
-          <span className="text-md font-semibold mt-4">
-            Run the following command:
-          </span>
-          <CodeBlock match={match} className="mt-2">
-            {selectedClient.toLowerCase() === "continue"
-              ? "Command line support for continue.dev is currently in development!"
-              : `npx -y @spydr/mcp-i https://memory.spydr.dev/sse --client ${selectedClient?.charAt(0).toLowerCase() + selectedClient?.slice(1)}`}
-          </CodeBlock>
-
-          <div className="text-md font-semibold mt-4">
-            Or paste this into your respective MCP config:
-          </div>
-          <CodeBlock
-            match={match}
-            decorations={false}
-            className="mt-2"
-            fallbackLanguage="json"
+          <div
+            className="text-sm"
+            key={`${selectedPackageManager.name}-${selectedClient}`}
           >
-            {`"spydr-memory": {
+            {selectedPackageManager.command} -y @spydr/mcp-i
+            https://memory.spydr.dev/sse --client {selectedClient.toLowerCase()}
+          </div>
+          <Button className="absolute top-2 right-2 h-fit w-fit p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="relative w-4 h-4">
+              <Copy
+                size={16}
+                className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-0 scale-50" : "opacity-100 scale-100"}`}
+              />
+              <Check
+                size={16}
+                className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
+              />
+            </div>
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center w-8 h-8 bg-muted rounded-full text-foreground font-bold">
+          2
+        </div>
+        <h2 className="text-md font-semibold">Refresh the Client</h2>
+      </div>
+    </div>
+  );
+
+  const renderManualInstall = () => (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center w-8 h-8 bg-muted rounded-full text-foreground font-bold">
+          1
+        </div>
+        <h2 className="text-md font-semibold">
+          Add the following to your MCP config file:
+        </h2>
+      </div>
+      <div
+        className="pl-12 relative cursor-pointer group"
+        onClick={() =>
+          handleCopy(`"spydr-memory": {
+  "command": "npx",
+  "args": [
+    "-y",
+    "mcp-remote@latest",
+    "https://memory.spydr.dev/sse",
+    "--host",
+    "127.0.0.1"
+  ]
+}`)
+        }
+      >
+        <div className="text-sm ">
+          <pre className="bg-black text-foreground rounded-lg p-4 font-mono relative">
+            <code>
+              {`"spydr-memory": {
   "command": "npx",
   "args": [
     "-y",
@@ -122,13 +210,145 @@ function Index() {
     "127.0.0.1"
   ]
 }`}
-          </CodeBlock>
-          <span className="text-md font-semibold mt-4">
-            And you&apos;re done!{" "}
-          </span>
+            </code>
+            <Button className="absolute top-2 right-2 h-fit w-fit p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="relative w-4 h-4">
+                <Copy
+                  size={16}
+                  className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-0 scale-50" : "opacity-100 scale-100"}`}
+                />
+                <Check
+                  size={16}
+                  className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
+                />
+              </div>
+            </Button>
+          </pre>
         </div>
       </div>
+
+      <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center w-8 h-8 bg-muted rounded-full text-foreground font-bold">
+          2
+        </div>
+        <h2 className="text-md font-semibold">Refresh the Client</h2>
+      </div>
     </div>
+  );
+
+  return (
+    <motion.div
+      className="relative min-h-screen overflow-hidden pl-6 lg:pl-10 py-20 flex flex-col gap-14 transition-all duration-300"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <motion.div
+        className="z-20 absolute top-20 md:top-20 lg:top-34 w-[500px] h-[200px] -right-10"
+        variants={videoVariants}
+      >
+        <span className="text-sm text-muted-foreground font-bold">
+          Fine-Grained Context Orchestration
+        </span>
+        <div className="relative pb-[75%] h-[200px] w-full mt-2">
+          <iframe
+            src="https://www.loom.com/embed/d8937a0121d4461281f0d26e41fe6b1f?sid=61f79e8d-96d5-4215-995e-f5ee3680a715"
+            allowFullScreen
+            className="absolute top-0 left-0 w-full h-full rounded-lg shadow-lg"
+          ></iframe>
+        </div>
+      </motion.div>
+
+      <motion.div className="flex flex-col gap-2" variants={itemVariants}>
+        <div>
+          <h1 className="text-balance text-5xl font-semibold leading-none tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl">
+            Build{" "}
+            <LineShadowText
+              className="italic relative"
+              shadowColor={shadowColor}
+            >
+              Once.
+            </LineShadowText>{" "}
+            <br />
+            Use{" "}
+            <LineShadowText className="italic" shadowColor={shadowColor}>
+              Anywhere
+            </LineShadowText>
+          </h1>
+          <p className="max-w-3xl text-lg text-muted-foreground mt-4">
+            One memory, infinite possibilities. With{" "}
+            <span className="font-bold">Spydr Memory MCP</span>, your knowledge
+            flows seamlessly across{" "}
+            <Link
+              href="https://claude.ai/download"
+              className="hover:underline text-violet-400 transition-colors duration-200 font-bold"
+              target="_blank"
+            >
+              Claude,
+            </Link>{" "}
+            <Link
+              href="https://windsurf.com/"
+              className="hover:underline text-violet-400 transition-colors duration-200 font-bold"
+              target="_blank"
+            >
+              Windsurf,
+            </Link>{" "}
+            <Link
+              href="https://cursor.sh/"
+              className="hover:underline text-violet-400 transition-colors duration-200 font-bold"
+              target="_blank"
+            >
+              Cursor,
+            </Link>{" "}
+            and any other MCP-compatible platform.{" "}
+            <span className="font-bold">Multi-Modal,</span>{" "}
+            <span className="font-bold">Efficient,</span>{" "}
+            <span className="font-bold">Simple,</span> and{" "}
+            <span className="font-bold">Free</span>. For help, check out some{" "}
+            <Link
+              href="/help?src=mcp"
+              className="hover:underline group text-violet-400 transition-colors duration-200 font-bold flex items-center gap-2"
+              target="_self"
+            >
+              tutorials{" "}
+              <ArrowRight
+                strokeWidth={4}
+                className="group-hover:translate-x-1 transition-all ease-in-out duration-300"
+                size={16}
+              />
+            </Link>
+          </p>
+        </div>
+      </motion.div>
+
+      <motion.div className="max-w-3xl" variants={itemVariants}>
+        <div className="flex gap-4 border-b mb-4">
+          <button
+            onClick={() => setInstallType("CLI")}
+            className={`text-md font-semibold pb-2 transition-all duration-200 ease-in-out transform ${
+              installType === "CLI"
+                ? "border-b-2 border-foreground font-bold text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            CLI
+          </button>
+          <button
+            onClick={() => setInstallType("Manual")}
+            className={`text-md font-semibold pb-2 transition-all duration-200 ease-in-out transform ${
+              installType === "Manual"
+                ? "border-b-2 border-foreground font-bold text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Manual
+          </button>
+        </div>
+        <div key={installType}>
+          {installType === "CLI" ? renderCliInstall() : renderManualInstall()}
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 

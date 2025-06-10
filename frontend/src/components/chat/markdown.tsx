@@ -6,6 +6,7 @@ import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { Check, Copy } from "lucide-react";
 import SimpleTooltip from "../utility/SimpleTooltip";
+import { toast } from "../ui/use-toast";
 
 export const languageColors: Record<string, string> = {
   python: "bg-zinc-700 text-green-400",
@@ -47,6 +48,9 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({
     navigator.clipboard.writeText(code);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
+    toast({
+      title: "Copied to clipboard",
+    })
   };
 
   const languageColorClass = languageColors[language] || defaultLanguageColor;
