@@ -486,10 +486,10 @@ class SourceService:
             "content": (
                 "## Welcome to Spydr, your personal memory store and digital navigator.\n"
                 "### Some things to know:\n"
-                "- Spydr is your universal context store - creating a centralized hub where all your context lives and can be accessed by ANY AI model, anywhere.\n"
+                "- Spydr is your universal context store, a centralized hub where all your context lives and can be accessed by ANY AI model, anywhere.\n"
                 "- We're building toward an interoperable future where instead of paying for siloed apps, you store your memory centrally and bring it to whichever AI platform is most convenient.\n"
-                "- Our platform transforms how you interact with information by creating dynamic 'webs' of knowledge that mirror your unique thought processes, eliminating the copy-and-paste bottleneck of traditional RAG systems.\n"
-                "- Share and collaborate with ease, democratizing access to structured insights and context across all AI interactions.\n"
+                "- Our platform transforms how you interact with information by creating dynamic 'webs' of knowledge that mirror your unique thought processes.\n"
+                "- Share and collaborate with ease to aid in democratizing access to structured insights and context across all AI interactions.\n"
                 "- Spydr bridges human understanding and AI reliability, positioning you ahead of the paradigm shift toward standardized AI tool and data integration.\n"
                 "- Our Philosophy: Everything is Linkable.\n"
             ),
@@ -528,24 +528,6 @@ class SourceService:
             "updated": now,
         }
 
-        source_to_insert3 = {
-            "sourceId": source_id3,
-            "webId": web_id,
-            "size": 0,
-            "created": now,
-            "name": "Tracing the thoughts of a large language model",
-            "type": "youtube",
-            "updated": now,
-            "userId": user_id,
-            "url": "https://www.youtube.com/watch?v=Bj9BD2D3DzA",
-            "content": """
-            AI models are trained and not directly programmed, so we don’t understand how they do most of the things they do. Our new interpretability methods allow us to trace their (often complex and surprising) thinking.
-            With two new papers, Anthropic's researchers have taken significant steps towards understanding the circuits that underlie an AI model’s thoughts. 
-            In one example from the paper, we find evidence that Claude will plan what it will say many words ahead, and write to get to that destination. We show this in the realm of poetry, where it thinks of possible rhyming words in advance and writes each line to get there. This is powerful evidence that, even though models are trained to output one word at a time, they may think on much longer horizons to do so.
-            Read more: https://anthropic.com/research/tracing-thoughts-language-model
-            """,
-        }
-
         source_to_insert4 = {
             "sourceId": source_id4,
             "webId": web_id,
@@ -557,19 +539,6 @@ class SourceService:
             "userId": user_id,
             "url": "https://x.com/ylecun/status/1882946965761347885?s=61",
             "content": "Yann Lecun on the merits of open source ideas.",
-        }
-
-        source_to_insert5 = {
-            "sourceId": source_id5,
-            "webId": web_id,
-            "size": 0,
-            "created": now,
-            "name": "The Consumer Internet Is Dated It’s Time Gen Z Transformed It - General Catalyst",
-            "type": "website",
-            "updated": now,
-            "userId": user_id,
-            "url": "https://www.generalcatalyst.com/stories/the-consumer-internet-is-dated-its-time-gen-z-transformed-it",
-            "content": "The Consumer Internet Is Dated It’s Time Gen Z Transformed It - Gen Z and the Future of the Internet - General Catalyst\nThe Consumer Internet Is Dated Portfolio Solutions Famiglia Worldview Transformations News & Content Our Team Search The Consumer Internet Is Dated It’s Time Gen Z Transformed It March 27, 2023 Niko Bonatsos Vincent Zhu Insights Consumer Seed Text Link Text Link In the 1970s, the world changed forever with the release of the first portable computer. While it had a bulky frame, minuscule screen, and unfriendly applications, this new technology captured the hearts and minds of Baby Boomers everywhere. They could type notes, play games, and eventually even access a global network of information and communication—the internet. In its early days, the internet was primarily used by academics, scientists, and governments for research and communication. However, the introduction of the first web browser in 1993 brought the internet to the general public. The years that followed saw it grow and evolve to meet consumers’ needs. It gradually enabled new forms of communication, media, information exchange, entertainment, and discovery. Fast forward to the present day, the internet has permeated our everyday lives, and the devices we use to access it fit squarely in the palms of our hands. Fewer than 50 years after the Baby Boomers were introduced to the first portable computer, a new generation—Gen Z—has been born into a world transformed by digital technology. <div class=“full”></div> Priyam Raj / Unsplash A new digital revolution Gen Zers are digital natives. We’ve grown up online and with the Internet at our fingertips. But while the Internet has had a positive impact in many ways on our generation, it has also given rise to generational problems. Gen Z is the world’s loneliest generation. Our time online is filled with FOMO and dominated by doomscrolling. Modern tools do not resonate with us, and offices no longer suit us. The list goes on. While Gen Z has grown up in a digital world, it has become clear that this same digital world has not been built with Gen Z consumers and digital natives in mind. Baby Boomers, Gen X, and Millennials built and grew the internet. It’s up to Gen Z to transform it. ‍ Source: Statista ‍ By definition, “Gen Z” refers to individuals born after 1996. But given the rise of the internet, Gen Z has, in many ways, come to represent an individual’s values and relationship with technology. Gen Zers have grown up with smartphones, snapping our friends and playing online games with strangers across the world. We have met many of our close friends or romantic partners online, watched our first movies on iPads, and even made our first money on the internet. With these new types of formative experiences have also come new needs and expectations that distinguish our relationship with digital technology. Meet Gen Z, the digital revolutionaries It’s Gen Z’s turn to reimagine the internet. The incumbents we all know—such as Meta, Tinder, Twitter, and more—have never felt more vulnerable. Young consumers are losing trust and churning more than ever before. As the consumer landscape shifts to meet our needs, it will have to be Gen Z leading the way as they build themselves and bring to life the future they envision. ‍ Source : Thanos from Marvel’s Age of Ultron ‍ Gen Z isn’t next up—we ARE up. We are expected to make up 30% of the U.S. workforce by 2030. Our purchasing power will drive the need for products and services designed specifically for us. Paired with the digital fluency and technical ability that comes from a life filled with digital technology, we have all the tools needed to build products and services tailored to our needs and interests. ‍ Source: U.S. Bureau of Labor Statistics Every consumer category is ripe for a Gen Z facelift or reimagining. We will be spending time with companies built by Gen Z and for Gen Z. These companies will transform the internet with new products built with Gen Z’s needs in mind, including but not limited to: How we find love How we think about fitness How we manage our health and wellness How we spend our money How we communicate How we work and play How we think about spirituality Gen Z founders have the power to change their future, and they are well-positioned to lead the internet’s transformation. No one understands their needs more than they do, and they have the unique skillsets and perspectives at their disposal to push the boundaries of the consumer landscape as we know it. At GC, we are eager to partner with ambitious founders at the earliest stages as they transform and build the future of the internet for Gen Z. If you’re building for the digitally native, we want to hear from you ! Insights in your inbox Thank you! Oops! Something went wrong while submitting the form. Contact Careers Terms & Conditions 2025 General Catalyst. All rights reserved.",
         }
 
         source_to_insert6 = {
@@ -597,9 +566,7 @@ class SourceService:
         sources_to_insert = [
             source_to_insert1,
             source_to_insert2,
-            source_to_insert3,
             source_to_insert4,
-            source_to_insert5,
             source_to_insert6,
         ]
         neo4jClient.create_many_nodes("source", sources_to_insert)
@@ -621,9 +588,7 @@ class SourceService:
                         "$each": [
                             source_id1,
                             source_id2,
-                            source_id3,
                             source_id4,
-                            source_id5,
                             source_id6,
                         ]
                     }
