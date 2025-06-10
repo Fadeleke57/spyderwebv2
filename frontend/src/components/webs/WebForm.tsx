@@ -15,7 +15,7 @@ import { ConfirmModal } from "../utility/ConfirmModal";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import Image from "next/image";
 import { Button } from "../ui/button";
-import { ImageIcon, Lock, X } from "lucide-react";
+import { ArrowRight, ImageIcon, Lock, X } from "lucide-react";
 import DeleteModal from "../utility/DeleteModal";
 import {
   MAX_IMAGE_SIZE,
@@ -29,6 +29,7 @@ import { SHOWCASE_IMAGE } from "@/lib/consts";
 import { useUser } from "@/context/UserContext";
 import { TagsPopover } from "../home/TagsPopover";
 import SimpleTooltip from "../utility/SimpleTooltip";
+import Link from "next/link";
 
 const webSchema = z.object({
   name: z.string().min(1, { message: "Claim is required" }),
@@ -353,6 +354,33 @@ function WebForm({ webId }: { webId: string }) {
               className="text-lg leading-relaxed text-sm text-muted-foreground"
               onValueChange={onDescriptionChange}
             />
+            {web.showcase && (
+              <div className="my-4">
+                <span className="font-semibold">Next Steps:</span>
+                <Link
+                  className="text-violet-400 hover:underline group mt-2 font-semibold flex items-center"
+                  href={`/memory`}
+                >
+                  Install the Spydr Memory MCP{" "}
+                  <ArrowRight
+                    strokeWidth={4}
+                    size={16}
+                    className="ml-2 group-hover:translate-x-1 transition-all ease-in-out duration-300"
+                  />
+                </Link>
+                <Link
+                  className="text-violet-400 hover:underline group font-semibold flex items-center"
+                  href={`/help`}
+                >
+                  Learn more about how to use Spydr{" "}
+                  <ArrowRight
+                    strokeWidth={4}
+                    size={16}
+                    className="ml-2 group-hover:translate-x-1 transition-all ease-in-out duration-300"
+                  />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -360,12 +388,12 @@ function WebForm({ webId }: { webId: string }) {
       {web?.showcase && (
         <div key={-1} className="flex-1 relative">
           <Image
-            height={300}
-            width={500}
+            height={200}
+            width={400}
             src={SHOWCASE_IMAGE}
             alt={web.name}
             className="rounded-md w-full border h-auto object-cover"
-            style={{ maxHeight: "400px" }}
+            style={{ maxHeight: "300px" }}
             onClick={(e) => handleImageClick(e, SHOWCASE_IMAGE)}
             priority
           />
