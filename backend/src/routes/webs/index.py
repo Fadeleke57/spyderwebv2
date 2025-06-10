@@ -686,7 +686,9 @@ def iterate_web(
         if not web_to_iterate:
             raise HTTPException(status_code=404, detail="Original web not found")
 
-        associated_user: User | None = Users.find_one({"id": web_to_iterate["userId"]}, {"_id": 0})
+        associated_user: User | None = Users.find_one(
+            {"id": web_to_iterate["userId"]}, {"_id": 0}
+        )
         if not associated_user:
             raise HTTPException(status_code=404, detail="Owner not found")
 
