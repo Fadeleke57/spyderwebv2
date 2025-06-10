@@ -26,8 +26,8 @@ import {
 } from "@/lib/utils";
 
 const webSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  description: z.string().min(0, { message: "Description is required" }),
+  name: z.string().min(1, { message: "Name is required" }).max(100),
+  description: z.string().min(0).max(150),
   visibility: z.enum(["Private", "Public", "Invite"]).default("Private"),
 });
 
@@ -187,7 +187,7 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
     if (validFiles.length > 0) {
       setImageConfig((prev) => ({
         ...prev,
-        stagedImages: [...validFiles, ...prev.stagedImages],
+        stagedImages: [...prev.stagedImages, ...validFiles],
       }));
     }
   };
@@ -215,17 +215,10 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
     }));
   };
 
-  const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.value === "") {
-      setWebConfig({
-        ...webConfig,
-        name: "Untitled",
-      });
-      return;
-    }
+  const onTitleChange = (event: any) => {
     setWebConfig({
       ...webConfig,
-      name: event.target.value,
+      name: event.target.value || "Untitled",
     });
   };
 
@@ -238,16 +231,21 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
     });
   };
 
+  useEffect(() => {
+    if (addingImages || creatingWeb) {
+      toast({
+        title: "Setting up your web...",
+        description: "Please wait.",
+        variant: "default",
+      });
+    }
+  }, [addingImages, creatingWeb, toast]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      {addingImages || creatingWeb ? (
-        <DialogContent className="max-w-[350px] h-[60dvh] px-8 rounded-md lg:max-w-[600px] lg:h-[90dvh] flex flex-col gap-2 items-center justify-center">
-          <span>Setting up your web...</span>
-          <LoaderCircle className="animate-spin" />
-        </DialogContent>
-      ) : (
-        <DialogContent className="max-w-[350px] h-[60dvh] px-8 rounded-md lg:max-w-[600px] lg:h-[90dvh]">
+      <DialogContent className="max-w-[350px] flex flex-col gap-8 rounded-md px-8 lg:max-w-[600px]">
+        <div className="relative flex flex-col min-h-[60dvh] max-h-[90dvh] gap-4 py-4 h-full">
           <DialogHeader>
             <DialogTitle className="text-left">
               What would you like to start thinking about?
@@ -256,171 +254,177 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
               Create a new memory store
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <ScrollArea className={"flex flex-col h-[35dvh] lg:h-[60dvh]"}>
-              <div className="flex flex-col space-y-1">
-                <Textarea
-                  id="name"
-                  rows={1}
-                  placeholder="Give it a title..."
-                  {...form.register("name")}
-                  className="w-full min-h-[2rem] bg-transparent p-0 text-3xl font-bold leading-tight resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none m-0 py-0 text-xl font-semibold"
-                  onInput={(e: any) => {
-                    e.target.style.height = "auto";
-                    e.target.style.height = `${e.target.scrollHeight}px`;
-                    form.trigger("name");
-                  }}
-                  onChange={(e: any) => onTitleChange(e)}
-                  maxLength={100}
-                />
-                <Textarea
-                  id="description"
-                  rows={1}
-                  placeholder="Enter a brief description of this memory store..."
-                  {...form.register("description")}
-                  className="w-full min-h-[1px] bg-transparent p-0 text-lg leading-relaxed resize-none focus:outline-none border-none bg-none p-0 ring-offset-none focus-visible:ring-0 focus-visible:ring-offset-0 text-lg font-normal resize-none text-sm text-muted-foreground"
-                  onInput={(e: any) => {
-                    e.target.style.height = "auto";
-                    e.target.style.height = `${e.target.scrollHeight}px`;
-                  }}
-                  onChange={(e: any) => onDescriptionChange(e)}
-                />{" "}
-                <div>
-                  <small className="text-red-500">
-                    {form.formState.errors.description?.message}
-                  </small>
-                </div>
+
+          {/* Use a flex-col form to manage layout and spacing */}
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex max-h-[80%] min-h-[80%] flex-col justify-between"
+          >
+            {/* Inputs Container */}
+            <div className="flex flex-col space-y-2">
+              <Textarea
+                id="name"
+                rows={1}
+                placeholder="Give it a title..."
+                {...form.register("name")}
+                className="w-full resize-none border-none bg-transparent p-0 text-xl font-semibold leading-tight ring-offset-transparent focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                onInput={(e: React.FormEvent<HTMLTextAreaElement>) => {
+                  const target = e.currentTarget;
+                  target.style.height = "auto";
+                  target.style.height = `${target.scrollHeight}px`;
+                  form.trigger("name");
+                }}
+                onChange={onTitleChange}
+                maxLength={100}
+              />
+              <Textarea
+                id="description"
+                rows={1}
+                placeholder="Enter a brief description of this memory store..."
+                {...form.register("description")}
+                className="w-full resize-none border-none bg-transparent p-0 text-sm text-muted-foreground ring-offset-transparent focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                onInput={(e: React.FormEvent<HTMLTextAreaElement>) => {
+                  const target = e.currentTarget;
+                  target.style.height = "auto";
+                  target.style.height = `${target.scrollHeight}px`;
+                }}
+                onChange={onDescriptionChange}
+                maxLength={400} // Max length for description
+              />
+              <div>
+                <small className="text-red-500">
+                  {form.formState.errors.description?.message}
+                </small>
               </div>
-
-              {(imageConfig.stagedImages.length > 0 ||
-                imageConfig.stagedGifs.length > 0) && (
-                <ScrollArea className="w-full whitespace-wrap pt-16 w-full lg:w-[500px] rounded-md">
-                  <div className="flex flex-row w-full space-x-4 pb-4 pr-4">
-                    {imageConfig.stagedImages.map((file, index) => (
-                      <figure key={index} className="shrink-0 relative">
-                        <div className="rounded-md w-full h-[150px] lg:h-[250px]">
-                          <Image
-                            width={150}
-                            height={250}
-                            src={URL.createObjectURL(file)}
-                            alt={`Preview ${index}`}
-                            className="object-cover w-full h-full rounded-md"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 right-2 h-6 w-6 bg-black/50 hover:bg-black/70"
-                            onClick={() => removeFile(index)}
-                          >
-                            <X className="h-4 w-4 text-white" />
-                          </Button>
-                        </div>
-                        <figcaption className="pt-2 text-xs text-muted-foreground">
-                          Photo
-                        </figcaption>
-                      </figure>
-                    ))}
-                    {imageConfig.stagedGifs.map((file, index) => (
-                      <figure key={index} className="shrink-0 relative">
-                        <div className="overflow-hidden rounded-md w-[150px] lg:h-[250px]">
-                          <Image
-                            width={150}
-                            height={250}
-                            src={URL.createObjectURL(file)}
-                            alt={`Gif Preview ${index}`}
-                            className="object-cover w-full h-full"
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute top-2 right-2 h-6 w-6 bg-black/50 hover:bg-black/70"
-                            onClick={() => removeFile(index, true)}
-                          >
-                            <X className="h-4 w-4 text-white" />
-                          </Button>
-                        </div>
-                        <figcaption className="pt-2 text-xs text-muted-foreground">
-                          Gif
-                        </figcaption>
-                      </figure>
-                    ))}
-                  </div>
-                  <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-              )}
-              <ScrollBar />
-            </ScrollArea>
-          </form>
-          <DialogFooter className="flex flex-row items-end justify-between">
-            <Button
-              disabled={creatingWeb}
-              onClick={form.handleSubmit(onSubmit)}
-              type="submit"
-              className="w-[100px]"
-            >
-              {creatingWeb ? "Saving..." : "Save Draft"}
-            </Button>
-
-            <div className="flex flex-row items-center">
-              <Button
-                disabled
-                type="button"
-                variant="ghost"
-                className="hover:bg-transparent p-0"
-              >
-                <label htmlFor="gif-file">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="size-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12.75 8.25v7.5m6-7.5h-3V12m0 0v3.75m0-3.75H18M9.75 9.348c-1.03-1.464-2.698-1.464-3.728 0-1.03 1.465-1.03 3.84 0 5.304 1.03 1.464 2.699 1.464 3.728 0V12h-1.5M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"
-                    />
-                  </svg>
-                </label>
-                <input
-                  type="file"
-                  id="gif-file"
-                  accept="image/gif"
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  hidden
-                  onChange={(e) => handleStageGif(e.target.files)}
-                />
-              </Button>
-
-              <Button
-                type="button"
-                variant="ghost"
-                className="hover:bg-transparent"
-              >
-                <label htmlFor="image-file">
-                  <ImageIcon
-                    size={17}
-                    className="cursor-pointer hover:text-muted-foreground"
-                  />
-                </label>
-                <input
-                  type="file"
-                  id="image-file"
-                  multiple
-                  accept="image/jpeg,image/png,image/webp"
-                  className="absolute inset-0 opacity-0 cursor-pointer p-0"
-                  hidden
-                  onChange={(e) => handleStageImage(e.target.files)}
-                />
-              </Button>
             </div>
-          </DialogFooter>
-        </DialogContent>
-      )}
+
+            {/* Horizontal Scroll for Images */}
+            {(imageConfig.stagedImages.length > 0 ||
+              imageConfig.stagedGifs.length > 0) && (
+              <ScrollArea className="w-full whitespace-nowrap rounded-md mb-8 mt-4">
+                <div className="flex w-max space-x-4 pb-4">
+                  {imageConfig.stagedImages.map((file, index) => (
+                    <figure key={index} className="relative shrink-0">
+                      <div className="h-[150px] w-full rounded-md lg:h-[250px]">
+                        <Image
+                          width={150}
+                          height={250}
+                          src={URL.createObjectURL(file)}
+                          alt={`Preview ${index}`}
+                          className="h-full w-full rounded-md object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-2 h-6 w-6 bg-black/50 hover:bg-black/70"
+                          onClick={() => removeFile(index)}
+                        >
+                          <X className="h-4 w-4 text-white" />
+                        </Button>
+                      </div>
+                      <figcaption className="pt-2 text-xs text-muted-foreground">
+                        Photo
+                      </figcaption>
+                    </figure>
+                  ))}
+                  {imageConfig.stagedGifs.map((file, index) => (
+                    <figure key={index} className="relative shrink-0">
+                      <div className="h-[150px] w-[150px] overflow-hidden rounded-md lg:h-[250px]">
+                        <Image
+                          width={150}
+                          height={250}
+                          src={URL.createObjectURL(file)}
+                          alt={`Gif Preview ${index}`}
+                          className="h-full w-full object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-2 h-6 w-6 bg-black/50 hover:bg-black/70"
+                          onClick={() => removeFile(index, true)}
+                        >
+                          <X className="h-4 w-4 text-white" />
+                        </Button>
+                      </div>
+                      <figcaption className="pt-2 text-xs text-muted-foreground">
+                        Gif
+                      </figcaption>
+                    </figure>
+                  ))}
+                </div>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            )}
+
+            {/* Action Buttons */}
+            <div className="absolute bottom-0 flex flex-row items-center w-full justify-between pt-2">
+              <Button
+                disabled={creatingWeb}
+                type="submit"
+                className="w-[100px]"
+              >
+                {creatingWeb ? "Saving..." : "Save Draft"}
+              </Button>
+
+              <div className="flex flex-row items-center">
+                <Button
+                  disabled
+                  type="button"
+                  variant="ghost"
+                  className="p-0 hover:bg-transparent"
+                >
+                  <label htmlFor="gif-file" className="cursor-pointer">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="size-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12.75 8.25v7.5m6-7.5h-3V12m0 0v3.75m0-3.75H18M9.75 9.348c-1.03-1.464-2.698-1.464-3.728 0-1.03 1.465-1.03 3.84 0 5.304 1.03 1.464 2.699 1.464 3.728 0V12h-1.5M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"
+                      />
+                    </svg>
+                  </label>
+                  <input
+                    type="file"
+                    id="gif-file"
+                    accept="image/gif"
+                    className="hidden"
+                    onChange={(e) => handleStageGif(e.target.files)}
+                  />
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="hover:bg-transparent"
+                >
+                  <label htmlFor="image-file" className="cursor-pointer">
+                    <ImageIcon
+                      size={17}
+                      className="hover:text-muted-foreground"
+                    />
+                  </label>
+                  <input
+                    type="file"
+                    id="image-file"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(e) => handleStageImage(e.target.files)}
+                  />
+                </Button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </DialogContent>
     </Dialog>
   );
 }
