@@ -14,6 +14,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Head from "next/head";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/router";
 
 type VideoType = {
   id: number;
@@ -28,81 +29,82 @@ const videosData = {
   gettingStarted: [
     {
       id: 1,
-      title: "Quick App Overview",
-      description: "A 2-minute tour of the main features and interface",
-      embedId: "abcdefghij",
-      duration: "2:15",
-      date: "Apr 10, 2025",
+      title: "Quick Intro To Webs",
+      description: "A quick video showing the basics of navigating webs.",
+      embedId:
+        "6ee83a7d81fc4747bfd1dad3ecfb7cb9?sid=5e9521d4-6ddc-452a-acff-365c9424e970",
+      duration: "4:06",
+      date: "Jun 9, 2025",
     },
     {
       id: 2,
       title: "Setting Up Your Profile",
       description: "How to customize your user profile and preferences",
-      embedId: "klmnopqrst",
-      duration: "3:42",
-      date: "Apr 10, 2025",
+      embedId:
+        "83a370b6d8c04346b713e0647f2932c5?sid=166b64f0-57d3-40fb-870a-84ec3c95aa9e",
+      duration: "1:00",
+      date: "Jun 9, 2025",
     },
     {
       id: 3,
-      title: "Navigating the Dashboard",
+      title: "Publishing Your First Web",
       description:
-        "Learn how to efficiently navigate through the app and stuff",
-      embedId: "uvwxyzabcd",
-      duration: "4:21",
-      date: "Apr 11, 2025",
+        "A step-by-step guide on how to create and publish your first knowledge web",
+      embedId:
+        "54f19ce7eaf94a8ab404c24edfcbfdfe?sid=42611d9e-997f-43e1-895b-07620a05a04d",
+      duration: "1:33",
+      date: "Jun 9, 2025",
     },
   ],
   coreWorkflows: [
     {
       id: 4,
-      title: "Creating New Projects",
-      description: "Step-by-step guide to start and configure new projects",
-      embedId: "efghijklmn",
-      duration: "5:37",
-      date: "Apr 11, 2025",
+      title: "Basics of Iterating Webs",
+      description: "Step-by-step guide to iterate webs and add content",
+      embedId:
+        "4419052889c545f68d77b30ccef323b8?sid=2025079f-9f58-433d-819b-b2b4e24d95d4",
+      duration: "2:05",
+      date: "Jun 10, 2025",
     },
     {
       id: 5,
-      title: "Task Management",
+      title: "Connections and the Autolinker",
       description:
-        "How to create, assign, and track tasks effectively and stuff",
-      embedId: "opqrstuvwx",
-      duration: "6:19",
-      date: "Apr 12, 2025",
-    },
-    {
-      id: 6,
-      title: "Collaboration Features",
-      description: "Learn to share and collaborate with team members",
-      embedId: "yzabcdefgh",
-      duration: "4:55",
-      date: "Apr 12, 2025",
+        "An explanation of how connections work and how to use the autolinker",
+      embedId:
+        "4b0527e778a04aa6bc7b20ab4ad8c422?sid=b9b7192d-a727-4d54-92dd-e6d868e1f8aa",
+      duration: "4:01",
+      date: "Jun 10, 2025",
     },
   ],
   advancedFeatures: [
     {
       id: 7,
-      title: "Data Visualization",
-      description: "Making the most of charts and reporting features",
-      embedId: "ijklmnopqr",
-      duration: "7:23",
-      date: "Apr 13, 2025",
+      title: "MCP Installation",
+      description: "How to install and configure the Spydr Memory MCP",
+      embedId:
+        "e1aaaedf670a4978a8e1fbab08637ac3?sid=fee35afb-4b86-47c6-b6ec-b687b2ec0cd3",
+      duration: "1:35",
+      date: "Jun 10, 2025",
     },
     {
       id: 8,
-      title: "Custom Automation",
-      description: "Setting up workflows to automate repetitive tasks",
-      embedId: "stuvwxyzab",
-      duration: "8:41",
-      date: "Apr 13, 2025",
+      title: "MCP Usage Introduction",
+      description: "An introduction to using the Spydr Memory MCP with Claude",
+      embedId:
+        "c8e0deb89ee84e18a5ee5c2e15d65e6d?sid=e9b96d30-8d78-478c-9dea-2ab66c5e9851",
+      duration: "5:00",
+      date: "Jun 10, 2025",
     },
     {
       id: 9,
-      title: "Advanced Analytics",
-      description: "Deep dive into data analysis and insights",
-      embedId: "cdefghijkl",
-      duration: "9:17",
-      date: "Apr 13, 2025",
+      title: "Context Orchestation and Managment",
+      description:
+        "Using the Spydr Memory MCP to orchestrate contexts to fit your use case",
+      embedId:
+        "d8937a0121d4461281f0d26e41fe6b1f?sid=d2ce340c-a58c-4c01-8c24-201f09ea2ed0",
+      duration: "4:43",
+      date: "Jun 10, 2025",
     },
   ],
 };
@@ -153,6 +155,34 @@ const VideoCard = ({ video }: { video: VideoType }) => {
 function Index() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isInputActive, setIsInputActive] = React.useState(false);
+  const [selectedTab, setSelectedTab] = React.useState("gettingStarted");
+  const router = useRouter();
+  const { src } = router.query;
+
+  // initialize tab based on URL parameter
+  React.useEffect(() => {
+    if (src) {
+      const validTabs = ["gettingStarted", "coreWorkflows", "advancedFeatures"];
+      const tabFromUrl = src === "mcp" ? "advancedFeatures" : (src as string);
+
+      if (validTabs.includes(tabFromUrl)) {
+        setSelectedTab(tabFromUrl);
+      }
+    }
+  }, [src]);
+
+  // handle tab change and update URL
+  const handleTabChange = (newTab: string) => {
+    setSelectedTab(newTab);
+    router.replace(
+      {
+        pathname: router.pathname,
+        query: { src: newTab },
+      },
+      undefined,
+      { shallow: true }
+    );
+  };
 
   const filterVideos = (videos: VideoType[]) => {
     if (!searchQuery) return videos;
@@ -193,7 +223,11 @@ function Index() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.5 }}
       >
-        <Tabs defaultValue="gettingStarted" className="w-full h-fit">
+        <Tabs
+          value={selectedTab}
+          onValueChange={handleTabChange}
+          className="w-full h-fit"
+        >
           <div className="flex flex-col lg:flex-row items-center gap-2 mb-10">
             <div className="relative w-full h-full">
               <Search
