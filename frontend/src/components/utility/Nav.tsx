@@ -139,7 +139,7 @@ export function Navbar() {
             </span>
           </div>
           {router.pathname === "/memory" && (
-            <span className="text-lg font-semibold font-mono text-neon -mb-[5.7px]">Memory MCP</span>
+            <span className="text-lg font-semibold font-mono text-neon -mb-[5.7px]">memory mcp</span>
           )}
         </div>
       </Link>
