@@ -15,6 +15,8 @@ export interface Web {
   enableAIConnections?: boolean;
   showcase?: boolean;
   pinned?: boolean;
+  status: "completed" | "processing" | "failed";
+  statusMessage?: string;
 }
 
 export interface UpdateWeb {

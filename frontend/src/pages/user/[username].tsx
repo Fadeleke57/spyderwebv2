@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +19,13 @@ import {
   Link as LinkIcon,
   CircleUser,
   Edit,
+  Clock,
 } from "lucide-react";
-import { useFetchProfileWebs } from "@/hooks/webs";
+import {
+  useFetchProfileWebs,
+  useFetchQueuedWebs,
+  useFetchSavedWebs,
+} from "@/hooks/webs";
 import { Web } from "@/types/web";
 import { format } from "date-fns";
 import { useFetchPinnedWebs, useFetchUserByUsername } from "@/hooks/user";
@@ -31,7 +37,7 @@ import { motion } from "framer-motion";
 import SimpleTooltip from "@/components/utility/SimpleTooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const VALID_TABS = ["overview", "webs", "packages", "stars"];
+const VALID_TABS = ["overview", "webs", "saved", "stars", "queued"];
 
 function UserProfile() {
   const router = useRouter();
@@ -78,6 +84,9 @@ function UserProfile() {
     hasNextPage,
     isFetchingNextPage,
   } = useFetchProfileWebs(user?.id || "");
+
+  const { data: queuedWebs, isLoading: queuedWebsLoading } =
+    useFetchQueuedWebs();
 
   const {
     data: pinnedWebs,
@@ -283,6 +292,19 @@ function UserProfile() {
                   {websLoading ? "..." : webCount}
                 </span>
               </TabsTrigger>
+              {isOwner && (
+                <TabsTrigger
+                  value="queued"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+                >
+                  <div className="flex items-center gap-2">
+                    Queued
+                    {queuedWebs && queuedWebs.total > 0 && (
+                      <Badge variant="secondary">{queuedWebs.total}</Badge>
+                    )}
+                  </div>
+                </TabsTrigger>
+              )}
               <TabsTrigger
                 value="packages"
                 className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
@@ -526,6 +548,53 @@ function UserProfile() {
                   This feature is currently in development
                 </p>
               </div>
+            </TabsContent>
+
+            <TabsContent value="queued" className="mt-4">
+              {queuedWebsLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader className="animate-spin" />
+                </div>
+              ) : queuedWebs && queuedWebs.result.length > 0 ? (
+                <div className="space-y-4">
+                  {queuedWebs.result.map((web: Web) => (
+                    <div
+                      key={web.webId}
+                      className="p-4 border rounded-lg flex justify-between items-center"
+                    >
+                      <div>
+                        <h2 className="text-xl font-semibold">{web.name}</h2>
+                        <p className="text-sm text-muted-foreground">
+                          Status: {web.status}
+                        </p>
+                      </div>
+                      {web.status === "completed" ? (
+                        <Link href={`/web/${web.webId}`}>
+                          <a className="text-blue-500 hover:underline">
+                            View Web
+                          </a>
+                        </Link>
+                      ) : (
+                        <Loader className="animate-spin" />
+                      )}
+                      <div className="flex items-center gap-2">
+                        <Clock size={16} />
+                        <p className="text-sm text-muted-foreground truncate max-w-[200px] lg:max-w-full">
+                          {web.statusMessage || "Processing..."}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <h3 className="font-medium">No webs in the queue</h3>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    When you create a web with deep research, it will show up
+                    here while it&apos;s being processed.
+                  </p>
+                </div>
+              )}
             </TabsContent>
           </div>
         </Tabs>

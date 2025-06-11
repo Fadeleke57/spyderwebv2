@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     proxy_password: str
     stytch_project_id: str
     stytch_secret: str
+    tavily_api_key: str
 
     class Config:
         env_file = f".env"

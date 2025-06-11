@@ -24,6 +24,8 @@ class Web(BaseModel):
     iterations: list[str] = []
     enableAIConnections: Optional[bool] = True
     showcase: Optional[bool] = False
+    status: Literal["completed", "processing", "failed"] = "completed"
+    statusMessage: Optional[str] = None
 
 
 class CreateWeb(BaseModel):
@@ -35,6 +37,7 @@ class CreateWeb(BaseModel):
     imageKeys: list[str] = []
     enableAIConnections: Optional[bool] = True
     showcase: Optional[bool] = False
+    deep_research: bool = False
 
 
 def create_web(webToCreate: CreateWeb, userId: str):
@@ -69,6 +72,7 @@ def create_web(webToCreate: CreateWeb, userId: str):
             likes=[],
             iterations=[],
             iteratedFrom=None,
+            status="processing" if webToCreate.deep_research else "completed",
         )
 
         Webs.insert_one(web_data.model_dump())

@@ -53,32 +53,45 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
             Response: The response object from Gemini's generate_content API.
 
         Raises:
-            RuntimeError: If Gemini's generate_content API raises an exception.
+            RuntimeError: If Gemini's generate_content API raises an exception after multiple retries.
         """
         global _last_gemini_call
+        max_retries = 3
+        base_delay = 2  # seconds
 
-        now = time.time()
-        elapsed = now - _last_gemini_call
-        if elapsed < GEMINI_MIN_INTERVAL:
-            sleep_for = GEMINI_MIN_INTERVAL - elapsed
-            logger.info(
-                f"Rate limiting Gemini request. Sleeping for {sleep_for:.2f}s..."
-            )
-            time.sleep(sleep_for)
+        for attempt in range(max_retries):
+            now = time.time()
+            elapsed = now - _last_gemini_call
+            if elapsed < GEMINI_MIN_INTERVAL:
+                sleep_for = GEMINI_MIN_INTERVAL - elapsed
+                logger.info(
+                    f"Rate limiting Gemini request. Sleeping for {sleep_for:.2f}s..."
+                )
+                time.sleep(sleep_for)
 
-        try:
-            _last_gemini_call = time.time()
-            return geminiClient.client.models.generate_content(
-                model=geminiClient.selected_model,
-                contents=prompt,
-                config={
-                    "response_mime_type": "application/json",
-                    "response_schema": list[CreateConnection],
-                },
-            )
-        except Exception as e:
-            logger.error(f"Error generating content: {e}")
-            raise RuntimeError(f"Error generating content: {e}")
+            try:
+                _last_gemini_call = time.time()
+                return geminiClient.client.models.generate_content(
+                    model=geminiClient.selected_model,
+                    contents=prompt,
+                    config={
+                        "response_mime_type": "application/json",
+                        "response_schema": list[CreateConnection],
+                    },
+                )
+            except Exception as e:
+                # Check if the error is a 503 or similar "try again" error
+                if "503" in str(e) or "UNAVAILABLE" in str(e).upper():
+                    if attempt < max_retries - 1:
+                        delay = base_delay * (2**attempt)
+                        logger.warning(
+                            f"Gemini API unavailable, attempt {attempt + 1} of {max_retries}. Retrying in {delay} seconds."
+                        )
+                        time.sleep(delay)
+                        continue
+                
+                logger.error(f"Error generating content after {attempt + 1} attempts: {e}")
+                raise RuntimeError(f"Error generating content: {e}")
 
     def _create_connections_list(self, candidate_document):
         logger.info(f"Creating connections...")
@@ -162,7 +175,7 @@ class ConnectionReasoningAgent:  # reasons connections from selected sources and
         ## Style guide for `connection description`:
         - Casual, present-tense, ~15 words, proper punctuation.
         - Start with the speaker or doc (“Marques says…”, “Paper X shows…”).  
-        - Capture the **direction** implicitly: *the description should read naturally from the FROM doc’s perspective.*  
+        - Capture the **direction** implicitly: *the description should read naturally from the FROM doc's perspective.*  
         - **Outgoing** example: “Marq mentions this concept → Trinetix explainer.”  
         - **Incoming** example: “Verge review slams it as half-baked.”  
         - No IDs, no quotation marks unless they are real quotes, no boilerplate.

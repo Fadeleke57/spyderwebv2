@@ -48,10 +48,14 @@ export const useCreateWeb = () => {
   return useMutation({
     mutationFn: async (config: any) => {
       const response = await api.post("/webs/create", config);
-      return response.data.result;
+      return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["webs", "all"] });
+    onSuccess: (data) => {
+      if (data.queued) {
+        queryClient.invalidateQueries({ queryKey: ["webs", "queued"] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["webs", "all"] });
+      }
     },
     onError: () => {},
   });
@@ -63,6 +67,16 @@ export const useFetchSavedWebs = () => {
     queryFn: async () => {
       const response = await api.get("/webs/saved/user");
       return response.data.result;
+    },
+  });
+};
+
+export const useFetchQueuedWebs = () => {
+  return useQuery({
+    queryKey: ["webs", "queued"],
+    queryFn: async () => {
+      const response = await api.get("/webs/queued");
+      return response.data;
     },
   });
 };

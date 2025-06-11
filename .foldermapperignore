@@ -1,0 +1,122 @@
+#BACKEND-------------------------------------------------
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python system libraries
+lib/
+lib/python*/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Environments
+.env.local
+.env.prod
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Pyre type checker
+.pyre/
+
+# Mypy type checker
+.mypy_cache/
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.sublime-workspace
+*.sublime-project
+*.sublime-cache
+
+# Ignore all env files
+.env
+#
+
+# Scrapy -----------------------------------------------------------------
+.scrapy
+scrapy.cfg
+result.json
+
+# Docker ------------------------------------------------------------------
+docker-compose.override.yml
+docker-compose.yml
+
+# Frontend -----------------------------------------------------------------
+node_modules/
+.next/
+.nuxt/
+.vuepress/dist
+.temp/
+.cache/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment -----------------------------------------------------------------
+/spy/
+
+# Build outputs
+*.min.js
+*.min.css
+*.map
+*.bundle.js
+*.bundle.css
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Documentation
+docs/_build/
+site/
+
+# Next.js
+frontend/.next/

@@ -24,6 +24,8 @@ import {
   ALLOWED_IMAGE_TYPES,
   ALLOWED_GIF_TYPES,
 } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const webSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
@@ -89,11 +91,25 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
 
   const onSubmit: SubmitHandler<WebFormValues> = async (data) => {
     try {
-      const webId = await createWeb({
+      const response = await createWeb({
         name: webConfig.name,
         description: webConfig.description,
         visibility: webConfig.visibility,
+        deep_research: deepResearchEnabled,
       });
+
+      if (response.queued) {
+        toast({
+          title: "Job submitted",
+          description:
+            "Your web is being processed and will be available shortly.",
+        });
+        setOpen(false);
+        form.reset();
+        return;
+      }
+
+      const webId = response.result;
       if (!webId) {
         toast({
           title: "Error creating web",
@@ -238,6 +254,8 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const [deepResearchEnabled, setDeepResearchEnabled] = useState(false);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -291,6 +309,28 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
                   </small>
                 </div>
               </div>
+
+              <div className="flex items-center space-x-2 pt-4">
+                <Switch
+                  id="deep-research"
+                  checked={deepResearchEnabled}
+                  onCheckedChange={setDeepResearchEnabled}
+                />
+                <Label htmlFor="deep-research">
+                  Start with a deep research baseline
+                </Label>
+              </div>
+              {deepResearchEnabled && (
+                <div className="pt-2 space-y-2">
+                  <p className="text-xs text-muted-foreground italic">
+                    Note: This will place your web in a queue for processing,
+                    which may take a few minutes.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Hyperparameter customization coming soon...
+                  </p>
+                </div>
+              )}
 
               {(imageConfig.stagedImages.length > 0 ||
                 imageConfig.stagedGifs.length > 0) && (
@@ -360,7 +400,7 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
               type="submit"
               className="w-[100px]"
             >
-              {creatingWeb ? "Saving..." : "Save Draft"}
+              {deepResearchEnabled ? "Submit Job" : "Save Draft"}
             </Button>
 
             <div className="flex flex-row items-center">

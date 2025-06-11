@@ -34,6 +34,7 @@ from src.lib.stytch.index import StytchError
 from src.lib.pinecone.index import client as pineconeClient
 from src.service.web import service as webService
 from src.service.source import service as sourceService
+from src.service.research import deep_research_service
 from src.routes.chat.index import configure_chat
 from src.utils.storage import handleFileStorage
 from src.routes.user.index import convert_to_public_user
@@ -77,13 +78,16 @@ def get_user_webs(
         else:
             visibility = None
 
+        query = {"userId": user["id"], "status": "completed"}
+
         if visibility:
+            query["visibility"] = visibility
             webs = list(
-                Webs.find({"visibility": visibility, "userId": user["id"]}, {"_id": 0})
+                Webs.find(query, {"_id": 0})
             )
         else:
             webs = list(
-                Webs.find({"userId": user["id"]}, {"_id": 0}, sort=[("updated", -1)])
+                Webs.find(query, {"_id": 0}, sort=[("updated", -1)])
             )
 
         # pagination
@@ -137,7 +141,7 @@ async def get_webs(
         if userMakingRequest["id"] == userId:
             authorized = True
     try:
-        query = {}
+        query = {"status": "completed"}
         if visibility:
             query["visibility"] = visibility
         if (
@@ -242,15 +246,19 @@ def create_web_endpoint(
         HTTPException: If web creation fails.
     """
     try:
-
         web_id = create_web(createWebPayload, user["id"])
 
-        web_document = Webs.find_one({"webId": web_id, "userId": user["id"]})
+        if createWebPayload.deep_research:
+            logger.info(f"Deep research requested for web: {createWebPayload.name}")
+            background_tasks.add_task(
+                deep_research_service, web_id, createWebPayload, user["id"]
+            )
+            return {"result": None, "queued": True}
 
-        pinecone_document = web_document
+        web_document = Webs.find_one({"webId": web_id, "userId": user["id"]})
         background_tasks.add_task(webService.emebd_and_upsert_web, web_document)
 
-        return {"result": web_id}
+        return {"result": web_id, "queued": False}
 
     except Exception as e:
         logger.error(f"Error creating web: {str(e)}")
@@ -914,3 +922,29 @@ def export_graph_context(
         raise HTTPException(
             status_code=500, detail=f"Error exporting graph context: {e}"
         )
+
+
+@router.get("/queued")
+def get_queued_webs(user: User = Depends(manager.required)):
+    """
+    Retrieve all webs for a user that are currently being processed.
+
+    Args:
+        user (User): The user whose queued webs are to be retrieved.
+
+    Returns:
+        dict: A JSON response containing a list of processing webs.
+    """
+    try:
+        queued_webs = list(
+            Webs.find(
+                {"userId": user["id"], "status": "processing"},
+                {"_id": 0},
+                sort=[("created", -1)],
+            )
+        )
+        return {"result": queued_webs, "total": len(queued_webs)}
+
+    except Exception as e:
+        logger.error(f"Error fetching queued webs: {e}")
+        raise HTTPException(status_code=500, detail=f"Error fetching queued webs {e}")
