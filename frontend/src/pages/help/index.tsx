@@ -338,7 +338,7 @@ function Index() {
           <span
             className="font-semibold cursor-pointer text-violet-400 hover:underline"
             onClick={() => {
-              window.open("https://discord.gg/jnr4EXvn", "_blank");
+              window.open("https://discord.com/invite/pVQQRkyECV", "_blank");
             }}
           >
             Discord
