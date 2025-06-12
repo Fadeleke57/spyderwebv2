@@ -44,7 +44,21 @@ const components = [
 function NavigationMenuFull() {
   return (
     <NavigationMenu>
-      <NavigationMenuList className="hidden md:flex"></NavigationMenuList>
+      <NavigationMenuList className="hidden md:flex items-center">
+        <NavigationMenuLink
+          target="_blank"
+          className="pt-1 m-0"
+          href="https://www.producthunt.com/products/spydr-the-github-for-llm-context?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-spydr"
+        >
+          <img
+            src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=976810&theme=neutral&t=1749756938288"
+            alt="Spydr - Github&#0032;for&#0032;LLM&#0032;context&#0046;&#0032;One&#0032;memory&#0044;&#0032;infinite&#0032;possibilities&#0046; | Product Hunt"
+            style={{ width: "175px", height: "50px" }}
+            width="175"
+            height="50"
+          />
+        </NavigationMenuLink>
+      </NavigationMenuList>
     </NavigationMenu>
   );
 }
@@ -139,7 +153,9 @@ export function Navbar() {
             </span>
           </div>
           {router.pathname === "/memory" && (
-            <span className="text-lg font-semibold font-mono text-neon -mb-[5.7px]">memory mcp</span>
+            <span className="text-lg font-semibold font-mono text-neon -mb-[5.7px]">
+              memory mcp
+            </span>
           )}
         </div>
       </Link>
