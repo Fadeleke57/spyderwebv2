@@ -48,7 +48,6 @@ function Header() {
             discovery.
           </span>
         </p>{" "}
-        {/* Would be funny to add a prompt here "With AI ofc!"*/}
         <div className="hidden lg:block mt-6 flex flex-row space-x-4 lg:gap-4 justify-start">
           <GSAPButton
             label="Jump in"
