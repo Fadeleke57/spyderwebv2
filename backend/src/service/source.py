@@ -446,7 +446,7 @@ class SourceService:
                     video_id = youtubeClient.extract_youtube_id(source["url"])
                     if video_id:
                         logger.info(f"Found video id: {video_id}")
-                        transcripts = youtubeClient.get_video_transcript(
+                        transcripts = youtubeClient.get_transcript_data(
                             video_id=video_id
                         )
                         if transcripts:
