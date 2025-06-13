@@ -12,6 +12,7 @@ from src.utils.storage import handleEmbeddingStorage
 from src.utils.credits import deduct_credits
 from fastapi import HTTPException
 from src.utils.context import clean_metadata
+from src.lib.youtube.index import YoutubeTranscriptSnippet
 
 
 class PineconeClient:
@@ -289,12 +290,12 @@ class PineconeClient:
 
         return chunks
 
-    def chunk_youtube_transcript(self, transcript_data, chunk_duration: float = 90.0):
+    def chunk_youtube_transcript(self, transcript_data: list[YoutubeTranscriptSnippet], chunk_duration: float = 90.0):
         """
         Chunk transcript by time intervals.
 
         Args:
-            transcript_data: List of transcript segments with 'text', 'start', 'duration'
+            transcript_data: List of transcript segments with 'text', 'offset', 'duration'
             chunk_duration: Duration of each chunk in seconds
 
         Returns:
@@ -304,7 +305,7 @@ class PineconeClient:
 
         logger.info(f"Transcript data for video: {transcript_data}")
         # total duration of the video
-        total_duration = transcript_data[-1]["start"] + transcript_data[-1]["duration"]
+        total_duration = float(transcript_data[-1]["offset"]) + float(transcript_data[-1]["duration"])
 
         # create time windows
         time_windows = []
@@ -320,8 +321,8 @@ class PineconeClient:
             window_segments = []
 
             for segment in transcript_data:
-                segment_start = segment["start"]
-                segment_end = segment_start + segment["duration"]
+                segment_start = float(segment["offset"])
+                segment_end = segment_start + float(segment["duration"])
 
                 # check if segment overlaps with current time window
                 if segment_end > start_time and segment_start < end_time:

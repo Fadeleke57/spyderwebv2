@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     s3_bucket_name: str
     cloudfront_domain: str
     youtube_api_key: str
+    youtube_transcripts_api_key: str
     firecrawl_api_key: str
     stripe_secret_key: str
     stripe_publishable_key: str
