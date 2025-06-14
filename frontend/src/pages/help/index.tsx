@@ -347,7 +347,7 @@ function Index() {
         </p>
         <Button
           onClick={() => {
-            window.location.href = "mailto:spydrdev@gmail.com";
+            window.location.href = "mailto:farouk@spydr.dev";
           }}
           className="border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60"
         >
