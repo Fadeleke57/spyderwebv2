@@ -72,7 +72,7 @@ function PopularWebsCard() {
           Help
         </Link>{" "}
         <Link
-          href="mailto:spydrdev@gmail.com"
+          href="mailto:farouk@spydr.dev"
           className="py-[1px] px-4 mb-2 border-r-[2px] border-border hover:underline transition-all duration-300 ease-in-out"
         >
           Support
