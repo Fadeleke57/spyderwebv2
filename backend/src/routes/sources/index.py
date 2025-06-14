@@ -1,4 +1,5 @@
 import os
+import uuid
 import boto3
 import json
 import tempfile
@@ -22,7 +23,6 @@ from src.models.index import (
     update_process,
     CreateNote,
     UpdateNote,
-    Source,
     UpdateSource,
     Users,
 )
@@ -34,201 +34,217 @@ from src.lib.openai.index import client as openaiClient
 from src.lib.youtube.index import client as youtubeClient
 
 router = APIRouter()
-s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
-s3 = boto3.client("s3")
 
+class FileInfo(BaseModel):
+    fileName: str
+    fileSize: int
+    fileType: str
 
-async def process_file(
-    user_id: str,
+class PresignedUrlRequest(BaseModel):
+    files: List[FileInfo]
+
+class ProcessFileRequest(BaseModel):
+    fileName: str
+    fileKey: str
+    fileSize: int
+    fileType: str
+
+class ProcessUploadedFilesRequest(BaseModel):
+    files: List[ProcessFileRequest]
+    preserve_obsidian_links: bool = False
+
+s3_base_interface = boto3.client("s3")
+s3_bucket_interface = S3Bucket(settings.s3_bucket_name)
+
+@router.post("/presigned-urls/{web_id}")
+async def get_presigned_urls(
     web_id: str,
-    job_id: str,
-    background_tasks: BackgroundTasks,
-    file: UploadFile = File(...),
+    request: PresignedUrlRequest,
+    user=Depends(manager.required),
 ):
     """
-    Uploads a file to S3 and creates a Source document in the database.
-
+    Generate presigned URLs for direct S3 upload from frontend.
+    
     Args:
-        user_id (str): The ID of the user making the request.
-        web_id (str): The ID of the web (web) to upload to.
-        file_type (str): The type of file being uploaded (e.g. image, document).
-        file (UploadFile): The file to upload.
-
+        web_id (str): The ID of the web to upload to.
+        request (PresignedUrlRequest): List of files to generate URLs for.
+        
     Returns:
-        dict: A JSON response with a result key containing a success message.
-
-    Raises:
-        HTTPException: If the upload fails.
+        dict: List of presigned URLs and metadata for each file.
     """
-    file_type = file.filename.split(".")[-1].lower()
-    if file_type not in {"pdf", "txt", "md"}:
-        return None
-
-    temp_dir = tempfile.gettempdir()  # gets system temp directory (cross-platform)
-    temp_path = os.path.join(temp_dir, file.filename)
-
-    with open(temp_path, "wb") as buffer:
-        buffer.write(await file.read())
-
     try:
-        sourceId = str(uuid4())
-        if file_type == "pdf":
-            object_name = f"files/{user_id}/{web_id}/document/{uuid4()}_{file.filename.replace(' ', '_')}"
-
-            s3_bucket.upload_file(temp_path, object_name)  # upload to S3
-
-            fileStorageResult = handleFileStorage(
-                fileSizeBytes=os.path.getsize(temp_path),
-                userId=user_id,
-                operation="$inc",
+        urls = []
+        
+        for file_info in request.files:
+            # validate file type
+            file_extension = file_info.fileName.split(".")[-1].lower()
+            if file_extension not in {"pdf", "txt", "md"}:
+                continue
+                
+            # generate unique file key
+            file_key = f"files/{user['id']}/{web_id}/document/{uuid.uuid4()}_{file_info.fileName.replace(' ', '_')}"
+            
+            # generate presigned post url
+            presigned_post = s3_base_interface.generate_presigned_post(
+                Bucket=settings.s3_bucket_name,
+                Key=file_key,
+                Fields={
+                    "Content-Type": file_info.fileType,
+                    "Content-Length-Range": [0, file_info.fileSize]
+                },
+                Conditions=[
+                    {"Content-Type": file_info.fileType},
+                    ["content-length-range", 0, file_info.fileSize]
+                ],
+                ExpiresIn=3600  # 1 hour
             )
-            if not fileStorageResult:
-                raise HTTPException(status_code=400, detail="Storage limit exceeded")
+            
+            urls.append({
+                "uploadUrl": presigned_post["url"],
+                "fileKey": file_key,
+                "fields": presigned_post["fields"],
+                "fileName": file_info.fileName
+            })
+            
+        return {"urls": urls}
+        
+    except ClientError as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate presigned URLs: {str(e)}")
 
-            sourceToInsert: Source = {
-                "sourceId": sourceId,
-                "webId": web_id,
-                "userId": user_id,
-                "name": file.filename,
-                "content": None,
-                "url": object_name,
-                "type": "document",
-                "size": os.path.getsize(temp_path),
-                "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-                "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-            }
-
-            background_tasks.add_task(
-                sourceService.embed_and_upsert_pdf,
-                file_path=temp_path,
-                source=sourceToInsert,
-            )
-
-        elif file_type in {"txt", "md"}:
-            with open(temp_path, "r", encoding="utf-8") as f:
-                text_content = f.read()
-
-                filename = (" ".join(file.filename.split(".")[:-1])).replace("%22", " ")
-
-                textStorageResult = handleTextStorage(
-                    extractedText=text_content,
-                    userId=user_id,
+@router.post("/process-uploaded-files/{web_id}")
+async def process_uploaded_files(
+    web_id: str,
+    request: ProcessUploadedFilesRequest,
+    background_tasks: BackgroundTasks,
+    user=Depends(manager.required),
+):
+    """
+    Process files that have already been uploaded to S3.
+    
+    Args:
+        web_id (str): The ID of the web to process files for.
+        request (ProcessUploadedFilesRequest): Files to process and options.
+        
+    Returns:
+        dict: Process ID and first source ID.
+    """
+    
+    if not request.files:
+        raise HTTPException(status_code=400, detail="No files to process.")
+    
+    try:
+        sources = []
+        
+        for i, file_request in enumerate(request.files):
+            # verify file exists in S3
+            try:
+                s3_base_interface.head_object(Bucket=settings.s3_bucket_name, Key=file_request.fileKey)
+            except ClientError:
+                continue
+            
+            source_id = str(uuid.uuid4())
+            file_extension = file_request.fileType.lower()
+            
+            if file_extension == "pdf":
+                # handle storage quota
+                file_storage_result = handleFileStorage(
+                    fileSizeBytes=file_request.fileSize,
+                    userId=user["id"],
                     operation="$inc",
                 )
-                if not textStorageResult:
-                    raise HTTPException(
-                        status_code=400, detail="Storage limit exceeded"
-                    )
-
-                sourceToInsert: Source = {
-                    "sourceId": sourceId,
+                if not file_storage_result:
+                    raise HTTPException(status_code=405, detail="Storage limit exceeded")
+                
+                source_to_insert = {
+                    "sourceId": source_id,
                     "webId": web_id,
-                    "userId": user_id,
-                    "name": filename,
-                    "content": text_content,
-                    "url": None,
-                    "type": "note",
-                    "size": os.path.getsize(temp_path),
+                    "userId": user["id"],
+                    "name": file_request.fileName,
+                    "content": None,
+                    "url": file_request.fileKey,
+                    "type": "document",
+                    "size": file_request.fileSize,
                     "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
                     "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
                 }
 
-            os.remove(temp_path)
+                temp_dir = tempfile.gettempdir()  # gets system temp directory (cross-platform)
+                temp_path = os.path.join(temp_dir, file_request.fileName)
 
-            background_tasks.add_task(
-                sourceService.embed_and_upsert_note,
-                source=sourceToInsert,
-                text=text_content,
+                s3_base_interface.download_file(settings.s3_bucket_name, file_request.fileKey, temp_path) # dowload directly to temp path
+                
+                # schedule pdf processing
+                background_tasks.add_task(
+                    sourceService.embed_and_upsert_pdf,
+                    file_path=temp_path,
+                    source=source_to_insert,
+                )
+                
+            elif file_extension in {"txt", "md"}:
+                # download text content from s3
+                try:
+                    response = s3_base_interface.get_object(Bucket=settings.s3_bucket_name, Key=file_request.fileKey)
+                    text_content = response['Body'].read().decode('utf-8')
+                except ClientError as e:
+                    raise HTTPException(status_code=500, detail=f"Failed to read file from S3: {str(e)}")
+                
+                # handle storage quota
+                text_storage_result = handleTextStorage(
+                    extractedText=text_content,
+                    userId=user["id"],
+                    operation="$inc",
+                )
+                if not text_storage_result:
+                    raise HTTPException(status_code=400, detail="Storage limit exceeded")
+                
+                filename = (" ".join(file_request.fileName.split(".")[:-1])).replace("%22", " ")
+                
+                source_to_insert = {
+                    "sourceId": source_id,
+                    "webId": web_id,
+                    "userId": user["id"],
+                    "name": filename,
+                    "content": text_content,
+                    "url": None,  # Text files don't need S3 URL since content is stored in DB
+                    "type": "note",
+                    "size": file_request.fileSize,
+                    "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+                    "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+                }
+                
+                # schedule text processing
+                background_tasks.add_task(
+                    sourceService.embed_and_upsert_note,
+                    source=source_to_insert,
+                    text=text_content,
+                )
+            
+            # create source in database
+            neo4jClient.create_node("source", source_to_insert)
+            
+            # update web with new source
+            Webs.update_one(
+                {"webId": web_id, "userId": user["id"]},
+                {
+                    "$push": {"sourceIds": source_id},
+                    "$set": {"updated": datetime.now(UTC)},
+                },
             )
-
-        neo4jClient.create_node("source", sourceToInsert)
-
-        Webs.update_one(
-            {"webId": web_id, "userId": user_id},
-            {
-                "$push": {"sourceIds": sourceId},
-                "$set": {"updated": datetime.now(UTC)},
-            },
-        )
-
-        return sourceToInsert
-
+            
+            sources.append(source_to_insert)
+        
+        # handle obsidian links if requested
+        if request.preserve_obsidian_links and sources:
+            background_tasks.add_task(sourceService.parse_obsidian_links, web_id, sources)
+        
+        return {
+            "result": sources[0]["sourceId"] if sources else None, 
+            "process": "" # TODO: implement process
+        }
+        
     except Exception as e:
-        update_process(
-            job_id=job_id,
-            status="failed",
-            description="Failed to proccess file..",
-            percentage=0,
-            error=str(e),
-        )
-        logger.error(str(e))
+        logger.error(f"File processing failed: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/upload/files/{web_id}")
-async def upload_files(
-    web_id: str,
-    background_tasks: BackgroundTasks,
-    preserve_obsidian_links: bool,
-    files: List[UploadFile] = File(...),
-    user=Depends(manager.required),
-):
-    """
-    Upload multiple files to a web.
-
-    Args:
-        web_id (str): The ID of the web to upload to.
-        preserve_obsidian_links (bool): Whether to preserve Obsidian links (default: False).
-        files (List[UploadFile]): The files to upload.
-
-    Returns:
-        dict: A JSON response with a result key containing the ID of the first uploaded source, and a process key containing the ID of the background process.
-    """
-    job_id = create_process(
-        web_id=web_id, type="upload", description=f"Uploading {len(files)} files..."
-    )
-
-    if not files:
-        update_process(
-            job_id=job_id,
-            status="failed",
-            description="No files uploaded.",
-            percentage=0,
-            error="No files uploaded.",
-        )
-        raise HTTPException(status_code=400, detail="No files uploaded.")
-
-    sources = []
-    for i, file in enumerate(files):
-        result = await process_file(
-            user_id=user["id"],
-            web_id=web_id,
-            job_id=job_id,
-            background_tasks=background_tasks,
-            file=file,
-        )
-
-        if result:
-            sources.append(result)
-
-        update_process(
-            job_id=job_id,
-            description=f"Uploading {len(files) - len(sources)} files...",
-            status="processing",
-            percentage=(round((i + 1) / len(files) * 100, 2)),
-        )
-
-    if preserve_obsidian_links:
-        logger.info("Parsing Obsidian links...")
-        background_tasks.add_task(sourceService.parse_obsidian_links, web_id, sources)
-
-    update_process(
-        job_id=job_id,
-        description="Finished uploading files!",
-        status="completed",
-        percentage=100,
-    )
-    return {"result": sources[0]["sourceId"] if sources else None, "process": job_id}
 
 
 class UrlRequest(BaseModel):
@@ -334,10 +350,10 @@ def get_all_sources(web_id: str):
 async def get_presigned_url(file_path: str):
     try:
         decoded_file_path = unquote(file_path)
-        url = s3.generate_presigned_url(
+        url = s3_base_interface.generate_presigned_url(
             "get_object",
             Params={
-                "Bucket": s3_bucket.bucket_name,
+                "Bucket": settings.s3_bucket_name,
                 "Key": decoded_file_path,
                 "ResponseContentDisposition": "inline",
                 "ResponseContentType": "application/pdf",
@@ -554,7 +570,7 @@ def delete_source(
                 file_url = sourceToDelete.get("url", "")
                 if file_url:
                     object_key = file_url.split(f"{settings.cloudfront_domain}/")[-1]
-                    s3.delete_object(Bucket=s3_bucket.bucket_name, Key=object_key)
+                    s3_base_interface.delete_object(Bucket=settings.s3_bucket_name, Key=object_key)
                     logger.info(f"Deleted S3 object: {object_key}")
 
                 file_size_bytes = sourceToDelete.get("size", 0)
@@ -628,10 +644,10 @@ def get_source(source_id: str, _=Depends(manager.optional)):
         file_url = ""
         if source.get("type") == "document":
             decoded_file_path = source["url"]
-            url = s3.generate_presigned_url(
+            url = s3_base_interface.generate_presigned_url(
                 "get_object",
                 Params={
-                    "Bucket": s3_bucket.bucket_name,
+                    "Bucket": settings.s3_bucket_name,
                     "Key": decoded_file_path,
                     "ResponseContentDisposition": "inline",
                     "ResponseContentType": "application/pdf",
@@ -713,7 +729,7 @@ async def upload_file_to_source(
                 with open(temp_path, "wb") as buffer:
                     buffer.write(contents)
 
-                s3_bucket.upload_file(temp_path, object_name)
+                s3_bucket_interface.upload_file(temp_path, object_name)
                 url = f"https://{settings.cloudfront_domain}/{object_name}"
                 uploaded_image_urls.append(url)
 
@@ -779,7 +795,7 @@ async def upload_voice_note(
                     status_code=400, detail="File storage limit exceeded"
                 )
 
-            s3_bucket.upload_file(temp_path, object_name)
+            s3_bucket_interface.upload_file(temp_path, object_name)
             file_url = f"https://{settings.cloudfront_domain}/{object_name}"
 
             transcript: str = openaiClient.get_audio_transcript(temp_path)
