@@ -53,16 +53,15 @@ function WebGraph({
 
   const { webId } = router.query;
 
-  const {
-    refetch: refetchConnectionsForWeb,
-  } = useFetchAllConnectionsForWeb(webId as string);
-
-  const { refetch: refetchSourcesForWeb } =
-    useFetchSourcesForWeb(webId as string);
-
-  const { refetch: refetchWeb } = useFetchWebById(
+  const { refetch: refetchConnectionsForWeb } = useFetchAllConnectionsForWeb(
     webId as string
   );
+
+  const { refetch: refetchSourcesForWeb } = useFetchSourcesForWeb(
+    webId as string
+  );
+
+  const { refetch: refetchWeb } = useFetchWebById(webId as string);
 
   const {
     setIsUploadingSource,

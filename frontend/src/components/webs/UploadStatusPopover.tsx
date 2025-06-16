@@ -160,9 +160,13 @@ function UploadStatusPopover() {
           files: files,
           parseObsidianLinks,
         });
-        toast({ title: "Multiple files upload started." });
+        toast({
+          title: "Multiple files uploaded.",
+          description: "Processing...",
+        });
         setView("status");
         refetchWeb();
+        setIsMinimized(true);
         setIsUploadingSource(false);
         setView("status");
       } else {

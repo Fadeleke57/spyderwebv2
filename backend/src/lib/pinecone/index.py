@@ -290,7 +290,11 @@ class PineconeClient:
 
         return chunks
 
-    def chunk_youtube_transcript(self, transcript_data: list[YoutubeTranscriptSnippet], chunk_duration: float = 90.0):
+    def chunk_youtube_transcript(
+        self,
+        transcript_data: list[YoutubeTranscriptSnippet],
+        chunk_duration: float = 90.0,
+    ):
         """
         Chunk transcript by time intervals.
 
@@ -305,7 +309,9 @@ class PineconeClient:
 
         logger.info(f"Transcript data for video: {transcript_data}")
         # total duration of the video
-        total_duration = float(transcript_data[-1]["offset"]) + float(transcript_data[-1]["duration"])
+        total_duration = float(transcript_data[-1]["offset"]) + float(
+            transcript_data[-1]["duration"]
+        )
 
         # create time windows
         time_windows = []
