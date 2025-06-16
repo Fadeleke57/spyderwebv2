@@ -88,15 +88,7 @@ async def get_presigned_urls(
             presigned_post = s3_base_interface.generate_presigned_post(
                 Bucket=settings.s3_bucket_name,
                 Key=file_key,
-                Fields={
-                    "Content-Type": file_info.fileType,
-                    "Content-Length-Range": [0, file_info.fileSize]
-                },
-                Conditions=[
-                    {"Content-Type": file_info.fileType},
-                    ["content-length-range", 0, file_info.fileSize]
-                ],
-                ExpiresIn=3600  # 1 hour
+                ExpiresIn=1800  # 30 minutes
             )
             
             urls.append({
@@ -135,7 +127,7 @@ async def process_uploaded_files(
     try:
         sources = []
         
-        for i, file_request in enumerate(request.files):
+        for file_request in request.files:
             # verify file exists in S3
             try:
                 s3_base_interface.head_object(Bucket=settings.s3_bucket_name, Key=file_request.fileKey)
@@ -171,7 +163,7 @@ async def process_uploaded_files(
                 temp_dir = tempfile.gettempdir()  # gets system temp directory (cross-platform)
                 temp_path = os.path.join(temp_dir, file_request.fileName)
 
-                s3_base_interface.download_file(settings.s3_bucket_name, file_request.fileKey, temp_path) # dowload directly to temp path
+                s3_base_interface.download_file(settings.s3_bucket_name, file_request.fileKey, temp_path) # dowload directly to temp path: TODO: stream the file into embedding process
                 
                 # schedule pdf processing
                 background_tasks.add_task(
@@ -205,7 +197,7 @@ async def process_uploaded_files(
                     "userId": user["id"],
                     "name": filename,
                     "content": text_content,
-                    "url": None,  # Text files don't need S3 URL since content is stored in DB
+                    "url": None,
                     "type": "note",
                     "size": file_request.fileSize,
                     "created": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
@@ -219,10 +211,8 @@ async def process_uploaded_files(
                     text=text_content,
                 )
             
-            # create source in database
             neo4jClient.create_node("source", source_to_insert)
             
-            # update web with new source
             Webs.update_one(
                 {"webId": web_id, "userId": user["id"]},
                 {
@@ -233,13 +223,12 @@ async def process_uploaded_files(
             
             sources.append(source_to_insert)
         
-        # handle obsidian links if requested
         if request.preserve_obsidian_links and sources:
             background_tasks.add_task(sourceService.parse_obsidian_links, web_id, sources)
         
         return {
             "result": sources[0]["sourceId"] if sources else None, 
-            "process": "" # TODO: implement process
+            "process": "" # TODO: implement process tracking
         }
         
     except Exception as e:
