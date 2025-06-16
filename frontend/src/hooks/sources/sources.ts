@@ -3,49 +3,6 @@ import { api } from "@/lib/api";
 import { useSourceStore } from "@/store/sourceStore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-type UploadFilesRequest = {
-  parseObsidianLinks: boolean;
-  files: FileList;
-};
-
-export const useFileUpload = (webId: string) => {
-  const queryClient = useQueryClient();
-  const { setIsUploadingSource } = useSourceStore();
-  return useMutation({
-    mutationFn: async ({ parseObsidianLinks, files }: UploadFilesRequest) => {
-      const formData = new FormData();
-      Array.from(files).forEach((file) => formData.append("files", file));
-      setIsUploadingSource(true);
-      const response = await api.post(
-        `/sources/upload/files/${webId}/`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-          params: {
-            preserve_obsidian_links: parseObsidianLinks,
-          },
-        }
-      );
-
-      return {
-        firstSourceId: response.data.result,
-        process: response.data.process,
-      };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["sources", webId] });
-    },
-    onError: (error: any) => {
-      console.error("File upload failed:", error);
-    },
-    onSettled: () => {
-      setIsUploadingSource(false);
-    },
-  });
-};
-
 export const useFetchSourcesForWeb = (webId: string) => {
   return useQuery({
     queryKey: ["sources", webId],

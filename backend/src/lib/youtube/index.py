@@ -7,15 +7,18 @@ import re
 from urllib.parse import urlparse, parse_qs, ParseResult, ParseResultBytes
 from typing import TypedDict, Union
 
+
 class YoutubeTranscriptResponse(BaseModel):
     success: bool
     transcript: list
+
 
 class YoutubeTranscriptSnippet(TypedDict):
     text: str
     duration: float
     offset: float
     lang: str
+
 
 class YoutubeAPIClient:
     def __init__(self):

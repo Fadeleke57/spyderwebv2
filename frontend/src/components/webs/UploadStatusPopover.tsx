@@ -8,14 +8,11 @@ import {
   Upload,
   Copy,
   ChevronUp,
-  Notebook,
-  Mic,
   CircleArrowUp,
   Loader,
   NotepadText,
 } from "lucide-react";
 import { useSourceStore } from "@/store/sourceStore";
-import { useFetchAllProcesses } from "@/hooks/process";
 import { useRouter } from "next/router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
@@ -35,7 +32,7 @@ import {
 import { toast } from "../ui/use-toast";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
-import { useFetchWebById, useUploadImageToWeb } from "@/hooks/webs";
+import { useFetchWebById } from "@/hooks/webs";
 import { extractVideoId, getLinkType } from "@/lib/utils";
 import VoiceRecordModal from "./VoiceRecordModal";
 
@@ -58,21 +55,31 @@ const tabs = [
 function UploadStatusPopover() {
   const router = useRouter();
   const { webId } = router.query;
+
+  const [_, setView] = useState<"upload" | "status">("upload");
+  const [activeTab, setActiveTab] = useState("all");
+  const [linkUserInput, setLinkUserInput] = useState("");
+  const [parseObsidianLinks, setParseObsidianLinks] = useState(false);
+
   const {
     setSelectedSourceId,
     setIsWebDataModalOpen,
     isUploadingSource,
     setIsUploadingSource,
   } = useSourceStore();
-  const [view, setView] = useState<"upload" | "status">("upload");
-  const [activeTab, setActiveTab] = useState("all");
-  const [linkUserInput, setLinkUserInput] = useState("");
+
   const { mutateAsync: createEmptyNote, isPending: isNoteUploading } =
     useUploadNote(webId as string);
   const { mutateAsync: uploadYoutubeVideo, isPending: isYoutubeUploading } =
     useUploadYoutube(webId as string);
   const { mutateAsync: uploadWebsite, isPending: isWebsiteUploading } =
     useUploadWebsite(webId as string);
+  const { mutateAsync: uploadFile, isPending: isFileUploading } = useFileUpload(
+    webId as string
+  );
+  const { refetch: refetchSources } = useFetchSourcesForWeb(webId as string);
+  const { refetch: refetchWeb } = useFetchWebById(webId as string);
+
   const isLinkUploading = isYoutubeUploading || isWebsiteUploading;
   const handleLinkUpload = async () => {
     if (!linkUserInput.trim()) {
@@ -140,17 +147,8 @@ function UploadStatusPopover() {
         refetchWeb();
         refetchSources();
       }
-      //setIsUploadingSource(false);
     }
   };
-
-  // --- Integrated handleFileUpload logic ---
-  const { mutateAsync: uploadFile, isPending: isFileUploading } = useFileUpload(
-    webId as string
-  );
-  const { refetch: refetchSources } = useFetchSourcesForWeb(webId as string);
-  const { refetch: refetchWeb } = useFetchWebById(webId as string);
-  const [parseObsidianLinks, setParseObsidianLinks] = useState(false);
 
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) {
@@ -158,14 +156,18 @@ function UploadStatusPopover() {
     }
     try {
       if (files.length > 1) {
-        const { firstSourceId: sourceId } = await uploadFile({
+        await uploadFile({
           files: files,
           parseObsidianLinks,
         });
-        toast({ title: "Multiple files upload started." });
+        toast({
+          title: "Multiple files uploaded.",
+          description: "Processing...",
+        });
         setView("status");
         refetchWeb();
-        setIsUploadingSource(true);
+        setIsMinimized(true);
+        setIsUploadingSource(false);
         setView("status");
       } else {
         try {
@@ -197,13 +199,8 @@ function UploadStatusPopover() {
       });
     }
   };
-  // --- End of integrated handleFileUpload logic ---
+
   const [isMinimized, setIsMinimized] = useState(false);
-  const {
-    data: processes,
-    isLoading: isProcessesLoading,
-    refetch: refetchProcesses,
-  } = useFetchAllProcesses(webId as string);
 
   const uploads: UploadItem[] = [
     {
