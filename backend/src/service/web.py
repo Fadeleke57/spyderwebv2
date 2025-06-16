@@ -1,4 +1,4 @@
-from src.models.index import Web, Embeddings
+from src.models.index import Embeddings
 from src.lib.pinecone.index import client as pineconeClient
 from src.lib.logger.index import logger
 from src.db.neo4j import client as neo4jClient

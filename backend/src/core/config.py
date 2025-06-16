@@ -33,8 +33,6 @@ class Settings(BaseSettings):
     stripe_basic_yearly_price_id: str
     stripe_pro_monthly_price_id: str
     stripe_pro_yearly_price_id: str
-    proxy_username: str
-    proxy_password: str
     stytch_project_id: str
     stytch_secret: str
 

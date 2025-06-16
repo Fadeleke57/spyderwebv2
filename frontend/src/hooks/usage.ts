@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
-export function useResourceUsage(userId?: string) {
+export function useResourceUsage(userId?: string | null) {
   return useQuery({
     queryKey: ["resourceUsage"],
     queryFn: async () => {

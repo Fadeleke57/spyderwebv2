@@ -1,5 +1,3 @@
-# API V1
-# These endpoints will be publically available for API and MCP USAGE
 from fastapi import APIRouter, Depends
 from src.lib.pinecone.index import client as pineconeClient
 from fastapi.responses import JSONResponse

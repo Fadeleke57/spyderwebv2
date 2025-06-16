@@ -7,6 +7,7 @@ from datetime import datetime
 from fastapi import HTTPException
 from src.models.index import Source, create_process, update_process, Webs, Embeddings
 from src.lib.youtube.index import client as youtubeClient
+from src.service.chunking import service as chunkingService
 from src.utils.storage import handleEmbeddingStorage
 from src.db.neo4j import client as neo4jClient
 from src.lib.pinecone.index import client as pineconeClient

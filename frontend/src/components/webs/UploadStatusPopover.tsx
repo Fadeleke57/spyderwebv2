@@ -35,6 +35,8 @@ import { Switch } from "../ui/switch";
 import { useFetchWebById } from "@/hooks/webs";
 import { extractVideoId, getLinkType } from "@/lib/utils";
 import VoiceRecordModal from "./VoiceRecordModal";
+import { useResourceUsage } from "@/hooks/usage";
+import { useUser } from "@/context/UserContext";
 
 interface UploadItem {
   id: number;
@@ -55,11 +57,15 @@ const tabs = [
 function UploadStatusPopover() {
   const router = useRouter();
   const { webId } = router.query;
+  const { user } = useUser();
 
   const [_, setView] = useState<"upload" | "status">("upload");
   const [activeTab, setActiveTab] = useState("all");
   const [linkUserInput, setLinkUserInput] = useState("");
   const [parseObsidianLinks, setParseObsidianLinks] = useState(false);
+  const { data: usage, isLoading: isUsageLoading } = useResourceUsage(
+    user && user.id
+  );
 
   const {
     setSelectedSourceId,
@@ -154,6 +160,18 @@ function UploadStatusPopover() {
     if (!files || files.length === 0) {
       return;
     }
+    if (
+      usage &&
+      usage.storage_limit &&
+      usage.storage_used > usage.storage_limit
+    ) {
+      toast({
+        variant: "destructive",
+        title: "Storage limit reached",
+        description: "Please upgrade your plan to continue uploading files.",
+      });
+      return;
+    }
     try {
       if (files.length > 1) {
         await uploadFile({
@@ -183,11 +201,6 @@ function UploadStatusPopover() {
           setView("status");
         } catch (error: any) {
           console.error(error);
-          toast({
-            variant: "destructive",
-            title: "Error uploading file(s)",
-            description: error.message || "An unexpected error occurred.",
-          });
         }
       }
     } catch (err: any) {
