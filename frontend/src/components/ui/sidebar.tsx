@@ -3,7 +3,10 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";
-import { ArrowLeftFromLine, ArrowRightFromLine, PanelLeft } from "lucide-react";
+import {
+  PanelLeft,
+  PanelRight,
+} from "lucide-react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -123,8 +126,8 @@ const SidebarProvider = React.forwardRef<
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
       return isMobile
-        ? setOpenMobile((prevOpen : boolean) => !prevOpen) // Use functional update for setOpenMobile
-        : setOpen((prevOpen : boolean) => !prevOpen); // Use functional update for setOpen
+        ? setOpenMobile((prevOpen: boolean) => !prevOpen) // Use functional update for setOpenMobile
+        : setOpen((prevOpen: boolean) => !prevOpen); // Use functional update for setOpen
     }, [isMobile, setOpen, setOpenMobile]);
 
     // Adds a keyboard shortcut to toggle the sidebar.
@@ -189,7 +192,6 @@ const SidebarProvider = React.forwardRef<
   }
 );
 SidebarProvider.displayName = "SidebarProvider";
-
 
 const Sidebar = React.forwardRef<
   HTMLDivElement,
@@ -325,9 +327,9 @@ const SidebarTrigger = React.forwardRef<
       {...props}
     >
       {orientation === "left" ? (
-        <ArrowLeftFromLine size={16} />
+        <PanelLeft size={16} />
       ) : (
-        <ArrowRightFromLine size={16} />
+        <PanelRight size={16} />
       )}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>

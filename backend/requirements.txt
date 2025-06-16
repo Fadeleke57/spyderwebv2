@@ -8,7 +8,7 @@ passlib[bcrypt]
 fastapi-login 
 aiohttp
 python-multipart
-pinecone
+pinecone[grpc]
 openai
 boto3
 requests
