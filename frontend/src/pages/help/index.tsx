@@ -1,5 +1,5 @@
 import PublicLayout from "@/app/PublicLayout";
-import React, { ReactElement } from "react";
+import { ReactElement, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -153,14 +153,14 @@ const VideoCard = ({ video }: { video: VideoType }) => {
 };
 
 function Index() {
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [isInputActive, setIsInputActive] = React.useState(false);
-  const [selectedTab, setSelectedTab] = React.useState("gettingStarted");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isInputActive, setIsInputActive] = useState<boolean>(false);
+  const [selectedTab, setSelectedTab] = useState<string>("gettingStarted");
   const router = useRouter();
   const { src } = router.query;
 
   // initialize tab based on URL parameter
-  React.useEffect(() => {
+  useEffect(() => {
     if (src) {
       const validTabs = ["gettingStarted", "coreWorkflows", "advancedFeatures"];
       const tabFromUrl = src === "mcp" ? "advancedFeatures" : (src as string);

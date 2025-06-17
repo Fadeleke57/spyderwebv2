@@ -1,6 +1,6 @@
 "use client"
 import PublicLayout from "@/app/PublicLayout";
-import React, { ReactElement } from "react";
+import { ReactElement } from "react";
 
 const PrivacyPolicy = () => {
   return (

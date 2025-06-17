@@ -5,7 +5,7 @@ import { SearchInput } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { formatText } from "@/lib/utils";
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 import Router from "next/router";
 
 const SearchBar = ({

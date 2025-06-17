@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useFetchPublicWebs, useSearchWebs } from "@/hooks/webs";
 import { WebCard } from "@/components/explore/WebCard";
 import { Web } from "@/types/web";
