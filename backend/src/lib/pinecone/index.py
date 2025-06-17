@@ -331,21 +331,6 @@ class PineconeClient:
             should_run_autolinker = True
             autolinker.configure(webId, sourceId)
 
-        embeddingStorageResult = handleEmbeddingStorage(
-            sizeBytes=source.get(
-                "size",
-                (
-                    len(source.get("content", "").encode("utf-8"))
-                    if source.get("content")
-                    else 0
-                ),
-            ),
-            userId=userId,
-            operation="$inc",
-        )
-        if not embeddingStorageResult:
-            raise HTTPException(status_code=400, detail="Storage limit exceeded")
-
         num_chunks = len(chunks)
 
         for i, chunk in enumerate(chunks):
