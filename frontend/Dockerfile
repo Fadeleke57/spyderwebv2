@@ -1,23 +1,35 @@
-# Use the specific Node.js runtime as a parent image
 FROM node:20-alpine
 
-# Set the working directory
+# set the working directory
 WORKDIR /app
 
-# Copy the package.json and package-lock.json into the container at /app
+# copy the package.json and package-lock.json into the container at /app
 COPY package.json package-lock.json ./
 
-# Install any needed packages
+# install any needed packages
 RUN npm install
 
-# Copy the rest of the project files into the container at /app
+# copy the rest of the project files into the container at /app
 COPY . .
 
-# Build the Next.js project
+# build the Next.js project
 RUN npm run build
 
-# Expose port 3000
+# expose port 3000
 EXPOSE 3000
 
-# Start the Next.js server
+# automatically leverage output traces to reduce image size
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# create non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# switch to non-root user
+USER nextjs
+
+ENV PORT 3000
+
+# start the Next.js server
 CMD ["npm", "start"]
