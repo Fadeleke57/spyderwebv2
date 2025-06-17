@@ -1,14 +1,18 @@
-FROM python:3.11-slim
+# use a slim Python base image
+FROM python:3.13-slim-bullseye
 
 # set working directory
 WORKDIR /app
 
-# install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
+RUN apt update && apt install -y \
+    build-essential \
+    libpq-dev \
+    libssl-dev \
+    libffi-dev \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# copy requirements first for better caching
+# copy requirements file early for Docker cache
 COPY requirements.txt .
 
 # install Python dependencies
@@ -24,12 +28,12 @@ COPY *.json ./
 # make shell scripts executable
 RUN chmod +x *.sh
 
-# create non-root user
+# create non-root user and assign ownership
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-# expose port
+# expose FastAPI port
 EXPOSE 8000
 
-# command to run the application
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# run the startup script
+ENTRYPOINT ["./start.sh"]

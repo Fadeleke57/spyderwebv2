@@ -1,6 +1,18 @@
 #!/bin/bash
+set -euo pipefail
 
+echo "🚀 Starting backend server..."
+
+# ensure we're in the app directory
 cd "$(dirname "$0")"
-source env/bin/activate
-pip3 install -r requirements.txt
-python3 -m uvicorn src.main:app --reload --workers 1 --host 0.0.0.0 --port 8000
+
+# log current directory contents for debugging
+echo "📁 Contents of working directory:"
+ls -la
+
+# start FastAPI app with Uvicorn
+exec uvicorn src.main:app \
+  --host 0.0.0.0 \
+  --port 8000 \
+  --workers 1 \
+  --reload
