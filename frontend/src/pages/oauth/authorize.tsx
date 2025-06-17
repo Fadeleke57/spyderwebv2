@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { IdentityProvider, useStytchUser } from "@stytch/nextjs";
 import PublicLayout from "@/app/PublicLayout";
 import { useRouter } from "next/router";

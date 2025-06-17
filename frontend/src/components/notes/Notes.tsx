@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { SourceAsNode } from "@/types/source";
 import { useUpdateNote, useUploadImageToSource } from "@/hooks/sources";
 import { MarkdownComponents } from "./MarkdownComponents";
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 import { toast } from "../ui/use-toast";
 
 interface NoteComponentProps {
