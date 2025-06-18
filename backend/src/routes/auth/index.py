@@ -96,7 +96,7 @@ def authenticate(
                 sourceIds=[],
                 imageKeys=[],
                 enableAIConnections=False,
-                showcase=False,
+                showcase=True,
             )
 
             try:
