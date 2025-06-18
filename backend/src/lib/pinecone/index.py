@@ -1,32 +1,24 @@
+from typing_extensions import deprecated
 from pinecone.grpc import PineconeGRPC as Pinecone
 from src.core.config import settings
 from datetime import datetime
 from pytz import UTC
-from typing import Dict, Any, Literal, Optional
+from typing import Dict, Any, Literal, Optional, List
 import re
 import time
 from src.lib.logger.index import logger
 from src.agents.autolinking_engine.autolinker import engine as autolinker
-from src.models.index import Source, Embeddings
-from src.utils.storage import handleEmbeddingStorage
+from src.models.index import Source, Embeddings, EmbeddingReference, Vector
 from src.utils.credits import deduct_credits
-from fastapi import HTTPException
 from src.utils.context import clean_metadata
 from src.lib.youtube.index import YoutubeTranscriptSnippet
-
-SOURCE_TYPE_BATCH_MAP = {
-    "website": 50,
-    "youtube": 20,
-    "document": 50,
-    "note": 50,
-    "voice_note": 50,
-}
 
 
 class PineconeClient:
     def __init__(self):
         self.client = Pinecone(api_key=settings.pinecone_api_key)
         self.index = self.client.Index(name=settings.pinecone_index_name)
+        self.embedding_model = "multilingual-e5-large"
 
     @staticmethod
     def _generate_source_chunk_metadata(
@@ -300,6 +292,46 @@ class PineconeClient:
 
         return chunks
 
+    def embed(self, text: str, type: Literal["passage", "query"]):
+        paramaters = {
+            "input_type": type, 
+        }
+
+        if type == "passage":
+            paramaters["truncate"] = "END"
+
+        embeddings = self.client.inference.embed(
+            model=self.embedding_model,
+            inputs=[text],
+            parameters=paramaters,
+        )
+        return embeddings.data[0].values
+
+    def upsert(self, vectors: List[Vector], namespace: str = "sources", batch_size: int = 50):
+        results = []
+        
+        for i in range(0, len(vectors), batch_size):
+            logger.info(f"Upserting batch {i // batch_size + 1} of {len(vectors) // batch_size}")
+            batch = vectors[i : i + batch_size]
+
+            try:
+                response = self.index.upsert(
+                    vectors=batch,
+                    namespace=namespace,
+                    batch_size=batch_size,
+                )
+                results.append(response)
+
+                if i + batch_size < len(vectors):
+                    time.sleep(0.5)
+
+            except Exception as e:
+                logger.error(f"Error embedding and upserting to Pinecone: {str(e)}")
+
+            finally:
+                return results
+
+    @deprecated
     def embed_and_upsert_to_pinecone(
         self,
         source: Source,
