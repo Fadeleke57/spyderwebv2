@@ -47,7 +47,7 @@ class PineconeClient:
             "chunkIndex": index,
             "chunkCount": number_of_chunks,
             "type": type,
-            "url": source.get("url", None),
+            "url": source.get("url", ""),
             "text": chunk.get("text", "") if type == "youtube" else chunk,
             "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
         }
