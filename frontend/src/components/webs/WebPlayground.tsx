@@ -247,7 +247,7 @@ function WebPlayground() {
                     handleOrientationChange(!isUploadingSource);
                     setIsUploadingSource(!isUploadingSource);
                   }}
-                  className="dark:bg-violet-400/80 hidden lg:block dark:hover:bg-violet-400 rounded-full p-1 h-fit w-fit"
+                  className="dark:bg-violet-400/80 dark:hover:bg-violet-400 rounded-full p-1 h-fit w-fit"
                 >
                   <Plus
                     strokeWidth={3}
@@ -283,7 +283,7 @@ function WebPlayground() {
                       handleOrientationChange(!isUploadingSource);
                       setIsUploadingSource(!isUploadingSource);
                     }}
-                    className={`rotate-${addIconOrientation} hidden lg:block transition-transform ease-in-out duration-300 mr-2`}
+                    className={`rotate-${addIconOrientation} transition-transform ease-in-out duration-300 mr-2`}
                   />
                   Add to your web
                 </Button>

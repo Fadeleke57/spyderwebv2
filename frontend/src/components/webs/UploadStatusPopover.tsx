@@ -35,6 +35,8 @@ import { Switch } from "../ui/switch";
 import { useFetchWebById } from "@/hooks/webs";
 import { extractVideoId, getLinkType } from "@/lib/utils";
 import VoiceRecordModal from "./VoiceRecordModal";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Drawer, DrawerContent } from "../ui/drawer";
 
 interface UploadItem {
   id: number;
@@ -55,6 +57,7 @@ const tabs = [
 function UploadStatusPopover() {
   const router = useRouter();
   const { webId } = router.query;
+  const isMobile = useIsMobile();
 
   const [_, setView] = useState<"upload" | "status">("upload");
   const [activeTab, setActiveTab] = useState("all");
@@ -79,7 +82,7 @@ function UploadStatusPopover() {
   );
   const { refetch: refetchSources } = useFetchSourcesForWeb(webId as string);
   const { refetch: refetchWeb } = useFetchWebById(webId as string);
-
+  console.log("isUploadingSource", isUploadingSource);
   const isLinkUploading = isYoutubeUploading || isWebsiteUploading;
   const handleLinkUpload = async () => {
     if (!linkUserInput.trim()) {
@@ -226,14 +229,14 @@ function UploadStatusPopover() {
       destination: "Files",
     },
     {
-      id: 4, // Changed ID to be unique
+      id: 4,
       name: "Another Asset.zip",
       type: "ZIP",
       status: "failed",
       destination: "Files",
     },
     {
-      id: 5, // Changed ID to be unique
+      id: 5,
       name: "Yet Another.zip",
       type: "ZIP",
       status: "failed",
@@ -537,6 +540,17 @@ function UploadStatusPopover() {
       </div>
     </Tabs>
   );
+
+  if (isMobile) {
+    return (
+      <Drawer open={isUploadingSource}>
+        <DrawerContent className="h-[95dvh]">
+          {header}
+          {uploadContent}
+        </DrawerContent>
+      </Drawer>
+    );
+  }
 
   return (
     <div
