@@ -59,10 +59,11 @@ function UploadStatusPopover() {
   const { webId } = router.query;
   const isMobile = useIsMobile();
 
-  const [_, setView] = useState<"upload" | "status">("upload");
+  const [view, setView] = useState<"upload" | "status">("upload");
   const [activeTab, setActiveTab] = useState("all");
   const [linkUserInput, setLinkUserInput] = useState("");
   const [parseObsidianLinks, setParseObsidianLinks] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const {
     setSelectedSourceId,
@@ -543,8 +544,15 @@ function UploadStatusPopover() {
 
   if (isMobile) {
     return (
-      <Drawer open={isUploadingSource}>
-        <DrawerContent className="h-[95dvh]">
+      <Drawer
+        onClose={() => {
+          setOpen(false);
+          setIsUploadingSource(false);
+        }}
+        open={isUploadingSource}
+        onOpenChange={setOpen}
+      >
+        <DrawerContent className="h-[85dvh] px-4">
           {header}
           {uploadContent}
         </DrawerContent>

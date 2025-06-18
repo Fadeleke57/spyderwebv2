@@ -99,21 +99,21 @@ function SearchSourceModal({
           className="data-[state=active]:animate-fadeIn"
         >
           <Command className="bg-transparent no-scrollbar">
-            <div className="flex flex-row items-center justify-between mb-2 px-1">
-              <div>
+            <div className="flex flex-col-reverse  gap-2 lg:flex-row items-center justify-between mb-2 px-1">
+              <div className=" w-full lg:w-auto">
                 <CommandInput
                   placeholder={placeholder}
-                  className="bg-muted h-10 w-64"
+                  className="bg-muted h-10 w-64  w-full lg:w-auto"
                 />
               </div>
               {isOwner && (
-                <div>
+                <div className="w-full lg:w-auto">
                   <Button
                     onClick={() => {
                       setOpen(false);
                       setIsUploadingSource(true);
                     }}
-                    className="h-10 border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40 rounded-lg"
+                    className="h-10 w-full lg:w-auto border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40 rounded-lg"
                   >
                     <CirclePlus size={12} className="mr-1" /> Add{" "}
                     {value === "files" ? "file" : "link"}{" "}
@@ -170,14 +170,14 @@ function SearchSourceModal({
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <DrawerContent className="lg:max-w-2xl no-scrollbar h-[70dvh]">
+        <DrawerContent className="no-scrollbar h-[90dvh] px-0">
           {" "}
           <DrawerTitle className="flex items-center p-4">
             <Search size={16} className="mr-2"></Search>
             <span className="font-semibold">Sources</span>
           </DrawerTitle>
           <Separator className="my-2" />
-          <div className="p-4">{content}</div>
+          <div className="p-4 px-0">{content}</div>
         </DrawerContent>
       </Drawer>
     );
