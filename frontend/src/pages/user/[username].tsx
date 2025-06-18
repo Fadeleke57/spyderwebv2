@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   Loader,
-  Users,
   Star,
   GitFork,
   Book,
@@ -165,18 +164,20 @@ function UserProfile() {
                   </SimpleTooltip>
                 </div>
               )}
-              {!isMobile && (
+              <div className="hidden md:block">
                 <UserAvatar
                   userId={user.id}
                   dimension={96}
-                  className="hidden md:block mr-2"
+                  className="mr-2"
                 />
-              )}
-              <UserAvatar
-                userId={user.id}
-                dimension={48}
-                className="md:hidden mr-4"
-              />
+              </div>
+              <div className="md:hidden">
+                <UserAvatar
+                  userId={user.id}
+                  dimension={48}
+                  className="mr-4"
+                />
+              </div>
             </div>
 
             <div>
