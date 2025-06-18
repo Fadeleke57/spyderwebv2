@@ -4,7 +4,7 @@ import { WebCard } from "@/components/explore/WebCard";
 import { Web } from "@/types/web";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@/context/UserContext"
+import { useUser } from "@/context/UserContext";
 import Head from "next/head";
 import useMediaQuery from "@/hooks/general";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -56,7 +56,7 @@ function Index() {
 
   return (
     <div className="lg:h-screen flex flex-col overflow-hidden">
-      <div className="flex flex-1 flex-col gap-4 w-full relative overflow-y-auto">
+      <div className="flex flex-1 flex-col w-full relative overflow-y-auto">
         <Head>
           <title>{title}</title>
           <meta name="description" content={description} />
@@ -69,20 +69,20 @@ function Index() {
             }`}
           />
         </Head>
-        <div className="p-4 flex flex-col lg:px-8 relative lg:sticky lg:top-0 z-[25] flex justify-end bg-background/60 border-zinc-800 backdrop-blur-md">
+        <div className="p-4 flex flex-col lg:px-8 relative lg:sticky lg:top-0 z-[25] flex justify-end bg-background/60  backdrop-blur-md">
           {!user && isMobile && (
-            <Button
-              className="w-full mb-2"
-              variant={"secondary"}
-              onClick={() => setOpen(true)}
-            >
-              Sign Up
-            </Button>
-          )}
-          {!user && isMobile && (
-            <Button className="w-full mb-4" onClick={() => setOpen(true)}>
-              Login
-            </Button>
+            <>
+              <Button
+                className="w-full mb-2"
+                variant={"secondary"}
+                onClick={() => setOpen(true)}
+              >
+                Sign Up
+              </Button>
+              <Button className="w-full mb-4" onClick={() => setOpen(true)}>
+                Login
+              </Button>
+            </>
           )}
           <SearchBar onSearch={handleSearch} initialQuery={query} />
         </div>
@@ -90,21 +90,19 @@ function Index() {
           <div className="w-full flex flex-col lg:gap-1">
             {error && <ExplorePageErrorCard />}
             {isLoading || isSearchLoading ? (
-              <Loader className="animate-spin mx-auto my-16" /> 
+              <Loader className="animate-spin mx-auto my-16" />
+            ) : displayWebs.length > 0 ? (
+              displayWebs.map((web: Web) => (
+                <div key={web.webId} className="cursor-pointer">
+                  <WebCard user={user || null} web={web} />
+                </div>
+              ))
             ) : (
-              displayWebs.length > 0 ? (
-                displayWebs.map((web: Web) => (
-                  <div key={web.webId} className="cursor-pointer">
-                    <WebCard user={user || null} web={web} />
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground mt-16">
-                  {query
-                    ? `No webs found for "${query}".`
-                    : "No public webs available."}
-                </p>
-              )
+              <p className="text-center text-muted-foreground mt-16">
+                {query
+                  ? `No webs found for "${query}".`
+                  : "No public webs available."}
+              </p>
             )}
 
             <div ref={ref} className="h-10 w-full">
@@ -117,12 +115,7 @@ function Index() {
           </div>
           <PopularWebsCard />
         </div>
-        {open && (
-          <AuthModal
-            open={open}
-            setOpen={setOpen}
-          />
-        )}
+        {open && <AuthModal open={open} setOpen={setOpen} />}
       </div>
     </div>
   );
