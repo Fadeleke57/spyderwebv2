@@ -3,7 +3,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -15,7 +14,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useCreateWeb, useUploadImageToWeb } from "@/hooks/webs";
 import { useCallback, useEffect, useState } from "react";
 import { Textarea } from "../ui/textarea";
-import { ImageIcon, LoaderCircle, X } from "lucide-react";
+import { ImageIcon, X } from "lucide-react";
 import Image from "next/image";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { useIsMobile } from "@/hooks/use-mobile";

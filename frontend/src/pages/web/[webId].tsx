@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useFetchWebById } from "@/hooks/webs";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -72,7 +72,7 @@ function Index() {
   const [web, setWeb] = useState<Web | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [isPinned, setPinned] = React.useState(
+  const [isPinned, setPinned] = useState(
     user && user.websPinned.includes(webId as string)
   );
   const isOwner = user && web && user.id === web.userId;

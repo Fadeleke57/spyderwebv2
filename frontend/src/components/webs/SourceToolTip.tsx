@@ -1,8 +1,7 @@
 import { Source } from "@/types/source";
 import { Card } from "../ui/card";
 import FaviconDisplay from "../utility/FaviconDisplay";
-import { Notebook } from "lucide-react";
-import { getTypeIcon, ReferenceMetadata } from "../chat/genui/graphcontext";
+import { getTypeIcon } from "../chat/genui/graphcontext";
 
 interface SourceTooltipProps {
   children: React.ReactNode;

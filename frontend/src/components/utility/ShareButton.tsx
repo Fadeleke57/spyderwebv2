@@ -44,7 +44,7 @@ const ShareDialog = ({ link }: { link: string }) => {
         <DrawerTrigger asChild>
           <Button
             size="sm"
-            className="ml-auto dark:bg-violet-400/30 border-violet-200 dark:hover:bg-violet-400/40 gap-1.5 text-sm"
+            className="ml-auto border dark:bg-violet-400/30 border-violet-200 dark:hover:bg-violet-400/40 gap-1.5 text-sm"
           >
             <Forward size={16} />
             <span className="hidden md:inline lg:inline">Share</span>

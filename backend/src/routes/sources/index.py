@@ -15,7 +15,6 @@ from src.utils.storage import handleTextStorage, handleFileStorage
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, BackgroundTasks
 from src.routes.auth.utils import manager
 from src.lib.logger.index import logger
-from src.utils.chat.tools import get_graph_context
 from src.lib.s3.index import S3Bucket
 from src.models.index import (
     Webs,

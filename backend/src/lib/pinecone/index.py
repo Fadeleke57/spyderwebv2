@@ -1,4 +1,4 @@
-from pinecone import Pinecone
+from pinecone.grpc import PineconeGRPC as Pinecone
 from src.core.config import settings
 from datetime import datetime
 from pytz import UTC
@@ -13,6 +13,14 @@ from src.utils.credits import deduct_credits
 from fastapi import HTTPException
 from src.utils.context import clean_metadata
 from src.lib.youtube.index import YoutubeTranscriptSnippet
+
+SOURCE_TYPE_BATCH_MAP = {
+    "website": 50,
+    "youtube": 20,
+    "document": 50,
+    "note": 50,
+    "voice_note": 50,
+}
 
 
 class PineconeClient:
@@ -32,83 +40,38 @@ class PineconeClient:
     ]:  # for youtube video chunk is an object of "text" and "start_time" and "end_time"
         type = source["type"]
 
-        if type == "website":
+        base_metadata = {
+            "sourceId": source["sourceId"],
+            "webId": source["webId"],
+            "userId": source["userId"],
+            "chunkIndex": index,
+            "chunkCount": number_of_chunks,
+            "type": type,
+            "url": source.get("url", None),
+            "text": chunk.get("text", "") if type == "youtube" else chunk,
+            "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        }
 
-            metadata = {
-                "sourceId": source["sourceId"],
-                "webId": source["webId"],
-                "userId": source["userId"],
-                "websiteTitle": source["name"],
-                "chunkIndex": index,
-                "chunkCount": number_of_chunks,
-                "type": "website",
-                "url": source["url"],
-                "text": chunk,
-                "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-            }
+        metadata = base_metadata.copy()
+        if type == "website":
+            metadata["websiteTitle"] = source["name"]
 
         elif type == "youtube":
-
-            metadata = {
-                "sourceId": source["sourceId"],
-                "webId": source["webId"],
-                "userId": source["userId"],
-                "videoTitle": source["name"],
-                "videoDescription": source["content"],
-                "startTime": chunk["start_time"],
-                "endTime": chunk["end_time"],
-                "chunkIndex": index,
-                "chunkCount": number_of_chunks,
-                "type": "youtube video",
-                "url": source["url"],
-                "text": chunk["text"],
-                "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-            }
+            metadata["videoTitle"] = source["name"]
+            metadata["videoDescription"] = source["content"]
+            metadata["startTime"] = chunk["start_time"]
+            metadata["endTime"] = chunk["end_time"]
 
         elif type == "document":
-
-            metadata = {
-                "documentTitle": source["name"],
-                "webId": source["webId"],
-                "userId": source["userId"],
-                "sourceId": source["sourceId"],
-                "pageNumber": page_number,
-                "chunkIndex": index,
-                "chunkCount": number_of_chunks,
-                "type": "pdf document",
-                "url": source["url"],
-                "text": chunk,
-                "pdfSize": source["size"],
-                "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-            }
+            metadata["documentTitle"] = source["name"]
+            metadata["pageNumber"] = page_number
+            metadata["pdfSize"] = source["size"]
 
         elif type == "note":
-
-            metadata = {
-                "noteTitle": source["name"],
-                "webId": source["webId"],
-                "userId": source["userId"],
-                "sourceId": source["sourceId"],
-                "chunkIndex": index,
-                "chunkCount": number_of_chunks,
-                "type": type,
-                "text": chunk,
-                "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-            }
+            metadata["noteTitle"] = source["name"]
 
         elif type == "voice_note":
-
-            metadata = {
-                "voiceNoteTitle": source["name"],
-                "webId": source["webId"],
-                "userId": source["userId"],
-                "sourceId": source["sourceId"],
-                "chunkIndex": index,
-                "chunkCount": number_of_chunks,
-                "type": type,
-                "text": chunk,
-                "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-            }
+            metadata["voiceNoteTitle"] = source["name"]
 
         return metadata
 
@@ -125,16 +88,8 @@ class PineconeClient:
         Returns:
         - int: The batch size for uploading the given type of data.
         """
-        if type == "website":
-            return 50
-        elif type == "youtube":
-            return 20
-        elif type == "document":
-            return 50
-        elif type == "note":
-            return 50
-        elif type == "voice_note":
-            return 50
+
+        return SOURCE_TYPE_BATCH_MAP.get(type, 50)
 
     def run_semantic_web_search(
         self, query: str, filter: Dict[str, Any] = {}, limit: int = 10
@@ -375,21 +330,6 @@ class PineconeClient:
         if success:
             should_run_autolinker = True
             autolinker.configure(webId, sourceId)
-
-        embeddingStorageResult = handleEmbeddingStorage(
-            sizeBytes=source.get(
-                "size",
-                (
-                    len(source.get("content", "").encode("utf-8"))
-                    if source.get("content")
-                    else 0
-                ),
-            ),
-            userId=userId,
-            operation="$inc",
-        )
-        if not embeddingStorageResult:
-            raise HTTPException(status_code=400, detail="Storage limit exceeded")
 
         num_chunks = len(chunks)
 

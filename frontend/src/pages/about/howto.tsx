@@ -1,5 +1,5 @@
 import PublicLayout from "@/app/PublicLayout";
-import React, { ReactElement } from "react";
+import { ReactElement } from "react";
 
 function Howto() {
   return (

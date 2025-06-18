@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import withAuth from "@/hoc/withAuth";
 import { TrendingSearchCarousel } from "@/components/home/TrendingSearchCarousel";
 import { ProjectsCarousel } from "@/components/home/ProjectsCarousel";
@@ -24,7 +24,7 @@ function Index() {
   const { user } = useUser();
   const { src } = router.query;
 
-  const [MCPModalOpen, setMCPModalOpen] = React.useState(false);
+  const [MCPModalOpen, setMCPModalOpen] = useState(false);
 
   const removeAllQueryParams = useCallback(() => {
     router.replace(router.pathname, undefined, { shallow: true });

@@ -37,6 +37,8 @@ import { extractVideoId, getLinkType } from "@/lib/utils";
 import VoiceRecordModal from "./VoiceRecordModal";
 import { useResourceUsage } from "@/hooks/usage";
 import { useUser } from "@/context/UserContext";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Drawer, DrawerContent } from "../ui/drawer";
 
 interface UploadItem {
   id: number;
@@ -58,14 +60,17 @@ function UploadStatusPopover() {
   const router = useRouter();
   const { webId } = router.query;
   const { user } = useUser();
+  const isMobile = useIsMobile();
 
-  const [_, setView] = useState<"upload" | "status">("upload");
+
+  const [view, setView] = useState<"upload" | "status">("upload");
   const [activeTab, setActiveTab] = useState("all");
   const [linkUserInput, setLinkUserInput] = useState("");
   const [parseObsidianLinks, setParseObsidianLinks] = useState(false);
   const { data: usage, isLoading: isUsageLoading } = useResourceUsage(
     user && user.id
   );
+  const [open, setOpen] = useState(false);
 
   const {
     setSelectedSourceId,
@@ -85,7 +90,7 @@ function UploadStatusPopover() {
   );
   const { refetch: refetchSources } = useFetchSourcesForWeb(webId as string);
   const { refetch: refetchWeb } = useFetchWebById(webId as string);
-
+  console.log("isUploadingSource", isUploadingSource);
   const isLinkUploading = isYoutubeUploading || isWebsiteUploading;
   const handleLinkUpload = async () => {
     if (!linkUserInput.trim()) {
@@ -239,14 +244,14 @@ function UploadStatusPopover() {
       destination: "Files",
     },
     {
-      id: 4, // Changed ID to be unique
+      id: 4,
       name: "Another Asset.zip",
       type: "ZIP",
       status: "failed",
       destination: "Files",
     },
     {
-      id: 5, // Changed ID to be unique
+      id: 5,
       name: "Yet Another.zip",
       type: "ZIP",
       status: "failed",
@@ -550,6 +555,24 @@ function UploadStatusPopover() {
       </div>
     </Tabs>
   );
+
+  if (isMobile) {
+    return (
+      <Drawer
+        onClose={() => {
+          setOpen(false);
+          setIsUploadingSource(false);
+        }}
+        open={isUploadingSource}
+        onOpenChange={setOpen}
+      >
+        <DrawerContent className="h-[85dvh] px-4">
+          {header}
+          {uploadContent}
+        </DrawerContent>
+      </Drawer>
+    );
+  }
 
   return (
     <div
