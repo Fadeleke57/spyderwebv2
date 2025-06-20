@@ -3,7 +3,6 @@ from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from src.routes.auth.utils import manager
 from src.lib.logger.index import logger
-from src.utils.exceptions import checkAuthorizedUser
 from src.models.index import User, UpdateUser, Users, Webs
 from src.constants.credits import PLAN_CREDITS
 from src.utils.storage import STORAGE_LIMITS_MB
@@ -16,7 +15,7 @@ from uuid import uuid4
 from src.lib.logger.index import logger
 from datetime import datetime
 from pytz import UTC
-from typing import Optional, List
+from typing import Optional, List, Union
 
 router = APIRouter()
 s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
@@ -34,7 +33,7 @@ def get_search_history(user: User = Depends(manager.required)):
 
 
 @router.get("/")
-def get_user(userId: str, _: User = Depends(manager.optional)):
+def get_user(userId: str, _=Depends(manager.optional)):
 
     try:
         requestedUser = Users.find_one({"id": userId}, {"_id": 0})
@@ -42,9 +41,7 @@ def get_user(userId: str, _: User = Depends(manager.optional)):
         if not requestedUser:
             return {"result": None}
 
-        publicUser = convert_to_public_user(
-            requestedUser, ["subscription_plan", "websPinned", "websSaved"]
-        )
+        publicUser = convert_to_public_user(requestedUser, ["subscription_plan"])
 
         return {"result": publicUser}
     except Exception as e:
@@ -61,9 +58,7 @@ def get_user_by_username(username: str, _: User = Depends(manager.optional)):
         if not requestedUser or requestedUser.get("disabled", False):
             return {"result": None}
 
-        publicUser = convert_to_public_user(
-            requestedUser, ["subscription_plan", "websPinned", "websSaved"]
-        )
+        publicUser = convert_to_public_user(requestedUser, ["subscription_plan"])
 
         return {"result": publicUser}
     except Exception as e:
@@ -72,7 +67,7 @@ def get_user_by_username(username: str, _: User = Depends(manager.optional)):
 
 
 @router.patch("/edit/")
-def edit_user(updates: UpdateUser, user: User = Depends(manager.required)):
+def edit_user(updates: UpdateUser, user=Depends(manager.required)):
 
     try:
         if updates.username:
@@ -207,10 +202,11 @@ async def get_usage(user: User = Depends(manager.required)):
 
 
 @router.get("/pinned/webs/{user_id}")
-def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.optional)):
-    authorized = checkAuthorizedUser(
-        resourceUserId=user_id, userMakingRequest=userMakingRequest
-    )
+def get_pinned_webs(
+    user_id: str, userMakingRequest: Union[User, None] = Depends(manager.optional)
+):
+    userMakingRequest = User(**userMakingRequest) if userMakingRequest else None
+    authorized = userMakingRequest and userMakingRequest.id == user_id
     profile = Users.find_one({"id": user_id})
 
     query = {"webId": {"$in": profile["websPinned"]}}
@@ -310,7 +306,6 @@ def convert_to_public_user(
         "id": user["id"],
         "username": user["username"],
         "profile_picture_url": user["profile_picture_url"],
-        "email": user["email"],
         "bio": user["bio"],
         "full_name": user["full_name"],
         "created_at": user["created_at"],

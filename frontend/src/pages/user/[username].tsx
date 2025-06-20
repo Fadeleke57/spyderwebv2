@@ -98,7 +98,7 @@ function UserProfile() {
   if (userLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <Loader className="animate-spin" size={32} />
+        <Loader className="animate-spin" size={20} />
       </div>
     );
   }
@@ -422,7 +422,7 @@ function UserProfile() {
               <div className="space-y-4">
                 {websLoading ? (
                   <div className="flex justify-center py-8">
-                    <Loader className="animate-spin" />
+                    <Loader size={20} className="animate-spin" />
                   </div>
                 ) : allWebs.length > 0 ? (
                   allWebs.map((web) => (
@@ -498,7 +498,7 @@ function UserProfile() {
                 <div ref={ref} className="h-10 w-full">
                   {isFetchingNextPage && (
                     <div className="w-full flex justify-center py-4">
-                      <Loader className="animate-spin" />
+                      <Loader size={20} className="animate-spin" />
                     </div>
                   )}
                 </div>

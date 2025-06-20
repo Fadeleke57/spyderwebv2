@@ -390,7 +390,11 @@ class Neo4jDBService:
     def update_source(
         self, source_id: int, properties: Dict[str, Any]
     ) -> Dict[str, Any]:
-        query = "MATCH (n) WHERE n.sourceId = $source_id SET n += $props RETURN n"
+        query = """
+        MATCH (n:source) 
+        WHERE n.sourceId = $source_id SET n += $props 
+        RETURN n {.*, created: toString(n.created), updated: toString(n.updated)}
+        """
         result = self.execute_query(
             query, {"source_id": source_id, "props": properties}
         )

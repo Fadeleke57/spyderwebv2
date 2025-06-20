@@ -85,16 +85,8 @@ function Index() {
     }
   }, []);
 
-  const previousRoute = usePreviousRoute();
-
   const handleBack = () => {
-    const avoidRoutes = ["/onboarding", "/payment/failed", "/payment/success"];
-
-    if (previousRoute && !avoidRoutes.includes(previousRoute)) {
-      router.back();
-    } else {
-      router.push("/explore");
-    }
+    router.back();
   };
 
   const title = webLoading ? "Loading..." : (web && web.name) || "Web Details";
@@ -224,7 +216,7 @@ function Index() {
               sideOffset={6}
             >
               <div
-                className="border hidden dark:bg-violet-400/50 text-sm text-foreground dark:border-violet-200 p-2 py-1 rounded-b-lg z-10 md:flex items-center cursor-pointer font-semibold hover:bg-violet-50 dark:hover:bg-violet-400/60 transition-colors -mt-10"
+                className="hidden text-sm border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 px-2 py-1 rounded-b-lg z-10 md:flex items-center cursor-pointer font-semibold transition-colors -mt-10"
                 onClick={() => {
                   const textToCopy = `Refer to this web: @Web-${web.webId}\n`;
                   navigator.clipboard.writeText(textToCopy).then(() => {
@@ -236,13 +228,13 @@ function Index() {
                 {web && `@Web-${web.webId}`}{" "}
                 {copied ? (
                   <Check
-                    strokeWidth={3}
+                    strokeWidth={2}
                     size={16}
                     className="ml-2 text-foreground transition-transform"
                   />
                 ) : (
                   <CopyIcon
-                    strokeWidth={3}
+                    strokeWidth={2}
                     size={16}
                     className="ml-2 text-foreground transition-transform"
                   />
@@ -355,7 +347,7 @@ function Index() {
         </header>
         <div className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3 overflow-hidden scrollbar-none">
           {webLoading ? (
-            <div className="flex flex-col gap-4 justify-start">
+            <div className="hidden lg:flex flex-col gap-4 justify-start">
               <SkeletonUserCard />
               <SkeletonTextCard />
             </div>

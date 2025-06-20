@@ -272,6 +272,7 @@ def get_current_user(user=Depends(manager.optional)):
             user,
             [
                 "subscription_plan",
+                "email",
                 "websPinned",
                 "websSaved",
                 "websHidden",

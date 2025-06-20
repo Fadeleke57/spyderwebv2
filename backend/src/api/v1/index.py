@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from src.routes.auth.utils import manager
 from src.models.index import User, Webs
-from typing import Optional, Literal, List
+from typing import Optional, Literal
 from fastapi import Query
 from src.lib.logger.index import logger
 from src.utils.context import clean_metadata
@@ -53,7 +53,9 @@ def search_webs(
                 },
             ]
         }
-    results = pineconeClient.run_semantic_web_search(query, filter=filter, limit=5)
+    results = pineconeClient.run_semantic_search(
+        query, namespace="webs", filter=filter, limit=5
+    )
     all_metadata = []
     for result in results:
         all_metadata.append(clean_metadata(result))
@@ -101,8 +103,8 @@ def search_memories(
         filter["sourceId"] = {"$eq": sourceId}
 
     try:
-        results = pineconeClient.run_semantic_source_search(
-            query, filter=filter, limit=5
+        results = pineconeClient.run_semantic_search(
+            query, namespace="sources", filter=filter, limit=5
         )
         return JSONResponse(content={"result": results})
     except Exception as e:

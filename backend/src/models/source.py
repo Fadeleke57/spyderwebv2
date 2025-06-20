@@ -20,8 +20,9 @@ class Source(BaseModel):
     webId: str
     userId: str
     name: Optional[str]
-    url: Optional[str]
-    content: Optional[str]
+    description: Optional[str] = None  # youtube specific
+    url: Optional[str] = None
+    content: Optional[str] = ""
     type: str
     size: int
     created: datetime
@@ -36,7 +37,7 @@ class Source(BaseModel):
 class CreateSource(BaseModel):
     webId: str
     name: str
-    content: str
+    content: str = ""
 
 
 class UpdateSource(BaseModel):

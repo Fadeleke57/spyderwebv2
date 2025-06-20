@@ -34,7 +34,7 @@ from src.lib.pinecone.index import client as pineconeClient
 from src.service.web import service as webService
 from src.service.source import service as sourceService
 from src.routes.chat.index import configure_chat
-from src.utils.storage import handleFileStorage
+from src.utils.storage import track_file_storage
 from src.routes.user.index import convert_to_public_user
 
 router = APIRouter()
@@ -289,7 +289,7 @@ async def upload_file(
                 with open(temp_path, "wb") as buffer:
                     buffer.write(contents)
 
-                fileStorageResult = handleFileStorage(
+                fileStorageResult = track_file_storage(
                     fileSizeBytes=len(contents), userId=user["id"], operation="$inc"
                 )
 
@@ -374,7 +374,7 @@ def delete_image(web_id: str, image_name: str, user=Depends(manager.required)):
 
         s3_session_client.delete_object(Bucket=s3_bucket.bucket_name, Key=filepath)
 
-        fileStorageResult = handleFileStorage(
+        track_file_storage(
             fileSizeBytes=file_size_bytes, userId=user["id"], operation="$dec"
         )
 
@@ -401,7 +401,7 @@ def get_web_images(web_id: str):
         HTTPException: If there is an error while generating URLs, raises a 500 error.
     """
     try:
-        web: Web = Webs.find_one({"webId": web_id})
+        web = Webs.find_one({"webId": web_id})
         if not web:
             raise HTTPException(status_code=404, detail=f"Web not found!")
 
@@ -438,10 +438,12 @@ def delete_web(
             webService.delete_web_embeddings, webId=webId, userId=user["id"]
         )
 
-        # === Paths to clean up in S3
+        # === paths to clean up in S3
         paths = [
             f"files/{user['id']}/{webId}/images",
             f"files/{user['id']}/{webId}/document",
+            f"files/{user['id']}/{webId}/voice_note",
+            f"files/{user['id']}/{webId}/audio",
         ]
 
         delete_keys = []
@@ -465,7 +467,7 @@ def delete_web(
             logger.info(f"Deleted {len(delete_keys)} files from S3 for web {webId}")
 
             # === Deduct combined storage from user's account
-            handleFileStorage(
+            track_file_storage(
                 fileSizeBytes=total_bytes_to_decrement,
                 userId=user["id"],
                 operation="$dec",
@@ -790,8 +792,9 @@ def search_webs(
             "filters": filter,
         }
         Searches.insert_one(search_info)
-
-        results = pineconeClient.run_semantic_web_search(query, filter=filter, limit=20)
+        results = pineconeClient.run_semantic_search(
+            query, namespace="webs", filter=filter, limit=20
+        )
         return {"result": results}
 
     except Exception as e:

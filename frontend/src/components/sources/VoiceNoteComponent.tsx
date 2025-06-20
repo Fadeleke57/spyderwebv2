@@ -1,15 +1,15 @@
-import { Source } from "@/types/source";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Slider } from "../ui/slider";
 import { Card, CardContent } from "../ui/card";
-import { Pause, Play, Volume2, VolumeX } from "lucide-react";
+import { Loader, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "../ui/scroll-area";
+import { useSourceStore } from "@/store/sourceStore";
+import { useFetchSource } from "@/hooks/sources";
 
-export const VoiceNoteComponent: React.FC<{ source: Source | null }> = ({
-  source,
-}) => {
+export const VoiceNoteComponent = () => {
+  const { selectedSourceId, source } = useSourceStore();
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -19,36 +19,29 @@ export const VoiceNoteComponent: React.FC<{ source: Source | null }> = ({
   const audioRef = useRef<HTMLAudioElement>(null);
   const intervalRef = useRef<NodeJS.Timeout>();
 
-  // Handle audio loading
+  const { data: sourceData, isLoading: sourceLoading } =
+    useFetchSource(selectedSourceId);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (sourceData) {
+      setAudioUrl(sourceData.file_url);
+    }
+  }, [sourceData]);
+
+  // handle audio loading
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     const handleCanPlay = () => {
       setIsLoaded(true);
-      console.log("audio duration", audio.duration);
       if (isFinite(audio.duration)) {
         setDuration(audio.duration);
       } else {
-        setDuration(0); // Set a default value if duration is not available
+        setDuration(0); // set a default value if duration is not available
       }
     };
-
-    console.log("Audio Metadata:", {
-      duration: audio.duration,
-      readyState: audio.readyState,
-      networkState: audio.networkState,
-      src: audio.src,
-      currentTime: audio.currentTime,
-      paused: audio.paused,
-      defaultPlaybackRate: audio.defaultPlaybackRate,
-      playbackRate: audio.playbackRate,
-      autoplay: audio.autoplay,
-      ended: audio.ended,
-      loop: audio.loop,
-      volume: audio.volume,
-      muted: audio.muted,
-    });
 
     const handleDurationChange = () => {
       if (isFinite(audio.duration)) {
@@ -60,7 +53,7 @@ export const VoiceNoteComponent: React.FC<{ source: Source | null }> = ({
     audio.addEventListener("durationchange", handleDurationChange);
     audio.addEventListener("loadedmetadata", handleDurationChange);
 
-    // Force a load to try to get duration
+    // force a load to try to get duration
     if (audio.readyState >= 2) {
       handleCanPlay();
     } else {
@@ -72,9 +65,9 @@ export const VoiceNoteComponent: React.FC<{ source: Source | null }> = ({
       audio.removeEventListener("durationchange", handleDurationChange);
       audio.removeEventListener("loadedmetadata", handleDurationChange);
     };
-  }, [source?.url]);
+  }, [audioUrl]);
 
-  // Set up a more frequent progress updater than timeupdate event
+  // set up a more frequent progress updater than timeupdate event
   useEffect(() => {
     if (isPlaying) {
       intervalRef.current = setInterval(() => {
@@ -117,7 +110,7 @@ export const VoiceNoteComponent: React.FC<{ source: Source | null }> = ({
   const handleProgressChange = (newValue: number[]) => {
     const newTime = newValue[0];
 
-    // Validate to ensure we have a finite number
+    // validate to ensure we have a finite number
     if (
       isFinite(newTime) &&
       newTime >= 0 &&
@@ -156,10 +149,10 @@ export const VoiceNoteComponent: React.FC<{ source: Source | null }> = ({
   return (
     <Card className="w-full min-h-[79.5dvh]">
       <CardContent className="p-4 h-full">
-        {source?.url && (
+        {audioUrl && (
           <audio
             ref={audioRef}
-            src={source?.url || ""}
+            src={audioUrl}
             onEnded={handleEnded}
             preload="metadata"
           />
@@ -170,9 +163,11 @@ export const VoiceNoteComponent: React.FC<{ source: Source | null }> = ({
             onClick={togglePlayPause}
             disabled={!isLoaded}
             size="icon"
-            className="flex items-center justify-center rounded-full h-8 w-8 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center"
+            className="flex borderwebda items-center justify-center rounded-full h-8 w-8 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center"
           >
-            {isPlaying ? (
+            {sourceLoading ? (
+              <Loader className="w-4 h-4 text-violet-500" size={16} />
+            ) : isPlaying ? (
               <Pause className="w-4 h-4 text-violet-500" size={16} />
             ) : (
               <Play className="w-4 h-4 text-violet-500" size={16} />

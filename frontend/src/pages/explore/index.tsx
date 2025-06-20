@@ -90,7 +90,7 @@ function Index() {
           <div className="w-full flex flex-col lg:gap-1">
             {error && <ExplorePageErrorCard />}
             {isLoading || isSearchLoading ? (
-              <Loader className="animate-spin mx-auto my-16" />
+              <Loader size={20} className="animate-spin mx-auto my-16" />
             ) : displayWebs.length > 0 ? (
               displayWebs.map((web: Web) => (
                 <div key={web.webId} className="cursor-pointer">
@@ -105,10 +105,13 @@ function Index() {
               </p>
             )}
 
-            <div ref={ref} className="h-10 w-full">
+            <div ref={ref} className="h-10 pt-4 w-full">
               {isFetchingNextPage && (
                 <div className="w-full flex flex-col items-center justify-center gap-3">
-                  <Loader className="animate-spin" />
+                  <Loader
+                    size={20}
+                    className="animate-spin"
+                  />
                 </div>
               )}
             </div>

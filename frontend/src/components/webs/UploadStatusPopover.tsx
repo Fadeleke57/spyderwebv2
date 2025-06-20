@@ -70,7 +70,7 @@ function UploadStatusPopover() {
   const { data: usage, isLoading: isUsageLoading } = useResourceUsage(
     user && user.id
   );
-  const [open, setOpen] = useState(false);
+  const [_, setOpen] = useState(false);
 
   const {
     setSelectedSourceId,
@@ -360,7 +360,6 @@ function UploadStatusPopover() {
           }}
           accept={{
             pdf: [".pdf"],
-            pptx: [".pptx"],
             markdown: [".md"],
             txt: [".txt", ".md"],
           }}

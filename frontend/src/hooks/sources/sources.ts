@@ -138,10 +138,9 @@ export const useFetchSource = (sourceId: string, contextId?: string) => {
       const response = await api.get(`/sources/${sourceId}`);
       return response.data;
     },
-    staleTime: 0, // Change this to 0 to always refetch
+    staleTime: 60000, //1 minute stale time
     retry: 2,
     enabled: !!sourceId,
-    refetchOnMount: true, // Add this to ensure refetch on mount
   });
 };
 
@@ -199,46 +198,6 @@ export const useUploadImageToSource = () => {
       queryClient.invalidateQueries({ queryKey: ["sources"] });
       queryClient.invalidateQueries({
         queryKey: ["source", variables.sourceId],
-      });
-    },
-  });
-};
-
-export const useUploadVoiceNote = (webId: string) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (blob: Blob) => {
-      const formData = new FormData();
-      formData.append(
-        "file",
-        new File([blob], "voice-note.webm", { type: "audio/webm" })
-      );
-
-      const response = await api.post(
-        `/sources/upload/voice-note/${webId}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      return response.data.result;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["sources", webId] });
-      // Invalidate this specific source if it exists in cache
-      if (data && data.id) {
-        queryClient.invalidateQueries({ queryKey: ["source", data.id] });
-      }
-    },
-    onError: (error: any) => {
-      console.error("Voice note upload failed:", error);
-      toast({
-        variant: "destructive",
-        title: "Error uploading voice note",
-        description: "Please try again",
       });
     },
   });

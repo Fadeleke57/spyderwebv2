@@ -1,23 +1,15 @@
 import math
+from typing_extensions import deprecated
 from src.models.index import Users
 from src.lib.logger.index import logger
 from fastapi import HTTPException
 from typing import Literal
 from datetime import datetime
 from pytz import UTC
-
-STORAGE_LIMITS_MB = {  # for frontend
-    "free": 2048,
-    "basic": 51200,
-    "pro": 204800,
-}
-
-STORAGE_LIMITS_BYTES = {
-    tier: mb * 1024 * 1024 for tier, mb in STORAGE_LIMITS_MB.items()
-}
+from src.constants.storage import STORAGE_LIMITS_MB, STORAGE_LIMITS_BYTES
 
 
-def handleTextStorage(
+def track_text_storage(
     extractedText: str, userId: str, operation: Literal["$inc", "$dec"]
 ) -> bool:
     """
@@ -36,8 +28,6 @@ def handleTextStorage(
         HTTPException: If the user is not found or the storage limit is exceeded.
     """
     try:
-        if operation not in ("$inc", "$dec"):
-            raise ValueError("Invalid operation. Must be '$inc' or '$dec'.")
 
         size_of_text = len(extractedText.encode("utf-8"))
         user = Users.find_one({"id": userId})
@@ -77,7 +67,7 @@ def handleTextStorage(
         return False
 
 
-def handleFileStorage(
+def track_file_storage(
     fileSizeBytes: int, userId: str, operation: Literal["$inc", "$dec"]
 ) -> bool:
     """
@@ -95,9 +85,6 @@ def handleFileStorage(
         HTTPException: If the user is not found, the storage limit is exceeded, or an invalid operation is provided.
     """
     try:
-        if operation not in ("$inc", "$dec"):
-            raise ValueError("Invalid operation. Must be '$inc' or '$dec'.")
-
         user = Users.find_one({"id": userId})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
@@ -134,7 +121,7 @@ def handleFileStorage(
         return False
 
 
-def handleEmbeddingStorage(
+def track_embedding_storage(
     sizeBytes: int,
     userId: str,
     operation: Literal["$inc", "$dec"],
@@ -142,7 +129,7 @@ def handleEmbeddingStorage(
     vectorDim: int = 1024,
 ) -> bool:
     """
-    Updates a user's storage usage based on the extracted text and the user's current plan.
+    Adjusts the user's storage usage based on the extracted text and the user's current plan.
 
     Args:
         extractedText (str): The extracted text whose storage impact is being calculated.
@@ -158,9 +145,6 @@ def handleEmbeddingStorage(
         HTTPException: If the user is not found, the storage limit is exceeded, or an invalid operation is provided.
     """
     try:
-        if operation not in ("$inc", "$dec"):
-            raise ValueError("Invalid operation. Must be '$inc' or '$dec'.")
-
         user = Users.find_one({"id": userId})
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
@@ -196,7 +180,7 @@ def handleEmbeddingStorage(
             },
         )
         logger.info(
-            f"Updated file storage for user {userId}: calculated size of embeddings- {math.ceil(vectorStorageBytes / 1024)} KB -> new storage used- {(storageUsed + vectorStorageBytes) // 1024 if operation == '$inc' else (storageUsed - vectorStorageBytes) // 1024} KB"
+            f"Updated embedding storage for user {userId}: calculated size of embeddings- {math.ceil(vectorStorageBytes / 1024)} KB -> new storage used- {(storageUsed + vectorStorageBytes) // 1024 if operation == '$inc' else (storageUsed - vectorStorageBytes) // 1024} KB"
         )
         return True
 
