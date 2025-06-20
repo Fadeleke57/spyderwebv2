@@ -77,7 +77,7 @@ function WebPlayground() {
       if (files.length > 1) {
         await uploadFile({
           files: files,
-          parseObsidianLinks: false,
+          parseObsidianLinks: true,
         });
         setIsUploadingSource(true);
         toast({
@@ -182,7 +182,8 @@ function WebPlayground() {
             variant="outline"
             className={`border dark:border-violet-400/70`}
           >
-            {(web?.sourceIds && web.sourceIds.length) || 0} sources added
+            {(web?.sourceIds && web.sourceIds.length) || 0} memor
+            {web?.sourceIds?.length === 1 ? "y" : "ies"} added
           </Badge>
         </div>
 
@@ -240,17 +241,17 @@ function WebPlayground() {
             <div
               className={`absolute ${isExpanded ? "right-6" : "right-3"} top-12`}
             >
-              <SimpleTooltip content="Add source" side="left">
+              <SimpleTooltip content="Add memory" side="left">
                 <Button
                   size={"icon"}
                   onClick={() => {
                     handleOrientationChange(!isUploadingSource);
                     setIsUploadingSource(!isUploadingSource);
                   }}
-                  className="dark:bg-violet-400/80 dark:hover:bg-violet-400 rounded-full p-1 h-fit w-fit"
+                  className="dark:bg-violet-400/40 dark:border dark:border-foreground dark:hover:bg-violet-400/50 rounded-full p-1 h-fit w-fit"
                 >
                   <Plus
-                    strokeWidth={3}
+                    strokeWidth={2}
                     size={16}
                     className={`rotate-${addIconOrientation} transition-transform ease-in-out duration-300`}
                   />
@@ -263,21 +264,21 @@ function WebPlayground() {
           web.sourceIds.length === 0 &&
           !isFileUploading && (
             <div className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/4 flex flex-col items-center gap-1 text-center min-w-[300px]">
-              <h3 className="text-2xl font-bold tracking-tight">
-                Add your first source
+              <h3 className="text-lg font-bold tracking-tight">
+                Add your first memory
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm max-w-xs text-muted-foreground">
                 Drag and drop or click below to start collecting information to
                 add your web.
               </p>
               <div className="flex flex-wrap gap-2 whitespace-nowrap mt-2 justify-center">
                 <Button
                   size={"icon"}
-                  className="dark:bg-muted rounded-full py-2 px-3 h-fit w-fit"
+                  className="dark:border dark:border-foreground dark:hover:bg-violet-400/60 dark:bg-violet-400/40 rounded-full py-1 px-3 h-fit w-fit"
                   onClick={() => setIsUploadingSource(true)}
                 >
                   <Plus
-                    strokeWidth={3}
+                    strokeWidth={2}
                     size={16}
                     onClick={() => {
                       handleOrientationChange(!isUploadingSource);

@@ -144,15 +144,9 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
           </>
         );
       case "note":
-        return (
-          <NoteComponent
-            webId={webId as string}
-            source={source}
-            isOwner={isOwner}
-          />
-        );
+        return <NoteComponent />;
       case "voice_note":
-        return <VoiceNoteComponent source={source} />;
+        return <VoiceNoteComponent />;
     }
   };
 
@@ -224,12 +218,15 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                       target="_blank"
                       className="hover:underline hover:text-violet-400 inline text-lg flex flex-row items-center gap-2"
                     >
-                      {source?.type === "website" ||
-                      source?.type === "youtube" ? (
-                        <FaviconDisplay url={source?.url || ""} />
-                      ) : source?.type ? (
-                        getTypeIcon(source?.type)
-                      ) : null}
+                      <div className="hidden md:block">
+                        {source?.type === "website" ||
+                        source?.type === "youtube" ? (
+                          <FaviconDisplay url={source?.url || ""} />
+                        ) : source?.type ? (
+                          getTypeIcon(source?.type)
+                        ) : null}
+                      </div>
+
                       <span className="flex flex-row items-center gap-2">
                         {sourceTitle || "Loading..."}
                       </span>
@@ -323,7 +320,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                     side="top"
                   >
                     <div
-                      className="border hidden md:absolute bottom-0 right-0 dark:bg-violet-400/50 text-foreground dark:border-violet-200 p-2 rounded-tl-lg rounded-tr-lg z-10 flex items-center cursor-pointer font-semibold hover:bg-violet-50 dark:hover:bg-violet-400/60 transition-colors"
+                      className="border hidden md:flex items-center dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 px-2 py-1 rounded-t-lg z-10 md:flex items-center cursor-pointer font-semibold transition-colors text-foreground "
                       onClick={() => {
                         if (source) {
                           const textToCopy = `Refer to this memory: @Memory-${source.sourceId}\n`;

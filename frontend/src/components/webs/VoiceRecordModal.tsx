@@ -10,7 +10,7 @@ import { Button } from "../ui/button";
 import { AudioLines, Download, Loader, Mic, X } from "lucide-react";
 import { toast } from "../ui/use-toast";
 import { useRouter } from "next/router";
-import { useFetchSourcesForWeb, useUploadVoiceNote } from "@/hooks/sources";
+import { useFetchSourcesForWeb, useFileUpload } from "@/hooks/sources";
 import { useFetchWebById } from "@/hooks/webs";
 import SimpleTooltip from "../utility/SimpleTooltip";
 
@@ -33,7 +33,8 @@ function VoiceRecordModal() {
       >
         <DialogHeader className="absolute top-4 right-4 z-10">
           <Button
-            className="rounded-full h-12 w-12"
+            variant={"ghost"}
+            className="rounded-full h-12 w-12 transition-all duration-200 ease-in-out"
             onClick={() => setOpen(false)}
           >
             <X size={16}></X>
@@ -260,8 +261,8 @@ function UploadVoiceNote({ setOpen }: { setOpen: (open: boolean) => void }) {
     useSourceStore();
   const router = useRouter();
   const { webId } = router.query;
-  const { mutateAsync: uploadVoiceNote, isPending: isVoiceNoteUploading } =
-    useUploadVoiceNote(webId as string);
+  const { mutateAsync: uploadFile, isPending: isVoiceNoteUploading } =
+    useFileUpload(webId as string);
   const { refetch: refetchSources } = useFetchSourcesForWeb(webId as string);
   const { refetch: refetchWeb } = useFetchWebById(webId as string);
   const [isRecording, setIsRecording] = useState(false);
@@ -274,7 +275,23 @@ function UploadVoiceNote({ setOpen }: { setOpen: (open: boolean) => void }) {
 
   const handleVoiceNoteUpload = async (blob: Blob) => {
     try {
-      const sourceId = await uploadVoiceNote(blob);
+      const formData = new FormData();
+      formData.append("file", blob);
+
+      // create a file from the blob
+      const file = new File([blob], "voice-note.webm", {
+        type: "audio/webm",
+      });
+
+      // dataTransfer to simulate a FileList
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      const files: FileList = dataTransfer.files;
+
+      const { firstSourceId: sourceId } = await uploadFile({
+        files,
+        parseObsidianLinks: false,
+      });
       toast({
         title: "Voice note uploaded",
         description: "Voice note uploaded successfully",

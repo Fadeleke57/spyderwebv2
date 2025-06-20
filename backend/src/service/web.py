@@ -1,17 +1,17 @@
-from src.models.index import Web, Embeddings
+from src.models.index import Embeddings
 from src.lib.pinecone.index import client as pineconeClient
 from src.lib.logger.index import logger
 from src.db.neo4j import client as neo4jClient
 from src.utils.storage import (
-    handleEmbeddingStorage,
-    handleFileStorage,
-    handleTextStorage,
+    track_embedding_storage,
+    track_file_storage,
+    track_text_storage,
 )
 
 
 class WebService:
     def __init__(self):
-        pass
+        logger.info("WEB SERVICE INITIALIZED!")
 
     def emebd_and_upsert_web(self, web_payload: dict) -> bool:
         """
@@ -31,10 +31,8 @@ class WebService:
         """
 
         try:
-
-            vectors = pineconeClient.generate_web_embeddings(
-                web_payload["name"], web_payload["description"]
-            )
+            web_content = web_payload["name"] + " " + web_payload["description"]
+            vectors = pineconeClient.embed(web_content)
             pincone_insert = (
                 web_payload.copy()
             )  # create copy so we don't modify the original
@@ -83,9 +81,10 @@ class WebService:
             updatePayload["updated"] = str(updatePayload["updated"])
 
             if vector_updates:
-                vectors = pineconeClient.generate_web_embeddings(
-                    vector_updates["name"], vector_updates["description"]
+                web_content = (
+                    vector_updates["name"] + " " + vector_updates["description"]
                 )
+                vectors = pineconeClient.embed(web_content)
                 pineconeClient.index.update(
                     id=web_id,
                     values=vectors,
@@ -128,7 +127,7 @@ class WebService:
 
             # Rollback file storage
             if total_file_bytes > 0:
-                handleFileStorage(
+                track_file_storage(
                     fileSizeBytes=total_file_bytes,
                     userId=userId,
                     operation="$dec",
@@ -136,7 +135,7 @@ class WebService:
 
             # Rollback text storage
             if total_text_content:
-                handleTextStorage(
+                track_text_storage(
                     extractedText=total_text_content,
                     userId=userId,
                     operation="$dec",
@@ -179,7 +178,7 @@ class WebService:
             if sourceIdsToDelete:
                 pineconeClient.index.delete(ids=sourceIdsToDelete, namespace="sources")
 
-                handleEmbeddingStorage(
+                track_embedding_storage(
                     sizeBytes=totalBytesDeleted,
                     userId=userId,
                     operation="$dec",

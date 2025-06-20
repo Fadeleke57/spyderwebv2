@@ -174,7 +174,7 @@ export default function Charlotte({
         {/* left eye */}
         {!eyesBlinked && (
           <>
-            <circle cx={leftEye.x} cy={leftEye.y} r={9} fill="white" />
+            <circle cx={leftEye.x} cy={leftEye.y} r={9} className="fill-foreground" />
             {/*pupils
               <circle
                 cx={leftEye.pupilX}
@@ -189,7 +189,7 @@ export default function Charlotte({
         {/* right eye */}
         {!eyesBlinked && (
           <>
-            <circle cx={rightEye.x} cy={rightEye.y} r={9} fill="white" />
+            <circle cx={rightEye.x} cy={rightEye.y} r={9} className="fill-foreground" />
             {/*pupils
              <circle
                 cx={rightEye.pupilX}
@@ -217,8 +217,12 @@ export default function Charlotte({
           className="overflow-visible"
         >
           {/* simple circle body */}
-          <circle cx="0" cy="0" r="35" fill="#8B75CF" />
-
+          <circle
+            cx="0"
+            cy="0"
+            r="35"
+            fill="#715FA2"
+          />
           {/* eyes */}
           {renderEyes()}
         </svg>

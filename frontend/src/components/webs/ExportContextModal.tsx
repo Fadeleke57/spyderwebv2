@@ -262,7 +262,7 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
           disabled={
             isExportPending || exportConfig.selectedSources.length === 0
           }
-          className="flex hidden md:block items-center border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40"
+          className="flex hidden md:flex items-center border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40"
         >
           {isExportPending && isExportError
             ? "Exporting..."

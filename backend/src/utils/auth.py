@@ -201,6 +201,8 @@ def generate_username():
     number = "".join(random.choices(string.digits, k=4))
 
     username = f"{adjective}{noun}{number}"
+    if Users.find_one({"username": username}):
+        return generate_username()
     return username
 
 

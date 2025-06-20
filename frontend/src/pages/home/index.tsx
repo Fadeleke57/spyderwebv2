@@ -57,7 +57,7 @@ function Index() {
       </Head>
       <User
         onClick={() => router.push(`/user/${user?.username}`)}
-        className="absolute top-6 right-4 lg:top-8 lg:right-8 cursor-pointer hover:opacity-50"
+        className={`absolute top-24 right-4 lg:top-8 lg:right-8 cursor-pointer hover:opacity-50`}
       />
 
       <div className="flex flex-col lg:flex-row gap-2 w-full items-center justify-center">
