@@ -127,7 +127,7 @@ function WebPlayground() {
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
-    localStorage.setItem("expanded", String(!isExpanded));
+    localStorage.setItem(`expanded-${web?.webId}`, String(!isExpanded));
   };
 
   useEffect(() => {
@@ -135,10 +135,14 @@ function WebPlayground() {
       setFetchedSources(sources);
     }
 
-    if (localStorage.getItem("expanded") === "true") {
+    if (
+      web &&
+      web.webId &&
+      localStorage.getItem(`expanded-${web.webId}`) === "true"
+    ) {
       setIsExpanded(true);
     }
-  }, [sources]);
+  }, [sources, web]);
 
   const toggleSearchDialogOpen = React.useCallback(() => {
     setSearchDialogOpen((prev: boolean) => !prev);
