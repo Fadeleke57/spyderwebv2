@@ -4,6 +4,7 @@ from datetime import datetime
 from uuid import uuid4
 from src.lib.logger.index import logger
 from src.db.mongodb import get_collection
+from pytz import UTC
 
 Webs = get_collection("webs")
 
@@ -63,8 +64,8 @@ def create_web(webToCreate: CreateWeb, userId: str):
             sourceIds=webToCreate.sourceIds,
             imageKeys=webToCreate.imageKeys,
             enableAIConnections=webToCreate.enableAIConnections,
-            created=datetime.now(),
-            updated=datetime.now(),
+            created=datetime.now(UTC),
+            updated=datetime.now(UTC),
             showcase=webToCreate.showcase,
             likes=[],
             iterations=[],

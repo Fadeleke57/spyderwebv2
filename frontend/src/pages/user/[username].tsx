@@ -272,7 +272,7 @@ function UserProfile() {
               >
                 <GitFork size={16} className="mr-2 hidden md:inline" />
                 Webs{" "}
-                <span className="ml-2 bg-neon text-black rounded-full px-2 py-0.5 text-xs">
+                <span className="ml-2 bg-foreground text-background rounded-full px-2 py-0.5 text-xs">
                   {websLoading ? "..." : webCount}
                 </span>
               </TabsTrigger>

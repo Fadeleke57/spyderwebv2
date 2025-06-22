@@ -19,7 +19,7 @@ from typing import Optional
 from fastapi import BackgroundTasks
 from src.service.source import service as sourceService
 from src.lib.stytch.index import (
-    client as stytchClient,
+    client as stytch_client,
     StytchError,
 )
 from src.routes.user.index import convert_to_public_user
@@ -118,7 +118,7 @@ def authenticate(
         if user and user.get("id"):
             try:
                 logger.info(f"Updating user with external_id: {user['id']}")
-                stytchClient.users.update(
+                stytch_client.users.update(
                     user_id=userId,
                     external_id=user["id"],
                 )
@@ -343,7 +343,7 @@ def logout(request: Request):
     if not session_token:
         raise HTTPException(status_code=401, detail="Unauthorized")
     try:
-        resp = stytchClient.sessions.revoke(session_token=session_token)
+        resp = stytch_client.sessions.revoke(session_token=session_token)
         logger.info(f"Logout response: {resp}")
     except StytchError as e:
         raise HTTPException(status_code=400, detail=str(e))
