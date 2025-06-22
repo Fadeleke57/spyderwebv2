@@ -114,7 +114,7 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Error exporting context"
+        title: "Error exporting context",
       });
     }
   };
@@ -161,26 +161,41 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
   const content = (
     <ResponsiveDiv>
       <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-0 justify-between p-2">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between md:justify-start space-x-4">
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSelectAll}
+              className="text-xs lg:text-sm"
+            >
+              Select All
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDeselectAll}
+              className="text-xs lg:text-sm"
+            >
+              Deselect All
+            </Button>
+          </>
+
           <Button
-            variant="outline"
             size="sm"
-            onClick={handleSelectAll}
-            className="text-xs lg:text-sm"
+            onClick={handleExport}
+            disabled={
+              isExportPending || exportConfig.selectedSources.length === 0
+            }
+            className="flex items-center md:hidden text-xs border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40"
           >
-            Select All
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleDeselectAll}
-            className="text-xs lg:text-sm"
-          >
-            Deselect All
+            {isExportPending && isExportError
+              ? "Exporting..."
+              : `${exportConfig.asMarkdown ? "Download Markdown" : "Copy to Clipboard"}`}
           </Button>
         </div>
 
-        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-2">
+        <div className="flex flex-row w-full lg:w-auto justify-between lg:justify-start items-start lg:items-center gap-2">
           <Label htmlFor="connections" className="text-sm">
             Download as .md
           </Label>
@@ -247,7 +262,7 @@ function ExportContextModal({ open, setOpen, sources }: Props) {
           disabled={
             isExportPending || exportConfig.selectedSources.length === 0
           }
-          className="flex items-center border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40"
+          className="flex hidden md:flex items-center border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40"
         >
           {isExportPending && isExportError
             ? "Exporting..."

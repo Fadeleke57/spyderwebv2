@@ -1,288 +1,62 @@
-import os
 import re
-import pymupdf4llm
-from typing import List
 from uuid import uuid4
 from datetime import datetime
+from typing_extensions import deprecated
+from typing import List, Any, Optional
 from fastapi import HTTPException
-from src.models.index import Source, create_process, update_process, Webs, Embeddings
-from src.lib.youtube.index import client as youtubeClient
-from src.utils.storage import handleEmbeddingStorage
+from src.models.index import Source, Webs
+from src.service.chunking import service as chunking_service
+from src.service.embedding import service as embedding_service
+from src.service.extraction import service as extraction_service
 from src.db.neo4j import client as neo4jClient
-from src.lib.pinecone.index import client as pineconeClient
 from src.lib.logger.index import logger
 from fastapi import BackgroundTasks
-import uuid
-import time
 from pytz import UTC
+from src.constants.source import DOCUMENT_TYPES
 
 
 class SourceService:
     def __init__(self):
-        pass
+        logger.info("SOURCE SERVICE INITIALIZED!")
 
-    def addLinkMetaData(self, sourceId: str, metadata: dict):
+    def create_source(self, **kwargs):
+        sourceId = str(uuid4())
+        return Source(sourceId=sourceId, **kwargs)
+
+    def process_source(
+        self, source: Source, content_to_embed: Any, file_path: Optional[str] = None
+    ):
         """
-        Updates source metadata in the Neo4j database.
+        Processes a source document and embeds it into Pinecone.
 
         Args:
-            sourceId (str): The ID of the source to update.
-            metadata (dict): The metadata to update.
-
-        Returns:
-            bool: Whether the update was successful.
-        """
-        try:
-            neo4jClient.update_source(sourceId, metadata)
-            logger.info(f"Updated source {sourceId} metadata: {metadata}")
-            return True
-        except Exception as e:
-            logger.error(f"Error updating source metadata: {e}")
-            return False
-
-    def embed_and_upsert_website(self, source: Source, md: str):
-        """
-        Embed a website's markdown content using Pinecone and upsert it directly.
-
-        Args:
-            source (Source): The source document
-            md (str): The markdown content of the website
+            source (Source): The source document to process.
 
         Returns:
             None
         """
-        try:
-
-            chunks = pineconeClient.chunk_clean_text(md)
-
-            results = pineconeClient.embed_and_upsert_to_pinecone(
-                source=source, chunks=chunks
-            )
-
-            logger.info(f"Pinecone results: {results}")
-
-        except Exception as e:
-            logger.error(f"Error processing Pinecone embeddings: {e}")
-            raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
-
-    def embed_and_upsert_youtube(self, source: Source, transcripts: List[str]):
-        """
-        Embed a YouTube video's transcripts using Pinecone and upsert them directly.
-
-        Args:
-            source (Source): The source document
-            transcripts (List[str]): The transcripts of the YouTube video
-
-        Returns:
-            None
-        """
-        if not source or not transcripts:
-            raise HTTPException(
-                status_code=404, detail="Source item not created or found"
-            )
-
-        try:
-            chunks = pineconeClient.chunk_youtube_transcript(
-                transcript_data=transcripts
-            )
-            results = pineconeClient.embed_and_upsert_to_pinecone(
-                source=source, chunks=chunks
-            )
-            logger.info(f"Pinecone results: {results}")
-        except Exception as e:
-            logger.error(f"Error processing Pinecone embeddings: {e}")
-            raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
-
-    def embed_and_upsert_pdf(self, file_path: str, source: Source):
-        """
-        Extracts text from a PDF file, converts it to markdown, and upserts the
-        resulting embeddings into Pinecone.
-
-        Args:
-            file_path (str): The path to the PDF file.
-            source (Source): The source document metadata.
-
-        This function processes each page of the PDF, extracting text as markdown,
-        chunking the text, and creating embeddings. The embeddings are then upserted
-        into Pinecone, with each page's results logged.
-
-        Raises:
-            RuntimeError: If there is an error during the embedding process.
-        """
-        try:
-
-            # extract Markdown for each page as a list of dictionaries
-            data = pymupdf4llm.to_markdown(
-                file_path, page_chunks=True
-            )  # returns a list
-
-            os.remove(file_path)
-            if not data:
-                logger.info("No text found in PDF")
-                return
-
-            for index, page_data in enumerate(data):
-                page_number = index + 1
-
-                chunks = pineconeClient.chunk_clean_text(
-                    text=page_data["text"], chunk_size=1000, chunk_overlap=100
-                )
-
-                results = pineconeClient.embed_and_upsert_to_pinecone(
-                    source=source,
-                    chunks=chunks,
-                    pageNumber=page_number,
-                )
-                time.sleep(1)
-
-            logger.info(f"Pinecone results: {results}")
-
-        except Exception as e:
-            logger.error(f"Error processing Pinecone embeddings: {e}")
-            raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
-
-    def embed_and_upsert_note(self, source: Source, text: str):
-        """
-        Embed and upsert a note's text chunks into Pinecone.
-
-        Args:
-            source (Source): The source document
-            text (str): The note's text content
-
-        Raises:
-            RuntimeError: If there is an error during the embedding process.
-        """
-        if not text:
-            logger.info("No text found in note. Skipping...")
+        if not content_to_embed and not file_path:
+            logger.info("No content to embed...Skipping.")
             return
-        try:
-            chunks = pineconeClient.chunk_clean_text(
-                text=text, chunk_size=1000, chunk_overlap=50
-            )
-            logger.info(f"Upserting {len(chunks)} chunks to Pinecone...")
-            results = pineconeClient.embed_and_upsert_to_pinecone(
-                source=source, chunks=chunks
-            )
 
-            logger.info(f"Pinecone results: {results}")
-        except Exception as e:
-            logger.error(f"Error processing Pinecone embeddings: {e}")
-            raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
-
-    def refresh_note_embeddings(self, source: Source, content: str):
-        """
-        Refresh the embeddings of a note in Pinecone by deleting existing embeddings
-        and creating new ones from the provided content.
-
-        Args:
-            source (Source): The source document containing metadata for the embeddings.
-            content (str): The note's content to generate new embeddings from.
-
-        Returns:
-            bool: True if the embeddings were successfully refreshed, False otherwise.
-        """
-
-        try:
-
-            noteEmbeddings = list(Embeddings.find({"sourceId": source["sourceId"]}))
-            noteEmbeddingsToDelete = [e["embeddingId"] for e in noteEmbeddings]
-            logger.info(f"Deleting these embeddings: {noteEmbeddingsToDelete}")
-            logger.info(
-                f"Deleting {len(noteEmbeddingsToDelete)} embeddings...: {noteEmbeddingsToDelete}"
-            )
-
-            if noteEmbeddingsToDelete:
-                pineconeClient.index.delete(
-                    ids=noteEmbeddingsToDelete,
-                    namespace="sources",
+        if source.type in {"youtube"}:
+            chunks = chunking_service.chunk_youtube_transcript(content_to_embed)
+        elif source.type in {"website", "note", "voice_note"}:
+            chunks = chunking_service.chunk_cleaned_md(content_to_embed)
+        elif source.type in DOCUMENT_TYPES:
+            if not file_path:
+                raise HTTPException(
+                    status_code=400, detail="File path is required to process PDF"
                 )
-                Embeddings.delete_many({"sourceId": source["sourceId"]})
-                logger.info("Deleted previous note embeddings!")
-                embeddingsDeleteResult = handleEmbeddingStorage(
-                    sizeBytes=source.get("size", 0),
-                    userId=source["userId"],
-                    operation="$dec",
-                )
+            logger.info(f"Processing document at path: {file_path}")
+            content_to_embed = extraction_service.extract_document_content(file_path)
+            logger.info(f"Found {len(content_to_embed)} pages in document")
+            chunks = chunking_service.chunk_document_pages(content_to_embed)
+            logger.info(f"Found {len(chunks)} chunks in document")
 
-            self.embed_and_upsert_note(source, content)
-            logger.info("Refreshed note chunks successfully")
-
-            return True
-        except Exception as e:
-            logger.error(f"Error processing Pinecone embeddings: {e}")
-            return False
-
-    def delete_source_embeddings(self, source: Source):
-        """
-        Delete all embeddings associated with a given source document.
-
-        Args:
-            source (Source): The source document containing metadata for the embeddings.
-
-        Returns:
-            bool: True if the embeddings were successfully deleted, False otherwise.
-        """
-        try:
-            sourceEmbeddings = Embeddings.find({"sourceId": source["sourceId"]})
-            sourceEmbeddingsToDelete = [e["embeddingId"] for e in sourceEmbeddings]
-
-            logger.info(f"Deleting {len(sourceEmbeddingsToDelete)} embeddings")
-
-            if sourceEmbeddingsToDelete:
-
-                embeddingsStorageResult = handleEmbeddingStorage(
-                    sizeBytes=source["size"],
-                    userId=source["userId"],
-                    operation="$dec",
-                )
-
-                pineconeClient.index.delete(
-                    ids=sourceEmbeddingsToDelete,
-                    namespace="sources",
-                )
-
-                Embeddings.delete_many({"sourceId": source["sourceId"]})
-
-            logger.info("Deleted note chunks successfully")
-            return True
-
-        except Exception as e:
-            logger.error(f"Error processing Pinecone embeddings: {e}")
-            return False
-
-    def refresh_metadata(self, webId: str, sourceId: str, metadata: dict):
-        """
-        Updates the metadata of all embeddings associated with a given source document.
-
-        Args:
-            webId (str): The ID of the web containing the source document.
-            sourceId (str): The ID of the source document containing the embeddings.
-            metadata (dict): A dictionary containing the new metadata to update.
-
-        Returns:
-            bool: True if the embeddings metadata were successfully updated, False otherwise.
-        """
-        logger.info(f"Updating source metadata: {metadata}")
-        try:
-            pinecone_safe_metadata = metadata.copy()
-            del pinecone_safe_metadata["updated"]
-
-            sourceEmbeddings = Embeddings.find({"sourceId": sourceId})
-            sourceEmbeddingsToUpdate = [e["embeddingId"] for e in sourceEmbeddings]
-
-            for embeddingToUpdate in sourceEmbeddingsToUpdate:
-                pineconeClient.index.update(
-                    id=embeddingToUpdate,
-                    set_metadata=pinecone_safe_metadata,
-                    namespace="sources",
-                )
-                logger.info(f"Updated source metadata for {embeddingToUpdate}")
-
-            logger.info("Updated source metadata successfully")
-            return True
-        except Exception as e:
-            logger.error(f"Error updating source metadata: {e}")
-            return False
+        if chunks:
+            embedding_service.run_embedding_process(source=source, chunks=chunks)
+            logger.info(f"SOURCE PROCESSED: {source.sourceId}")
 
     def parse_obsidian_links(self, web_id: str, sources: List[Source]) -> bool:
         """
@@ -300,65 +74,17 @@ class SourceService:
         Returns:
             bool: True if the function was successful, False otherwise.
         """
-
-        connection_proccess_id = create_process(
-            web_id=web_id,
-            type="connect",
-            description="Parsing Obsidian links...",
-        )
-
         try:
 
             for i, source in enumerate(sources):
                 linkPattern = r"\[\[(.*?)(?:\|.*?)?(?:#.*?)?\]\]"
                 embedPattern = r"!\[\[(.*?)(?:\|.*?)?(?:#.*?)?\]\]"
 
-                for match in re.finditer(linkPattern, source.get("content", "")):
+                for match in re.finditer(linkPattern, source.content):
                     logger.info(f"Match: {match.group(1)}")
                     target_filename = match.group(1).split("|")[0].split("#")[0].strip()
                     target_source = next(
-                        (
-                            s
-                            for s in sources
-                            if s.get("name", "").strip() == target_filename
-                        ),
-                        None,
-                    )
-                    target_id = target_source["sourceId"] if target_source else None
-
-                    if target_id:
-                        logger.info(f"Found target source: {target_source}")
-                        connection_id = str(uuid4())
-                        connectionToInsert = {
-                            "connectionId": connection_id,
-                            "webId": web_id,
-                            "description": "Obsidian reference",
-                            "fromSourceId": source["sourceId"],
-                            "toSourceId": target_id,
-                            "created": datetime.now(),
-                            "updated": datetime.now(),
-                        }
-
-                        try:
-                            neo4jClient.create_connection_between_sources(
-                                connectionToInsert["fromSourceId"],
-                                connectionToInsert["toSourceId"],
-                                connectionToInsert,
-                            )
-                            logger.info(f"Created connection: {connectionToInsert}")
-                        except Exception as e:
-                            logger.error(str(e))
-                            raise HTTPException(status_code=500, detail=str(e))
-
-                for match in re.finditer(embedPattern, source.get("content", "")):
-                    logger.info(f"Match: {match.group(1)}")
-                    target_filename = match.group(1).split("|")[0].split("#")[0].strip()
-                    target_source = next(
-                        (
-                            s
-                            for s in sources
-                            if s.get("name", "").strip() == target_filename
-                        ),
+                        (s for s in sources if s.name.strip() == target_filename),
                         None,
                     )
                     target_id = target_source.sourceId if target_source else None
@@ -370,7 +96,7 @@ class SourceService:
                             "connectionId": connection_id,
                             "webId": web_id,
                             "description": "Obsidian reference",
-                            "fromSourceId": source["sourceId"],
+                            "fromSourceId": source.sourceId,
                             "toSourceId": target_id,
                             "created": datetime.now(),
                             "updated": datetime.now(),
@@ -387,96 +113,56 @@ class SourceService:
                             logger.error(str(e))
                             raise HTTPException(status_code=500, detail=str(e))
 
-                update_process(
-                    job_id=connection_proccess_id,
-                    status="processing",
-                    percentage=round((i + 1) / len(sources) * 100, 2),
-                )
+                for match in re.finditer(embedPattern, source.content):
+                    logger.info(f"Match: {match.group(1)}")
+                    target_filename = match.group(1).split("|")[0].split("#")[0].strip()
+                    target_source = next(
+                        (s for s in sources if s.name.strip() == target_filename),
+                        None,
+                    )
+                    target_id = target_source.sourceId if target_source else None
 
-            update_process(
-                job_id=connection_proccess_id,
-                description="Completed parsing Obsidian links",
-                status="completed",
-                percentage=100,
-                closeModal=True,
-            )
+                    if target_id:
+                        logger.info(f"Found target source: {target_source}")
+                        connection_id = str(uuid4())
+                        connectionToInsert = {
+                            "connectionId": connection_id,
+                            "webId": web_id,
+                            "description": "Obsidian reference",
+                            "fromSourceId": source.sourceId,
+                            "toSourceId": target_id,
+                            "created": datetime.now(),
+                            "updated": datetime.now(),
+                        }
+
+                        try:
+                            neo4jClient.create_connection_between_sources(
+                                connectionToInsert["fromSourceId"],
+                                connectionToInsert["toSourceId"],
+                                connectionToInsert,
+                            )
+                            logger.info(f"Created connection: {connectionToInsert}")
+                        except Exception as e:
+                            logger.error(str(e))
+                            raise HTTPException(status_code=500, detail=str(e))
+
             return True
 
         except Exception as e:
-            update_process(
-                job_id=connection_proccess_id,
-                status="failed",
-                description="Failed to parse Obsidian links",
-                percentage=0,
-                error=str(e),
-            )
             logger.error(str(e))
             return False
 
-    def embed_and_upsert_voice_note(self, source: Source, text: str):
-        """
-        Create embeddings for voice note transcription and store in Pinecone.
-        Following the same pattern as notes since we're dealing with text content.
-
-        Args:
-            source (Source): The source document
-            text (str): The transcribed text (similar to note content)
-        """
-        try:
-            # same chunking as notes
-            chunks = pineconeClient.chunk_clean_text(
-                text=text, chunk_size=1000, chunk_overlap=50
-            )
-            results = pineconeClient.embed_and_upsert_to_pinecone(
-                source=source, chunks=chunks
-            )
-
-            logger.info(f"Pinecone results: {results}")
-        except Exception as e:
-            logger.error(f"Error processing Pinecone embeddings: {e}")
-            raise RuntimeError(f"Error processing Pinecone embeddings: {e}")
-
     def embed_iterated_sources(self, sourceIds: List[str]):
-        for sourceId in sourceIds:
-            source = neo4jClient.get_source_by_id(label="source", source_id=sourceId)
-            if source:
-                if source["type"] == "note":
-                    self.embed_and_upsert_note(source, source.get("content", ""))
-                elif source["type"] == "youtube":
-                    video_id = youtubeClient.extract_youtube_id(source["url"])
-                    if video_id:
-                        logger.info(f"Found video id: {video_id}")
-                        transcripts = youtubeClient.get_transcript_data(
-                            video_id=video_id
-                        )
-                        if transcripts:
-                            self.embed_and_upsert_youtube(source, transcripts)
-                    else:
-                        logger.info(f"[WARNING] No video id found for source: {source}")
-                elif source["type"] == "voice_note":
-                    self.embed_and_upsert_voice_note(source, source.get("content", ""))
-                elif source["type"] == "website":
-                    self.embed_and_upsert_website(source, source.get("content", ""))
-                # elif source["type"] == "document": figure out what to do with documents
-                # self.embed_and_upsert_pdf(source, source["content"])
-                else:
-                    logger.info(
-                        f"[WARNING] Unknown source type: {source['type']} or pdf document"
-                    )
-            else:
-                logger.info(f"[WARNING] No source found with id: {sourceId}")
-        logger.info(f"Embedded {len(sourceIds)} sources")
+        pass
 
     def create_onboarding_sources(
         self, web_id: str, user_id: str, background_tasks: BackgroundTasks
     ):
         now = datetime.now(UTC).isoformat().replace("+00:00", "Z")
-        source_id1 = str(uuid.uuid4())
-        source_id2 = str(uuid.uuid4())
-        source_id3 = str(uuid.uuid4())
-        source_id4 = str(uuid.uuid4())
-        source_id5 = str(uuid.uuid4())
-        source_id6 = str(uuid.uuid4())
+        source_id1 = str(uuid4())
+        source_id2 = str(uuid4())
+        source_id4 = str(uuid4())
+        source_id6 = str(uuid4())
 
         source_to_insert1 = {
             "sourceId": source_id1,

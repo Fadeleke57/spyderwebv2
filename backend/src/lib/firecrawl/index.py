@@ -23,19 +23,20 @@ class FireCrawlClient:
         r = self.app.scrape_url(url, formats=["markdown"])
         return r.metadata.get("title", None), r.markdown
 
-    def getMarkdown(
-        self, url: str, withMetadata: bool = False, justMetadata: bool = False
+    def get_markdown(
+        self, url: str, with_metadata: bool = False, just_metadata: bool = False
     ) -> Union[str, tuple[str, dict], dict]:
         try:
-            if justMetadata:
+            if just_metadata:
                 result = self.app.scrape_url(url=url)
                 metadata: dict = result.metadata
                 return metadata
 
             result = self.app.scrape_url(url=url, formats=["markdown"])
-            if withMetadata:
+            if with_metadata:
                 markdown: str = result.markdown
-                return markdown, result.metadata
+                metadata: dict = result.metadata
+                return markdown, metadata
 
             markdown: str = result.markdown
             return markdown

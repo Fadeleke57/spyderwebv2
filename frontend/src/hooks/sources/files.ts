@@ -50,7 +50,7 @@ export const useFileUpload = (webId: string) => {
     const formData = new FormData();
 
     // add all the fields from the presigned URL
-    Object.entries(uploadData.fields).forEach(([key, value]) => {
+    Object.entries(uploadData?.fields)?.forEach(([key, value]) => {
       formData.append(key, value);
     });
 

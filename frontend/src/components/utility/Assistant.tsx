@@ -101,7 +101,7 @@ const SpydrAI = () => {
   const [previouslySelectedChat, setPreviouslySelectedChat] = useState<
     string | null
   >(null);
-  const { isUploadingSource, setIsUploadingSource } = useSourceStore();
+  const { isUploadingSource } = useSourceStore();
 
   const { mutateAsync: configureCharlotte, isPending: isConfiguring } =
     useConfigureChat();
@@ -169,19 +169,22 @@ const SpydrAI = () => {
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerTrigger asChild>
-          <Button
-            variant={"link"}
-            className={`fixed bottom-9 right-20 p-0 m-0 w-10 h-10 bg-background rounded-full ${open && "opacity-0"}`}
-          >
-            <Charlotte width={16} height={16} activeEyes={false} />
-          </Button>
-        </DrawerTrigger>
-        <DrawerContent className="h-[85dvh] max-h-[600px] bg-background/70 border-zinc-800 backdrop-blur-md rounded-t-xl">
-          {mapViewToComponent()}
-        </DrawerContent>
-      </Drawer>
+      <div>
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerTrigger asChild>
+            <Button
+              variant={"link"}
+              className={`fixed bottom-9 right-20 p-0 m-0 w-10 h-10 bg-background rounded-full ${open && "opacity-0"}`}
+            >
+              <Charlotte width={16} height={16} activeEyes={false} />
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="h-[95dvh] max-h-[600px] bg-background/70 border-zinc-800 backdrop-blur-md rounded-t-xl">
+            {mapViewToComponent()}
+          </DrawerContent>
+        </Drawer>
+        <UploadStatusPopover />
+      </div>
     );
   }
 

@@ -33,10 +33,6 @@ class YoutubeAPIClient:
             "x-rapidapi-host": "youtube-transcript3.p.rapidapi.com",
         }
 
-        logger.info(
-            f"YOUTUBE CLIENT INITIALIZED with proxy username: {settings.proxy_username} and proxy password: {settings.proxy_password}"
-        )
-
     def get_video_info(self, video_id: str) -> dict:
         """
         Get the information of a YouTube video from its video ID.
@@ -108,28 +104,28 @@ class YoutubeAPIClient:
         if not url:
             return None
 
-        # Parse the URL
+        # parse the URL
         parsed: Union[ParseResult, ParseResultBytes] = urlparse(url)
 
-        # Handle youtu.be short links
+        # handle youtu.be short links
         if parsed.hostname in ["youtu.be", "www.youtu.be"]:
             return parsed.path[1:]  # Remove leading slash
 
-        # Handle youtube.com URLs
+        # handle youtube.com URLs
         if parsed.hostname in ["youtube.com", "www.youtube.com", "m.youtube.com"]:
-            # Standard watch URL
+            # standard watch URL
             if parsed.path == "/watch":
                 return parse_qs(parsed.query).get("v", [None])[0]
 
-            # Embed URL
+            # embed URL
             if parsed.path.startswith("/embed/"):
                 return parsed.path.split("/")[2]
 
-            # Old style /v/ URL
+            # old style /v/ URL
             if parsed.path.startswith("/v/"):
                 return parsed.path.split("/")[2]
 
-        # Fallback: try to extract 11-character alphanumeric ID with regex
+        # fallback: try to extract 11-character alphanumeric ID with regex
         match = re.search(r"[a-zA-Z0-9_-]{11}", url)
         return match.group(0) if match else None
 

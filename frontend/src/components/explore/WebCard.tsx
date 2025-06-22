@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Web } from "@/types/web";
-import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { IterationCcw, EllipsisIcon, EyeOff, Bookmark } from "lucide-react";
 import { useGetAllImagesForWeb, useLikeWeb, useUnlikeWeb } from "@/hooks/webs";
@@ -276,7 +275,7 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
               <div className="-mt-2">
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger className="rounded-full hover:bg-slate-300 dark:hover:bg-violet-400/50 p-2 border-none focus:outline-none text-muted-foreground dark:text-foreground">
-                    <EllipsisIcon onClick={handleStopPropagation} />
+                    <EllipsisIcon size={16} onClick={handleStopPropagation} />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent onClick={handleStopPropagation}>
                     <DropdownMenuItem
@@ -305,7 +304,7 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
               className={`flex flex-col gap-2 ${!web.iteratedFrom && "-mt-4"}`}
             >
               <CardHeader className="overflow-hidden p-0 m-0">
-                <CardTitle className="break-words hover:cursor-pointer mt-2 text-md leading-tight hyphens-auto text-foreground ">
+                <CardTitle className="break-words hover:cursor-pointer mt-3 text-sm leading-tight hyphens-auto text-foreground ">
                   {web.name}
                 </CardTitle>
                 <CardDescription className="hyphens-auto mb-8 max-w-6xl text-muted-foreground">

@@ -14,6 +14,9 @@ import { useUpdateNote, useUploadImageToSource } from "@/hooks/sources";
 import { MarkdownComponents } from "./MarkdownComponents";
 import debounce from "lodash/debounce";
 import { toast } from "../ui/use-toast";
+import { useSourceStore } from "@/store/sourceStore";
+import { useRouter } from "next/router";
+import { useUser } from "@/context/UserContext";
 
 interface NoteComponentProps {
   webId: string;
@@ -26,20 +29,19 @@ interface LoadingImage {
   name: string;
 }
 
-const NoteComponent: React.FC<NoteComponentProps> = ({
-  isOwner = false,
-  source,
-  webId,
-}) => {
+const NoteComponent = () => {
+  const router = useRouter();
+  const { webId } = router.query;
+  const { source } = useSourceStore();
   const [localContent, setLocalContent] = useState<string>(
     source?.content || ""
   );
-
-  const {
-    mutateAsync: updateNote,
-    isPending: isNoteUpdating,
-    error: noteUpdatingError,
-  } = useUpdateNote(webId, source?.sourceId || "");
+  const { user } = useUser();
+  const isOwner = (source && user && source.userId === user.id) || false;
+  const { mutateAsync: updateNote, error: noteUpdatingError } = useUpdateNote(
+    webId as string,
+    source?.sourceId || ""
+  );
 
   const debouncedSave = useCallback(
     debounce(async (newContent: string) => {
@@ -74,15 +76,12 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
   );
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [loadingImages, setLoadingImages] = useState<LoadingImage[]>([]);
+  const [_, setLoadingImages] = useState<LoadingImage[]>([]);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const {
-    mutateAsync: uploadImages,
-    isPending: addingImages,
-    error: uploadImageError,
-  } = useUploadImageToSource();
+  const { mutateAsync: uploadImages, error: uploadImageError } =
+    useUploadImageToSource();
 
   //sync localContent when prop content changes
   useEffect(() => {
@@ -166,7 +165,7 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
 
     try {
       const uploadedUrls = await uploadImages({
-        sourceId: webId,
+        sourceId: webId as string,
         files: imageFiles,
       });
 
@@ -314,7 +313,10 @@ const NoteComponent: React.FC<NoteComponentProps> = ({
     if (!isOwner || (mode === "preview" && localContent?.trim())) {
       return (
         <div className="prose dark:prose-invert max-w-none whitespace-pre-wrap break-words">
-          <ReactMarkdown components={MarkdownComponents} className="whitespace-pre-wrap">
+          <ReactMarkdown
+            components={MarkdownComponents}
+            className="whitespace-pre-wrap"
+          >
             {localContent || ""}
           </ReactMarkdown>
         </div>

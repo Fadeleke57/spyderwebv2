@@ -1,8 +1,8 @@
 from typing import Any
 from src.lib.logger.index import logger
-from src.agents.autolinking_engine.candidate_selector import CandidateSelectorAgent
-from src.agents.autolinking_engine.connection_reasoning import ConnectionReasoningAgent
-from src.agents.autolinking_engine.connection_evaluator import ConnectionEvaluatorAgent
+from src.engine.autolinking_engine.candidate_selector import CandidateSelectorAgent
+from src.engine.autolinking_engine.connection_reasoning import ConnectionReasoningAgent
+from src.engine.autolinking_engine.connection_evaluator import ConnectionEvaluatorAgent
 from src.models.index import Webs, Web, create_process, update_process
 
 
