@@ -372,18 +372,33 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
               </div>
               <p className="text-xs text-muted-foreground">
                 created {/* MODIFIED_BLOCK_FOR_WEB_CREATED_START */}
-                {(() => {
-                  if (!web?.created) {
-                    return "Unknown date"; // Original fallback for missing date
-                  }
-                  // Works for string, number (timestamp), or Date object inputs
-                  let dateInstance = new Date(web.created);
-                  // Check if the parsed date is valid
-                  if (isNaN(dateInstance.getTime())) {
-                    dateInstance = new Date(); // Fallback to today if parsing failed
-                  }
-                  return formatDistanceToNow(dateInstance, { addSuffix: true });
-                })()}
+                {web?.created &&
+                  (() => {
+                    let dateInstance;
+                    // Check if web.updated is a string to decide on 'Z' suffix logic
+                    if (typeof web.created === "string") {
+                      // Append 'Z' if it's a string and doesn't already have 'Z' or a timezone offset
+                      if (
+                        !web.created.endsWith("Z") &&
+                        !/[+-]\d{2}(:?\d{2})?$/.test(web.created)
+                      ) {
+                        dateInstance = new Date(web.created + "Z");
+                      } else {
+                        dateInstance = new Date(web.created);
+                      }
+                    } else {
+                      // If web.updated is a number (timestamp) or already a Date object
+                      dateInstance = new Date(web.created);
+                    }
+
+                    // Check if the parsed date is valid
+                    if (isNaN(dateInstance.getTime())) {
+                      dateInstance = new Date(); // Fallback to today if parsing failed
+                    }
+                    return formatDistanceToNow(dateInstance, {
+                      addSuffix: true,
+                    });
+                  })()}
                 {/* MODIFIED_BLOCK_FOR_WEB_CREATED_END */}
               </p>
             </div>
@@ -395,10 +410,7 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
         open={showIterateModal}
         setIsOpen={setShowIterateModal}
       />
-      <AuthModal
-        open={authModalOpen}
-        setOpen={setAuthModalOpen}
-      />
+      <AuthModal open={authModalOpen} setOpen={setAuthModalOpen} />
     </div>
   );
 }
