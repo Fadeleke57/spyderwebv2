@@ -85,7 +85,7 @@ function SearchSourceModal({
             <TabsTrigger
               key={value}
               value={value}
-              className="flex-1 data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+              className="flex-1 data-[state=inactive]:border-none data-[state=active]:border-1 data-[state=active]:border-primary data-[state=active]:rounded-b-none"
             >
               {label}
             </TabsTrigger>

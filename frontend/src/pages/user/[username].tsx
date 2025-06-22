@@ -165,18 +165,10 @@ function UserProfile() {
                 </div>
               )}
               <div className="hidden md:block">
-                <UserAvatar
-                  userId={user.id}
-                  dimension={96}
-                  className="mr-2"
-                />
+                <UserAvatar userId={user.id} dimension={96} className="mr-2" />
               </div>
               <div className="md:hidden">
-                <UserAvatar
-                  userId={user.id}
-                  dimension={48}
-                  className="mr-4"
-                />
+                <UserAvatar userId={user.id} dimension={48} className="mr-4" />
               </div>
             </div>
 
@@ -266,34 +258,34 @@ function UserProfile() {
           className="w-full"
         >
           <div className="border-b">
-            <TabsList className="bg-transparent w-full md:w-auto">
+            <TabsList className="bg-transparent w-full md:w-auto ">
               <TabsTrigger
                 value="overview"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+                className="data-[state=inactive]:border-none data-[state=active]:border-1 data-[state=active]:border-primary data-[state=active]:rounded-b-none"
               >
                 <Book size={16} className="mr-2 hidden md:inline" />
                 Overview
               </TabsTrigger>
               <TabsTrigger
                 value="webs"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+                className="data-[state=inactive]:border-none data-[state=active]:border-1 data-[state=active]:border-primary data-[state=active]:rounded-b-none"
               >
                 <GitFork size={16} className="mr-2 hidden md:inline" />
                 Webs{" "}
-                <span className="ml-2 bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs">
+                <span className="ml-2 bg-neon text-black rounded-full px-2 py-0.5 text-xs">
                   {websLoading ? "..." : webCount}
                 </span>
               </TabsTrigger>
               <TabsTrigger
                 value="packages"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+                className="data-[state=inactive]:border-none data-[state=active]:border-1 data-[state=active]:border-primary data-[state=active]:rounded-b-none"
               >
                 <Package size={16} className="mr-2 hidden md:inline" />
                 Feeds
               </TabsTrigger>
               <TabsTrigger
                 value="stars"
-                className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
+                className="data-[state=inactive]:border-none data-[state=active]:border-1 data-[state=active]:border-primary data-[state=active]:rounded-b-none"
               >
                 <StarIcon size={16} className="mr-2 hidden md:inline" />
                 Saved{" "}
