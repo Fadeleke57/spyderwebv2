@@ -363,17 +363,16 @@ function Index() {
                 <UserAvatar showTooltip userId={web?.userId} dimension={38} />
                 <div className="flex flex-col gap-0">
                   <h1 className="text-xs md:text-base flex items-center lg:text-sm font-semibold m-0">
-                    {webOwnerLoading ? "Loading..." : ""}
-                    {(webOwner && webOwner.full_name) || ""}{" "}
+                    {webOwner ? webOwner.full_name : "Loading..."}{" "}
                   </h1>
                   <span className="text-foreground font-semibold text-xs">
-                    @{webOwner && webOwner.username}
+                    @{webOwner ? webOwner.username : "Loading..."}
                   </span>
                   {web && web.iteratedFrom ? (
                     <p className="text-xs font-normal text-muted-foreground">
                       Iterated From{" "}
                       <span className="font-semibold text-violet-400/80 dark:text-violet-400/80">
-                        @{iteratedFromUser?.username}
+                        @{iteratedFromUser ? iteratedFromUser.username : "Loading..."}
                       </span>
                     </p>
                   ) : (

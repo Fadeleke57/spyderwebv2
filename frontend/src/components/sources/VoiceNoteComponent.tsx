@@ -147,7 +147,7 @@ export const VoiceNoteComponent = () => {
   };
 
   return (
-    <Card className="w-full min-h-[79.5dvh]">
+    <Card className="w-full">
       <CardContent className="p-4 h-full">
         {audioUrl && (
           <audio

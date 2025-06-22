@@ -71,6 +71,7 @@ services:
       STRIPE_PRO_YEARLY_PRICE_ID: ${STRIPE_PRO_YEARLY_PRICE_ID}
       STYTCH_PROJECT_ID: ${STYTCH_PROJECT_ID}
       STYTCH_SECRET: ${STYTCH_SECRET}
+      TWELVE_LABS_API_KEY: ${TWELVE_LABS_API_KEY}
     volumes:
       - ./backend:/app
       - ~/.aws/credentials:/home/appuser/.aws/credentials:ro

@@ -40,7 +40,7 @@ function LinkPreview({ url, disabled }: { url: string; disabled: boolean }) {
   }, [linkPreviewData]);
 
   if (isLinkPreviewDataLoading || (!linkPreview && !disabled)) {
-    return <Skeleton className="h-[77dvh] w-full rounded-lg" />;
+    return <Skeleton className="h-full w-full rounded-lg" />;
   }
 
   const imageUrl = disabled
@@ -57,9 +57,9 @@ function LinkPreview({ url, disabled }: { url: string; disabled: boolean }) {
     <Link
       href={url}
       target="_blank"
-      className="block transition-shadow duration-200 hover:shadow-blue-glow-sm rounded-lg"
+      className="block h-full transition-shadow duration-200 hover:shadow-blue-glow-sm rounded-lg"
     >
-      <div className="w-full h-full min-h-[79.5dvh] border rounded-lg overflow-hidden bg-black/40 text-foreground">
+      <div className="w-full h-full border rounded-lg overflow-hidden bg-black/40 text-foreground">
         <div className="p-3 rounded-lg m-2 rounded-lg">
           <div className="relative">
             <div className="w-full aspect-video rounded-lg overflow-hidden bg-background">
@@ -104,7 +104,7 @@ function LinkPreview({ url, disabled }: { url: string; disabled: boolean }) {
 
             <p className="text-muted-foreground mb-3">
               {formatText(description, 130)}
-            </p>
+            </p> 
 
             <div className="flex items-center gap-2 text-foreground text-sm">
               <span className="font-bold">

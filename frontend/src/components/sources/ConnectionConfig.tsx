@@ -89,7 +89,7 @@ function ConnectionsConfig({ isOwner }: { isOwner: boolean }) {
   }, [outgoingConnections, incomingConnections, sourceId]);
 
   return (
-    <ScrollArea className="border rounded-lg p-4 flex flex-col hidden lg:block h-[calc(100vh-160px)]">
+    <ScrollArea className="border rounded-lg p-4 flex flex-col h-full">
       <div className="flex items-center justify-between mb-4">
         <h4 className="font-mono text-sm">
           {isLoadingOutgoingConnections ||
@@ -146,7 +146,7 @@ function ConnectionsConfig({ isOwner }: { isOwner: boolean }) {
         onValueChange={setActiveTab}
         className="w-full"
       >
-        <TabsList className="w-full grid grid-cols-2 mb-4">
+        <TabsList className="w-full h-fit grid grid-cols-1 lg:grid-cols-2 mb-4">
           <TabsTrigger value="outgoing" className="font-mono">
             Outgoing ({fetchedOutgoingConnections.length})
           </TabsTrigger>

@@ -13,7 +13,15 @@ start:
 	@echo "Starting both backend and frontend..."
 	make start-backend & make start-frontend
 
+docker-start:
+	@echo "Starting both backend and frontend with docker..."
+	docker-compose up
+
 stop:
 	@echo "Stopping all backend and frontend processes..."
 	pkill -f "uvicorn src.main:app --reload" || true
 	pkill -f "npx next dev" || true
+
+stop-docker:
+	@echo "Stopping all backend and frontend processes..."
+	docker-compose down

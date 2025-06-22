@@ -25,6 +25,12 @@ import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/router";
 import LinkPreview from "../sources/LinkPreview";
 import SimpleTooltip from "../utility/SimpleTooltip";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "../ui/resizable";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WebDataModalProps {
   open: boolean;
@@ -33,6 +39,7 @@ interface WebDataModalProps {
 
 export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
   const [copied, setCopied] = useState(false);
+  const isMobile = useIsMobile();
   const {
     selectedSourceId: sourceId,
     source,
@@ -48,7 +55,8 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
 
   const { user } = useUser();
   const router = useRouter();
-  const { webId } = router.query;
+  const defaultLayout = [50, 50];
+  const mobileDefaultLayout = [100, 0];
   const {
     data: sourceData,
     refetch: refetchSource,
@@ -120,7 +128,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
               data={presignedUrl}
               type="application/pdf"
               width="100%"
-              className="rounded-lg border h-full transition-shadow duration-200 hover:shadow-blue-glow-md"
+              className="rounded-lg border h-full"
             >
               <p>Your browser does not support PDFs.</p>
             </object>
@@ -139,7 +147,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               referrerPolicy="strict-origin-when-cross-origin"
               allowFullScreen
-              className="rounded-lg min-h-[79.5dvh] transition-shadow duration-200 hover:shadow-blue-glow-sm"
+              className="rounded-lg h-full"
             ></iframe>
           </>
         );
@@ -178,7 +186,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
         <DialogClose onClick={handleClose} className="absolute right-4 top-10">
           <ArrowLeft></ArrowLeft>
         </DialogClose>
-        <DialogContent className="max-w-full h-full">
+        <DialogContent className="max-w-full h-full flex flex-col">
           <div className="flex flex-col gap-4">
             <DialogTitle className="text-left w-11/12 font-bold relative group min-h-[50px]">
               {sourceLoading ? (
@@ -351,16 +359,50 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
             </DialogDescription>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-4">
-            <div>
-              {sourceLoading || !source ? (
-                <Skeleton className="min-h-[77dvh] lg:h-[97%] lg:min-h-[0] w-full mt-4 rounded-lg" />
-              ) : (
-                mapSourceTypeToComponent(source?.type)
-              )}
-            </div>
-            <ConnectionsConfig isOwner={isOwner}></ConnectionsConfig>
-          </div>
+          <ResizablePanelGroup
+            direction="horizontal"
+            className="flex gap-4 h-full items-stretch"
+          >
+            {/** Desktop */}
+            {!isMobile && (
+              <ResizablePanel defaultSize={defaultLayout[0]} className="h-full">
+                {sourceLoading || !source ? (
+                  <Skeleton className="h-full w-full rounded-lg" />
+                ) : (
+                  mapSourceTypeToComponent(source.type)
+                )}
+              </ResizablePanel>
+            )}
+            {/** Mobile */}
+            {isMobile && (
+              <ResizablePanel
+                defaultSize={mobileDefaultLayout[0]}
+                className="h-full"
+              >
+                {sourceLoading || !source ? (
+                  <Skeleton className="h-full w-full rounded-lg" />
+                ) : (
+                  mapSourceTypeToComponent(source.type)
+                )}
+              </ResizablePanel>
+            )}
+            <ResizableHandle withHandle />
+            {/** Desktop */}
+            {!isMobile && (
+              <ResizablePanel defaultSize={defaultLayout[1]} className="h-full">
+                <ConnectionsConfig isOwner={isOwner} />
+              </ResizablePanel>
+            )}
+            {/** Mobile */}
+            {isMobile && (
+              <ResizablePanel
+                defaultSize={mobileDefaultLayout[1]}
+                className="h-full"
+              >
+                <ConnectionsConfig isOwner={isOwner} />
+              </ResizablePanel>
+            )}
+          </ResizablePanelGroup>
         </DialogContent>
       </Dialog>
     </div>
