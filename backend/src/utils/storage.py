@@ -1,5 +1,4 @@
 import math
-from typing_extensions import deprecated
 from src.models.index import Users
 from src.lib.logger.index import logger
 from fastapi import HTTPException
@@ -7,6 +6,7 @@ from typing import Literal
 from datetime import datetime
 from pytz import UTC
 from src.constants.storage import STORAGE_LIMITS_MB, STORAGE_LIMITS_BYTES
+from typing_extensions import deprecated
 
 
 def track_text_storage(
@@ -121,6 +121,7 @@ def track_file_storage(
         return False
 
 
+@deprecated("No longer tracking embedding storage")
 def track_embedding_storage(
     sizeBytes: int,
     userId: str,

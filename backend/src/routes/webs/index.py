@@ -15,7 +15,7 @@ from botocore.exceptions import ClientError
 from werkzeug.utils import secure_filename
 from src.routes.auth.utils import manager
 from src.lib.s3.index import S3Bucket
-from src.db.neo4j import client as neo4jClient
+from src.db.neo4j import client as neo4j_client
 from src.models.index import (
     Webs,
     Web,
@@ -30,12 +30,13 @@ from src.models.index import (
 )
 from src.lib.logger.index import logger
 from src.core.config import settings
-from src.lib.pinecone.index import client as pineconeClient
-from src.service.web import service as webService
-from src.service.source import service as sourceService
+from src.lib.pinecone.index import client as pinecone_client
+from src.service.web import service as web_service
+from src.service.source import service as source_service
 from src.routes.chat.index import configure_chat
 from src.utils.storage import track_file_storage
 from src.routes.user.index import convert_to_public_user
+from src.utils.utility import clean_unicode
 
 router = APIRouter()
 
@@ -240,7 +241,7 @@ def create_web_endpoint(
         web_document = Webs.find_one({"webId": web_id, "userId": user["id"]})
 
         pinecone_document = web_document
-        background_tasks.add_task(webService.emebd_and_upsert_web, web_document)
+        background_tasks.add_task(web_service.emebd_and_upsert_web, web_document)
 
         return {"result": web_id}
 
@@ -435,7 +436,7 @@ def delete_web(
 
         # === handle background tasks
         background_tasks.add_task(
-            webService.delete_web_embeddings, webId=webId, userId=user["id"]
+            web_service.delete_web_embeddings, webId=webId, userId=user["id"]
         )
 
         # === paths to clean up in S3
@@ -506,7 +507,7 @@ def update_web(
         update_fields = updateWebPayload.model_dump(exclude_none=True)
         update_fields["updated"] = datetime.now(UTC)
 
-        background_tasks.add_task(webService.update_emebeddings, webId, update_fields)
+        background_tasks.add_task(web_service.update_emebeddings, webId, update_fields)
 
         result = Webs.update_one(
             {"webId": webId, "userId": user["id"]}, {"$set": update_fields}
@@ -709,7 +710,7 @@ def iterate_web(
 
         # copy sources in Neo4j to the new web
         try:
-            _, new_source_ids = neo4jClient.copy_sources_to_new_web(
+            _, new_source_ids = neo4j_client.copy_sources_to_new_web(
                 original_web_id=web_id,
                 new_web_id=new_web_id,
                 new_user_id=user["id"],
@@ -739,10 +740,10 @@ def iterate_web(
         # queue embedding
         web_doc = Webs.find_one({"webId": new_web_id})
         if web_doc:
-            background_task.add_task(webService.emebd_and_upsert_web, web_doc)
+            background_task.add_task(web_service.emebd_and_upsert_web, web_doc)
             logger.info(f"Queued embedding for new web: {new_web_id}")
             background_task.add_task(
-                sourceService.embed_iterated_sources, new_source_ids
+                source_service.embed_iterated_sources, new_source_ids
             )
             logger.info(f"Queued embedding for new sources: {new_source_ids}")
 
@@ -780,6 +781,10 @@ def search_webs(
         filter = {}
         if visibility:
             filter["visibility"] = {"$eq": visibility}
+            if visibility == "Private":
+                if not user:
+                    raise HTTPException(status_code=401, detail="Unauthorized")
+                filter["userId"] = {"$eq": user["id"]}
         if userId:
             filter["userId"] = {"$eq": userId}
         if webId:
@@ -792,7 +797,7 @@ def search_webs(
             "filters": filter,
         }
         Searches.insert_one(search_info)
-        results = pineconeClient.run_semantic_search(
+        results = pinecone_client.run_semantic_search(
             query, namespace="webs", filter=filter, limit=20
         )
         return {"result": results}
@@ -834,40 +839,6 @@ class ExportGraphContext(BaseModel):
     asMarkdown: bool = False
 
 
-def clean_unicode(obj):
-    """
-    Clean Unicode characters from a string, dictionary, list, or tuple.
-
-    Replaces problematic Unicode characters with ASCII equivalents,
-    and removes any other non-ASCII characters.
-
-    Returns a new object with the modified values.
-    """
-    if isinstance(obj, str):
-        # replace problematic Unicode characters
-        replacements = {
-            "\u2019": "'",  # Right single quotation mark
-            "\u2018": "'",  # Left single quotation mark
-            "\u201c": '"',  # Left double quotation mark
-            "\u201d": '"',  # Right double quotation mark
-            "\u2013": "-",  # En dash
-            "\u2014": "--",  # Em dash
-            "\u2026": "...",  # Horizontal ellipsis
-        }
-        for unicode_char, ascii_char in replacements.items():
-            obj = obj.replace(unicode_char, ascii_char)
-
-        return obj.encode("ascii", "ignore").decode("ascii")
-    elif isinstance(obj, dict):
-        return {clean_unicode(k): clean_unicode(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [clean_unicode(item) for item in obj]
-    elif isinstance(obj, tuple):
-        return tuple(clean_unicode(item) for item in obj)
-    else:
-        return obj
-
-
 @router.post("/export/graph/context")
 def export_graph_context(
     payload: ExportGraphContext, user: User = Depends(manager.optional)
@@ -879,7 +850,7 @@ def export_graph_context(
         if not web:
             raise HTTPException(status_code=404, detail=f"Web not found!")
 
-        result = neo4jClient.retreive_graph(
+        result = neo4j_client.retreive_graph(
             webId=payload.webId, selectedNodes=payload.selectedSources
         )
 

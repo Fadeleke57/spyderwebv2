@@ -2,8 +2,7 @@ from openai import OpenAI
 from src.core.config import settings
 from src.lib.logger.index import logger
 from src.models.index import Webs, Web, Users, User
-
-available_models = ["gpt-4o", "gpt-4", "gpt-3.5-turbo", "gpt-3.5-turbo-16k"]
+from src.constants.llms import AVAILABLE_MODELS
 
 
 class OpenAIClient:
