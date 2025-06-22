@@ -37,6 +37,7 @@ coverage.xml
 # Environments
 .env.local
 .env.prod
+.env.docker
 .venv
 env/
 venv/
@@ -69,6 +70,8 @@ docker-compose.override.yml
 
 .DS_Store
 node_modules
+
+neo4j_auth.txt
 
 # Environment -----------------------------------------------------------------
 /spy/

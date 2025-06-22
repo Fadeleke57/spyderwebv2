@@ -5,9 +5,7 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+      MONGO_URL: ${MONGO_URL}
     volumes:
       - mongodb_data:/data/db
     networks:
@@ -26,12 +24,8 @@ services:
       - "7474:7474"
       - "7687:7687"
     environment:
-      NEO4J_AUTH: "${NEO4J_USERNAME}/${NEO4J_PASSWORD}"
-      NEO4J_PLUGINS: '["apoc"]'
-      NEO4J_apoc_export_file_enabled: "true"
-      NEO4J_apoc_import_file_enabled: "true"
-      NEO4J_apoc_import_file_use__neo4j__config: "true"
-      NEO4J_ACCEPT_LICENSE_AGREEMENT: "yes"
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
     volumes:
       - neo4j_data:/data
       - neo4j_logs:/logs
@@ -41,7 +35,7 @@ services:
       - app-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "cypher-shell", "-u", "${NEO4J_USERNAME}", "-p", "${NEO4J_PASSWORD}", "RETURN 1"]
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD}", "RETURN 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -60,9 +54,6 @@ services:
       FASTAPI_ENV: ${FASTAPI_ENV}
       FASTAPI_SECRET_KEY: ${FASTAPI_SECRET_KEY}
       FASTAPI_API_URL: ${FASTAPI_API_URL}
-      OAUTH2_CLIENT_ID: ${OAUTH2_CLIENT_ID}
-      OAUTH2_CLIENT_SECRET: ${OAUTH2_CLIENT_SECRET}
-      OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI}
       PINECONE_API_KEY: ${PINECONE_API_KEY}
       PINECONE_INDEX_NAME: ${PINECONE_INDEX_NAME}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
@@ -78,27 +69,24 @@ services:
       STRIPE_BASIC_YEARLY_PRICE_ID: ${STRIPE_BASIC_YEARLY_PRICE_ID}
       STRIPE_PRO_MONTHLY_PRICE_ID: ${STRIPE_PRO_MONTHLY_PRICE_ID}
       STRIPE_PRO_YEARLY_PRICE_ID: ${STRIPE_PRO_YEARLY_PRICE_ID}
-      PROXY_USERNAME: ${PROXY_USERNAME}
-      PROXY_PASSWORD: ${PROXY_PASSWORD}
       STYTCH_PROJECT_ID: ${STYTCH_PROJECT_ID}
       STYTCH_SECRET: ${STYTCH_SECRET}
-    env_file:
-      - ./backend/.env
     volumes:
       - ./backend:/app
+      - ~/.aws/credentials:/home/appuser/.aws/credentials:ro
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
       mongodb:
         condition: service_healthy
       neo4j:
         condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   frontend:
     build:
@@ -114,12 +102,9 @@ services:
       NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY}
       NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST}
       NEXT_PUBLIC_STYTCH_TOKEN: ${NEXT_PUBLIC_STYTCH_TOKEN}
-    env_file:
-      - ./frontend/.env
     volumes:
       - ./frontend:/app
       - /app/node_modules
-      - /app/.next
     networks:
       - app-network
     depends_on:

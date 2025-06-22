@@ -296,8 +296,9 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                 <div className="flex flex-row justify-between relative">
                   <div className="flex flex-row items-end gap-2 my-1 text-xs">
                     <span className="text-violet-400">
-                      {source?.type.charAt(0).toUpperCase() +
-                        source?.type.slice(1)}
+                      {source &&
+                        source.type.charAt(0).toUpperCase() +
+                          source.type.slice(1).split("_").join(" ")}
                     </span>
                     <div className="flex flex-col">
                       {source?.updated && (

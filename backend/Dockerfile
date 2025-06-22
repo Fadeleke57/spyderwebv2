@@ -1,39 +1,36 @@
 # use a slim Python base image
-FROM python:3.13-slim-bullseye
+FROM python:3.13-slim
 
 # set working directory
 WORKDIR /app
 
-RUN apt update && apt install -y \
-    build-essential \
-    libpq-dev \
-    libssl-dev \
-    libffi-dev \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Install dependencies as root
+RUN apt-get update && \
+    apt-get install -y build-essential gcc libfreetype6-dev curl && \
+    rm -rf /var/lib/apt/lists/*
 
-# copy requirements file early for Docker cache
+# Upgrade pip & install pymupdf early
+RUN pip install --upgrade pip && \
+    pip install pymupdf
+
+# Copy requirements and install dependencies
 COPY requirements.txt .
-
-# install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# copy source code
+# Copy all app files as root
 COPY src/ ./src/
 COPY tests/ ./tests/
 COPY *.py ./
-COPY *.sh ./
 COPY *.json ./
 
-# make shell scripts executable
-RUN chmod +x *.sh
+# Create non-root user AND adjust ownership
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
 
-# create non-root user and assign ownership
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+# Switch to non-root
 USER appuser
 
-# expose FastAPI port
 EXPOSE 8000
 
-# run the startup script
-ENTRYPOINT ["./start.sh"]
+# start FastAPI app with Uvicorn
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--reload"]

@@ -1,35 +1,45 @@
-FROM node:20-alpine
+# Base stage for installing dependencies
+FROM node:20-alpine AS base
 
-# set the working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# copy the package.json and package-lock.json into the container at /app
-COPY package.json package-lock.json ./
+# Copy package.json and package-lock.json (or yarn.lock) to leverage Docker cache
+COPY package*.json ./
 
-# install any needed packages
+# Install dependencies
 RUN npm install
 
-# copy the rest of the project files into the container at /app
+# Builder stage for building the Next.js application
+FROM base AS builder
+
+# Copy the entire application code
 COPY . .
 
-# build the Next.js project
+# Disable Next.js telemetry (optional, but can speed up build)
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build the Next.js application for production
 RUN npm run build
 
-# expose port 3000
-EXPOSE 3000
+# Production runner stage
+FROM node:20-alpine AS runner
 
-# automatically leverage output traces to reduce image size
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Set the working directory
+WORKDIR /app
 
-# create non-root user
+# Create a non-root user for security
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
-
-# switch to non-root user
 USER nextjs
 
-ENV PORT 3000
+# Copy only necessary files from the builder stage
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
-# start the Next.js server
+# Expose the port Next.js runs on (default is 3000)
+EXPOSE 3000
+
+# Command to run the Next.js application in production mode
 CMD ["npm", "start"]

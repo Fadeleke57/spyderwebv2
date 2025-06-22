@@ -12,6 +12,7 @@ pinecone[grpc]
 openai
 boto3
 requests
+werkzeug
 youtube_transcript_api
 pydantic-to-typescript>=2
 firecrawl>=2.1.2
