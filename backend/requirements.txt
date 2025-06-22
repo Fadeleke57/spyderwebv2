@@ -21,3 +21,4 @@ stripe
 google-genai
 stytch
 pytest
+black
