@@ -4,8 +4,8 @@ neo4j
 uvicorn
 python-dotenv
 pydantic-settings
-passlib[bcrypt] 
-fastapi-login 
+passlib[bcrypt]
+fastapi-login
 aiohttp
 python-multipart
 pinecone[grpc]
@@ -22,3 +22,4 @@ google-genai
 stytch
 pytest
 black
+pre-commit
