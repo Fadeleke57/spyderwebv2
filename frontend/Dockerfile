@@ -1,23 +1,33 @@
-# Use the specific Node.js runtime as a parent image
-FROM node:20-alpine
+FROM node:20-alpine AS base
 
-# Set the working directory
 WORKDIR /app
 
-# Copy the package.json and package-lock.json into the container at /app
-COPY package.json package-lock.json ./
+COPY package*.json ./
 
-# Install any needed packages
 RUN npm install
 
-# Copy the rest of the project files into the container at /app
+# builder stage for building the Next.js application
+FROM base AS builder
+
 COPY . .
 
-# Build the Next.js project
+# disable Next.js telemetry (optional, but can speed up build)
+ENV NEXT_TELEMETRY_DISABLED=1
+
 RUN npm run build
 
-# Expose port 3000
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+USER nextjs
+
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+
 EXPOSE 3000
 
-# Start the Next.js server
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]

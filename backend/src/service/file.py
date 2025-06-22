@@ -15,7 +15,7 @@ from src.utils.storage import track_text_storage, track_file_storage
 from src.core.config import settings
 from src.models.index import Webs
 from src.service.source import service as source_service
-from src.lib.openai.index import client as openai_client
+from src.service.extraction import service as extraction_service
 from botocore.exceptions import ClientError
 from src.utils.exceptions import StorageException
 
@@ -118,7 +118,7 @@ class FileService:
                     logger.info(f"Transcribing audio at: {temp_path}")
 
                     try:
-                        transcript = openai_client.get_audio_transcript(temp_path)
+                        transcript = extraction_service.extract_audio_content(temp_path)
                     except Exception as e:
                         logger.error(f"Failed to transcribe audio: {str(e)}")
                         raise HTTPException(status_code=500, detail=str(e))

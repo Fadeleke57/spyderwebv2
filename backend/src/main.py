@@ -1,5 +1,6 @@
 import logging
 from fastapi import FastAPI, BackgroundTasks
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from src.db.index import lifespan
@@ -111,4 +112,4 @@ def read_root():
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return JSONResponse(status_code=200, content={"status": "ok"})

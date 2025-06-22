@@ -4,14 +4,15 @@ neo4j
 uvicorn
 python-dotenv
 pydantic-settings
-passlib[bcrypt] 
-fastapi-login 
+passlib[bcrypt]
+fastapi-login
 aiohttp
 python-multipart
 pinecone[grpc]
 openai
 boto3
 requests
+werkzeug
 youtube_transcript_api
 pydantic-to-typescript>=2
 firecrawl>=2.1.2
@@ -20,3 +21,5 @@ stripe
 google-genai
 stytch
 pytest
+black
+pre-commit

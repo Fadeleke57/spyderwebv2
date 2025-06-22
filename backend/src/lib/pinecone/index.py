@@ -99,11 +99,11 @@ class PineconeClient:
         Returns:
             list: A list of cleaned metadata dictionaries, each including an 'id' key.
         """
-        query_embedding = self.embed(query, "query")
-
         logger.info(
             f"Performing semantic search in namespace '{namespace}' for query: {query}, filter: {filter}, limit: {limit}"
         )
+
+        query_embedding = self.embed(query, "query")
 
         pinecone_response = self.index.query(
             vector=query_embedding,

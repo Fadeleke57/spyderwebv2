@@ -4,7 +4,7 @@ from src.lib.logger.index import logger
 import pymupdf4llm
 from src.lib.youtube.index import client as youtube_client
 from src.lib.firecrawl.index import client as firecrawl_client
-from src.agents.cleaner import agent as cleaner_agent
+from src.lib.openai.index import client as openai_client
 
 
 class ExtractionService:
@@ -64,6 +64,30 @@ class ExtractionService:
         except Exception as e:
             logger.error(f"Error processing document: {e}")
             raise RuntimeError(f"Error processing document: {e}")
+
+    def extract_audio_content(self, file_path: str) -> str:
+        """
+        Extracts the content of an audio file from the provided file path.
+
+        Args:
+            file_path (str): The file path of the audio file to extract content from.
+
+        Returns:
+            str: The extracted content of the audio file.
+        """
+        try:
+            # extract text from audio file
+            data = openai_client.get_audio_transcript(file_path)
+
+            os.remove(file_path)
+            if not data:
+                logger.info("No text found in audio file")
+                return
+            return data
+
+        except Exception as e:
+            logger.error(f"Error processing audio file: {e}")
+            raise RuntimeError(f"Error processing audio file: {e}")
 
 
 service = ExtractionService()

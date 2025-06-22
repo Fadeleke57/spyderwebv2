@@ -317,7 +317,7 @@ const NoteComponent = () => {
             components={MarkdownComponents}
             className="whitespace-pre-wrap"
           >
-            {localContent || ""}
+            {localContent || "*Nothing here yet*"}
           </ReactMarkdown>
         </div>
       );

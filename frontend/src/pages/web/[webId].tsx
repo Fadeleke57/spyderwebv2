@@ -210,37 +210,65 @@ function Index() {
             </div>
           </div>
           {web && (
-            <SimpleTooltip
-              content="Copy web identifier to use with any LLM"
-              side="bottom"
-              sideOffset={6}
-            >
-              <div
-                className="hidden text-sm border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 px-2 py-1 rounded-b-lg z-10 md:flex items-center cursor-pointer font-semibold transition-colors -mt-10"
-                onClick={() => {
-                  const textToCopy = `Refer to this web: @Web-${web.webId}\n`;
-                  navigator.clipboard.writeText(textToCopy).then(() => {
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                  });
-                }}
+            <div className="hidden md:flex items-center gap-4 mb-3 lg:mb-0  -mt-10">
+              <SimpleTooltip
+                content="Copy web identifier to use with any LLM"
+                side="bottom"
+                sideOffset={6}
               >
-                {web && `@Web-${web.webId}`}{" "}
-                {copied ? (
-                  <Check
-                    strokeWidth={2}
-                    size={16}
-                    className="ml-2 text-foreground transition-transform"
-                  />
-                ) : (
-                  <CopyIcon
-                    strokeWidth={2}
-                    size={16}
-                    className="ml-2 text-foreground transition-transform"
-                  />
-                )}
-              </div>
-            </SimpleTooltip>
+                <div
+                  className="text-sm border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 px-2 py-1 rounded-b-lg z-10 flex items-center cursor-pointer font-semibold transition-colors"
+                  onClick={() => {
+                    const textToCopy = `Refer to this web: @Web-${web.webId}\n`;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    });
+                  }}
+                >
+                  {web && `@Web-${web.webId}`}{" "}
+                  {copied ? (
+                    <Check
+                      strokeWidth={2}
+                      size={16}
+                      className="ml-2 text-foreground transition-transform"
+                    />
+                  ) : (
+                    <CopyIcon
+                      strokeWidth={2}
+                      size={16}
+                      className="ml-2 text-foreground transition-transform"
+                    />
+                  )}
+                </div>
+              </SimpleTooltip>{" "}
+              {webOwner && web?.enableAIConnections && (
+                <TooltipProvider>
+                  <Tooltip delayDuration={100}>
+                    <TooltipTrigger asChild>
+                      <div className="relative inline-flex items-center justify-center">
+                        <div className="absolute rounded-full bg-violet-400/0 animate-pulse w-6 h-6 blur-sm"></div>
+                        <div className="absolute rounded-full bg-violet-400/20 animate-pulse w-8 h-8 blur-md"></div>
+                        <div className="relative rounded-full bg-violet-400 w-4 h-4 flex items-center justify-center z-10"></div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {isOwner ? (
+                        <p>AI connections enabled</p>
+                      ) : (
+                        <p>
+                          {" "}
+                          <span className="text-violet-400/80 font-semibold">
+                            {webOwner?.username}{" "}
+                          </span>{" "}
+                          enabled AI connections
+                        </p>
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
           )}
           <div className="flex items-center gap-2 mb-3 lg:mb-0">
             {!isMobile && (
@@ -250,32 +278,7 @@ function Index() {
                 setOpen={setFeedbackModalOpen}
               />
             )}
-            {webOwner && web?.enableAIConnections && (
-              <TooltipProvider>
-                <Tooltip delayDuration={100}>
-                  <TooltipTrigger asChild>
-                    <div className="relative inline-flex items-center justify-center">
-                      <div className="absolute rounded-full bg-violet-400/0 animate-pulse w-6 h-6 blur-sm"></div>
-                      <div className="absolute rounded-full bg-violet-400/20 animate-pulse w-8 h-8 blur-md"></div>
-                      <div className="relative rounded-full bg-violet-400 w-4 h-4 flex items-center justify-center z-10"></div>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isOwner ? (
-                      <p>AI connections enabled</p>
-                    ) : (
-                      <p>
-                        {" "}
-                        <span className="text-violet-400/80 font-semibold">
-                          {webOwner?.username}{" "}
-                        </span>{" "}
-                        enabled AI connections
-                      </p>
-                    )}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
+
             {web && <MobileWebView webId={web.webId} />}
             {webOwner && user && webOwner.id === user.id && (
               <SimpleTooltip content={isPinned ? "Unpin Web" : "Pin Web"}>
@@ -360,17 +363,16 @@ function Index() {
                 <UserAvatar showTooltip userId={web?.userId} dimension={38} />
                 <div className="flex flex-col gap-0">
                   <h1 className="text-xs md:text-base flex items-center lg:text-sm font-semibold m-0">
-                    {webOwnerLoading ? "Loading..." : ""}
-                    {(webOwner && webOwner.full_name) || ""}{" "}
+                    {webOwner ? webOwner.full_name : "Loading..."}{" "}
                   </h1>
                   <span className="text-foreground font-semibold text-xs">
-                    @{webOwner && webOwner.username}
+                    @{webOwner ? webOwner.username : "Loading..."}
                   </span>
                   {web && web.iteratedFrom ? (
                     <p className="text-xs font-normal text-muted-foreground">
                       Iterated From{" "}
                       <span className="font-semibold text-violet-400/80 dark:text-violet-400/80">
-                        @{iteratedFromUser?.username}
+                        @{iteratedFromUser ? iteratedFromUser.username : "Loading..."}
                       </span>
                     </p>
                   ) : (

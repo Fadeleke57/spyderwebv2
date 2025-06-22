@@ -7,7 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prepare": "husky"
+    "prepare": "cd .. && husky install frontend/.husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@ai-sdk/ui-utils": "^1.1.21",
@@ -74,7 +80,7 @@
     "react-intersection-observer": "^9.14.1",
     "react-markdown": "^9.0.1",
     "react-redux": "^9.1.2",
-    "react-resizable-panels": "^2.1.0",
+    "react-resizable-panels": "^2.1.9",
     "recharts": "^2.13.0-alpha.4",
     "remark-gfm": "^4.0.1",
     "sharp": "^0.33.4",
@@ -90,6 +96,8 @@
     "zustand": "^5.0.4"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@tailwindcss/typography": "^0.5.15",
     "@types/chrome": "^0.0.312",
     "@types/d3": "^7.4.3",
@@ -99,10 +107,12 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/three": "^0.176.0",
-    "eslint": "^8",
+    "eslint": "^8.57.1",
     "eslint-config-next": "14.2.5",
-    "husky": "^9.1.7",
+    "husky": "^8.0.3",
+    "lint-staged": "^16.1.2",
     "postcss": "^8",
+    "prettier": "^3.5.3",
     "tailwindcss": "^3.4.17",
     "typescript": "^5"
   }

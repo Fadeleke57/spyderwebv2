@@ -9,6 +9,7 @@ from botocore.exceptions import ClientError
 from werkzeug.utils import secure_filename
 from pydantic import BaseModel, HttpUrl
 from urllib.parse import unquote
+from src.utils.exceptions import StorageException
 from src.utils.storage import track_text_storage, track_file_storage
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, BackgroundTasks
 from src.routes.auth.utils import manager
@@ -16,12 +17,9 @@ from src.lib.logger.index import logger
 from src.lib.s3.index import S3Bucket
 from src.models.index import (
     Webs,
-    create_process,
-    update_process,
     CreateNote,
     UpdateNote,
     UpdateSource,
-    Source,
     Users,
     User,
 )
@@ -244,7 +242,7 @@ def upload_note(
         note.content, user.id, operation="$inc"
     )
     if not deduct_text_storage_result:
-        raise HTTPException(status_code=405, detail="Text storage limit reached")
+        raise StorageException()
 
     source_to_insert = source_service.create_source(
         webId=web_id,

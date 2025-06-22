@@ -5,12 +5,12 @@ from src.core.config import settings
 from src.lib.logger.index import logger
 import re
 from urllib.parse import urlparse, parse_qs, ParseResult, ParseResultBytes
-from typing import TypedDict, Union
+from typing import TypedDict, Union, Optional
 
 
 class YoutubeTranscriptResponse(BaseModel):
     success: bool
-    transcript: list
+    transcript: Optional[list] = []
 
 
 class YoutubeTranscriptSnippet(TypedDict):
