@@ -167,9 +167,11 @@ class SourceService:
             background_tasks.add_task(
                 self.process_source,
                 source=source,
-                content_to_embed=source.content
-                if not source.type == "youtube"
-                else MEMORY_TRANSCRIPT,
+                content_to_embed=(
+                    source.content
+                    if not source.type == "youtube"
+                    else MEMORY_TRANSCRIPT
+                ),
                 file_path=None,
             )
 

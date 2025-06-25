@@ -8,7 +8,7 @@ import WebForm from "@/components/webs/WebForm";
 import PublicWebView from "@/components/webs/PublicWebView";
 import { useFetchUserById, usePinWeb, useUnpinWeb } from "@/hooks/user";
 import { formatDistanceToNow } from "date-fns";
-import ShareDialog from "@/components/utility/ShareButton";
+import SharePopover from "@/components/utility/ShareButton";
 import UserAvatar from "@/components/utility/UserAvatar";
 import {
   SkeletonTextCard,
@@ -343,9 +343,7 @@ function Index() {
               </>
             )}
 
-            <ShareDialog
-              link={`${typeof window !== "undefined" ? window.location.origin : environment.client_url}/web/${webId}`}
-            />
+            <SharePopover/>
           </div>
         </header>
         <div className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3 overflow-hidden scrollbar-none">

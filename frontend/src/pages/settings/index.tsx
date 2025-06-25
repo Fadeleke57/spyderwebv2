@@ -6,17 +6,12 @@ import withAuth from "@/hoc/withAuth";
 import { useUser } from "@/context/UserContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Head from "next/head";
-import {useRouter } from "next/router";
+import { useRouter } from "next/router";
 import { useFetchUserById } from "@/hooks/user";
 
 function SettingsTabs() {
   const { user } = useUser();
-
-  const {
-    data: settingsUser,
-    refetch,
-    isLoading,
-  } = useFetchUserById(user?.id || "");
+  const { data: settingsUser, refetch } = useFetchUserById(user ? user.id : "");
   const isMobile = useIsMobile();
   const { tab } = useRouter().query;
   const router = useRouter();
@@ -72,7 +67,7 @@ function SettingsTabs() {
         </TabsList>
         <div className="flex-1">
           <TabsContent vertical={!isMobile} value="profile">
-            <ProfileForm refetch={refetch} user={settingsUser} />
+            <ProfileForm refetch={refetch} />
           </TabsContent>
           <TabsContent vertical={!isMobile} value="account">
             <AccountForm user={settingsUser} />

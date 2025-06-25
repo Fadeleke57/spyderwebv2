@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from src.routes.auth.utils import manager
 from src.lib.logger.index import logger
-from src.models.index import User, UpdateUser, Users, Webs
+from src.models.index import User, UpdateUser, Users, Webs, PublicUser
 from src.constants.credits import PLAN_CREDITS
 from src.utils.storage import STORAGE_LIMITS_MB
 from pydantic import BaseModel
@@ -15,7 +15,7 @@ from uuid import uuid4
 from src.lib.logger.index import logger
 from datetime import datetime
 from pytz import UTC
-from typing import Optional, List, Union
+from typing import Union
 
 router = APIRouter()
 s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
@@ -36,14 +36,14 @@ def get_search_history(user: User = Depends(manager.required)):
 def get_user(userId: str, _=Depends(manager.optional)):
 
     try:
-        requestedUser = Users.find_one({"id": userId}, {"_id": 0})
+        requested_user = Users.find_one({"id": userId}, {"_id": 0})
 
-        if not requestedUser:
+        if not requested_user:
             return {"result": None}
 
-        publicUser = convert_to_public_user(requestedUser, ["subscription_plan"])
+        public_user = PublicUser(**requested_user)
 
-        return {"result": publicUser}
+        return {"result": public_user.model_dump()}
     except Exception as e:
         logger.error(f"Error getting user: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -53,14 +53,14 @@ def get_user(userId: str, _=Depends(manager.optional)):
 def get_user_by_username(username: str, _: User = Depends(manager.optional)):
 
     try:
-        requestedUser = Users.find_one({"username": username}, {"_id": 0})
+        requested_user = Users.find_one({"username": username}, {"_id": 0})
 
-        if not requestedUser or requestedUser.get("disabled", False):
+        if not requested_user or requested_user.get("disabled", False):
             return {"result": None}
 
-        publicUser = convert_to_public_user(requestedUser, ["subscription_plan"])
+        public_user = PublicUser(**requested_user)
 
-        return {"result": publicUser}
+        return {"result": public_user.model_dump()}
     except Exception as e:
         logger.error(f"Error getting user: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -296,23 +296,3 @@ async def replace_profile_picture(
     except Exception as e:
         logger.error(f"Error replacing profile picture: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
-
-
-def convert_to_public_user(
-    user: User, extra_fields: Optional[List[str]] = None
-) -> User:
-
-    publicUser = {
-        "id": user["id"],
-        "username": user["username"],
-        "profile_picture_url": user["profile_picture_url"],
-        "bio": user["bio"],
-        "full_name": user["full_name"],
-        "created_at": user["created_at"],
-    }
-
-    if extra_fields:
-        for field in extra_fields:
-            publicUser[field] = user[field]
-
-    return publicUser

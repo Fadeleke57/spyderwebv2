@@ -23,6 +23,7 @@ from src.models.index import (
     UpdateWeb,
     IterateWeb,
     User,
+    PublicUser,
     Users,
     Search,
     Searches,
@@ -30,12 +31,12 @@ from src.models.index import (
 )
 from src.lib.logger.index import logger
 from src.core.config import settings
+from src.lib.stytch.index import client as stytch_client
 from src.lib.pinecone.index import client as pinecone_client
 from src.service.web import service as web_service
 from src.service.source import service as source_service
 from src.routes.chat.index import configure_chat
 from src.utils.storage import track_file_storage
-from src.routes.user.index import convert_to_public_user
 from src.utils.utility import clean_unicode
 
 router = APIRouter()
@@ -125,10 +126,7 @@ async def get_webs(
     dict
         Dictionary containing webs and next cursor
     """
-    authorized = False
-    if userMakingRequest:
-        if userMakingRequest["id"] == userId:
-            authorized = True
+    authorized = userMakingRequest and userMakingRequest["id"] == userId
     try:
         query = {}
         if visibility:
@@ -427,39 +425,33 @@ def delete_web(
     Delete a web and all associated sources, images, documents, and embeddings.
     """
     try:
-        webToDelete = Webs.find_one_and_delete({"webId": webId, "userId": user["id"]})
-        if not webToDelete:
+        web_to_delete = Webs.find_one_and_delete({"webId": webId, "userId": user["id"]})
+        if not web_to_delete:
             logger.info(f"Web {webId} not found or not owned by user {user['id']}")
             return {"result": False}
 
         logger.info(f"Web {webId} deleted by user {user['id']}")
 
-        # === handle background tasks
+        # handle embeddings in the background
         background_tasks.add_task(
             web_service.delete_web_embeddings, webId=webId, userId=user["id"]
         )
 
-        # === paths to clean up in S3
-        paths = [
-            f"files/{user['id']}/{webId}/images",
-            f"files/{user['id']}/{webId}/document",
-            f"files/{user['id']}/{webId}/voice_note",
-            f"files/{user['id']}/{webId}/audio",
-        ]
+        # clean up in S3
+        path_to_clean = f"files/{user['id']}/{webId}"
 
         delete_keys = []
         total_bytes_to_decrement = 0
 
-        for prefix in paths:
-            paginator = s3_session_client.get_paginator("list_objects_v2").paginate(
-                Bucket=s3_bucket.bucket_name, Prefix=prefix
-            )
+        paginator = s3_session_client.get_paginator("list_objects_v2").paginate(
+            Bucket=s3_bucket.bucket_name, Prefix=path_to_clean
+        )
 
-            for page in paginator:
-                if "Contents" in page:
-                    for obj in page["Contents"]:
-                        delete_keys.append({"Key": obj["Key"]})
-                        total_bytes_to_decrement += obj["Size"]
+        for page in paginator:
+            if "Contents" in page:
+                for obj in page["Contents"]:
+                    delete_keys.append({"Key": obj["Key"]})
+                    total_bytes_to_decrement += obj["Size"]
 
         if delete_keys:
             s3_session_client.delete_objects(
@@ -467,7 +459,7 @@ def delete_web(
             )
             logger.info(f"Deleted {len(delete_keys)} files from S3 for web {webId}")
 
-            # === Deduct combined storage from user's account
+            # deduct combined storage from user's account
             track_file_storage(
                 fileSizeBytes=total_bytes_to_decrement,
                 userId=user["id"],
@@ -821,8 +813,8 @@ def get_web_contributors(web_id: str, user=Depends(manager.optional)):
         for iteration in web["iterations"]:
             user = Users.find_one({"id": iteration}, {"_id": 0})
             if user:
-                publicUser = convert_to_public_user(user)
-                contributers.append(publicUser)
+                publicUser = PublicUser(**user)
+                contributers.append(publicUser.model_dump())
 
         return {"result": contributers}
 
@@ -882,3 +874,40 @@ def export_graph_context(
         raise HTTPException(
             status_code=500, detail=f"Error exporting graph context: {e}"
         )
+
+
+class InviteContributer(BaseModel):
+    webId: str
+    emailToInvite: str
+
+
+@router.post("/invite/contributer/")  # IN PROGRESS
+def invite_contributer(
+    payload: InviteContributer, user: User = Depends(manager.required)
+):
+    associated_web = Webs.find_one({"webId": payload.webId})
+    if not associated_web:
+        raise HTTPException(status_code=404, detail=f"Web not found!")
+
+    redirect: str = f"{settings.next_url}/auth/invite"
+
+    resp = stytch_client.magic_links.email.invite(
+        email=payload.emailToInvite, invite_magic_link_url=redirect
+    )
+    return {"result": payload.emailToInvite}
+
+
+@router.post("/revoke/invite/")  # IN PROGRESS
+def revoke_invite(payload: InviteContributer, _=Depends(manager.required)):
+
+    existing_user = Users.find_one({"email": payload.emailToInvite})
+    if existing_user:
+        existing_user = PublicUser(**existing_user)
+        # here we need to send an email to the user telling them they've been invited to a web
+        return {"result": existing_user.model_dump()}
+
+    resp = stytch_client.magic_links.email.revoke(
+        email=payload.emailToInvite,
+        invite_magic_link_url=f"{settings.next_url}/auth/invite",
+    )
+    return {"result": resp.status_code}

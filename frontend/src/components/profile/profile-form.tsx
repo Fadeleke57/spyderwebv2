@@ -32,6 +32,7 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import Image from "next/image";
+import { useUser } from "@/context/UserContext";
 
 const profileFormSchema = z.object({
   username: z
@@ -58,19 +59,14 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-export function ProfileForm({
-  user,
-  refetch,
-}: {
-  user: PublicUser;
-  refetch: () => void;
-}) {
+export function ProfileForm({ refetch }: { refetch: () => void }) {
+  const { user } = useUser();
   const { mutateAsync: editUser, isPending, error } = useEditUser();
   const isMobile = useIsMobile();
   const [isEditingDisplayName, setIsEditingDisplayName] = useState(false);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [stagedImage, setStagedImage] = useState<File | null>(null);
-  const [profileImage, setProfileImage] = useState<null | string>(null);
+  const [_, setProfileImage] = useState<null | string>(null);
   const { mutateAsync: uploadProfileImage } = useUploadProfileImage();
   const [profileImageModalOpen, setProfileImageModalOpen] = useState(false);
 
@@ -136,16 +132,13 @@ export function ProfileForm({
   };
 
   useEffect(() => {
-    if (user?.username) {
-      form.setValue("username", user.username);
+    if (user) {
+      form.setValue("username", user.username || "");
+      form.setValue("bio", user.bio || "");
+      form.setValue("email", user.email || "");
+      form.setValue("fullname", user.full_name || "");
     }
-    if (user?.bio) {
-      form.setValue("bio", user.bio);
-    }
-    if (user?.full_name) {
-      form.setValue("fullname", user.full_name);
-    }
-  }, [user?.username, user?.bio, user?.full_name, form]);
+  }, [user, form]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -271,7 +264,10 @@ export function ProfileForm({
                   </div>
                 )}
               </div>
-              <FormDescription>Your display name. Other users will see this when they search for you.</FormDescription>
+              <FormDescription>
+                Your display name. Other users will see this when they search
+                for you.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -286,10 +282,14 @@ export function ProfileForm({
               </div>
               <div className="flex gap-2">
                 <FormControl>
-                  <Input className="w-full" disabled={true} {...field} />
+                  <Input
+                    className="w-full focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 transition-none"
+                    readOnly
+                    {...field}
+                  />
                 </FormControl>
               </div>
-              <FormDescription>Your username</FormDescription>
+              <FormDescription>Your username cannot be changed yet.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -302,13 +302,13 @@ export function ProfileForm({
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input
-                  disabled
-                  className="w-full"
+                  className="w- focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 transition-none"
                   placeholder="Enter your email..."
-                  {...field}
+                  value={form.watch("email")}
+                  readOnly
                 />
               </FormControl>
-              <FormDescription>Your email</FormDescription>
+              <FormDescription>Your email cannot be changed yet.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
