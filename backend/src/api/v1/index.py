@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends
-from src.lib.pinecone.index import client as pineconeClient
+from src.models.user import Contributers
+from src.lib.pinecone.index import client as pinecone_client
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from src.routes.auth.utils import manager
-from src.models.index import User, Webs
+from src.models.index import User, Webs, Web
 from typing import Optional, Literal
 from fastapi import Query
 from src.lib.logger.index import logger
@@ -28,32 +29,43 @@ def version():
     return JSONResponse(content={"version": "1.0.0"})
 
 
-@router.get(
-    "/search/webs"
-)  # scope to all public webs (inclusive of the user's public and private webs) or all of the user's webs (inclusive of the user's public and private webs)
+@router.get("/search/webs")
 def search_webs(
     query: str,
     scope: Literal["User.all", "All"] = Query("All", alias="scope"),
-    userMakingRequest=Depends(manager.required),
+    user_making_request=Depends(manager.required),
 ):
+    """
+    Search for webs based on a query and scope.
 
-    userMakingRequest = User(**userMakingRequest)
+    Args:
+        query (str): The search query.
+        scope (Literal["User.all", "All"]: The scope of the search.
+        user_making_request (User): The user making the request.
+
+    Returns:
+        JSONResponse: A JSON response containing the search results.
+    """
+
+    user_making_request = User(**user_making_request)
     filter = {}
     if scope == "User.all":
-        filter["userId"] = {"$eq": userMakingRequest.id}
-    elif scope == "All":
+        filter["userId"] = {"$eq": user_making_request.id}
+    elif (
+        scope == "All"
+    ):  # scope to all public webs (inclusive of the user's public and private webs)
         filter = {
             "$or": [
                 {"visibility": {"$eq": "Public"}},
                 {
                     "$and": [
                         {"visibility": {"$eq": "Private"}},
-                        {"userId": {"$eq": userMakingRequest.id}},
+                        {"userId": {"$eq": user_making_request.id}},
                     ]
                 },
             ]
         }
-    results = pineconeClient.run_semantic_search(
+    results = pinecone_client.run_semantic_search(
         query, namespace="webs", filter=filter, limit=5
     )
     all_metadata = []
@@ -68,10 +80,23 @@ def search_memories(
     scope: Literal["Web", "User.all"] = Query("User.all", alias="scope"),
     webId: Optional[str] = Query(None, alias="webId"),
     sourceId: Optional[str] = Query(None, alias="sourceId"),
-    userMakingRequest=Depends(manager.required),
+    user_making_request=Depends(manager.required),
 ):
+    """
+    Search for memories based on a query and scope.
+
+    Args:
+        query (str): The search query.
+        scope (Literal["Web", "User.all"]: The scope of the search.
+        webId (Optional[str]): The ID of the web to search within.
+        sourceId (Optional[str]): The ID of the source to search within.
+        user_making_request (User): The user making the request.
+
+    Returns:
+        JSONResponse: A JSON response containing the search results.
+    """
     logger.info(f"received sourceId: {sourceId}")
-    userMakingRequest = User(**userMakingRequest)
+    user_making_request = User(**user_making_request)
     filter = {}
 
     if scope == "Web":
@@ -80,30 +105,36 @@ def search_memories(
                 status_code=400, detail="Web ID or Source ID is required for scope Web."
             )
 
-        if webId:
-            associatedWeb = Webs.find_one({"webId": webId})
-            if not associatedWeb or (
-                associatedWeb
-                and associatedWeb["visibility"] == "Private"
-                and associatedWeb["userId"] != userMakingRequest.id
-            ):
+        associated_web = Webs.find_one({"webId": webId})
+        if not associated_web:
+            raise HTTPException(status_code=404, detail="Web not found")
+
+        associated_web = Web(**associated_web)
+        if (
+            associated_web.visibility == "Private"
+            and associated_web.userId != user_making_request.id
+        ):
+            is_contributor = Contributers.find_one(
+                {"webId": webId, "userId": user_making_request.id}
+            )
+            if not is_contributor:
                 logger.info(
-                    f"User {userMakingRequest.id} does not have access to web {webId}. The associated web is {associatedWeb}."
+                    f"User {user_making_request.id} does not have access to web {webId}. The associated web is {associated_web}."
                 )
                 raise HTTPException(
                     status_code=403, detail="You do not have access to this web."
                 )
 
-            filter["webId"] = {"$eq": webId}
+        filter["webId"] = {"$eq": webId}
 
     elif scope == "User.all":
-        filter["userId"] = {"$eq": userMakingRequest.id}
+        filter["userId"] = {"$eq": user_making_request.id}
 
     if sourceId:
         filter["sourceId"] = {"$eq": sourceId}
 
     try:
-        results = pineconeClient.run_semantic_search(
+        results = pinecone_client.run_semantic_search(
             query, namespace="sources", filter=filter, limit=5
         )
         return JSONResponse(content={"result": results})
@@ -114,7 +145,7 @@ def search_memories(
 
 @router.post("/add/memory")  # TODO: This would be the start of "feeds"
 def add_chat_to_memory(
-    userMakingRequest=Depends(manager.required),
+    user_making_request=Depends(manager.required),
 ):
-    userMakingRequest = User(**userMakingRequest)
+    user_making_request = User(**user_making_request)
     pass

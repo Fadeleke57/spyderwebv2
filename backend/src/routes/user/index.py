@@ -15,7 +15,7 @@ from uuid import uuid4
 from src.lib.logger.index import logger
 from datetime import datetime
 from pytz import UTC
-from typing import Union
+from typing import Optional
 
 router = APIRouter()
 s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
@@ -24,7 +24,7 @@ s3_bucket = S3Bucket(bucket_name=settings.s3_bucket_name)
 @router.get("/search/history")
 def get_search_history(user: User = Depends(manager.required)):
     try:
-        user = Users.find_one({"id": user["id"]})
+        user = Users.find_one({"id": user.id})
         analytics = user["analytics"]
         return {"result": analytics["searches"]}
     except Exception as e:
@@ -67,22 +67,20 @@ def get_user_by_username(username: str, _: User = Depends(manager.optional)):
 
 
 @router.patch("/edit/")
-def edit_user(updates: UpdateUser, user=Depends(manager.required)):
+def edit_user(updates: UpdateUser, user: User = Depends(manager.required)):
 
     try:
+
         if updates.username:
-            username_exists = Users.find_one({"username": updates.username})
-            if username_exists and username_exists["id"] != user["id"]:
+            possible_user = Users.find_one({"username": updates.username})
+            if possible_user and User(possible_user).id != user.id:
                 raise HTTPException(status_code=400, detail="Username already exists")
 
         update_data = updates.model_dump(exclude_none=True)
         Users.update_one(
-            {"id": user["id"]},
+            {"id": user.id},
             {"$set": update_data},
         )
-        if not user:
-            print("User was not found after editing")
-            raise HTTPException(status_code=404, detail="User not found")
 
         return {"result": "success"}
 
@@ -95,7 +93,7 @@ def edit_user(updates: UpdateUser, user=Depends(manager.required)):
 def hide_web(webId: str, user: User = Depends(manager.required)):
 
     try:
-        Users.update_one({"id": user["id"]}, {"$addToSet": {"websHidden": webId}})
+        Users.update_one({"id": user.id}, {"$addToSet": {"websHidden": webId}})
         return {"result": True}
 
     except Exception as e:
@@ -107,7 +105,7 @@ def hide_web(webId: str, user: User = Depends(manager.required)):
 def unhide_web(webId: str, user: User = Depends(manager.required)):
 
     try:
-        Users.update_one({"id": user["id"]}, {"$pull": {"websHidden": webId}})
+        Users.update_one({"id": user.id}, {"$pull": {"websHidden": webId}})
         return {"result": True}
     except Exception as e:
         logger.error(f"Error unhiding web: {str(e)}")
@@ -118,7 +116,7 @@ def unhide_web(webId: str, user: User = Depends(manager.required)):
 def save_web(webId: str, user: User = Depends(manager.required)):
 
     try:
-        Users.update_one({"id": user["id"]}, {"$addToSet": {"websSaved": webId}})
+        Users.update_one({"id": user.id}, {"$addToSet": {"websSaved": webId}})
         return {"result": True}
 
     except Exception as e:
@@ -130,7 +128,7 @@ def save_web(webId: str, user: User = Depends(manager.required)):
 def unsave_web(webId: str, user: User = Depends(manager.required)):
 
     try:
-        Users.update_one({"id": user["id"]}, {"$pull": {"websSaved": webId}})
+        Users.update_one({"id": user.id}, {"$pull": {"websSaved": webId}})
         return {"result": True}
 
     except Exception as e:
@@ -142,7 +140,7 @@ def unsave_web(webId: str, user: User = Depends(manager.required)):
 def pin_web(webId: str, user: User = Depends(manager.required)):
 
     try:
-        Users.update_one({"id": user["id"]}, {"$addToSet": {"websPinned": webId}})
+        Users.update_one({"id": user.id}, {"$addToSet": {"websPinned": webId}})
         return {"result": True}
 
     except Exception as e:
@@ -154,7 +152,7 @@ def pin_web(webId: str, user: User = Depends(manager.required)):
 def unpin_web(webId: str, user: User = Depends(manager.required)):
 
     try:
-        Users.update_one({"id": user["id"]}, {"$pull": {"websPinned": webId}})
+        Users.update_one({"id": user.id}, {"$pull": {"websPinned": webId}})
         return {"result": True}
 
     except Exception as e:
@@ -165,8 +163,8 @@ def unpin_web(webId: str, user: User = Depends(manager.required)):
 @router.get("/check/email")
 def check_email(email: str):
     try:
-        user = Users.find_one({"email": email})
-        result = True if user else False
+        possible_user = Users.find_one({"email": email})
+        result = True if possible_user else False
         return {"result": result}
 
     except Exception as e:
@@ -179,16 +177,11 @@ async def get_usage(user: User = Depends(manager.required)):
     """Get user's resource usage"""
 
     try:
-        user_data = Users.find_one({"id": user["id"]})
-        if not user_data:
-            raise HTTPException(status_code=404, detail="User not found")
-
-        plan = user_data.get("subscription_plan", "free")
-        credits_used = user_data.get("credits", 0)
+        plan = user.subscription_plan
+        credits_used = user.credits
         credits_limit = PLAN_CREDITS[plan]
 
-        # Get storage values directly from user_data
-        storage_used = user_data.get("storage_used", 0) / (1024**2)
+        storage_used = user.storage_used / (1024**2)
         storage_limit = STORAGE_LIMITS_MB[plan]
 
         return {
@@ -197,16 +190,15 @@ async def get_usage(user: User = Depends(manager.required)):
         }
 
     except Exception as e:
-        logger.error(f"Error getting usage for user {user['id']}: {str(e)}")
+        logger.error(f"Error getting usage for user {user.id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/pinned/webs/{user_id}")
 def get_pinned_webs(
-    user_id: str, userMakingRequest: Union[User, None] = Depends(manager.optional)
+    user_id: str, user_making_request: Optional[User] = Depends(manager.optional)
 ):
-    userMakingRequest = User(**userMakingRequest) if userMakingRequest else None
-    authorized = userMakingRequest and userMakingRequest.id == user_id
+    authorized = user_making_request and user_making_request.id == user_id
     profile = Users.find_one({"id": user_id})
 
     query = {"webId": {"$in": profile["websPinned"]}}
@@ -229,13 +221,12 @@ def get_pinned_webs(
 
 
 @router.get("/saved/webs/{user_id}")
-def get_pinned_webs(user_id: str, userMakingRequest: User = Depends(manager.optional)):
-    authorized = False
-    if userMakingRequest:
-        if userMakingRequest["id"] == user_id:
-            authorized = True
+def get_pinned_webs(
+    user_id: str, user_making_request: Optional[User] = Depends(manager.optional)
+):
+    authorized = user_making_request and user_making_request.id == user_id
 
-    query = {"webId": {"$in": userMakingRequest["websSaved"]}}
+    query = {"webId": {"$in": user_making_request.websSaved}}
     if not authorized:
         query["visibility"] = "Public"
 
@@ -265,7 +256,7 @@ async def replace_profile_picture(
     try:
         file_uuid = str(uuid4())
         filename = secure_filename(file.filename)
-        object_name = f"files/{user['id']}/profile/images/{filename}_{file_uuid}"
+        object_name = f"files/{user.id}/profile/images/{filename}_{file_uuid}"
         temp_dir = "/tmp/profile_image_uploads"
         os.makedirs(temp_dir, exist_ok=True)
         temp_path = os.path.join(temp_dir, f"{filename}_{file_uuid}")
@@ -279,9 +270,9 @@ async def replace_profile_picture(
 
         url = f"https://{settings.cloudfront_domain}/{object_name}"
 
-        prev_image_keys = user.get("imageKeys", [])
+        prev_image_keys = user.imageKeys
         Users.update_one(
-            {"id": user["id"]},
+            {"id": user.id},
             {
                 "$set": {
                     "imageKeys": prev_image_keys + [object_name],

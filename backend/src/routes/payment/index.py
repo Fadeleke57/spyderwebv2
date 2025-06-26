@@ -95,16 +95,16 @@ async def create_checkout_session(
         logger.info(f"Creating checkout session for: {request.model_dump()}")
 
         # Get or create Stripe customer
-        customer_id = user.get("stripe_customer_id")
+        customer_id = user.stripe_customer_id
         if not customer_id:
             # Create new customer
             customer = stripe.Customer.create(
-                email=user["email"], metadata={"user_id": user["id"]}
+                email=user.email, metadata={"user_id": user.id}
             )
             customer_id = customer.id
             # Save customer ID to user
             Users.update_one(
-                {"id": user["id"]}, {"$set": {"stripe_customer_id": customer_id}}
+                {"id": user.id}, {"$set": {"stripe_customer_id": customer_id}}
             )
             logger.info(f"Created new Stripe customer: {customer_id}")
 
@@ -152,7 +152,7 @@ async def create_checkout_session(
             mode="subscription",
             success_url=f"{settings.next_url}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{settings.next_url}/payment/cancel",
-            client_reference_id=user["id"],
+            client_reference_id=user.id,
             metadata={"tier": request.tier, "is_yearly": str(request.is_yearly)},
             allow_promotion_codes=True,
         )
@@ -203,7 +203,6 @@ class SuccessPaymentPayload(BaseModel):
 @router.post("/success")
 async def handle_payment_success(
     request: SuccessPaymentPayload,
-    background_tasks: BackgroundTasks,
     user: User = Depends(manager.required),
 ):
     """Handle successful payment and plan upgrade"""
@@ -225,9 +224,9 @@ async def handle_payment_success(
         logger.info(f"Retrieved session data: {session}")
 
         # Get the client reference ID to ensure it matches the user
-        if session.client_reference_id != user["id"]:
+        if session.client_reference_id != user.id:
             logger.error(
-                f"User ID mismatch - Session user: {session.client_reference_id}, Current user: {user['id']}"
+                f"User ID mismatch - Session user: {session.client_reference_id}, Current user: {user.id}"
             )
             return JSONResponse(status_code=403, content={"detail": "Unauthorized"})
 
@@ -245,21 +244,21 @@ async def handle_payment_success(
             )
 
         logger.info(
-            f"Attempting to update plan for user {user['id']} to {tier} (yearly: {is_yearly})"
+            f"Attempting to update plan for user {user.id} to {tier} (yearly: {is_yearly})"
         )
 
         # Update the user's plan
         success, error = await update_user_plan(
-            user_id=user["id"], tier=tier, is_yearly=is_yearly
+            user_id=user.id, tier=tier, is_yearly=is_yearly
         )
 
         if not success:
-            logger.error(f"Failed to update plan - User: {user['id']}, Error: {error}")
+            logger.error(f"Failed to update plan - User: {user.id}, Error: {error}")
             return JSONResponse(
                 status_code=500, content={"detail": f"Failed to update plan: {error}"}
             )
 
-        logger.info(f"Successfully updated plan for user {user['id']}")
+        logger.info(f"Successfully updated plan for user {user.id}")
 
         return JSONResponse(
             status_code=200,
@@ -290,11 +289,11 @@ async def handle_payment_failure(
         session = stripe.checkout.Session.retrieve(session_id)
 
         # Get the client reference ID to ensure it matches the user
-        if session.client_reference_id != user["id"]:
+        if session.client_reference_id != user.id:
             raise HTTPException(status_code=403, detail="Unauthorized")
 
         # Log the failure
-        logger.error(f"Payment failed for user {user['id']}, session {session_id}")
+        logger.error(f"Payment failed for user {user.id}, session {session_id}")
 
         return {
             "status": "error",
@@ -312,14 +311,14 @@ async def handle_payment_failure(
 @router.post("/cancel-subscription")
 async def cancel_subscription(user: User = Depends(manager.required)):
     try:
-        logger.info(f"Cancelling subscription for user: {user['id']}")
+        logger.info(f"Cancelling subscription for user: {user.id}")
 
         # Get user's stripe customer ID
-        customer_id = user.get("stripe_customer_id")
+        customer_id = user.stripe_customer_id
         if not customer_id:
             # If no stripe ID, just update plan to free
             success, error = await update_user_plan(
-                user_id=user["id"], tier="free", is_yearly=False
+                user_id=user.id, tier="free", is_yearly=False
             )
             if not success:
                 return JSONResponse(
@@ -342,7 +341,7 @@ async def cancel_subscription(user: User = Depends(manager.required)):
         if not subscriptions.data:
             # No active subscription, just update plan
             success, error = await update_user_plan(
-                user_id=user["id"], tier="free", is_yearly=False
+                user_id=user.id, tier="free", is_yearly=False
             )
             if not success:
                 return JSONResponse(
@@ -367,7 +366,7 @@ async def cancel_subscription(user: User = Depends(manager.required)):
 
         # Update user's plan
         success, error = await update_user_plan(
-            user_id=user["id"], tier="free", is_yearly=False
+            user_id=user.id, tier="free", is_yearly=False
         )
 
         if not success:
@@ -376,7 +375,7 @@ async def cancel_subscription(user: User = Depends(manager.required)):
                 status_code=500, content={"detail": f"Failed to update plan: {error}"}
             )
 
-        logger.info(f"Successfully cancelled subscription for user: {user['id']}")
+        logger.info(f"Successfully cancelled subscription for user: {user.id}")
 
         return JSONResponse(
             status_code=200,

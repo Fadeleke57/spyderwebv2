@@ -21,6 +21,7 @@ class User(BaseModel):
     company: str = ""
     purpose: str = ""
     interest: str = ""
+    imageKeys: list[str] = []
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     profile_picture_url: Optional[str] = None
@@ -42,6 +43,7 @@ class PublicMe(BaseModel):
     username: str
     email: str
     bio: str = ""
+    imageKeys: list[str] = []
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     profile_picture_url: Optional[str] = None
     websHidden: list[str] = []
@@ -57,6 +59,7 @@ class PublicUser(BaseModel):
     full_name: str
     username: str
     bio: str = ""
+    imageKeys: list[str] = []
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     profile_picture_url: Optional[str] = None
     subscription_plan: str = "free"
@@ -73,8 +76,6 @@ class CreateUser(BaseModel):
 
 
 def create_user(createUser: CreateUser):
-    if not createUser:
-        raise ValueError("User data is required")
 
     try:
 

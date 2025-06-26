@@ -7,6 +7,7 @@ from src.routes.chat.index import router as chat_router
 from src.routes.process.index import router as process_router
 from src.routes.payment.index import router as payment_router
 from src.routes.feedback.index import router as feedback_router
+from src.routes.contributer.index import router as contributer_router
 
 __all__ = [
     auth_router,
@@ -18,4 +19,5 @@ __all__ = [
     process_router,
     payment_router,
     feedback_router,
+    contributer_router,
 ]

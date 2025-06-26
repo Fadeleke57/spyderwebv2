@@ -4,7 +4,7 @@ from datetime import datetime
 from typing_extensions import deprecated
 from typing import List, Any, Optional
 from fastapi import HTTPException
-from src.models.index import Source, Webs
+from src.models.index import Source, Webs, Sources
 from src.service.chunking import service as chunking_service
 from src.service.embedding import service as embedding_service
 from src.service.extraction import service as extraction_service

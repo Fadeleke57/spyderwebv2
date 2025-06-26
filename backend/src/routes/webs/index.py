@@ -73,11 +73,11 @@ def get_user_webs(
 
         if visibility:
             webs = list(
-                Webs.find({"visibility": visibility, "userId": user["id"]}, {"_id": 0})
+                Webs.find({"visibility": visibility, "userId": user.id}, {"_id": 0})
             )
         else:
             webs = list(
-                Webs.find({"userId": user["id"]}, {"_id": 0}, sort=[("updated", -1)])
+                Webs.find({"userId": user.id}, {"_id": 0}, sort=[("updated", -1)])
             )
 
         # pagination
@@ -109,7 +109,7 @@ async def get_webs(
     cursor: str = None,
     visibility=None,
     userId=None,
-    userMakingRequest=Depends(manager.optional),
+    userMakingRequest: User = Depends(manager.optional),
 ):
     """
     Retrieve public webs with cursor-based pagination.
@@ -126,16 +126,16 @@ async def get_webs(
     dict
         Dictionary containing webs and next cursor
     """
-    authorized = userMakingRequest and userMakingRequest["id"] == userId
+    query = {}
+    is_resource_owner = userMakingRequest and userMakingRequest.id == userId
     try:
-        query = {}
         if visibility:
             query["visibility"] = visibility
         if (
             userId
         ):  # if userId was specified, we're looking for profile webs that fit the scope of the user making the request
             query["userId"] = userId
-            if not authorized:
+            if not is_resource_owner:
                 query["visibility"] = "Public"
 
         if cursor:
@@ -161,7 +161,7 @@ async def get_webs(
 
 
 @router.get("/popular")
-def get_popular_webs(limit: int = 10):
+def get_popular_webs(limit: int = 10, _=Depends(manager.optional)):
     """
     Retrieve popular webs with cursor-based pagination.
 
@@ -203,7 +203,7 @@ def get_user_liked_webs(user: User = Depends(manager.required)):
     """
     try:
         likedWebs = list(
-            Webs.find({"likes": user["id"]}, {"_id": 0}, sort=[("created", -1)])
+            Webs.find({"likes": user.id}, {"_id": 0}, sort=[("created", -1)])
         )
         return {"result": likedWebs}
 
@@ -216,7 +216,7 @@ def get_user_liked_webs(user: User = Depends(manager.required)):
 def create_web_endpoint(
     createWebPayload: CreateWeb,
     background_tasks: BackgroundTasks,
-    user=Depends(manager.required),
+    user: User = Depends(manager.required),
 ):
     """
     Create a new web.
@@ -234,11 +234,10 @@ def create_web_endpoint(
     """
     try:
 
-        web_id = create_web(createWebPayload, user["id"])
+        web_id = create_web(createWebPayload, user.id)
 
-        web_document = Webs.find_one({"webId": web_id, "userId": user["id"]})
+        web_document = Webs.find_one({"webId": web_id, "userId": user.id})
 
-        pinecone_document = web_document
         background_tasks.add_task(web_service.emebd_and_upsert_web, web_document)
 
         return {"result": web_id}
@@ -249,10 +248,10 @@ def create_web_endpoint(
 
 
 @router.post("/upload/image/{web_id}")
-async def upload_file(
+async def upload_image_to_web(
     web_id: str,
     files: list[UploadFile] = File(..., description="Multiple files as UploadFile"),
-    user=Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
     """
     Upload images to a web.
@@ -267,7 +266,7 @@ async def upload_file(
     Raises:
         HTTPException: If the upload fails.
     """
-    web = Webs.find_one({"webId": web_id, "userId": user["id"]})
+    web = Webs.find_one({"webId": web_id})
     if not web:
         raise HTTPException(status_code=404, detail="Web not found")
 
@@ -276,7 +275,7 @@ async def upload_file(
         for file in files:
             # sanitize filename
             safe_filename = secure_filename(file.filename)
-            object_name = f"files/{user['id']}/{web_id}/images/{safe_filename}"
+            object_name = f"files/{user.id}/{web_id}/images/{safe_filename}"
 
             temp_dir = "/tmp/web_uploads"
             os.makedirs(temp_dir, exist_ok=True)
@@ -289,7 +288,7 @@ async def upload_file(
                     buffer.write(contents)
 
                 fileStorageResult = track_file_storage(
-                    fileSizeBytes=len(contents), userId=user["id"], operation="$inc"
+                    fileSizeBytes=len(contents), userId=user.id, operation="$inc"
                 )
 
                 if not fileStorageResult:
@@ -302,11 +301,11 @@ async def upload_file(
                     object_name,
                 )
 
-                url = f"https://{s3_bucket.bucket_name}.s3.{s3_bucket.region_name}.amazonaws.com/{object_name}"
+                url = f"https://{settings.cloudfront_domain}/{object_name}"
                 uploaded_image_urls.append(url)
 
                 result = Webs.update_one(
-                    {"webId": web_id, "userId": user["id"]},
+                    {"webId": web_id, "userId": user.id},
                     {
                         "$push": {"imageKeys": object_name},
                         "$set": {"updated": datetime.now(UTC)},
@@ -334,7 +333,9 @@ async def upload_file(
 
 
 @router.delete("/delete/image/{web_id}/{image_name}")
-def delete_image(web_id: str, image_name: str, user=Depends(manager.required)):
+def delete_image(
+    web_id: str, image_name: str, user: User = Depends(manager.required.WRITE)
+):
     """
     Delete an image associated with a web.
 
@@ -352,7 +353,7 @@ def delete_image(web_id: str, image_name: str, user=Depends(manager.required)):
 
     try:
 
-        filepath = f"files/{user['id']}/{web_id}/images/{image_name}"
+        filepath = f"files/{user.id}/{web_id}/images/{image_name}"
 
         try:
             response = s3_session_client.head_object(
@@ -364,7 +365,9 @@ def delete_image(web_id: str, image_name: str, user=Depends(manager.required)):
             raise HTTPException(status_code=404, detail="Image not found in S3")
 
         result = Webs.update_one(
-            {"webId": web_id, "userId": user["id"], "imageKeys": filepath},
+            {
+                "webId": web_id,
+            },
             {"$pull": {"imageKeys": filepath}, "$set": {"updated": datetime.now(UTC)}},
         )
 
@@ -374,7 +377,7 @@ def delete_image(web_id: str, image_name: str, user=Depends(manager.required)):
         s3_session_client.delete_object(Bucket=s3_bucket.bucket_name, Key=filepath)
 
         track_file_storage(
-            fileSizeBytes=file_size_bytes, userId=user["id"], operation="$dec"
+            fileSizeBytes=file_size_bytes, userId=user.id, operation="$dec"
         )
 
         return {"result": True}
@@ -385,7 +388,7 @@ def delete_image(web_id: str, image_name: str, user=Depends(manager.required)):
 
 
 @router.get("/images/web/{web_id}")
-def get_web_images(web_id: str):
+def get_web_images(web_id: str, _: Optional[User] = Depends(manager.optional.READ)):
     """
     Retrieve all image URLs associated with a given web.
 
@@ -404,7 +407,8 @@ def get_web_images(web_id: str):
         if not web:
             raise HTTPException(status_code=404, detail=f"Web not found!")
 
-        imageKeys = web.get("imageKeys", [])
+        web = Web(**web)
+        imageKeys = web.imageKeys
         urls = []
 
         for key in imageKeys:
@@ -417,28 +421,30 @@ def get_web_images(web_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/delete")
+@router.delete("/delete/{web_id}")
 def delete_web(
-    webId: str, background_tasks: BackgroundTasks, user=Depends(manager.required)
+    web_id: str,
+    background_tasks: BackgroundTasks,
+    user: User = Depends(manager.required.OWNER),
 ):
     """
     Delete a web and all associated sources, images, documents, and embeddings.
     """
     try:
-        web_to_delete = Webs.find_one_and_delete({"webId": webId, "userId": user["id"]})
+        web_to_delete = Webs.find_one_and_delete({"webId": web_id, "userId": user.id})
         if not web_to_delete:
-            logger.info(f"Web {webId} not found or not owned by user {user['id']}")
+            logger.info(f"Web {web_id} not found or not owned by user {user.id}")
             return {"result": False}
 
-        logger.info(f"Web {webId} deleted by user {user['id']}")
+        logger.info(f"Web {web_id} deleted by user {user.id}")
 
         # handle embeddings in the background
         background_tasks.add_task(
-            web_service.delete_web_embeddings, webId=webId, userId=user["id"]
+            web_service.delete_web_embeddings, webId=web_id, userId=user.id
         )
 
         # clean up in S3
-        path_to_clean = f"files/{user['id']}/{webId}"
+        path_to_clean = f"files/{user.id}/{web_id}"
 
         delete_keys = []
         total_bytes_to_decrement = 0
@@ -457,12 +463,12 @@ def delete_web(
             s3_session_client.delete_objects(
                 Bucket=s3_bucket.bucket_name, Delete={"Objects": delete_keys}
             )
-            logger.info(f"Deleted {len(delete_keys)} files from S3 for web {webId}")
+            logger.info(f"Deleted {len(delete_keys)} files from S3 for web {web_id}")
 
             # deduct combined storage from user's account
             track_file_storage(
                 fileSizeBytes=total_bytes_to_decrement,
-                userId=user["id"],
+                userId=user.id,
                 operation="$dec",
             )
 
@@ -473,12 +479,12 @@ def delete_web(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.patch("/update/{webId}")
+@router.patch("/update/{web_id}")
 def update_web(
-    webId: str,
-    updateWebPayload: UpdateWeb,
+    web_id: str,
+    update_web_payload: UpdateWeb,
     background_tasks: BackgroundTasks,
-    user=Depends(manager.required),
+    user: User = Depends(manager.required.OWNER),
 ):
     """
     Update a web.
@@ -492,18 +498,16 @@ def update_web(
         dict: A JSON response with a result key.
     """
     try:
-        web = Webs.find_one({"webId": webId, "userId": user["id"]})
+        web = Webs.find_one({"webId": web_id})
         if not web:
             raise HTTPException(status_code=404, detail="Web not found")
 
-        update_fields = updateWebPayload.model_dump(exclude_none=True)
+        update_fields = update_web_payload.model_dump(exclude_none=True)
         update_fields["updated"] = datetime.now(UTC)
 
-        background_tasks.add_task(web_service.update_emebeddings, webId, update_fields)
+        background_tasks.add_task(web_service.update_emebeddings, web_id, update_fields)
 
-        result = Webs.update_one(
-            {"webId": webId, "userId": user["id"]}, {"$set": update_fields}
-        )
+        result = Webs.update_one({"webId": web_id}, {"$set": update_fields})
 
         if result.modified_count == 0:
             raise HTTPException(
@@ -517,8 +521,10 @@ def update_web(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/id")
-def get_web_by_id(webId: str, user=Depends(manager.optional)):
+@router.get("/web/{web_id}")
+def get_web_by_id(
+    web_id: str, _: Optional[User] = Depends(manager.optional.READ)
+):  # dependency handles visibility check
     """
     Retrieve a web by its ID.
 
@@ -534,17 +540,13 @@ def get_web_by_id(webId: str, user=Depends(manager.optional)):
     """
 
     try:
-        web: Web = Webs.find_one({"webId": webId}, {"_id": 0})
+        web = Webs.find_one({"webId": web_id}, {"_id": 0})
+        if not web:
+            raise HTTPException(status_code=404, detail="Web not found")
 
-        if not web or (
-            web["visibility"] == "Private"
-            and not user
-            and user.get("id", "") != web["userId"]
-        ):
-            raise HTTPException(status_code=404, detail="Item not found")
-        else:
-            _ = configure_chat(webId=webId)
-            return {"result": web}
+        web = Web(**web)
+
+        return {"result": web.model_dump()}
 
     except Exception as e:
         logger.error(f"Error getting web by id: {str(e)}")
@@ -552,7 +554,7 @@ def get_web_by_id(webId: str, user=Depends(manager.optional)):
 
 
 @router.post("/like/{web_id}")
-def like_web(web_id: str, user=Depends(manager.required)):
+def like_web(web_id: str, user: User = Depends(manager.required)):
     """
     Like a web for a user.
 
@@ -569,8 +571,8 @@ def like_web(web_id: str, user=Depends(manager.required)):
 
     try:
         result = Webs.find_one_and_update(
-            {"webId": web_id, "likes": {"$ne": user["id"]}},
-            {"$addToSet": {"likes": user["id"]}},
+            {"webId": web_id, "likes": {"$ne": user.id}},
+            {"$addToSet": {"likes": user.id}},
             return_document=ReturnDocument.AFTER,
         )
         if not result:
@@ -584,7 +586,7 @@ def like_web(web_id: str, user=Depends(manager.required)):
 
 
 @router.post("/unlike/{web_id}")
-def unlike_web(web_id: str, user=Depends(manager.required)):
+def unlike_web(web_id: str, user: User = Depends(manager.required)):
     """
     Unlike a web for a user.
 
@@ -600,8 +602,8 @@ def unlike_web(web_id: str, user=Depends(manager.required)):
     """
     try:
         result = Webs.find_one_and_update(
-            {"webId": web_id, "likes": user["id"]},
-            {"$pull": {"likes": user["id"]}},
+            {"webId": web_id, "likes": user.id},
+            {"$pull": {"likes": user.id}},
             return_document=ReturnDocument.AFTER,
         )
         if not result:
@@ -614,11 +616,17 @@ def unlike_web(web_id: str, user=Depends(manager.required)):
         logger.error(f"Error unliking web: {str(e)}")
 
 
-@router.get("/saved/user")
-def get_user_saved_webs(user=Depends(manager.required)):
-    try:
+@router.get("/saved/user/{user_id}")
+def get_user_saved_webs(user_id: str, user: Optional[User] = Depends(manager.optional)):
 
-        result = Webs.find({"webId": {"$in": user["websSaved"]}}, {"_id": 0})
+    query = {"userId": user_id}
+
+    resource_owner = user is not None and user.id == user_id
+    if not resource_owner:
+        query["visibility"] = "Public"
+
+    try:
+        result = Webs.find(query, {"_id": 0})
         return {"result": result}
 
     except Exception as e:
@@ -626,12 +634,12 @@ def get_user_saved_webs(user=Depends(manager.required)):
 
 
 @router.patch("/add/tag/{web_id}/{tag}")
-def add_tag(web_id: str, tag: str, user=Depends(manager.required)):
+def add_tag(web_id: str, tag: str, user: User = Depends(manager.required.WRITE)):
     try:
 
         formatted_tag = tag.lower()
         Webs.update_one(
-            {"webId": web_id, "userId": user["id"]},
+            {"webId": web_id},
             {"$addToSet": {"tags": formatted_tag}},
         )
         return {"result": True}
@@ -641,13 +649,13 @@ def add_tag(web_id: str, tag: str, user=Depends(manager.required)):
 
 
 @router.patch("/remove/tag/{web_id}/{tag}")
-def remove_tag(web_id: str, tag: str, user=Depends(manager.required)):
+def remove_tag(web_id: str, tag: str, user: User = Depends(manager.required.WRITE)):
 
     try:
 
         formatted_tag = tag.lower()
         Webs.update_one(
-            {"webId": web_id, "userId": user["id"]},
+            {"webId": web_id},
             {"$pull": {"tags": formatted_tag}},
         )
 
@@ -663,7 +671,7 @@ def iterate_web(
     web_id: str,
     iteratePayload: IterateWeb,
     background_task: BackgroundTasks,
-    user=Depends(manager.required),
+    user: User = Depends(manager.required.READ),
 ):
     """
     Iterate over a given web and create a new web with the same sources but with a new name and description.
@@ -677,35 +685,40 @@ def iterate_web(
     """
     try:
         # get original web + owner
-        web_to_iterate: Web | None = Webs.find_one({"webId": web_id})
+        web_to_iterate = Webs.find_one({"webId": web_id})
+
         if not web_to_iterate:
             raise HTTPException(status_code=404, detail="Original web not found")
 
-        associated_user: User | None = Users.find_one(
-            {"id": web_to_iterate["userId"]}, {"_id": 0}
-        )
-        if not associated_user:
+        web_to_iterate = Web(**web_to_iterate)
+
+        original_web_owner = Users.find_one({"id": web_to_iterate.userId}, {"_id": 0})
+
+        if not original_web_owner:
             raise HTTPException(status_code=404, detail="Owner not found")
+
+        original_web_owner = User(**original_web_owner)
 
         # create a new web first to generate a new webId
         create_web_payload = CreateWeb(
             name=iteratePayload.name,
             description=iteratePayload.description,
             visibility="Private",
-            tags=web_to_iterate.get("tags", []),
+            tags=web_to_iterate.tags,
             sourceIds=[],
             imageKeys=[],
             enableAIConnections=False,
             showcase=False,
         )
-        new_web_id = create_web(create_web_payload, user["id"])
+
+        new_web_id = create_web(create_web_payload, user.id)
 
         # copy sources in Neo4j to the new web
         try:
             _, new_source_ids = neo4j_client.copy_sources_to_new_web(
                 original_web_id=web_id,
                 new_web_id=new_web_id,
-                new_user_id=user["id"],
+                new_user_id=user.id,
                 with_connections=iteratePayload.withConnections,
             )
         except Exception as e:
@@ -718,7 +731,7 @@ def iterate_web(
             {
                 "$set": {
                     "sourceIds": new_source_ids,
-                    "iteratedFrom": associated_user["id"],
+                    "iteratedFrom": original_web_owner.id,
                     "updated": datetime.now(UTC),
                 }
             },
@@ -726,7 +739,7 @@ def iterate_web(
 
         Webs.update_one(
             {"webId": web_id},
-            {"$push": {"iterations": user["id"]}},
+            {"$push": {"iterations": original_web_owner.id}},
         )
 
         # queue embedding
@@ -754,7 +767,7 @@ def search_webs(
     ),
     userId: Optional[str] = None,
     webId: Optional[str] = None,
-    user=Depends(manager.optional),
+    user: Optional[User] = Depends(manager.optional),
 ):
     """
     Run a semantic search for webs.
@@ -776,7 +789,7 @@ def search_webs(
             if visibility == "Private":
                 if not user:
                     raise HTTPException(status_code=401, detail="Unauthorized")
-                filter["userId"] = {"$eq": user["id"]}
+                filter["userId"] = {"$eq": user.id}
         if userId:
             filter["userId"] = {"$eq": userId}
         if webId:
@@ -785,7 +798,7 @@ def search_webs(
         search_info: Search = {
             "query": query,
             "timestamp": datetime.now(UTC),
-            "userId": user["id"] if user else None,
+            "userId": user.id if user else None,
             "filters": filter,
         }
         Searches.insert_one(search_info)
@@ -802,15 +815,17 @@ def search_webs(
 
 
 @router.get("/contributers/{web_id}")
-def get_web_contributors(web_id: str, user=Depends(manager.optional)):
+def get_web_contributors(web_id: str, user: Optional[User] = Depends(manager.optional)):
 
     try:
         web = Webs.find_one({"webId": web_id})
         if not web:
             raise HTTPException(status_code=404, detail=f"Web not found!")
 
+        web = Web(**web)
+
         contributers = []
-        for iteration in web["iterations"]:
+        for iteration in web.iterations:
             user = Users.find_one({"id": iteration}, {"_id": 0})
             if user:
                 publicUser = PublicUser(**user)
@@ -833,7 +848,7 @@ class ExportGraphContext(BaseModel):
 
 @router.post("/export/graph/context")
 def export_graph_context(
-    payload: ExportGraphContext, user: User = Depends(manager.optional)
+    payload: ExportGraphContext, user: Optional[User] = Depends(manager.optional)
 ):
 
     try:

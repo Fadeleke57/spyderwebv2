@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from src.core.config import settings
 from src.models.index import (
     Users,
+    User,
     CreateUser,
     UpdateUser,
     CreateWeb,
@@ -257,7 +258,7 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
 
 
 @router.get("/me")
-def get_current_user(user=Depends(manager.optional)):
+def get_current_user(user: Optional[User] = Depends(manager.optional)):
     """
     Get the current user.
 
@@ -268,7 +269,7 @@ def get_current_user(user=Depends(manager.optional)):
         return None
 
     try:
-        public_user = PublicMe(**user)
+        public_user = PublicMe(**user.model_dump())
         logger.debug(f"User found in /auth/me: {public_user.model_dump()}")
         return public_user.model_dump()
 
@@ -290,7 +291,7 @@ class OnboardingPayload(BaseModel):
 
 @router.post("/onboarding")
 def complete_onboarding(
-    onboarding_payload: OnboardingPayload, user=Depends(manager.required)
+    onboarding_payload: OnboardingPayload, user: User = Depends(manager.required)
 ):
     logger.info(f"user: {user}")
     try:
@@ -308,7 +309,7 @@ def complete_onboarding(
 
         logger.info(f"updates: {updates}")
         Users.update_one(
-            {"id": user["id"]},
+            {"id": user.id},
             {"$set": updates.model_dump(exclude_none=True)},
         )
         return {"result": True}

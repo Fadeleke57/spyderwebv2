@@ -134,9 +134,7 @@ export function useDeleteWeb() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (webId: string) => {
-      const response = await api.delete("/webs/delete", {
-        params: { webId },
-      });
+      const response = await api.delete(`/webs/delete/${webId}`);
       return response.data.result;
     },
     onSuccess: () => {
@@ -227,11 +225,10 @@ export const useFetchWebById = (webId: string) => {
     queryKey: ["web", webId],
     queryFn: async () => {
       if (!webId) return null;
-      const response = await api.get(`/webs/id`, {
-        params: { webId },
-      });
+      const response = await api.get(`/webs/web/${webId}`);
       return response.data.result;
     },
+    enabled: !!webId,
   });
 };
 
