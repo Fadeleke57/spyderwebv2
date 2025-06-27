@@ -3,7 +3,7 @@ from fastapi import HTTPException, Cookie, Header, Depends
 from enum import Enum
 from src.lib.stytch.index import client as stytch_client, StytchError, StytchUser
 from src.lib.logger.index import logger
-from src.models.index import Users, User, Web, Contributor, Webs, Contributers
+from src.models.index import Users, User, Web, Contributor, Webs, Contributors
 
 
 # --- Authentication Error ---
@@ -78,7 +78,7 @@ class AuthService:
         self.token_extractor = TokenExtractor()
         self.stytch_auth = StytchAuthenticator()
         self.user_repo = UserRepository()
-        self.contributors = Contributers
+        self.contributors = Contributors
 
     def _authenticate_token(
         self, token: str, auth_method: str, is_bearer: bool
@@ -144,8 +144,9 @@ class AuthService:
 
         # Check access level hierarchy
         if required_level == AccessLevel.OWNER:
-            # Only actual owner can have OWNER access (already handled above)
-            raise HTTPException(status_code=403, detail="Owner access required")
+            # Need OWNER access
+            if contributor_level != AccessLevel.OWNER:
+                raise HTTPException(status_code=403, detail="Owner access required")
         elif required_level == AccessLevel.WRITE:
             # Need WRITE or OWNER access
             if contributor_level not in [AccessLevel.WRITE, AccessLevel.OWNER]:

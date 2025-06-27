@@ -7,8 +7,11 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "../ui/scroll-area";
 import { useSourceStore } from "@/store/sourceStore";
 import { useFetchSource } from "@/hooks/sources";
+import { useRouter } from "next/router";
 
 export const VoiceNoteComponent = () => {
+  const router = useRouter();
+  const { webId } = router.query;
   const { selectedSourceId, source } = useSourceStore();
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -20,7 +23,7 @@ export const VoiceNoteComponent = () => {
   const intervalRef = useRef<NodeJS.Timeout>();
 
   const { data: sourceData, isLoading: sourceLoading } =
-    useFetchSource(selectedSourceId);
+    useFetchSource(webId as string, selectedSourceId);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
   useEffect(() => {

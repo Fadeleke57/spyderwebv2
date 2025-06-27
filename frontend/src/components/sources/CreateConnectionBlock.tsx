@@ -6,11 +6,11 @@ import { toast } from "../ui/use-toast";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { useFetchSource } from "@/hooks/sources";
 import { Button } from "../ui/button";
+import { useRouter } from "next/router";
 
 interface CreateConnectionBlockProps {
   fromSourceId: string;
   toSourceId: string;
-  webId: string;
   setCreateConnectionVisible: (arg: boolean) => void;
   onConnectionCreated?: () => void;
 }
@@ -18,10 +18,11 @@ interface CreateConnectionBlockProps {
 function CreateConnectionBlock({
   fromSourceId,
   toSourceId,
-  webId,
   setCreateConnectionVisible,
   onConnectionCreated,
 }: CreateConnectionBlockProps) {
+  const router = useRouter();
+  const { webId } = router.query;
   const {
     mutateAsync: createConnection,
     isPending: createConnectionLoading,
@@ -29,13 +30,14 @@ function CreateConnectionBlock({
   } = useCreateConnection();
 
   const { data: fetchedToSource, isLoading: toSourceLoading } = useFetchSource(
+    webId as string,
     toSourceId,
     "create-connection-block"
   );
 
   const [toSourceData, setToSourceData] = useState<any>(null);
   const [config, setConfig] = useState<CreateConnection>({
-    webId,
+    webId: webId as string,
     fromSourceId,
     toSourceId,
     description: "",

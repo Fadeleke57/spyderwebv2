@@ -40,6 +40,7 @@ interface WebDataModalProps {
 export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
   const [copied, setCopied] = useState(false);
   const isMobile = useIsMobile();
+  const router = useRouter();
   const {
     selectedSourceId: sourceId,
     source,
@@ -52,18 +53,21 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
     presignedUrl,
     setPresignedUrl,
   } = useSourceStore();
-
+  const { webId } = router.query;
   const { user } = useUser();
-  const router = useRouter();
   const defaultLayout = [50, 50];
   const mobileDefaultLayout = [100, 0];
+
   const {
     data: sourceData,
     refetch: refetchSource,
     isLoading: sourceLoading,
-  } = useFetchSource(sourceId);
+  } = useFetchSource(webId as string, sourceId);
 
-  const { mutateAsync: editSourceTitle } = useEditSourceTitle(sourceId);
+  const { mutateAsync: editSourceTitle } = useEditSourceTitle(
+    webId as string,
+    sourceId
+  );
 
   useEffect(() => {
     if (!sourceData) return;

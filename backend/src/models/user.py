@@ -7,7 +7,7 @@ from pytz import UTC
 from fastapi import HTTPException
 
 Users = get_collection("users")
-Contributers = get_collection("contributers")
+Contributors = get_collection("contributors")
 
 
 class User(BaseModel):
@@ -107,9 +107,10 @@ class UpdateUser(BaseModel):  # updating user
 
 
 class Contributor(BaseModel):
-    userId: str
+    contributorId: str
+    userId: Optional[str] = None
     webId: str
-    accessLevel: Literal["read", "write", "admin"] = "read"
+    accessLevel: Literal["read", "write", "owner"] = "read"
     invitedAt: datetime = Field(default_factory=lambda: datetime.now(UTC))
     acceptedAt: Optional[datetime] = None
     pending: bool = False

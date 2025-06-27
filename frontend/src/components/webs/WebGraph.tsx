@@ -173,7 +173,7 @@ function WebGraph({
 
   const [isDrawerOpen, setDrawerOpen] = useState(false);
 
-  const { mutateAsync: deleteSource } = useDeleteSource();
+  const { mutateAsync: deleteSource } = useDeleteSource(webId as string);
 
   const handleDeleteSource = async (sourceId: string) => {
     if (fetchedSources.length === 1) {

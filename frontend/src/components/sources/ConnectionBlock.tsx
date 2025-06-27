@@ -14,6 +14,7 @@ import {
 import { Button } from "../ui/button";
 import SimpleTooltip from "../utility/SimpleTooltip";
 import { useSourceStore } from "@/store/sourceStore";
+import { useRouter } from "next/router";
 
 function ConnectionBlock({
   connection,
@@ -26,26 +27,25 @@ function ConnectionBlock({
   isOwner: boolean;
   onConnectionDeleted?: () => void;
 }) {
+  const router = useRouter();
+  const { webId } = router.query;
   const { setSelectedSourceId } = useSourceStore();
   const [isHovering, setIsHovering] = useState(false);
 
-  const {
-    data: fromSource,
-    isLoading: fromLoading,
-    refetch: refetchFromSource,
-  } = useFetchSource(connection.fromSourceId, "connection-block-from");
+  const { data: fromSource, isLoading: fromLoading } = useFetchSource(
+    webId as string,
+    connection.fromSourceId,
+    "connection-block-from"
+  );
 
-  const {
-    data: toSource,
-    isLoading: toLoading,
-    refetch: refetchToSource,
-  } = useFetchSource(connection.toSourceId, "connection-block-to");
+  const { data: toSource, isLoading: toLoading } = useFetchSource(
+    webId as string,
+    connection.toSourceId,
+    "connection-block-to"
+  );
 
-  const {
-    mutateAsync: deleteConnection,
-    isPending: deleteConnectionLoading,
-    error: deleteConnectionError,
-  } = useDeleteConnection();
+  const { mutateAsync: deleteConnection, isPending: deleteConnectionLoading } =
+    useDeleteConnection(webId as string);
 
   if (fromLoading || toLoading) return null;
 

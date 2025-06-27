@@ -14,7 +14,7 @@ router = APIRouter()
 
 
 @router.get("/all/web/{web_id}")
-def get_all_connections(web_id: str):
+def get_all_connections(web_id: str, _=Depends(manager.optional.READ)):
     try:
         webConnections = neo4jClient.get_all_connections_for_web("connection", web_id)
         return {"result": webConnections}
@@ -24,7 +24,9 @@ def get_all_connections(web_id: str):
 
 
 @router.get("/outgoing/{web_id}/{source_id}")
-def get_outgoing_connections(web_id: str, source_id: str):
+def get_outgoing_connections(
+    web_id: str, source_id: str, _=Depends(manager.optional.READ)
+):
     try:
         outgoing_connections = neo4jClient.get_outgoing_connections_for_source(
             "connection", source_id
@@ -36,7 +38,9 @@ def get_outgoing_connections(web_id: str, source_id: str):
 
 
 @router.get("/incoming/{web_id}/{source_id}")
-def get_incoming_connections(web_id: str, source_id: str):
+def get_incoming_connections(
+    web_id: str, source_id: str, _=Depends(manager.optional.READ)
+):
     try:
         incomingConnections = neo4jClient.get_incoming_connections_for_source(
             "connection", source_id
@@ -48,7 +52,7 @@ def get_incoming_connections(web_id: str, source_id: str):
 
 
 @router.get("/connection/{web_id}/{connection_id}")
-def get_connection(web_id: str, connection_id: str):
+def get_connection(web_id: str, connection_id: str, _=Depends(manager.optional.READ)):
     try:
         connection = neo4jClient.get_connection_by_id("connection", connection_id)
         if not connection:
@@ -60,8 +64,10 @@ def get_connection(web_id: str, connection_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/create")
-def create_connection(connection_data: CreateConnection, _=Depends(manager.required)):
+@router.post("/create/{web_id}")
+def create_connection(
+    web_id: str, connection_data: CreateConnection, _=Depends(manager.required.WRITE)
+):
 
     connection = {
         "connectionId": str(uuid.uuid4()),
@@ -83,8 +89,10 @@ def create_connection(connection_data: CreateConnection, _=Depends(manager.requi
     return {"result": connection}
 
 
-@router.delete("/delete/{connection_id}")
-def delete_connection(connection_id: str, _=Depends(manager.required)):
+@router.delete("/delete/web/{web_id}/connection/{connection_id}")
+def delete_connection(
+    web_id: str, connection_id: str, _=Depends(manager.required.WRITE)
+):
 
     try:
         neo4jClient.delete_connection(connection_id, "connection")

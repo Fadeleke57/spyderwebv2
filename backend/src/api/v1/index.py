@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from src.models.user import Contributers
+from src.models.user import Contributors
 from src.lib.pinecone.index import client as pinecone_client
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
@@ -114,7 +114,7 @@ def search_memories(
             associated_web.visibility == "Private"
             and associated_web.userId != user_making_request.id
         ):
-            is_contributor = Contributers.find_one(
+            is_contributor = Contributors.find_one(
                 {"webId": webId, "userId": user_making_request.id}
             )
             if not is_contributor:

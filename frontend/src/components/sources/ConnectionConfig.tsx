@@ -40,11 +40,7 @@ function ConnectionsConfig({ isOwner }: { isOwner: boolean }) {
     isLoading: isLoadingIncomingConnections,
     refetch: refetchIncomingConnections,
   } = useFetchIncomingConnections(webId as string, sourceId);
-  const {
-    data: allSources,
-    isLoading: isLoadingAllSources,
-    refetch: refetchOtherSources,
-  } = useFetchSourcesForWeb(webId as string);
+  const { data: allSources } = useFetchSourcesForWeb(webId as string);
 
   const handleConnectionBlockDelete = () => {
     refetchOutgoingConnections();
@@ -170,7 +166,6 @@ function ConnectionsConfig({ isOwner }: { isOwner: boolean }) {
                 <CreateConnectionBlock
                   fromSourceId={sourceId}
                   toSourceId={sourceIdToLink}
-                  webId={webId as string}
                   setCreateConnectionVisible={setConnectionPlaceHolderVisible}
                   onConnectionCreated={refetchOutgoingConnections}
                 />

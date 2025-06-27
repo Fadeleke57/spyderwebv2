@@ -93,7 +93,7 @@ export const useUpdateNote = (webId: string, sourceId: string) => {
   return useMutation({
     mutationFn: async (payload: { title?: string; content?: string }) => {
       const response = await api.patch(
-        `/sources/update/note/${webId}/${sourceId}`,
+        `/sources/update/note/web/${webId}/source/${sourceId}`,
         payload
       );
       return response.data.result;
@@ -108,11 +108,13 @@ export const useUpdateNote = (webId: string, sourceId: string) => {
   });
 };
 
-export const useDeleteSource = () => {
+export const useDeleteSource = (webId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (sourceId: string) => {
-      const response = await api.delete(`/sources/delete/source/${sourceId}`);
+      const response = await api.delete(
+        `/sources/delete/web/${webId}/source/${sourceId}`
+      );
       return response.data.result;
     },
     onError: (error: any) => {
@@ -129,28 +131,38 @@ export const useDeleteSource = () => {
   });
 };
 
-export const useFetchSource = (sourceId: string, contextId?: string) => {
+export const useFetchSource = (
+  webId: string,
+  sourceId: string,
+  contextId?: string
+) => {
   return useQuery({
     queryKey: contextId
       ? ["source", sourceId, contextId]
       : ["source", sourceId],
     queryFn: async () => {
-      const response = await api.get(`/sources/${sourceId}`);
+      const response = await api.get(
+        `/sources/web/${webId}/source/${sourceId}`
+      );
       return response.data;
     },
     staleTime: 60000, //1 minute stale time
     retry: 2,
-    enabled: !!sourceId,
+    enabled: !!webId && !!sourceId,
   });
 };
 
-export const useEditSourceTitle = (sourceId: string) => {
+export const useEditSourceTitle = (webId: string, sourceId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (title: string) => {
-      const response = await api.patch(`/sources/edit/source/${sourceId}`, {
-        name: title,
-      });
+      if (!webId || !sourceId) return;
+      const response = await api.patch(
+        `/sources/edit/web/${webId}/source/${sourceId}`,
+        {
+          name: title,
+        }
+      );
       return response.data.result;
     },
     onError: (error: any) => {
@@ -167,9 +179,11 @@ export const useUploadImageToSource = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({
+      webId,
       sourceId,
       files,
     }: {
+      webId: string;
       sourceId: string;
       files: File[];
     }) => {
@@ -180,7 +194,7 @@ export const useUploadImageToSource = () => {
       });
 
       const { data } = await api.post(
-        `/sources/upload/image/${sourceId}`,
+        `/sources/upload/image/web/${webId}/source/${sourceId}`,
         formData,
         {
           headers: {

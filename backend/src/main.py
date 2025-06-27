@@ -15,7 +15,7 @@ from src.routes.index import (
     process_router,
     payment_router,
     feedback_router,
-    contributer_router,
+    contributor_router,
 )
 from src.api.v1.index import router as api_v1_router
 
@@ -101,7 +101,7 @@ app.include_router(chat_router, prefix="/chat")
 app.include_router(process_router, prefix="/processes")
 app.include_router(payment_router, prefix="/payment")
 app.include_router(feedback_router, prefix="/feedback")
-app.include_router(contributer_router, prefix="/contributer")
+app.include_router(contributor_router, prefix="/contributor")
 
 # API V1
 app.include_router(api_v1_router, prefix="/api/v1")

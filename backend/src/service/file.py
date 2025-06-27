@@ -18,6 +18,17 @@ from src.service.source import service as source_service
 from src.service.extraction import service as extraction_service
 from botocore.exceptions import ClientError
 from src.utils.exceptions import StorageException
+from pydantic import BaseModel
+
+
+class PresignedUrlsRequestFile(BaseModel):
+    fileName: str
+    fileSize: int
+    fileType: str
+
+
+class FileInfo(PresignedUrlsRequestFile):
+    fileKey: str
 
 
 class FileService:
@@ -26,11 +37,13 @@ class FileService:
         self.bucket_name = bucket_name
         logger.info("FILE SERVICE INITIALIZED!")
 
-    def generate_presigned_urls(self, user: User, web_id: str, files: List[Dict]):
+    def generate_presigned_urls(
+        self, user: User, web_id: str, files: List[PresignedUrlsRequestFile]
+    ):
         urls = []
 
         for file_info in files:
-            file_extension = file_info["fileName"].split(".")[-1].lower()
+            file_extension = file_info.fileName.split(".")[-1].lower()
             if file_extension not in DOCUMENT_TYPES.union(AUDIO_TYPES).union(
                 TEXT_TYPES
             ):
@@ -41,7 +54,7 @@ class FileService:
                 if file_extension in DOCUMENT_TYPES
                 else ("audio" if file_extension in AUDIO_TYPES else "text")
             )
-            file_key = f"files/{user.id}/{web_id}/{file_route}/{uuid.uuid4()}_{file_info['fileName'].replace(' ', '_')}"
+            file_key = f"files/{user.id}/{web_id}/{file_route}/{uuid.uuid4()}_{file_info.fileName.replace(' ', '_')}"
 
             presigned_post_response = self.s3_client.generate_presigned_post(
                 Bucket=self.bucket_name,
@@ -54,7 +67,7 @@ class FileService:
                     "uploadUrl": presigned_post_response["url"],
                     "fileKey": file_key,
                     "fields": presigned_post_response["fields"],
-                    "fileName": file_info["fileName"],
+                    "fileName": file_info.fileName,
                 }
             )
 
@@ -64,7 +77,7 @@ class FileService:
         self,
         user: User,
         web_id: str,
-        files: List[Dict],
+        files: List[FileInfo],
         preserve_links: bool,
         background_tasks: BackgroundTasks,
     ):
@@ -77,16 +90,16 @@ class FileService:
             for file in files:
                 try:
                     self.s3_client.head_object(
-                        Bucket=self.bucket_name, Key=file["fileKey"]
+                        Bucket=self.bucket_name, Key=file.fileKey
                     )
                 except ClientError:
                     continue
 
-                file_extension: str = file["fileType"].lower()
+                file_extension: str = file.fileType.lower()
 
                 if file_extension in DOCUMENT_TYPES:
-                    self._check_file_quota(user.id, file["fileSize"])
-                    temp_path = self._download_temp(file["fileKey"], file["fileName"])
+                    self._check_file_quota(user.id, file.fileSize)
+                    temp_path = self._download_temp(file.fileKey, file.fileName)
                     source = self._make_doc_source(user, web_id, file)
                     logger.info(f"Processing document: {source}")
                     background_tasks.add_task(
@@ -98,12 +111,12 @@ class FileService:
 
                 elif file_extension in TEXT_TYPES:
                     logger.info("Text file found.")
-                    text_content = self._read_s3_file_text(file["fileKey"])
+                    text_content = self._read_s3_file_text(file.fileKey)
                     self._check_text_quota(user.id, text_content)
                     source = self._make_text_source(user, web_id, file, text_content)
                     # delete file from s3 because it's stored as a note now
                     self.s3_client.delete_object(
-                        Bucket=self.bucket_name, Key=file["fileKey"]
+                        Bucket=self.bucket_name, Key=file.fileKey
                     )
                     background_tasks.add_task(
                         source_service.process_source,
@@ -112,8 +125,8 @@ class FileService:
                     )
 
                 elif file_extension in AUDIO_TYPES:
-                    self._check_file_quota(user.id, file["fileSize"])
-                    temp_path = self._download_temp(file["fileKey"], file["fileName"])
+                    self._check_file_quota(user.id, file.fileSize)
+                    temp_path = self._download_temp(file.fileKey, file.fileName)
 
                     logger.info(f"Transcribing audio at: {temp_path}")
 
@@ -126,7 +139,7 @@ class FileService:
                     logger.info(f"Transcript: {transcript}")
 
                     source = self._make_audio_source(
-                        user, web_id, file, transcript, file["fileKey"]
+                        user, web_id, file, transcript, file.fileKey
                     )
                     background_tasks.add_task(
                         source_service.process_source,
@@ -195,17 +208,17 @@ class FileService:
             raise StorageException()
 
     def _make_doc_source(
-        self, user: User, web_id: str, file: Dict, max_retries: int = 3
+        self, user: User, web_id: str, file: FileInfo, max_retries: int = 3
     ) -> Source:
         try:
             return source_service.create_source(
                 webId=web_id,
                 userId=user.id,
-                name=file["fileName"],
+                name=file.fileName,
                 content=None,
-                url=file["fileKey"],
+                url=file.fileKey,
                 type="document",
-                size=file["fileSize"],
+                size=file.fileSize,
                 created=datetime.now(UTC).isoformat().replace("+00:00", "Z"),
                 updated=datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             )
@@ -217,10 +230,15 @@ class FileService:
                 raise HTTPException(status_code=500, detail=str(e))
 
     def _make_text_source(
-        self, user: User, web_id: str, file: Dict, content: str, max_retries: int = 3
+        self,
+        user: User,
+        web_id: str,
+        file: FileInfo,
+        content: str,
+        max_retries: int = 3,
     ) -> Source:
         try:
-            filename = (" ".join(file["fileName"].split(".")[:-1])).replace("%22", " ")
+            filename = (" ".join(file.fileName.split(".")[:-1])).replace("%22", " ")
             return source_service.create_source(
                 webId=web_id,
                 userId=user.id,
@@ -228,7 +246,7 @@ class FileService:
                 content=content,
                 url=None,
                 type="note",
-                size=file["fileSize"],
+                size=file.fileSize,
                 created=datetime.now(UTC).isoformat().replace("+00:00", "Z"),
                 updated=datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             )
@@ -245,7 +263,7 @@ class FileService:
         self,
         user: User,
         web_id: str,
-        file: Dict,
+        file: FileInfo,
         transcript: str,
         file_url: str,
         max_retries: int = 3,
@@ -258,7 +276,7 @@ class FileService:
                 content=transcript,
                 url=file_url,
                 type="voice_note",
-                size=file["fileSize"],
+                size=file.fileSize,
                 created=datetime.now(UTC).isoformat().replace("+00:00", "Z"),
                 updated=datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             )

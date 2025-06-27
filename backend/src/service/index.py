@@ -4,7 +4,7 @@ from src.service.source import service as source_service
 from src.service.extraction import service as extraction_service
 from src.service.user import service as user_service
 from src.service.web import service as web_service
-from src.service.file import FileService
+from src.service.file import FileService, FileInfo, PresignedUrlsRequestFile
 
 __all__ = [
     "chunking_service",
@@ -14,4 +14,6 @@ __all__ = [
     "user_service",
     "web_service",
     "FileService",
+    "FileInfo",
+    "PresignedUrlsRequestFile",
 ]

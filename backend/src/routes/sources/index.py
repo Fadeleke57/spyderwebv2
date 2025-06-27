@@ -31,6 +31,8 @@ from src.service.index import (
     extraction_service,
     embedding_service,
     FileService,
+    FileInfo,
+    PresignedUrlsRequestFile,
 )
 from src.lib.youtube.index import client as youtube_client
 from src.lib.firecrawl.index import client as firecrawl_client
@@ -39,25 +41,12 @@ from src.constants.source import DOCUMENT_TYPES, AUDIO_TYPES, MEDIA_TYPE_MAP
 router = APIRouter()
 
 
-class FileInfo(BaseModel):
-    fileName: str
-    fileSize: int
-    fileType: str
-
-
 class PresignedUrlRequest(BaseModel):
-    files: List[FileInfo]
-
-
-class ProcessFileRequest(BaseModel):
-    fileName: str
-    fileKey: str
-    fileSize: int
-    fileType: str
+    files: List[PresignedUrlsRequestFile]
 
 
 class ProcessUploadedFilesRequest(BaseModel):
-    files: List[ProcessFileRequest]
+    files: List[FileInfo]
     preserve_obsidian_links: bool = False
 
 
@@ -69,11 +58,15 @@ file_service = FileService(s3_base_interface, settings.s3_bucket_name)
 
 @router.post("/presigned-urls/{web_id}")
 async def get_presigned_urls(
-    web_id: str, request: PresignedUrlRequest, user: User = Depends(manager.required)
+    web_id: str,
+    request: PresignedUrlRequest,
+    user: User = Depends(manager.required.WRITE),
 ):
     try:
         return file_service.generate_presigned_urls(
-            user, web_id, request.model_dump()["files"]
+            user=user,
+            web_id=web_id,
+            files=request.files,
         )
     except ClientError as e:
         raise HTTPException(
@@ -86,15 +79,15 @@ async def process_uploaded_files(
     web_id: str,
     request: ProcessUploadedFilesRequest,
     background_tasks: BackgroundTasks,
-    user: User = Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
     try:
         return file_service.process_uploaded_files(
-            user,
-            web_id,
-            request.model_dump()["files"],
-            request.preserve_obsidian_links,
-            background_tasks,
+            user=user,
+            web_id=web_id,
+            files=request.files,
+            preserve_links=request.preserve_obsidian_links,
+            background_tasks=background_tasks,
         )
     except Exception as e:
         logger.error(f"File processing failed: {str(e)}")
@@ -110,7 +103,7 @@ def upload_website(
     web_id: str,
     url: UrlRequest,
     background_tasks: BackgroundTasks,
-    user: User = Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
     """
     Add a website source to a specified web (web).
@@ -178,7 +171,7 @@ def upload_website(
 
 
 @router.get("/all/{web_id}")
-def get_all_sources(web_id: str, _: User = Depends(manager.optional)):
+def get_all_sources(web_id: str, _: User = Depends(manager.optional.READ)):
     """
     Retrieve all sources associated with a given web ID.
 
@@ -221,7 +214,7 @@ def upload_note(
     web_id: str,
     note: CreateNote,
     background_tasks: BackgroundTasks,
-    user: User = Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
     """
     Upload a note to a given web.
@@ -280,7 +273,7 @@ def upload_youtube_video(
     web_id: str,
     video_id: str,
     background_tasks: BackgroundTasks,
-    user: User = Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
     try:
         info = youtube_client.get_video_info(video_id)
@@ -337,13 +330,13 @@ def upload_youtube_video(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.patch("/update/note/{web_id}/{source_id}")
+@router.patch("/update/note/web/{web_id}/source/{source_id}")
 def update_note(
     web_id: str,
     source_id: str,
     updateNotePayload: UpdateNote,
     background_tasks: BackgroundTasks,
-    user: User = Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
 
     try:
@@ -386,11 +379,12 @@ def update_note(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/delete/source/{source_id}")
+@router.delete("/delete/web/{web_id}/source/{source_id}")
 def delete_source(
+    web_id: str,
     source_id: str,
     background_tasks: BackgroundTasks,
-    user: User = Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
     """
     Delete a source and deduct associated storage usage.
@@ -407,7 +401,9 @@ def delete_source(
     """
 
     try:
-        source_to_delete = neo4j_client.get_source_by_id("source", source_id)
+        source_to_delete = neo4j_client.get_source_by_id(
+            label="source", source_id=source_id
+        )
         if not source_to_delete:
             return {"result": "Source not found"}
 
@@ -468,8 +464,8 @@ def delete_source(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{source_id}")
-def get_source(source_id: str, _=Depends(manager.optional)):
+@router.get("/web/{web_id}/source/{source_id}")
+def get_source(web_id: str, source_id: str, _=Depends(manager.optional.READ)):
     """
     Retrieve a source by its ID and generate a presigned file URL if applicable.
     """
@@ -497,12 +493,13 @@ def get_source(source_id: str, _=Depends(manager.optional)):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.patch("/edit/source/{sourceId}")
+@router.patch("/edit/web/{web_id}/source/{sourceId}")
 def edit_source(
+    web_id: str,
     sourceId: str,
     updatePayload: UpdateSource,
     background_tasks: BackgroundTasks,
-    _=Depends(manager.required),
+    _=Depends(manager.required.WRITE),
 ):
     try:
         update_data = updatePayload.model_dump(exclude_none=True)
@@ -528,11 +525,14 @@ def edit_source(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/upload/image/{source_id}")  # for markdown image storage
+@router.post(
+    "/upload/image/web/{web_id}/source/{source_id}"
+)  # for markdown image storage
 async def upload_image_to_source(
+    web_id: str,
     source_id: str,
     files: list[UploadFile] = File(..., description="Multiple files as UploadFile"),
-    user: User = Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
     uploaded_image_urls = []
 
