@@ -296,7 +296,7 @@ function WebPlayground() {
                     }}
                     className={`rotate-${addIconOrientation} transition-transform ease-in-out duration-300 mr-2`}
                   />
-                  Add to your web
+                  Create
                 </Button>
               </div>
             </div>
