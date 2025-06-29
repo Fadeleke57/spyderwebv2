@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Star, Check } from "lucide-react";
 import { useSendFeedback } from "@/hooks/feedback";
 import { useRouter } from "next/router";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { toast } from "sonner";
 
 const FeedbackModal = ({

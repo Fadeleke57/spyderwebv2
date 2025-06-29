@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import slogo from "@/assets/slogonobg.png";
 import { NavUser } from "@/components/utility/NavUser";
 import {

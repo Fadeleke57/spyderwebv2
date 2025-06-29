@@ -4,7 +4,7 @@ from datetime import datetime
 from typing_extensions import deprecated
 from typing import List, Any, Optional
 from fastapi import HTTPException
-from src.models.index import Source, Webs
+from src.models.index import Source, Webs, Sources
 from src.service.chunking import service as chunking_service
 from src.service.embedding import service as embedding_service
 from src.service.extraction import service as extraction_service
@@ -167,15 +167,17 @@ class SourceService:
             background_tasks.add_task(
                 self.process_source,
                 source=source,
-                content_to_embed=source.content
-                if not source.type == "youtube"
-                else MEMORY_TRANSCRIPT,
+                content_to_embed=(
+                    source.content
+                    if not source.type == "youtube"
+                    else MEMORY_TRANSCRIPT
+                ),
                 file_path=None,
             )
 
         source_ids = [source.sourceId for source in sources_to_insert]
         Webs.update_one(
-            {"webId": web_id, "userId": user_id},
+            {"webId": web_id},
             {
                 "$push": {"sourceIds": {"$each": source_ids}},
                 "$set": {"updated": datetime.now(UTC)},

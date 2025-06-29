@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, ConfigDict
+from typing import Literal, Optional
 from datetime import datetime
 from pydantic.fields import Field
 from src.db.mongodb import get_collection
@@ -7,6 +7,7 @@ from pytz import UTC
 from fastapi import HTTPException
 
 Users = get_collection("users")
+Contributors = get_collection("contributors")
 
 
 class User(BaseModel):
@@ -20,6 +21,7 @@ class User(BaseModel):
     company: str = ""
     purpose: str = ""
     interest: str = ""
+    imageKeys: list[str] = []
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     profile_picture_url: Optional[str] = None
@@ -35,6 +37,36 @@ class User(BaseModel):
     stripe_customer_id: Optional[str] = None
 
 
+class PublicMe(BaseModel):
+    id: str
+    full_name: str
+    username: str
+    email: str
+    bio: str = ""
+    imageKeys: list[str] = []
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    profile_picture_url: Optional[str] = None
+    websHidden: list[str] = []
+    websSaved: list[str] = []
+    websPinned: list[str] = []
+    subscription_plan: str = "free"
+
+    model_config = ConfigDict(extra="ignore")
+
+
+class PublicUser(BaseModel):
+    id: str
+    full_name: str
+    username: str
+    bio: str = ""
+    imageKeys: list[str] = []
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    profile_picture_url: Optional[str] = None
+    subscription_plan: str = "free"
+
+    model_config = ConfigDict(extra="ignore")
+
+
 class CreateUser(BaseModel):
     userId: str
     username: str
@@ -44,8 +76,6 @@ class CreateUser(BaseModel):
 
 
 def create_user(createUser: CreateUser):
-    if not createUser:
-        raise ValueError("User data is required")
 
     try:
 
@@ -74,3 +104,16 @@ class UpdateUser(BaseModel):  # updating user
     company: Optional[str] = None
     purpose: Optional[str] = None
     interest: Optional[str] = None
+
+
+class Contributor(BaseModel):
+    contributorId: str
+    userId: Optional[str] = None
+    username: Optional[str] = None
+    email: str
+    webId: str
+    accessLevel: Literal["read", "write", "owner"] = "read"
+    invitedAt: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    acceptedAt: Optional[datetime] = None
+    pending: bool = True
+    invitedBy: str

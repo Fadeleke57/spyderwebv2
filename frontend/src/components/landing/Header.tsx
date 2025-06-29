@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import TypingAnimation from "@/components/ui/typing-animation";
 import { cn } from "@/lib/utils";
 import { googleIcon } from "../utility/Icons";
-import { environment } from "@/environment/load_env";
+import { environment } from "@/environment/loadenv";
 import GSAPButton from "../utility/GSAPButton";
 import { useState } from "react";
 import { AuthModal } from "../auth/AuthModal";

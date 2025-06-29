@@ -24,15 +24,16 @@ from src.models.index import (
     User,
 )
 from src.service.source import service as source_service
-from src.db.neo4j import client as neo4jClient
+from src.db.neo4j import client as neo4j_client
 from src.core.config import settings
 from src.service.index import (
     chunking_service,
     extraction_service,
     embedding_service,
     FileService,
+    FileInfo,
+    PresignedUrlsRequestFile,
 )
-from src.lib.openai.index import client as openai_client
 from src.lib.youtube.index import client as youtube_client
 from src.lib.firecrawl.index import client as firecrawl_client
 from src.constants.source import DOCUMENT_TYPES, AUDIO_TYPES, MEDIA_TYPE_MAP
@@ -40,25 +41,12 @@ from src.constants.source import DOCUMENT_TYPES, AUDIO_TYPES, MEDIA_TYPE_MAP
 router = APIRouter()
 
 
-class FileInfo(BaseModel):
-    fileName: str
-    fileSize: int
-    fileType: str
-
-
 class PresignedUrlRequest(BaseModel):
-    files: List[FileInfo]
-
-
-class ProcessFileRequest(BaseModel):
-    fileName: str
-    fileKey: str
-    fileSize: int
-    fileType: str
+    files: List[PresignedUrlsRequestFile]
 
 
 class ProcessUploadedFilesRequest(BaseModel):
-    files: List[ProcessFileRequest]
+    files: List[FileInfo]
     preserve_obsidian_links: bool = False
 
 
@@ -70,11 +58,15 @@ file_service = FileService(s3_base_interface, settings.s3_bucket_name)
 
 @router.post("/presigned-urls/{web_id}")
 async def get_presigned_urls(
-    web_id: str, request: PresignedUrlRequest, user=Depends(manager.required)
+    web_id: str,
+    request: PresignedUrlRequest,
+    user: User = Depends(manager.required.WRITE),
 ):
     try:
         return file_service.generate_presigned_urls(
-            User(**user), web_id, request.model_dump()["files"]
+            user=user,
+            web_id=web_id,
+            files=request.files,
         )
     except ClientError as e:
         raise HTTPException(
@@ -87,15 +79,15 @@ async def process_uploaded_files(
     web_id: str,
     request: ProcessUploadedFilesRequest,
     background_tasks: BackgroundTasks,
-    user=Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
     try:
         return file_service.process_uploaded_files(
-            User(**user),
-            web_id,
-            request.model_dump()["files"],
-            request.preserve_obsidian_links,
-            background_tasks,
+            user=user,
+            web_id=web_id,
+            files=request.files,
+            preserve_links=request.preserve_obsidian_links,
+            background_tasks=background_tasks,
         )
     except Exception as e:
         logger.error(f"File processing failed: {str(e)}")
@@ -111,7 +103,7 @@ def upload_website(
     web_id: str,
     url: UrlRequest,
     background_tasks: BackgroundTasks,
-    user=Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
     """
     Add a website source to a specified web (web).
@@ -130,7 +122,6 @@ def upload_website(
     Returns:
         dict: A JSON response containing the structured data of the webpage.
     """
-    user = User(**user)
     try:
         markdown, metadata = extraction_service.extract_website_content(
             url=str(url.url)
@@ -163,10 +154,10 @@ def upload_website(
             content_to_embed=markdown,
         )
 
-        neo4jClient.create_node("source", source_to_insert.model_dump())
+        neo4j_client.create_node("source", source_to_insert.model_dump())
 
         Webs.update_one(
-            {"webId": web_id, "userId": user.id},
+            {"webId": web_id},
             {
                 "$addToSet": {"sourceIds": source_to_insert.sourceId},
                 "$set": {"updated": datetime.now(UTC)},
@@ -180,7 +171,7 @@ def upload_website(
 
 
 @router.get("/all/{web_id}")
-def get_all_sources(web_id: str):
+def get_all_sources(web_id: str, _: User = Depends(manager.optional.READ)):
     """
     Retrieve all sources associated with a given web ID.
 
@@ -191,7 +182,7 @@ def get_all_sources(web_id: str):
         dict: A JSON response containing a list of sources associated with the given web ID.
     """
     try:
-        sources = neo4jClient.get_all_sources_for_web("source", web_id)
+        sources = neo4j_client.get_all_sources_for_web("source", web_id)
         return {"result": sources}
 
     except Exception as e:
@@ -223,9 +214,8 @@ def upload_note(
     web_id: str,
     note: CreateNote,
     background_tasks: BackgroundTasks,
-    user=Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
-    user = User(**user)
     """
     Upload a note to a given web.
 
@@ -263,9 +253,9 @@ def upload_note(
     )
 
     try:
-        neo4jClient.create_node("source", source_to_insert.model_dump())
+        neo4j_client.create_node("source", source_to_insert.model_dump())
         Webs.update_one(
-            {"webId": web_id, "userId": user.id},
+            {"webId": web_id},
             {
                 "$addToSet": {"sourceIds": source_to_insert.sourceId},
                 "$set": {"updated": datetime.now(UTC)},
@@ -283,9 +273,8 @@ def upload_youtube_video(
     web_id: str,
     video_id: str,
     background_tasks: BackgroundTasks,
-    user=Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
-    user = User(**user)
     try:
         info = youtube_client.get_video_info(video_id)
         title, description = info["title"], info["description"]
@@ -322,10 +311,10 @@ def upload_youtube_video(
                 content_to_embed=transcripts,
             )
 
-        neo4jClient.create_node("source", source_to_insert.model_dump())
+        neo4j_client.create_node("source", source_to_insert.model_dump())
 
         Webs.update_one(
-            {"webId": web_id, "userId": user.id},
+            {"webId": web_id},
             {
                 "$addToSet": {"sourceIds": source_to_insert.sourceId},
                 "$set": {"updated": datetime.now(UTC)},
@@ -341,20 +330,20 @@ def upload_youtube_video(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.patch("/update/note/{web_id}/{source_id}")
+@router.patch("/update/note/web/{web_id}/source/{source_id}")
 def update_note(
     web_id: str,
     source_id: str,
     updateNotePayload: UpdateNote,
     background_tasks: BackgroundTasks,
-    user=Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
 
     try:
         update_data = updateNotePayload.model_dump(exclude_none=True)
         update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
-        previous_source = neo4jClient.get_source_by_id("source", source_id=source_id)
+        previous_source = neo4j_client.get_source_by_id("source", source_id=source_id)
         if not previous_source:
             raise HTTPException(status_code=404, detail="Note not found")
 
@@ -368,11 +357,9 @@ def update_note(
             byte_diff = new_size - prev_size
 
             if byte_diff != 0:
-                Users.update_one(
-                    {"id": user["id"]}, {"$inc": {"storage_used": byte_diff}}
-                )
+                Users.update_one({"id": user.id}, {"$inc": {"storage_used": byte_diff}})
 
-        updated_source = neo4jClient.update_source(
+        updated_source = neo4j_client.update_source(
             source_id=source_id, properties=update_data
         )
 
@@ -392,9 +379,12 @@ def update_note(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/delete/source/{source_id}")
+@router.delete("/delete/web/{web_id}/source/{source_id}")
 def delete_source(
-    source_id: str, background_tasks: BackgroundTasks, user=Depends(manager.required)
+    web_id: str,
+    source_id: str,
+    background_tasks: BackgroundTasks,
+    user: User = Depends(manager.required.WRITE),
 ):
     """
     Delete a source and deduct associated storage usage.
@@ -409,10 +399,11 @@ def delete_source(
     Raises:
         HTTPException: If the source is not found or user is not authorized.
     """
-    user = User(**user)
 
     try:
-        source_to_delete = neo4jClient.get_source_by_id("source", source_id)
+        source_to_delete = neo4j_client.get_source_by_id(
+            label="source", source_id=source_id
+        )
         if not source_to_delete:
             return {"result": "Source not found"}
 
@@ -447,7 +438,7 @@ def delete_source(
         except Exception as e:
             logger.warning(f"Error rolling back text storage: {e}")
 
-        result = neo4jClient.delete_source(source_id)
+        result = neo4j_client.delete_source(source_id)
         if not result:
             return {"result": "Source not found"}
 
@@ -473,19 +464,19 @@ def delete_source(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{source_id}")
-def get_source(source_id: str, _=Depends(manager.optional)):
+@router.get("/web/{web_id}/source/{source_id}")
+def get_source(web_id: str, source_id: str, _=Depends(manager.optional.READ)):
     """
     Retrieve a source by its ID and generate a presigned file URL if applicable.
     """
     try:
-        source = neo4jClient.get_source_by_id("source", source_id)
+        source = neo4j_client.get_source_by_id("source", source_id)
         if not source:
             raise HTTPException(status_code=404, detail="Item not found")
 
         file_url = ""
         file_key = source.get("url")
-        source_type = source.get("type", "").lower()
+        source_type: str = source.get("type", "").lower()
 
         # determine file media type
         if file_key:
@@ -502,18 +493,19 @@ def get_source(source_id: str, _=Depends(manager.optional)):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.patch("/edit/source/{sourceId}")
+@router.patch("/edit/web/{web_id}/source/{sourceId}")
 def edit_source(
+    web_id: str,
     sourceId: str,
     updatePayload: UpdateSource,
     background_tasks: BackgroundTasks,
-    _=Depends(manager.required),
+    _=Depends(manager.required.WRITE),
 ):
     try:
         update_data = updatePayload.model_dump(exclude_none=True)
         update_data["updated"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
-        updated_source = neo4jClient.update_source(
+        updated_source = neo4j_client.update_source(
             source_id=sourceId, properties=update_data
         )
 
@@ -533,13 +525,15 @@ def edit_source(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/upload/image/{source_id}")  # for markdown image storage
+@router.post(
+    "/upload/image/web/{web_id}/source/{source_id}"
+)  # for markdown image storage
 async def upload_image_to_source(
+    web_id: str,
     source_id: str,
     files: list[UploadFile] = File(..., description="Multiple files as UploadFile"),
-    user=Depends(manager.required),
+    user: User = Depends(manager.required.WRITE),
 ):
-    user = User(**user)
     uploaded_image_urls = []
 
     try:
@@ -570,7 +564,7 @@ async def upload_image_to_source(
                 url = f"https://{settings.cloudfront_domain}/{object_name}"
                 uploaded_image_urls.append(url)
 
-                neo4jClient.update_source(
+                neo4j_client.update_source(
                     source_id=source_id,
                     properties={
                         "updated": datetime.now(UTC).isoformat().replace("+00:00", "Z")
@@ -602,7 +596,7 @@ def get_link_preview(
     url: str,
 ):
     try:
-        source = neo4jClient.get_source_by_id("source", sourceId)
+        source = neo4j_client.get_source_by_id("source", sourceId)
 
         ogImage = source.get("ogImage", None)
         ogDescription = source.get("ogDescription", None)

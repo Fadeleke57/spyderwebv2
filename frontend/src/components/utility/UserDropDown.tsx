@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Settings } from "lucide-react";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { ChevronDown } from "lucide-react";
 import { LogOut } from "lucide-react";
 import { LayoutGrid } from "lucide-react";

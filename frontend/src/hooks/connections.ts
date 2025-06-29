@@ -59,7 +59,7 @@ export const useCreateConnection = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (config: CreateConnection) => {
-      const response = await api.post(`/connections/create`, config);
+      const response = await api.post(`/connections/create/${config.webId}`, config);
       return response.data.result;
     },
     onSuccess: (_, variables) => {
@@ -94,11 +94,12 @@ export const useUpdateConnection = (connectionId: string) => {
   });
 };
 
-export const useDeleteConnection = () => {
+export const useDeleteConnection = (webId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (connectionId: string) => {
-      const response = await api.delete(`/connections/delete/${connectionId}`);
+      if (!webId) return;
+      const response = await api.delete(`/connections/delete/web/${webId}/connection/${connectionId}`);
       return response.data.result;
     },
     onSuccess: () => {

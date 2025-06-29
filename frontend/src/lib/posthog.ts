@@ -1,5 +1,5 @@
 import { PostHog } from "posthog-node";
-import { environment } from "@/environment/load_env";
+import { environment } from "@/environment/loadenv";
 
 export default function PostHogClient() {
   const posthogClient = new PostHog(environment.posthog_key!, {

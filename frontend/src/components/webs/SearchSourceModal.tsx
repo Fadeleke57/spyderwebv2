@@ -14,7 +14,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { Button } from "../ui/button";
-import { CirclePlus, Plus, Search } from "lucide-react";
+import { CirclePlus, Search } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -35,9 +35,7 @@ import {
 import { getTypeIcon } from "../chat/genui/graphcontext";
 import "@hackernoon/pixel-icon-library/fonts/iconfont.css";
 import { useSourceStore } from "@/store/sourceStore";
-import { useFetchWebById } from "@/hooks/webs";
-import { useUser } from "@/context/UserContext";
-import { useRouter } from "next/router";
+import { useAuthorization } from "@/providers/AuthorizationProvider";
 
 type SearchSourceModalProps = {
   open: boolean;
@@ -71,11 +69,7 @@ function SearchSourceModal({
 }: SearchSourceModalProps) {
   const isMobile = useIsMobile();
   const { setIsUploadingSource } = useSourceStore();
-  const { user } = useUser();
-  const router = useRouter();
-  const { webId } = router.query;
-  const { data: web } = useFetchWebById(webId as string);
-  const isOwner = web && user && web.userId === user.id;
+  const { canWrite } = useAuthorization();
 
   const content = (
     <Tabs className="px-4" defaultValue="files">
@@ -106,7 +100,7 @@ function SearchSourceModal({
                   className="bg-muted h-10 w-64  w-full lg:w-auto"
                 />
               </div>
-              {isOwner && (
+              {canWrite && (
                 <div className="w-full lg:w-auto">
                   <Button
                     onClick={() => {
@@ -128,7 +122,7 @@ function SearchSourceModal({
               <CommandGroup>
                 {sources &&
                   sources
-                    .filter((source) => types.includes(source.type)) // Filter sources based on the 'types' array
+                    .filter((source) => types.includes(source.type))
                     .map((source: Source, id: number) => (
                       <CommandItem
                         key={id}

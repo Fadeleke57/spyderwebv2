@@ -16,7 +16,7 @@ import debounce from "lodash/debounce";
 import { toast } from "../ui/use-toast";
 import { useSourceStore } from "@/store/sourceStore";
 import { useRouter } from "next/router";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 
 interface NoteComponentProps {
   webId: string;
@@ -32,7 +32,7 @@ interface LoadingImage {
 const NoteComponent = () => {
   const router = useRouter();
   const { webId } = router.query;
-  const { source } = useSourceStore();
+  const { selectedSourceId, source } = useSourceStore();
   const [localContent, setLocalContent] = useState<string>(
     source?.content || ""
   );
@@ -40,7 +40,7 @@ const NoteComponent = () => {
   const isOwner = (source && user && source.userId === user.id) || false;
   const { mutateAsync: updateNote, error: noteUpdatingError } = useUpdateNote(
     webId as string,
-    source?.sourceId || ""
+    selectedSourceId
   );
 
   const debouncedSave = useCallback(
@@ -165,7 +165,8 @@ const NoteComponent = () => {
 
     try {
       const uploadedUrls = await uploadImages({
-        sourceId: webId as string,
+        webId: webId as string,
+        sourceId: selectedSourceId,
         files: imageFiles,
       });
 

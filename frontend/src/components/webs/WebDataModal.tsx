@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Check, CopyIcon, Edit, X } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { Textarea } from "../ui/textarea";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { extractVideoId } from "@/lib/utils";
 import NoteComponent from "../notes/Notes";
 import {
@@ -31,6 +31,7 @@ import {
   ResizablePanelGroup,
 } from "../ui/resizable";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuthorization } from "@/providers/AuthorizationProvider";
 
 interface WebDataModalProps {
   open: boolean;
@@ -40,6 +41,7 @@ interface WebDataModalProps {
 export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
   const [copied, setCopied] = useState(false);
   const isMobile = useIsMobile();
+  const router = useRouter();
   const {
     selectedSourceId: sourceId,
     source,
@@ -52,18 +54,21 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
     presignedUrl,
     setPresignedUrl,
   } = useSourceStore();
-
+  const { webId } = router.query;
   const { user } = useUser();
-  const router = useRouter();
   const defaultLayout = [50, 50];
   const mobileDefaultLayout = [100, 0];
+
   const {
     data: sourceData,
     refetch: refetchSource,
     isLoading: sourceLoading,
-  } = useFetchSource(sourceId);
+  } = useFetchSource(webId as string, sourceId);
 
-  const { mutateAsync: editSourceTitle } = useEditSourceTitle(sourceId);
+  const { mutateAsync: editSourceTitle } = useEditSourceTitle(
+    webId as string,
+    sourceId
+  );
 
   useEffect(() => {
     if (!sourceData) return;
@@ -73,7 +78,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
     setPresignedUrl(sourceData.file_url);
   }, [sourceData]);
 
-  const isOwner = (source && user && source.userId === user.id) || false;
+  const { canWrite } = useAuthorization();
 
   const handleNewTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newTitle = e.target.value;
@@ -200,7 +205,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                       placeholder="Title..."
                       className="w-full text-lg font-bold resize-none p-0 pl-4 !m-0 !shadow-none !bg-transparent rounded-md focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg"
                     />
-                    {isOwner && (
+                    {canWrite && (
                       <div className="absolute left-0 -bottom-4 flex border rounded-sm">
                         <Button
                           size={"icon"}
@@ -239,7 +244,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                         {sourceTitle || "Loading..."}
                       </span>
                     </Link>
-                    {isOwner && (
+                    {canWrite && (
                       <div className="absolute left-0 -bottom-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out flex space-x-2">
                         <Edit
                           size={20}
@@ -258,7 +263,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                     placeholder="Title..."
                     className="w-full text-lg font-bold resize-none !p-0 !m-0 !shadow-none !bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg"
                   />
-                  {isOwner && (
+                  {canWrite && (
                     <div className="absolute left-0 -bottom-4 flex border rounded-sm">
                       <Button
                         size={"icon"}
@@ -282,7 +287,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                   <span className="text-lg">
                     {sourceTitle || source?.name || ""}
                   </span>
-                  {isOwner && (
+                  {canWrite && (
                     <div className="absolute left-0 -bottom-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out flex space-x-2">
                       <Edit
                         size={20}
@@ -390,7 +395,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
             {/** Desktop */}
             {!isMobile && (
               <ResizablePanel defaultSize={defaultLayout[1]} className="h-full">
-                <ConnectionsConfig isOwner={isOwner} />
+                <ConnectionsConfig />
               </ResizablePanel>
             )}
             {/** Mobile */}
@@ -399,7 +404,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                 defaultSize={mobileDefaultLayout[1]}
                 className="h-full"
               >
-                <ConnectionsConfig isOwner={isOwner} />
+                <ConnectionsConfig />
               </ResizablePanel>
             )}
           </ResizablePanelGroup>

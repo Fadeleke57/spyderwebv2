@@ -19,8 +19,8 @@ docker-start:
 
 stop:
 	@echo "Stopping all backend and frontend processes..."
-	pkill -f "uvicorn src.main:app --reload" || true
-	pkill -f "npx next dev" || true
+	lsof -ti:8000 | xargs kill -9 || true
+	lsof -ti:3000 | xargs kill -9 || true
 
 stop-docker:
 	@echo "Stopping all backend and frontend processes..."

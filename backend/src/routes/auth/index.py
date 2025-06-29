@@ -1,11 +1,13 @@
+from src.models.index import PublicMe
 from src.lib.logger.index import logger
 from fastapi import APIRouter
 from src.routes.auth.utils import manager
 from fastapi import Depends, HTTPException, Request
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 from src.core.config import settings
 from src.models.index import (
     Users,
+    User,
     CreateUser,
     UpdateUser,
     CreateWeb,
@@ -22,7 +24,6 @@ from src.lib.stytch.index import (
     client as stytch_client,
     StytchError,
 )
-from src.routes.user.index import convert_to_public_user
 
 router = APIRouter()
 
@@ -257,7 +258,7 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
 
 
 @router.get("/me")
-def get_current_user(user=Depends(manager.optional)):
+def get_current_user(user: Optional[User] = Depends(manager.optional)):
     """
     Get the current user.
 
@@ -268,20 +269,9 @@ def get_current_user(user=Depends(manager.optional)):
         return None
 
     try:
-        publicUser = convert_to_public_user(
-            user,
-            [
-                "subscription_plan",
-                "email",
-                "websPinned",
-                "websSaved",
-                "websHidden",
-                "created_at",
-                "disabled",
-            ],
-        )
-        logger.debug(f"User found in /auth/me: {publicUser}")
-        return publicUser
+        public_user = PublicMe(**user.model_dump())
+        logger.debug(f"User found in /auth/me: {public_user.model_dump()}")
+        return public_user.model_dump()
 
     except Exception as e:
         logger.error(f"Exception in /auth/me: {e}")
@@ -301,27 +291,44 @@ class OnboardingPayload(BaseModel):
 
 @router.post("/onboarding")
 def complete_onboarding(
-    onboardingPayload: OnboardingPayload, user=Depends(manager.required)
+    onboarding_payload: OnboardingPayload, user: User = Depends(manager.required)
 ):
     logger.info(f"user: {user}")
     try:
+
+        logger.info(f"onboarding_payload: {onboarding_payload}")
         updates = UpdateUser(
-            full_name=f"{onboardingPayload.firstName} {onboardingPayload.lastName}",
-            username=onboardingPayload.username,
-            bio=onboardingPayload.bio,
-            occupation=onboardingPayload.occupation,
-            company=onboardingPayload.company,
-            purpose=onboardingPayload.purpose,
-            interest=onboardingPayload.interest,
+            full_name=f"{onboarding_payload.firstName} {onboarding_payload.lastName}",
+            username=onboarding_payload.username,
+            bio=onboarding_payload.bio,
+            occupation=onboarding_payload.occupation,
+            company=onboarding_payload.company,
+            purpose=onboarding_payload.purpose,
+            interest=onboarding_payload.interest,
         )
+
         logger.info(f"updates: {updates}")
         Users.update_one(
-            {"id": user["id"]},
+            {"id": user.id},
             {"$set": updates.model_dump(exclude_none=True)},
         )
         return {"result": True}
     except Exception as e:
         logger.error(f"Exception in /auth/me: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.get("/authenticate/magic-link")
+def authenticate_magic_link(token: str):
+    """
+    Authenticate a user using a magic link.
+    """
+    try:
+        resp = stytch_client.magic_links.authenticate(token=token)
+        logger.info(f"Magic link authentication response: {resp}")
+        return {"result": True}
+    except Exception as e:
+        logger.error(f"Exception in /auth/authenticate/magic-link: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 

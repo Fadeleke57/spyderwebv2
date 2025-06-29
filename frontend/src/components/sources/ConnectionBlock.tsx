@@ -14,38 +14,39 @@ import {
 import { Button } from "../ui/button";
 import SimpleTooltip from "../utility/SimpleTooltip";
 import { useSourceStore } from "@/store/sourceStore";
+import { useRouter } from "next/router";
+import { useAuthorization } from "@/providers/AuthorizationProvider";
 
 function ConnectionBlock({
   connection,
   type,
-  isOwner,
   onConnectionDeleted,
 }: {
   connection: Connection;
   type: string;
-  isOwner: boolean;
   onConnectionDeleted?: () => void;
 }) {
+  const router = useRouter();
+  const { webId } = router.query;
   const { setSelectedSourceId } = useSourceStore();
   const [isHovering, setIsHovering] = useState(false);
 
-  const {
-    data: fromSource,
-    isLoading: fromLoading,
-    refetch: refetchFromSource,
-  } = useFetchSource(connection.fromSourceId, "connection-block-from");
+  const { data: fromSource, isLoading: fromLoading } = useFetchSource(
+    webId as string,
+    connection.fromSourceId,
+    "connection-block-from"
+  );
 
-  const {
-    data: toSource,
-    isLoading: toLoading,
-    refetch: refetchToSource,
-  } = useFetchSource(connection.toSourceId, "connection-block-to");
+  const { data: toSource, isLoading: toLoading } = useFetchSource(
+    webId as string,
+    connection.toSourceId,
+    "connection-block-to"
+  );
 
-  const {
-    mutateAsync: deleteConnection,
-    isPending: deleteConnectionLoading,
-    error: deleteConnectionError,
-  } = useDeleteConnection();
+  const { mutateAsync: deleteConnection, isPending: deleteConnectionLoading } =
+    useDeleteConnection(webId as string);
+
+  const { canWrite } = useAuthorization();
 
   if (fromLoading || toLoading) return null;
 
@@ -68,7 +69,7 @@ function ConnectionBlock({
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {isOwner && (
+      {canWrite && (
         <SimpleTooltip content="Delete Connection">
           <Button
             onClick={() => handleDelete(connection.connectionId)}

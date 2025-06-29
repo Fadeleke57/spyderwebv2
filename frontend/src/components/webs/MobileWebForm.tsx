@@ -11,7 +11,7 @@ import WebForm from "./WebForm";
 import PublicWebView from "./PublicWebView";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { ScrollBar } from "../ui/scroll-area";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { useFetchWebById } from "@/hooks/webs";
 
 function MobileWebView({ webId }: { webId: string }) {

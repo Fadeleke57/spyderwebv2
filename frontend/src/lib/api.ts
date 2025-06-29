@@ -1,5 +1,5 @@
 import axios from "axios";
-import { environment } from "@/environment/load_env";
+import { environment } from "@/environment/loadenv";
 
 const api = axios.create({
   baseURL: environment.api_url,
@@ -15,7 +15,7 @@ const mcpAPI = axios.create({
     "Content-Type": "application/json",
   },
   withCredentials: true,
-})
+});
 
 api.interceptors.response.use(
   (response) => {

@@ -1,5 +1,5 @@
 import { WebCard } from "./WebCard";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { useFetchWebById } from "@/hooks/webs";
 import { Skeleton } from "../ui/skeleton";
 

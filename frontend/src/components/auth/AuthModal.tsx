@@ -131,6 +131,12 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
         description: "Please use a stronger password.",
         variant: "destructive",
       });
+    } else if (message.includes("duplicate_email")) {
+      toast({
+        title: "Error Creating Account",
+        description: "This email is associated with an existing account.",
+        variant: "destructive",
+      });
     } else {
       toast({
         title: "Error Creating Account",

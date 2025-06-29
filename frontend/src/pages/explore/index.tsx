@@ -4,7 +4,7 @@ import { WebCard } from "@/components/explore/WebCard";
 import { Web } from "@/types/web";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import Head from "next/head";
 import useMediaQuery from "@/hooks/general";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -108,10 +108,7 @@ function Index() {
             <div ref={ref} className="h-10 pt-4 w-full">
               {isFetchingNextPage && (
                 <div className="w-full flex flex-col items-center justify-center gap-3">
-                  <Loader
-                    size={20}
-                    className="animate-spin"
-                  />
+                  <Loader size={20} className="animate-spin" />
                 </div>
               )}
             </div>

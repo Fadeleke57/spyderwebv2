@@ -14,7 +14,7 @@ router = APIRouter()
 
 
 @router.post("/configure/{webId}")
-def configure_chat(webId: str):
+def configure_chat(webId: str, _: User = Depends(manager.optional)):
     """
     Configure the chat settings for a given webId.
 
@@ -64,13 +64,13 @@ async def handle_chat_data(
     """
 
     # Check credits before processing
-    current_credits = await get_user_credits(user["id"])
+    current_credits = await get_user_credits(user.id)
     chat_cost = OPERATION_COSTS.get("chatbot", 1)
 
     if current_credits is None:
         raise HTTPException(status_code=500, detail="Error checking credits")
 
-    if current_credits + chat_cost > PLAN_CREDITS.get(user["subscription_plan"], 0):
+    if current_credits + chat_cost > PLAN_CREDITS.get(user.subscription_plan, 0):
         # Return a 402 Payment Required status with a clear message
         raise HTTPException(
             status_code=402,  # Payment Required
@@ -79,7 +79,7 @@ async def handle_chat_data(
 
     try:
         # Deduct credits if sufficient
-        success, error = deduct_credits(user["id"], "chatbot")
+        success, error = deduct_credits(user.id, "chatbot")
         if not success:
             raise HTTPException(status_code=400, detail=error)
 
@@ -117,11 +117,11 @@ def save_chat(chatId: str, payload: dict, user: User = Depends(manager.required)
     try:
         messages_to_save = payload.get("messages")
 
-        chat = Chats.find_one({"chatId": chatId, "userId": user["id"]})
+        chat = Chats.find_one({"chatId": chatId, "userId": user.id})
         if messages_to_save:
             if chat:
                 Chats.update_one(
-                    {"chatId": chatId, "userId": user["id"]},
+                    {"chatId": chatId, "userId": user.id},
                     {
                         "$set": {
                             "messages": messages_to_save,
@@ -133,7 +133,7 @@ def save_chat(chatId: str, payload: dict, user: User = Depends(manager.required)
                 Chats.insert_one(
                     {
                         "chatId": chatId,
-                        "userId": user["id"],
+                        "userId": user.id,
                         "createdAt": datetime.now(UTC),
                         "updatedAt": datetime.now(UTC),
                         "messages": messages_to_save,
@@ -161,7 +161,7 @@ def delete_chat(chatId: str, user: User = Depends(manager.required)):
         HTTPException: If an error occurs during deletion, a 500 status code is raised.
     """
     try:
-        Chats.delete_one({"chatId": chatId, "userId": user["id"]})
+        Chats.delete_one({"chatId": chatId, "userId": user.id})
         return {"result": True}
     except Exception as e:
         logger.error(f"Error deleting chat: {str(e)}")
@@ -185,7 +185,7 @@ def get_all_chats(user: User = Depends(manager.required)):
 
     try:
         chats = (
-            list(Chats.find({"userId": user["id"]}, {"_id": 0}).sort("updatedAt", -1))
+            list(Chats.find({"userId": user.id}, {"_id": 0}).sort("updatedAt", -1))
             or []
         )
         return {"result": chats}

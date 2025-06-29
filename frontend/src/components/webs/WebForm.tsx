@@ -26,10 +26,12 @@ import ConfirmImageModal from "../utility/ConfirmImageModal";
 import { ImageModal } from "../utility/ImageModal";
 import { DynamicTextarea } from "../utility/DynamicScrollbar";
 import { SHOWCASE_IMAGE } from "@/lib/consts";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { TagsPopover } from "../home/TagsPopover";
 import SimpleTooltip from "../utility/SimpleTooltip";
 import Link from "next/link";
+import { useCheckAuthorizedUser } from "@/hooks/contributors";
+import { useAuthorization } from "@/providers/AuthorizationProvider";
 
 const webSchema = z.object({
   name: z.string().min(1, { message: "Claim is required" }),
@@ -68,7 +70,7 @@ function WebForm({ webId }: { webId: string }) {
   });
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
-  const isOwner = web && user && web.userId === user.id;
+  const { isResourceOwner, canWrite } = useAuthorization();
 
   useEffect(() => {
     if (imageUrls) {
@@ -262,7 +264,7 @@ function WebForm({ webId }: { webId: string }) {
     }
   };
 
-  if (!isOwner) {
+  if (!canWrite) {
     return null;
   }
 
@@ -277,7 +279,7 @@ function WebForm({ webId }: { webId: string }) {
                 {webConfig.visibility === "Private" && (
                   <Lock size={12} className="ml-1" />
                 )}
-                {isOwner && (
+                {isResourceOwner && (
                   <ConfirmModal
                     action={() =>
                       handleToggleVisibility(

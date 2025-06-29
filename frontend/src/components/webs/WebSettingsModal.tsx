@@ -6,12 +6,11 @@ import {
   DialogTitle,
   DialogHeader,
 } from "../ui/dialog";
-import { Lock, Orbit, SettingsIcon, Trash } from "lucide-react";
+import { Orbit, SettingsIcon, Trash } from "lucide-react";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
 import { useDeleteWeb, useFetchWebById, useUpdateWeb } from "@/hooks/webs";
 import { Label } from "../ui/label";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import DeleteModal from "../utility/DeleteModal";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/router";
@@ -22,10 +21,6 @@ function WebSettingsModal({ webId }: { webId: string }) {
   const router = useRouter();
   const { data: web, refetch: refetchWeb } = useFetchWebById(webId);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
-  const [visibilityModalOpen, setVisibilityModalOpen] = React.useState(false);
-  const [currentVisibility, setCurrentVisibility] = React.useState<
-    "Public" | "Private" | "Invite"
-  >((web && web.visibility) || "Public");
 
   const {
     mutateAsync: updateWeb,
@@ -49,32 +44,6 @@ function WebSettingsModal({ webId }: { webId: string }) {
       });
     }
   }, [deleteWeb, router, web.webId]);
-
-  const handleToggleVisibility = async (
-    newVisibility: "Public" | "Private" | "Invite"
-  ) => {
-    try {
-      await updateWeb({
-        visibility: newVisibility,
-      });
-      refetchWeb();
-      setCurrentVisibility(newVisibility);
-      toast({
-        title: `Web visibility updated to ${newVisibility.toLowerCase()}.`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error updating web",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleVisibilityChange = (value: "Public" | "Private" | "Invite") => {
-    setCurrentVisibility(value);
-    setVisibilityModalOpen(true);
-  };
 
   return (
     <>
@@ -115,36 +84,6 @@ function WebSettingsModal({ webId }: { webId: string }) {
               />
             </div>
 
-            <div className="space-y-3">
-              <Label className="text-sm font-medium flex items-center">
-                Visibility <Lock size={16} className="ml-2" />
-              </Label>
-              <RadioGroup
-                disabled={webUpdating}
-                value={currentVisibility}
-                onValueChange={handleVisibilityChange}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Public" id="public" />
-                  <Label htmlFor="public" className="font-normal">
-                    Public
-                  </Label>
-                  <span className="text-xs text-gray-500 ml-2">
-                    Anyone can view this web
-                  </span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="Private" id="private" />
-                  <Label htmlFor="private" className="font-normal">
-                    Private
-                  </Label>
-                  <span className="text-xs text-gray-500 ml-2">
-                    Only you can view this web
-                  </span>
-                </div>
-              </RadioGroup>
-            </div>
-
             <div className="space-y-3 flex flex-row items-center justify-between">
               <Label className="text-sm font-medium w-xs">
                 <div className="flex items-center mb-1">
@@ -157,7 +96,7 @@ function WebSettingsModal({ webId }: { webId: string }) {
               </Label>
               <Button
                 disabled={webDeleting}
-                variant="destructive"
+                className="p-0 h-fit w-fit dark:bg-transparent dark:border-none dark:hover:bg-transparent dark:text-red-400 dark:hover:text-red-500"
                 onClick={() => setDeleteModalOpen(true)}
               >
                 Delete Web
@@ -180,41 +119,6 @@ function WebSettingsModal({ webId }: { webId: string }) {
           open={deleteModalOpen}
           setOpen={setDeleteModalOpen}
         />
-      )}
-      {visibilityModalOpen && (
-        <Dialog
-          open={visibilityModalOpen}
-          onOpenChange={setVisibilityModalOpen}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Change Web Visibility</DialogTitle>
-            </DialogHeader>
-            <div className="py-4">
-              <p className="text-sm text-gray-500 mb-4">
-                Are you sure you want to change the visibility of this web to{" "}
-                {currentVisibility.toLowerCase()}?
-              </p>
-              <div className="flex justify-end space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setVisibilityModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => {
-                    handleToggleVisibility(currentVisibility);
-                    setVisibilityModalOpen(false);
-                  }}
-                  disabled={webUpdating}
-                >
-                  {webUpdating ? "Updating..." : "Confirm"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
       )}
     </>
   );
