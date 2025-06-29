@@ -201,7 +201,10 @@ function UploadStatusPopover() {
           refetchWeb();
           setSelectedSourceId(sourceId);
           setIsWebDataModalOpen(true);
-          toast({ title: "File uploaded successfully!" });
+          toast({
+            title: "File uploaded successfully.",
+            description: "Processing...",
+          });
           setView("status");
         } catch (error: any) {
           console.error(error);

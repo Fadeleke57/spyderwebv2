@@ -25,11 +25,13 @@ import { Skeleton } from "../ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { useSourceStore } from "@/store/sourceStore";
 import { useRouter } from "next/router";
+import { useAuthorization } from "@/providers/AuthorizationProvider";
 
-function ConnectionsConfig({ isOwner }: { isOwner: boolean }) {
+function ConnectionsConfig() {
   const router = useRouter();
   const { webId } = router.query;
   const { selectedSourceId: sourceId } = useSourceStore();
+  const { canWrite } = useAuthorization();
   const {
     data: outgoingConnections,
     isLoading: isLoadingOutgoingConnections,
@@ -95,7 +97,7 @@ function ConnectionsConfig({ isOwner }: { isOwner: boolean }) {
           0
             ? `${fetchedIncomingConnections.length + fetchedOutgoingConnections.length} connection${fetchedIncomingConnections.length + fetchedOutgoingConnections.length > 1 ? "s" : ""}`
             : "No connections found."}
-          {isOwner && (
+          {canWrite && (
             <Popover
               open={sourcePopoverOpen}
               onOpenChange={setSourcePopoverOpen}
@@ -176,7 +178,6 @@ function ConnectionsConfig({ isOwner }: { isOwner: boolean }) {
                     key={id}
                     connection={connection}
                     type="out"
-                    isOwner={isOwner}
                     onConnectionDeleted={handleConnectionBlockDelete}
                   />
                 )
@@ -198,7 +199,7 @@ function ConnectionsConfig({ isOwner }: { isOwner: boolean }) {
                 key={id}
                 connection={connection}
                 type="in"
-                isOwner={isOwner}
+                onConnectionDeleted={handleConnectionBlockDelete}
               />
             ))
           )}

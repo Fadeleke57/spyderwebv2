@@ -157,7 +157,7 @@ def upload_website(
         neo4j_client.create_node("source", source_to_insert.model_dump())
 
         Webs.update_one(
-            {"webId": web_id, "userId": user.id},
+            {"webId": web_id},
             {
                 "$addToSet": {"sourceIds": source_to_insert.sourceId},
                 "$set": {"updated": datetime.now(UTC)},
@@ -255,7 +255,7 @@ def upload_note(
     try:
         neo4j_client.create_node("source", source_to_insert.model_dump())
         Webs.update_one(
-            {"webId": web_id, "userId": user.id},
+            {"webId": web_id},
             {
                 "$addToSet": {"sourceIds": source_to_insert.sourceId},
                 "$set": {"updated": datetime.now(UTC)},
@@ -314,7 +314,7 @@ def upload_youtube_video(
         neo4j_client.create_node("source", source_to_insert.model_dump())
 
         Webs.update_one(
-            {"webId": web_id, "userId": user.id},
+            {"webId": web_id},
             {
                 "$addToSet": {"sourceIds": source_to_insert.sourceId},
                 "$set": {"updated": datetime.now(UTC)},

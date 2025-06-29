@@ -31,6 +31,7 @@ import {
   ResizablePanelGroup,
 } from "../ui/resizable";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuthorization } from "@/providers/AuthorizationProvider";
 
 interface WebDataModalProps {
   open: boolean;
@@ -77,7 +78,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
     setPresignedUrl(sourceData.file_url);
   }, [sourceData]);
 
-  const isOwner = (source && user && source.userId === user.id) || false;
+  const { canWrite } = useAuthorization();
 
   const handleNewTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newTitle = e.target.value;
@@ -204,7 +205,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                       placeholder="Title..."
                       className="w-full text-lg font-bold resize-none p-0 pl-4 !m-0 !shadow-none !bg-transparent rounded-md focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg"
                     />
-                    {isOwner && (
+                    {canWrite && (
                       <div className="absolute left-0 -bottom-4 flex border rounded-sm">
                         <Button
                           size={"icon"}
@@ -243,7 +244,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                         {sourceTitle || "Loading..."}
                       </span>
                     </Link>
-                    {isOwner && (
+                    {canWrite && (
                       <div className="absolute left-0 -bottom-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out flex space-x-2">
                         <Edit
                           size={20}
@@ -262,7 +263,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                     placeholder="Title..."
                     className="w-full text-lg font-bold resize-none !p-0 !m-0 !shadow-none !bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 rounded-lg"
                   />
-                  {isOwner && (
+                  {canWrite && (
                     <div className="absolute left-0 -bottom-4 flex border rounded-sm">
                       <Button
                         size={"icon"}
@@ -286,7 +287,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                   <span className="text-lg">
                     {sourceTitle || source?.name || ""}
                   </span>
-                  {isOwner && (
+                  {canWrite && (
                     <div className="absolute left-0 -bottom-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out flex space-x-2">
                       <Edit
                         size={20}
@@ -394,7 +395,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
             {/** Desktop */}
             {!isMobile && (
               <ResizablePanel defaultSize={defaultLayout[1]} className="h-full">
-                <ConnectionsConfig isOwner={isOwner} />
+                <ConnectionsConfig />
               </ResizablePanel>
             )}
             {/** Mobile */}
@@ -403,7 +404,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
                 defaultSize={mobileDefaultLayout[1]}
                 className="h-full"
               >
-                <ConnectionsConfig isOwner={isOwner} />
+                <ConnectionsConfig />
               </ResizablePanel>
             )}
           </ResizablePanelGroup>

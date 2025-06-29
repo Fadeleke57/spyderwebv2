@@ -75,7 +75,7 @@ class EmbeddingService:
         vectors: List[Vector] = []
 
         user_id = source.userId
-        associated_web = Webs.find_one({"webId": web_id, "userId": user_id})
+        associated_web = Webs.find_one({"webId": web_id})
         should_run_autolinker: bool = (
             associated_web and Web(**associated_web).enableAIConnections
         )

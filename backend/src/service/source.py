@@ -177,7 +177,7 @@ class SourceService:
 
         source_ids = [source.sourceId for source in sources_to_insert]
         Webs.update_one(
-            {"webId": web_id, "userId": user_id},
+            {"webId": web_id},
             {
                 "$push": {"sourceIds": {"$each": source_ids}},
                 "$set": {"updated": datetime.now(UTC)},

@@ -12,7 +12,6 @@ from pytz import UTC
 from src.models.index import Source
 from src.db.neo4j import client as neo4j_client
 from src.utils.storage import track_text_storage, track_file_storage
-from src.core.config import settings
 from src.models.index import Webs
 from src.service.source import service as source_service
 from src.service.extraction import service as extraction_service
@@ -149,7 +148,7 @@ class FileService:
 
                 neo4j_client.create_node("source", source.model_dump())
                 Webs.update_one(
-                    {"webId": web_id, "userId": user.id},
+                    {"webId": web_id},
                     {
                         "$push": {"sourceIds": source.sourceId},
                         "$set": {"updated": datetime.now(UTC)},

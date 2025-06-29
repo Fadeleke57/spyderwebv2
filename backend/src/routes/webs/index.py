@@ -279,12 +279,13 @@ async def upload_image_to_web(
     if not web:
         raise HTTPException(status_code=404, detail="Web not found")
 
+    web = Web(**web)
     uploaded_image_urls = []
     try:
         for file in files:
             # sanitize filename
             safe_filename = secure_filename(file.filename)
-            object_name = f"files/web-{web_id}/images/{safe_filename}"
+            object_name = f"files/{web.userId}/{web_id}/images/{safe_filename}"
 
             temp_dir = "/tmp/web_uploads"
             os.makedirs(temp_dir, exist_ok=True)
@@ -497,7 +498,7 @@ def update_web(
     web_id: str,
     update_web_payload: UpdateWeb,
     background_tasks: BackgroundTasks,
-    user: User = Depends(manager.required.WRITE),
+    _: User = Depends(manager.required.WRITE),
 ):
     """
     Update a web.

@@ -28,14 +28,12 @@ import { useUser } from "@/providers/UserProvider";
 import { NewWebModal } from "@/components/webs/NewWebModal";
 import { motion } from "framer-motion";
 import SimpleTooltip from "@/components/utility/SimpleTooltip";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const VALID_TABS = ["overview", "webs", "packages", "stars"];
 
 function UserProfile() {
   const router = useRouter();
   const { user: viewer } = useUser();
-  const isMobile = useIsMobile();
   const { username, tab: tabParam } = router.query;
   const [tab, setTab] = useState("overview");
   const { ref, inView } = useInView();
@@ -66,13 +64,11 @@ function UserProfile() {
   const {
     data: user,
     isLoading: userLoading,
-    isError: userError,
   } = useFetchUserByUsername(username as string);
 
   const {
     data: websData,
     isLoading: websLoading,
-    error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -80,8 +76,6 @@ function UserProfile() {
 
   const {
     data: pinnedWebs,
-    isLoading: pinnedWebsLoading,
-    error: pinnedWebsError,
   } = useFetchPinnedWebs(user?.id);
 
   useEffect(() => {
@@ -143,7 +137,6 @@ function UserProfile() {
         />
       </Head>
 
-      {/* Profile header - Full Width for Mobile */}
       <div className="p-4 border-b">
         <div className="flex flex-col mb-4">
           <div className="flex lg:items-center gap-2">
@@ -197,7 +190,6 @@ function UserProfile() {
           <p className="text-sm mb-4">{user.bio || "No bio available"}</p>
 
           <div className="flex flex-col gap-2">
-            {/* Social links */}
             {user.website && (
               <div className="flex items-center gap-2">
                 <LinkIcon size={16} className="text-muted-foreground" />
@@ -249,7 +241,6 @@ function UserProfile() {
         </div>
       </div>
 
-      {/* Tabs and Content */}
       <div className="w-full">
         <Tabs
           defaultValue="overview"
