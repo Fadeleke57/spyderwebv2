@@ -7,16 +7,16 @@ import { createStytchUIClient } from "@stytch/nextjs/ui";
 import Head from "next/head";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
-import { UserProvider } from "@/context/UserContext";
+import { UserProvider } from "@/providers/UserProvider";
 import AppLayout from "@/app/AppLayout";
 import { Inter as FontSans } from "next/font/google";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Analytics } from "@vercel/analytics/react";
-import { ThemeProvider } from "@/hoc/theme-provider";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 import { handleLinkedInWebView } from "@/lib/utils";
 import { Toaster as SonnerToaster } from "sonner";
-import { PostHogProvider } from "@/hoc/PostHogProvider";
-import { environment } from "@/environment/load_env";
+import { PostHogProvider } from "@/providers/PostHogProvider";
+import { environment } from "@/environment/loadenv";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;

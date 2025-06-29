@@ -5,7 +5,7 @@ import { CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { toast } from "@/components/ui/use-toast";
 import { useProcessPayment } from "@/hooks/usage";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 
 export default function PaymentSuccessPage() {
   const router = useRouter();

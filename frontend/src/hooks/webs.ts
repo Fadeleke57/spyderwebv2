@@ -374,33 +374,3 @@ export function useExportGraph() {
     },
   });
 }
-
-type InviteContributerPayload = {
-  webId: string;
-  emailToInvite: string;
-};
-
-export function useInviteContributer() {
-  return useMutation({
-    mutationFn: async (payload: InviteContributerPayload) => {
-      const response = await api.post(`/webs/invite/contributer`, {
-        webId: payload.webId,
-        emailToInvite: payload.emailToInvite,
-      });
-      return response.data.result;
-    },
-    onError: () => {
-      toast({
-        title: "Error inviting contributer",
-        description: "Contributer invitation failed",
-        variant: "destructive",
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Contributer invited successfully",
-        description: "Contributer invited successfully",
-      });
-    },
-  });
-}

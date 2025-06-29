@@ -9,9 +9,11 @@ import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import Image from "next/image";
 import { ImageModal } from "../utility/ImageModal";
 import { AnimatedStarButton } from "../explore/AnimatedStar";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import AuthModal from "../auth/AuthModal";
 import { TagsPopover } from "../home/TagsPopover";
+import { useCheckAuthorizedUser } from "@/hooks/contributors";
+import { useAuthorization } from "@/providers/AuthorizationProvider";
 
 function PublicWebView({ webId }: { webId: string }) {
   const { data: web } = useFetchWebById(webId);
@@ -29,7 +31,7 @@ function PublicWebView({ webId }: { webId: string }) {
   const [images, setImages] = useState<string[]>([]);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const isOwner = web && user && web.userId === user.id;
+  const { canWrite } = useAuthorization();
 
   useEffect(() => {
     if (imageUrls) {
@@ -77,7 +79,7 @@ function PublicWebView({ webId }: { webId: string }) {
     }
   }, [web, user, imageUrls]);
 
-  if (isOwner) {
+  if (canWrite) {
     return null;
   }
 

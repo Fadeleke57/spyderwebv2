@@ -21,9 +21,10 @@ import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
 import SearchSourceModal from "./SearchSourceModal";
 import ExportContextModal from "./ExportContextModal";
 import { useRouter } from "next/router";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { useFetchWebById } from "@/hooks/webs";
 import SimpleTooltip from "../utility/SimpleTooltip";
+import { useCheckAuthorizedUser } from "@/hooks/contributors";
 
 const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
 
@@ -40,8 +41,13 @@ function WebPlayground() {
     isUploadingSource,
     setIsUploadingSource,
   } = useSourceStore();
+  const { data: userAuthorization } = useCheckAuthorizedUser(webId as string);
+  const { accessLevel } = userAuthorization || { accessLevel: "read" };
 
-  const isOwner = user && web && user.id === web.userId;
+  const isResourceOwner = user && web && user.id === web.userId;
+  const isOwner = accessLevel === "owner";
+  const canWrite = accessLevel === "write" || isOwner;
+  const canRead = accessLevel === "read" || canWrite;
 
   const { mutateAsync: uploadFile, isPending: isFileUploading } = useFileUpload(
     webId as string
@@ -181,7 +187,7 @@ function WebPlayground() {
             isExpanded ? "right-6" : "right-3"
           }  top-3`}
         >
-          {isOwner && <WebSettingsModal webId={web.webId} />}
+          {isResourceOwner && <WebSettingsModal webId={web.webId} />}
           <Badge
             variant="outline"
             className={`border dark:border-violet-400/70`}
@@ -238,7 +244,7 @@ function WebPlayground() {
             </div>
           )}
         </div>
-        {isOwner &&
+        {canWrite &&
           (web.sourceIds?.length === undefined ||
             web.sourceIds?.length === null ||
             web.sourceIds?.length > 0) && (
@@ -263,7 +269,7 @@ function WebPlayground() {
               </SimpleTooltip>
             </div>
           )}
-        {isOwner &&
+        {canWrite &&
           web.sourceIds &&
           web.sourceIds.length === 0 &&
           !isFileUploading && (
@@ -297,7 +303,6 @@ function WebPlayground() {
           )}
         <div className="flex-1" />
         <WebGraph
-          isOwner={isOwner || false}
           hasSources={web?.sourceIds?.length ? true : false}
           fetchedSources={fetchedSources}
           setFetchedSources={setFetchedSources}

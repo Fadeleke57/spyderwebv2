@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Check, CopyIcon, Edit, X } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { Textarea } from "../ui/textarea";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { extractVideoId } from "@/lib/utils";
 import NoteComponent from "../notes/Notes";
 import {

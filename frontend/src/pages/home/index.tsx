@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import withAuth from "@/hoc/withAuth";
+import withAuth from "@/providers/WithAuth";
 import { TrendingSearchCarousel } from "@/components/home/TrendingSearchCarousel";
 import { ProjectsCarousel } from "@/components/home/ProjectsCarousel";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import Link from "next/link";
 import Head from "next/head";
 import { useRouter } from "next/router";

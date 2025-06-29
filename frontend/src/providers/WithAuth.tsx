@@ -13,7 +13,7 @@ export default function withAuth(Component: any) {
         window.location.href = "/auth";
       }
     }, [isInitialized, user, router]);
-    
+
     if (!user) {
       return null;
     }

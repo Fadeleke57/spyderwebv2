@@ -109,9 +109,11 @@ class UpdateUser(BaseModel):  # updating user
 class Contributor(BaseModel):
     contributorId: str
     userId: Optional[str] = None
+    username: Optional[str] = None
+    email: str
     webId: str
     accessLevel: Literal["read", "write", "owner"] = "read"
     invitedAt: datetime = Field(default_factory=lambda: datetime.now(UTC))
     acceptedAt: Optional[datetime] = None
-    pending: bool = False
+    pending: bool = True
     invitedBy: str

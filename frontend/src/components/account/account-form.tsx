@@ -36,10 +36,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PublicUser } from "@/types/user";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { useRouter } from "next/router";
 import { PricingModal } from "../pricing/PricingModal";
-import { environment } from "@/environment/load_env";
+import { environment } from "@/environment/loadenv";
 
 const accountFormSchema = z.object({
   name: z
@@ -74,8 +74,7 @@ export function AccountForm({ user }: { user: PublicUser }) {
   const handleDeleteSubscription = async () => {
     try {
       setIsDeleting(true);
-      const apiUrl =
-        environment.api_url || "http://localhost:8000";
+      const apiUrl = environment.api_url || "http://localhost:8000";
       const response = await fetch(`${apiUrl}/payment/cancel-subscription`, {
         method: "POST",
         headers: {

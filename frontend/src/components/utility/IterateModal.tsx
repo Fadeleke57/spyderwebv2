@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useIterateWeb } from "@/hooks/webs";
 import { useRouter } from "next/router";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { toast } from "../ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -253,7 +253,7 @@ export function IterateModal({
               Include connections?
               <Badge className="ml-2 bg-violet-400 text-foreground">PRO</Badge>
             </label>
-             implement this 
+             implement this
             <Switch
               disabled
               id="with-connections"

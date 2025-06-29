@@ -36,7 +36,7 @@ import { useFetchWebById } from "@/hooks/webs";
 import { extractVideoId, getLinkType } from "@/lib/utils";
 import VoiceRecordModal from "./VoiceRecordModal";
 import { useResourceUsage } from "@/hooks/usage";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Drawer, DrawerContent } from "../ui/drawer";
 
@@ -61,7 +61,6 @@ function UploadStatusPopover() {
   const { webId } = router.query;
   const { user } = useUser();
   const isMobile = useIsMobile();
-
 
   const [view, setView] = useState<"upload" | "status">("upload");
   const [activeTab, setActiveTab] = useState("all");
@@ -418,14 +417,14 @@ function UploadStatusPopover() {
               setLinkUserInput(e.target.value.replace("https://", ""))
             }
             disabled={isLinkUploading || isFileUploading}
-            className="rounded-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 transition-none h-10 flex-1 min-w-0" // Ensure input takes remaining space
+            className="rounded-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 transition-none h-10 flex-1 min-w-0"
           />
           <Button
             onClick={handleLinkUpload}
             disabled={
               isLinkUploading || isFileUploading || !linkUserInput.trim()
             }
-            className="border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 rounded-l-none h-10 px-3" // Adjusted padding and height
+            className="border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 rounded-l-none h-10 px-3"
           >
             {isLinkUploading ? (
               <Loader size={16} className="animate-spin" />
@@ -501,8 +500,6 @@ function UploadStatusPopover() {
         {tabs.map((tab) => (
           <TabsContent key={tab.key} value={tab.key}>
             <ScrollArea className="h-64">
-              {" "}
-              {/* Adjusted height if needed */}
               {getFilteredUploads(activeTab).map((upload) => (
                 <div key={upload.id} className="flex mb-4 items-start gap-3">
                   <div className="mt-1">{getStatusIcon(upload.status)}</div>
@@ -536,7 +533,7 @@ function UploadStatusPopover() {
                     </div>
 
                     {upload.status === "uploading" &&
-                      upload.progress !== undefined && ( // Added check for undefined progress
+                      upload.progress !== undefined && (
                         <div className="w-full bg-muted rounded-full h-1 mt-2">
                           <div
                             className="bg-blue-500 h-1 rounded-full transition-all duration-300"

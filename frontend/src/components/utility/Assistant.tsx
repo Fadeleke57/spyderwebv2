@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { environment } from "@/environment/load_env";
+import { environment } from "@/environment/loadenv";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -46,7 +46,7 @@ import SimpleTooltip from "./SimpleTooltip";
 import { useScrollToBottom } from "@/hooks/general";
 import { useRouter } from "next/router";
 import DeleteModal from "./DeleteModal";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { PricingModal } from "@/components/pricing/PricingModal";
 import GroupedChats from "./GroupedChats";
 import { useSourceStore } from "@/store/sourceStore";

@@ -4,7 +4,7 @@ import { Info, Zap } from "lucide-react";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
 import { PricingModal } from "@/components/pricing/PricingModal";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import SimpleTooltip from "./SimpleTooltip";
 
 interface ResourceUsageProps {

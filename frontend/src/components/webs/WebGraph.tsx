@@ -28,9 +28,9 @@ import WebDataModal from "./WebDataModal";
 import { useRouter } from "next/router";
 import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
 import { useFetchWebById } from "@/hooks/webs";
+import { useCheckAuthorizedUser } from "@/hooks/contributors";
 
 interface GraphProps {
-  isOwner: boolean;
   hasSources: boolean;
   fetchedSources: Source[];
   setFetchedSources: Dispatch<SetStateAction<Source[]>>;
@@ -41,7 +41,6 @@ interface GraphProps {
 }
 
 function WebGraph({
-  isOwner,
   hasSources,
   fetchedSources,
   sourcesLoading,
@@ -50,9 +49,11 @@ function WebGraph({
   connectionsLoading,
 }: GraphProps) {
   const router = useRouter();
-
   const { webId } = router.query;
-
+  const { data: userAuthorization } = useCheckAuthorizedUser(webId as string);
+  const { accessLevel } = userAuthorization || { accessLevel: "read" };
+  const isOwner = accessLevel === "owner";
+  const canWrite = accessLevel === "write" || isOwner;
   const { refetch: refetchConnectionsForWeb } = useFetchAllConnectionsForWeb(
     webId as string
   );
@@ -576,7 +577,7 @@ function WebGraph({
           Drag and drop files or folders here.
         </div>
       )}
-      {isOwner && (
+      {canWrite && (
         <div ref={trashRef} className="absolute left-3 top-3 cursor-pointer">
           <TooltipProvider delayDuration={100}>
             <Tooltip>

@@ -16,7 +16,7 @@ import debounce from "lodash/debounce";
 import { toast } from "../ui/use-toast";
 import { useSourceStore } from "@/store/sourceStore";
 import { useRouter } from "next/router";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 
 interface NoteComponentProps {
   webId: string;

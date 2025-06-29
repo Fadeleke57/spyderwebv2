@@ -4,7 +4,7 @@ import { WebCard } from "@/components/explore/WebCard";
 import { Web } from "@/types/web";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import Head from "next/head";
 import useMediaQuery from "@/hooks/general";
 import { AuthModal } from "@/components/auth/AuthModal";
@@ -137,12 +137,7 @@ function SearchPage() {
           <PopularWebsCard />
         </div>
 
-        {open && (
-          <AuthModal
-            open={open}
-            setOpen={setOpen}
-          />
-        )}
+        {open && <AuthModal open={open} setOpen={setOpen} />}
       </div>
     </div>
   );

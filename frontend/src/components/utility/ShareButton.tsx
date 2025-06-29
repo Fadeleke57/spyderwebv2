@@ -1,19 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import {
-  Check,
-  Copy,
-  Ellipsis,
-  Forward,
-  Link2,
-  Lock,
-  Send,
-  Trash2,
-} from "lucide-react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { Check, Copy, Ellipsis, Forward, Send, Trash2 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +22,6 @@ import {
 } from "@/components/ui/drawer";
 import {
   Form,
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
@@ -47,190 +37,431 @@ import {
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRouter } from "next/router";
-import { environment } from "@/environment/load_env";
+import { environment } from "@/environment/loadenv";
 import UserAvatar from "./UserAvatar";
-import { useUser } from "@/context/UserContext";
-import { useFetchWebById, useInviteContributer } from "@/hooks/webs";
+import { useUser } from "@/providers/UserProvider";
+import { useFetchWebById } from "@/hooks/webs";
+import {
+  useInviteContributor,
+  useGetAllContributorsForWeb,
+  useDeleteContributor,
+  useToggleContributorRole,
+  useRevokeInvite,
+} from "@/hooks/contributors";
 import { useFetchUserById } from "@/hooks/user";
-import { Web } from "@/types/web";
-
-const exampleContributers = [
-  {
-    userId: "fadel@spyderweb.com",
-    username: "fadel",
-    profilepicurl: "https://robohash.org/fadel",
-    role: "Owner",
-  },
-];
+import { AccessLevel, Contributor } from "@/types/contributor";
+import { Skeleton } from "../ui/skeleton";
+import { useAuthorization } from "@/providers/AuthorizationProvider";
 
 const FormSchema = z.object({
-  viewAccess: z.enum(["private", "anyone"], {
-    required_error: "Please select a view access option.",
-  }),
   inviteContributers: z.string().email("Please enter a valid email").optional(),
 });
 
-const ShareForm = ({
-  form,
-  webOwner,
-  isOwner,
-  copied,
-  handleCopy,
-  onSubmit,
-}: any) => {
+const ContributorItem = ({ contributor }: { contributor: Contributor }) => {
   const router = useRouter();
   const { webId } = router.query;
-  const { mutateAsync: inviteContributer } = useInviteContributer();
+  const { isOwner } = useAuthorization();
+  const { user } = useUser();
 
-  const handleInviteUser = () => {
-    if (form.formState.errors.inviteContributers) return;
-    try {
-      inviteContributer({
-        webId: webId as string,
-        emailToInvite: form.getValues("inviteContributers"),
+  const { refetch: refetchContributors } = useGetAllContributorsForWeb(
+    webId as string
+  );
+
+  const {
+    mutateAsync: removeContributor,
+    isPending: removeContributorPending,
+  } = useDeleteContributor(webId as string);
+  const {
+    mutateAsync: toggleContributorRole,
+    isPending: toggleContributorRolePending,
+  } = useToggleContributorRole(webId as string);
+  const { mutateAsync: revokeInvite, isPending: revokeInvitePending } =
+    useRevokeInvite(webId as string);
+
+  const handleRemoveContributor = useCallback(
+    async (contributorId: string) => {
+      try {
+        await removeContributor({ contributorId });
+        toast({
+          title: "Contributor removed",
+          description: "Access has been revoked for the user.",
+        });
+        await refetchContributors();
+      } catch (error: any) {
+        console.error("Failed to remove contributor", error);
+        toast({
+          title: "Failed to remove contributor",
+          description:
+            error?.response?.data?.detail ||
+            error.detail ||
+            "An unexpected error occurred.",
+          variant: "destructive",
+        });
+      }
+    },
+    [removeContributor, refetchContributors]
+  );
+
+  const handleRoleChange = useCallback(
+    async (contributorId: string, role: AccessLevel) => {
+      try {
+        await toggleContributorRole({ contributorId, role });
+        toast({
+          title: "Role updated",
+          description: "Contributor's access level has been changed.",
+        });
+        await refetchContributors();
+      } catch (error: any) {
+        console.error("Failed to update role", error);
+        toast({
+          title: "Failed to update role",
+          description:
+            error?.response?.data?.detail ||
+            error.detail ||
+            "An unexpected error occurred.",
+          variant: "destructive",
+        });
+      }
+    },
+    [toggleContributorRole, refetchContributors]
+  );
+
+  const handleRevokeInvite = useCallback(
+    async (contributorId: string) => {
+      try {
+        await revokeInvite({ contributorId });
+        toast({
+          title: "Invite revoked",
+          description: "The invitation has been canceled.",
+        });
+        await refetchContributors();
+      } catch (error: any) {
+        console.error("Failed to revoke invite", error);
+        toast({
+          title: "Failed to revoke invite",
+          description:
+            error?.response?.data?.detail ||
+            error.detail ||
+            "An unexpected error occurred.",
+          variant: "destructive",
+        });
+      }
+    },
+    [revokeInvite, refetchContributors]
+  );
+
+  return (
+    <div className="flex w-full items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
+        <UserAvatar dimension={30} userId={contributor.userId} showTooltip />
+        <div className="flex flex-col">
+          <p className="text-sm">{contributor.username || "Contributor"}</p>
+          {contributor.pending && (
+            <span className="text-xs text-muted-foreground font-semibold">
+              Pending invite
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Select
+          value={contributor.accessLevel}
+          onValueChange={(value: AccessLevel) =>
+            handleRoleChange(contributor.contributorId, value)
+          }
+          disabled={
+            contributor.pending ||
+            !isOwner ||
+            removeContributorPending ||
+            toggleContributorRolePending
+          }
+        >
+          <SelectTrigger
+            className={`w-[100px] flex justify-center gap-2 items-center bg-muted text-xs h-8 ring-0 focus:ring-0 focus:ring-offset-0 ${contributor.pending || !isOwner ? "hidden" : ""}`}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="read">Read</SelectItem>
+            <SelectItem value="write">Write</SelectItem>
+            {isOwner && <SelectItem value="owner">Owner</SelectItem>}
+          </SelectContent>
+        </Select>
+
+        {contributor.pending && isOwner && (
+          <Button
+            disabled={revokeInvitePending}
+            variant="ghost"
+            size="sm"
+            type="button"
+            className="text-red-400 hover:text-red-400/80 font-semibold text-xs px-2 bg-transparent dark:bg-transparent dark:hover:bg-transparent hover:bg-transparent"
+            onClick={() => handleRevokeInvite(contributor.contributorId)}
+          >
+            Revoke
+          </Button>
+        )}
+
+        {isOwner && (
+          <Popover>
+            <PopoverTrigger
+              hidden={contributor.pending || !isOwner}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Ellipsis size={16} />
+            </PopoverTrigger>
+            <PopoverContent className="w-fit p-0 mr-10">
+              <Button
+                disabled={removeContributorPending || revokeInvitePending}
+                variant="ghost"
+                hidden={contributor.pending || !isOwner}
+                className="flex items-center gap-2 text-sm"
+                onClick={() =>
+                  handleRemoveContributor(contributor.contributorId)
+                }
+              >
+                {contributor?.userId === user?.id ? (
+                  <span>Leave Project</span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Trash2 size={14} />
+                    Remove Access
+                  </span>
+                )}
+              </Button>
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const ShareForm = ({ form, webOwner, copied, handleCopy }: any) => {
+  const router = useRouter();
+  const { webId } = router.query;
+
+  const { isOwner, canRead, authLoading } = useAuthorization();
+
+  const { mutateAsync: inviteContributor, isPending: inviteRequestPending } =
+    useInviteContributor(webId as string);
+
+  const {
+    data: contributors,
+    isLoading: contributorsLoading,
+    error: contributorsError,
+    refetch: refetchContributors,
+  } = useGetAllContributorsForWeb(webId as string);
+
+  const handleInviteUser = useCallback(async () => {
+    const emailToInvite = form.getValues("inviteContributers")?.trim();
+
+    if (!emailToInvite) {
+      toast({
+        title: "Email required",
+        description: "Please enter an email address to invite.",
+        variant: "destructive",
       });
-    } catch (error) {
-      console.error("Failed to invite user", error);
+      return;
     }
-  };
+
+    if (form.formState.errors.inviteContributers) {
+      return;
+    }
+
+    if (!webOwner) {
+      toast({
+        title: "Owner not found",
+        description: "Owner not found.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (emailToInvite === webOwner.email) {
+      toast({
+        title: "Cannot invite owner",
+        description: "You can't invite the project owner.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if user is already invited or has access
+    const existingContributor = contributors?.find(
+      (c: Contributor) => c.email?.toLowerCase() === emailToInvite.toLowerCase()
+    );
+
+    if (existingContributor) {
+      toast({
+        title: "User already has access",
+        description: `${emailToInvite} ${existingContributor.pending ? "is already invited." : "already has access."}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await inviteContributor({
+        emailToInvite: emailToInvite,
+      });
+
+      toast({
+        title: "Invitation sent!",
+        description: `An invite has been sent to ${emailToInvite}.`,
+      });
+
+      form.reset();
+      // Wait a bit for the backend to process before refetching
+      setTimeout(() => {
+        refetchContributors();
+      }, 500);
+    } catch (error: any) {
+      console.error("Failed to invite user", error);
+      toast({
+        title: "Failed to send invitation",
+        description:
+          error?.response?.data?.detail ||
+          error.detail ||
+          "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    }
+  }, [form, inviteContributor, refetchContributors, webOwner, contributors]);
+
+  // Show loading state for both authorization and contributors
+  const isLoading = authLoading || contributorsLoading;
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="viewAccess"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs text-muted-foreground">
-                View Access
-              </FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                disabled={!isOwner}
-              >
-                <FormControl>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select view access" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className="p-2">
-                  <SelectItem
-                    className={`p-2 cursor-pointer rounded-md ${
-                      field.value === "private" ? "text-violet-400" : ""
-                    }`}
-                    value="private"
+      <form className="space-y-4">
+        {isOwner && (
+          <FormField
+            control={form.control}
+            name="inviteContributers"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs text-muted-foreground">
+                  Invite Contributors
+                </FormLabel>
+                <FormMessage className="text-xs text-red-400" />
+                <div className="flex items-center gap-2 border rounded-md">
+                  <Input
+                    className="flex-1 border-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 transition-none"
+                    placeholder="Enter email address"
+                    {...field}
+                    disabled={inviteRequestPending}
+                  />
+                  <Button
+                    variant="ghost"
+                    className="hover:bg-transparent hover:opacity-80 transition-all duration-200 bg-transparent"
+                    type="button"
+                    size="icon"
+                    onClick={handleInviteUser}
+                    disabled={inviteRequestPending}
                   >
-                    <div className="flex items-center gap-2">
-                      <Lock size={14} />
-                      Only Invited Members
-                    </div>
-                  </SelectItem>
-                  <SelectItem
-                    className={`p-2 cursor-pointer rounded-md ${
-                      field.value === "anyone" ? "text-violet-400" : ""
-                    }`}
-                    value="anyone"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Link2 size={16} />
-                      Anyone with the link
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="inviteContributers"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-xs text-muted-foreground">
-                Invite Contributers
-              </FormLabel>
-              <p className="text-xs text-red-400">
-                {form.formState.errors.inviteContributers?.message}
-              </p>
-              <div
-                tabIndex={0}
-                className="flex items-center gap-2 border rounded-md"
-              >
-                <Input
-                  className="autofill:border-none autofill:bg-transparent border-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 transition-none py-1 flex-1"
-                  placeholder="Email"
-                  {...field}
-                />
-                <Button
-                  size="icon"
-                  className="hover:opacity-80 dark:bg-transparent dark:hover:bg-transparent"
-                  onClick={handleInviteUser}
-                >
-                  <Send size={14} />
-                </Button>
-              </div>
-            </FormItem>
-          )}
-        />
-
-        <div>
-          <p className="text-xs text-muted-foreground mb-2">
-            People with access
-          </p>
-          <div className="flex flex-col max-h-[120px] overflow-y-auto gap-2 no-scrollbar">
-            <div className="flex w-full items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <UserAvatar dimension={30} userId={webOwner?.id} />
-                <p className="text-sm">{webOwner?.username}</p>
-              </div>
-              <span className="text-xs text-muted-foreground">Owner</span>
-            </div>
-            {exampleContributers.map((contributor, index) => (
-              <div
-                key={index}
-                className="flex w-full items-center justify-between gap-2"
-              >
-                <div className="flex items-center gap-2">
-                  <UserAvatar dimension={30} userId={contributor.userId} />
-                  <p className="text-sm">{contributor.username}</p>
+                    <Send size={14} />
+                  </Button>
                 </div>
-                <Popover>
-                  <PopoverTrigger className="flex text-muted-foreground items-center gap-2">
-                    <span className="text-xs">{contributor.role}</span>
-                    <Ellipsis size={16} />
-                  </PopoverTrigger>
-                  <PopoverContent className="w-fit p-0 mr-10">
-                    <Button variant="ghost" className="flex items-center gap-2">
-                      <Trash2 size={14} />
-                      Remove Access
-                    </Button>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            ))}
-          </div>
-        </div>
+              </FormItem>
+            )}
+          />
+        )}
 
-        <div className="flex gap-2 mt-6">
+        {!canRead && (
+          <Input
+            className="flex-1 transition-none"
+            value={window.location.href}
+            readOnly
+          />
+        )}
+
+        {canRead && (
+          <div>
+            <p className="text-xs text-muted-foreground mb-2">
+              People with access
+            </p>
+
+            <div className="flex flex-col max-h-[200px] overflow-y-auto gap-3 no-scrollbar">
+              {/* Always show owner first */}
+              {webOwner && (
+                <div className="flex w-full items-center justify-between gap-2 p-2 rounded-lg bg-muted/20">
+                  <div className="flex items-center gap-2">
+                    <UserAvatar
+                      dimension={30}
+                      userId={webOwner.id}
+                      showTooltip
+                    />
+                    <p className="text-sm font-medium">{webOwner.full_name}</p>
+                  </div>
+                  <span className="text-xs text-muted-foreground font-medium">
+                    Owner
+                  </span>
+                </div>
+              )}
+
+              {/* Loading state */}
+              {isLoading && (
+                <div className="flex flex-col gap-1">
+                  {Array.from({ length: 2 }).map((_, index) => (
+                    <div className="flex items-center gap-2 px-2" key={index}>
+                      <Skeleton className="w-[30px] h-[30px] rounded-full" />
+                      <Skeleton className="w-full h-4" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Error state */}
+              {contributorsError && !isLoading && (
+                <div className="p-3 text-center text-sm text-muted-foreground">
+                  <p>Failed to load contributors</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    type="button"
+                    className="mt-2"
+                    onClick={() => refetchContributors()}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              )}
+
+              {/* Contributors list */}
+              {contributors && Array.isArray(contributors) && !isLoading && (
+                <>
+                  {contributors.length === 0 ? (
+                    <div className="p-3 text-center text-sm text-muted-foreground">
+                      No contributors yet
+                    </div>
+                  ) : (
+                    contributors.map((contributor: Contributor) => (
+                      <div key={contributor.contributorId} className="px-2">
+                        <ContributorItem contributor={contributor} />
+                      </div>
+                    ))
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-2 mt-6 pt-4 border-t">
           <Button
             type="button"
             variant="outline"
-            className="justify-center gap-2 text-sm"
+            size={"sm"}
+            className="justify-center gap-2 text-sm border dark:bg-violet-400/40 dark:border-violet-400/30 dark:hover:bg-violet-400/60"
             onClick={handleCopy}
           >
             {copied ? (
               <>
-                <Check size={14} />
-                Copied!
+                <Check size={14} /> Copied!
               </>
             ) : (
               <>
-                <Copy size={14} />
-                Copy Link
+                <Copy size={14} /> Copy Link
               </>
             )}
           </Button>
@@ -243,50 +474,47 @@ const ShareForm = ({
 const SharePopover = () => {
   const isMobile = useIsMobile();
   const router = useRouter();
-  const { user } = useUser();
   const { webId } = router.query;
   const { data: webData } = useFetchWebById(webId as string);
   const { data: webOwner } = useFetchUserById(webData?.userId);
   const [copied, setCopied] = useState(false);
-  const [web, setWeb] = useState<Web | null>(null);
-  const isOwner = webOwner && user && webOwner.id === user.id;
-
-  useEffect(() => {
-    if (webData) setWeb(webData);
-  }, [webData]);
+  const { canRead } = useAuthorization();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      viewAccess: "anyone",
       inviteContributers: "",
     },
   });
 
-  const link =
-    typeof window !== "undefined"
+  const link = useMemo(() => {
+    return typeof window !== "undefined"
       ? `${window.location.origin}/web/${webId as string}`
       : `${environment.client_url}/web/${webId as string}`;
+  }, [webId]);
 
-  const handleCopy = async () => {
+  const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      toast({
+        title: "Link copied!",
+        description: "The shareable link has been copied to your clipboard.",
+      });
     } catch (err) {
       console.error("Failed to copy", err);
-      toast("Failed to copy link to clipboard");
+      toast({
+        title: "Failed to copy link",
+        description: "Could not copy link to clipboard.",
+        variant: "destructive",
+      });
     }
-  };
+  }, [link]);
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast("Share settings updated", {
-      description: (
-        <pre className="mt-2 w-[320px] rounded-md bg-neutral-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+  // Don't render if we don't have webId
+  if (!webId || !webData) {
+    return null;
   }
 
   if (isMobile) {
@@ -297,25 +525,24 @@ const SharePopover = () => {
             size="sm"
             className="ml-auto gap-1.5 border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 text-sm"
           >
-            <Forward size={16} />
-            <span>Share</span>
+            <Forward size={16} /> <span>Share</span>
           </Button>
         </DrawerTrigger>
         <DrawerContent className="px-6 pb-10 h-[85dvh]">
           <DrawerHeader>
             <DrawerTitle>Share this Web</DrawerTitle>
-            <DrawerDescription>
-              Manage who can view and contribute
-            </DrawerDescription>
+            {canRead && (
+              <DrawerDescription>
+                Manage who can view and contribute
+              </DrawerDescription>
+            )}
           </DrawerHeader>
           <div className="mt-4">
             <ShareForm
               form={form}
               webOwner={webOwner}
-              isOwner={isOwner}
               copied={copied}
               handleCopy={handleCopy}
-              onSubmit={onSubmit}
             />
           </div>
         </DrawerContent>
@@ -330,7 +557,7 @@ const SharePopover = () => {
           size="sm"
           className="ml-auto gap-1.5 border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 text-sm"
         >
-          <Forward size={16} />
+          <Forward size={16} />{" "}
           <span className="hidden md:inline lg:inline">Share</span>
         </Button>
       </PopoverTrigger>
@@ -338,17 +565,19 @@ const SharePopover = () => {
         sideOffset={10}
         className="w-[450px] mr-4 p-8 flex flex-col gap-4 rounded-xl shadow-md border bg-background"
       >
-        <h3 className="text-lg font-semibold mb-1">Share this Web</h3>
-        <p className="text-sm text-muted-foreground">
-          Manage who can view and contribute
-        </p>
+        <div className="flex flex-col gap-1">
+          <h3 className="text-lg font-semibold">Share this Web</h3>
+          {canRead && (
+            <p className="text-sm text-muted-foreground">
+              Manage who can view and contribute
+            </p>
+          )}
+        </div>
         <ShareForm
           form={form}
           webOwner={webOwner}
-          isOwner={isOwner}
           copied={copied}
           handleCopy={handleCopy}
-          onSubmit={onSubmit}
         />
       </PopoverContent>
     </Popover>

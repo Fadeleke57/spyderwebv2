@@ -9,7 +9,7 @@ import { toast } from "@/components/ui/use-toast";
 import { ArrowRight, Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Head from "next/head";
-import { environment } from "@/environment/load_env";
+import { environment } from "@/environment/loadenv";
 
 function Index() {
   const { theme } = useTheme();

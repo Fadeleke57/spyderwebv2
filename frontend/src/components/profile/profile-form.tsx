@@ -32,7 +32,7 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import Image from "next/image";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 
 const profileFormSchema = z.object({
   username: z
@@ -289,7 +289,9 @@ export function ProfileForm({ refetch }: { refetch: () => void }) {
                   />
                 </FormControl>
               </div>
-              <FormDescription>Your username cannot be changed yet.</FormDescription>
+              <FormDescription>
+                Your username cannot be changed yet.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -308,7 +310,9 @@ export function ProfileForm({ refetch }: { refetch: () => void }) {
                   readOnly
                 />
               </FormControl>
-              <FormDescription>Your email cannot be changed yet.</FormDescription>
+              <FormDescription>
+                Your email cannot be changed yet.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

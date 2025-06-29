@@ -10,7 +10,7 @@ import {
 } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { useState } from "react";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 
 export function ConfirmModal({
   actionStr,
@@ -62,7 +62,13 @@ export function ConfirmModal({
         </DialogHeader>
 
         <div className="space-y-2">
-          <p className="text-sm">To confirm, please enter your username <span className="font-semibold text-violet-400/80">&ldquo;{user.username}&rdquo;</span>:</p>
+          <p className="text-sm">
+            To confirm, please enter your username{" "}
+            <span className="font-semibold text-violet-400/80">
+              &ldquo;{user.username}&rdquo;
+            </span>
+            :
+          </p>
           <Input
             type="text"
             placeholder="Enter your username"

@@ -4,59 +4,41 @@ import { Tags, Plus } from "lucide-react";
 import { WebTag } from "@/types/web";
 import { tagsList } from "@/lib/consts";
 import { useRouter } from "next/router";
-import { useUser } from "@/context/UserContext";
 import {
   useAddTagToWeb,
   useFetchWebById,
   useRemoveTagFromWeb,
 } from "@/hooks/webs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
 import { Input } from "../ui/input";
 import { toast } from "../ui/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { useAuthorization } from "@/providers/AuthorizationProvider";
 
 export function TagsPopover() {
-  const { user } = useUser();
   const router = useRouter();
   const { webId } = router.query;
 
-  const {
-    data: web,
-    isLoading: webLoading,
-    error: webError,
-    refetch: refetchWeb,
-  } = useFetchWebById(webId as string);
+  const { data: web, refetch: refetchWeb } = useFetchWebById(webId as string);
 
-  const {
-    mutateAsync: addTagToWeb,
-    isPending: tagLoading,
-    error: tagError,
-  } = useAddTagToWeb(webId as string);
+  const { mutateAsync: addTagToWeb, isPending: tagLoading } = useAddTagToWeb(
+    webId as string
+  );
 
-  const {
-    mutateAsync: removeTagFromWeb,
-    isPending: removeTagLoading,
-    error: removeTagError,
-  } = useRemoveTagFromWeb(webId as string);
+  const { mutateAsync: removeTagFromWeb } = useRemoveTagFromWeb(
+    webId as string
+  );
 
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [customTag, setCustomTag] = useState("");
 
-  const isOwner = web && user && web.userId === user.id;
+  const { canWrite } = useAuthorization();
 
-  // get predefined tag labels for comparison
   const predefinedTagLabels = tagsList.map((tag) => tag.label);
 
-  // separate custom tags from predefined tags
   const customTags = selectedTags.filter(
     (tag) => !predefinedTagLabels.includes(tag)
   );
 
-  // sync selectedTags with web data when it loads
   useEffect(() => {
     if (web && web.tags) {
       setSelectedTags(web.tags);
@@ -64,17 +46,15 @@ export function TagsPopover() {
   }, [web]);
 
   const toggleTag = async (tag: string) => {
-    if (!isOwner) {
+    if (!canWrite) {
       return;
     }
 
     try {
       if (selectedTags.includes(tag)) {
-        // remove tag
         setSelectedTags((prev) => prev.filter((t) => t !== tag));
         await removeTagFromWeb(tag);
       } else {
-        // add tag
         if (web && web.tags.length < 10) {
           setSelectedTags((prev) => [...prev, tag]);
           await addTagToWeb(tag);
@@ -86,18 +66,16 @@ export function TagsPopover() {
           });
         }
       }
-      // refetch to ensure sync with backend
       refetchWeb();
     } catch (error) {
       console.error("Error toggling tag:", error);
-      // revert optimistic update on error
       refetchWeb();
     }
   };
 
   const handleCustomTagSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customTag.trim() || !isOwner) return;
+    if (!customTag.trim() || !canWrite) return;
 
     const newTag = customTag.trim();
     if (!selectedTags.includes(newTag)) {
@@ -116,11 +94,10 @@ export function TagsPopover() {
         }
       } catch (error) {
         console.error("Error adding custom tag:", error);
-        // revert optimistic update on error
         setSelectedTags((prev) => prev.filter((tag) => tag !== newTag));
       }
     } else {
-      setCustomTag(""); // clear input if tag already exists
+      setCustomTag("");
     }
   };
 
@@ -136,7 +113,7 @@ export function TagsPopover() {
       </PopoverTrigger>
       <PopoverContent side="right" sideOffset={4} className={`w-[400px] p-4`}>
         <div className="w-full h-fit rounded-md inline-flex justify-start flex-wrap gap-2">
-          {isOwner ? (
+          {canWrite ? (
             <>
               {/* predefined tags */}
               {tagsList.map((tag: WebTag) => {

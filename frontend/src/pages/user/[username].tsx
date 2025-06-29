@@ -24,7 +24,7 @@ import { format } from "date-fns";
 import { useFetchPinnedWebs, useFetchUserByUsername } from "@/hooks/user";
 import UserAvatar from "@/components/utility/UserAvatar";
 import UserWebSearch from "@/components/webs/UserWebSearch";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { NewWebModal } from "@/components/webs/NewWebModal";
 import { motion } from "framer-motion";
 import SimpleTooltip from "@/components/utility/SimpleTooltip";

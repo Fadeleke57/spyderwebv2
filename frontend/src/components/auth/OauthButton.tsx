@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { googleIcon } from "@/components/utility/Icons";
 import { useStytch } from "@stytch/nextjs";
-import { environment } from "@/environment/load_env";
+import { environment } from "@/environment/loadenv";
 
 export const OAuthButton = () => {
   const client = useStytch();

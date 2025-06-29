@@ -1,8 +1,12 @@
+export type AccessLevel = "read" | "write" | "owner";
+
 export type Contributor = {
     contributorId: string;
     userId?: string;
+    username?: string;
+    email?: string;
     webId: string;
-    accessLevel: "read" | "write" | "owner";
+    accessLevel: AccessLevel;
     invitedAt: string;
     acceptedAt?: string | null;
     pending: boolean;

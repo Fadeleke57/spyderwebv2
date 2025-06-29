@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn, formatText, mapToolNameToBreadcrumb } from "@/lib/utils";
-import {
-  Copy,
-  Check,
-  ThumbsUp,
-  ThumbsDown,
-  NotebookText,
-} from "lucide-react";
+import { Copy, Check, ThumbsUp, ThumbsDown, NotebookText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Markdown } from "@/components/chat/markdown";
 import Charlotte from "@/components/chat/Charlotte";
@@ -22,7 +16,7 @@ import ReferencesComponent, {
 import { useUploadNote } from "@/hooks/sources";
 import { useRouter } from "next/router";
 import { useFetchWebById } from "@/hooks/webs";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { toast } from "sonner";
 import FeedbackModal from "../utility/FeedbackModal";
 

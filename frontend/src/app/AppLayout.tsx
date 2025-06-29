@@ -12,7 +12,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { AuthModal } from "@/components/auth/AuthModal";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 
 export default function AppLayout({
   children,

@@ -36,7 +36,7 @@ import { getTypeIcon } from "../chat/genui/graphcontext";
 import "@hackernoon/pixel-icon-library/fonts/iconfont.css";
 import { useSourceStore } from "@/store/sourceStore";
 import { useFetchWebById } from "@/hooks/webs";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { useRouter } from "next/router";
 
 type SearchSourceModalProps = {

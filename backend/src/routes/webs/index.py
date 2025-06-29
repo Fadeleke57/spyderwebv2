@@ -1,5 +1,4 @@
 import os
-import io
 import uuid
 import json
 import boto3
@@ -13,6 +12,7 @@ from pydantic import BaseModel
 from fastapi.exceptions import HTTPException
 from botocore.exceptions import ClientError
 from werkzeug.utils import secure_filename
+from src.models.index import Contributors
 from src.routes.auth.utils import manager
 from src.lib.s3.index import S3Bucket
 from src.db.neo4j import client as neo4j_client
@@ -35,7 +35,6 @@ from src.lib.stytch.index import client as stytch_client
 from src.lib.pinecone.index import client as pinecone_client
 from src.service.web import service as web_service
 from src.service.source import service as source_service
-from src.routes.chat.index import configure_chat
 from src.utils.storage import track_file_storage
 from src.utils.utility import clean_unicode
 
@@ -107,43 +106,53 @@ def get_user_webs(
 async def get_webs(
     limit: int = 20,
     cursor: str = None,
-    visibility=None,
-    userId=None,
+    visibility: str = None,
+    userId: str = None,
     userMakingRequest: User = Depends(manager.optional),
 ):
-    """
-    Retrieve public webs with cursor-based pagination.
-
-    Parameters
-    ----------
-    limit : int
-        Number of webs to return per page
-    cursor : str
-        Timestamp-based cursor for pagination
-
-    Returns
-    -------
-    dict
-        Dictionary containing webs and next cursor
-    """
     query = {}
     is_resource_owner = userMakingRequest and userMakingRequest.id == userId
+
     try:
+        # Handle visibility filter
         if visibility:
             query["visibility"] = visibility
-        if (
-            userId
-        ):  # if userId was specified, we're looking for profile webs that fit the scope of the user making the request
-            query["userId"] = userId
+
+        # Handle userId filter
+        if userId:
+            # Get contributed web IDs
+            contributions = list(
+                Contributors.find({"userId": userId}, {"webId": 1, "_id": 0})
+            )
+            contributed_web_ids = [c["webId"] for c in contributions]
+
+            # Build the $or query for owned or contributed webs
+            user_query = {
+                "$or": [{"userId": userId}, {"webId": {"$in": contributed_web_ids}}]
+            }
+
+            # If not the resource owner, add visibility restriction
             if not is_resource_owner:
-                query["visibility"] = "Public"
+                user_query["$or"].append({"visibility": "Public"})
+                # Actually, you probably want this structure instead:
+                query = {"$and": [user_query, {"visibility": "Public"}]}
+            else:
+                query.update(user_query)
 
+        # Handle cursor-based pagination
         if cursor:
-            query["updated"] = {"$lt": datetime.fromisoformat(cursor)}
+            cursor_condition = {"updated": {"$lt": datetime.fromisoformat(cursor)}}
+            if "$and" in query:
+                query["$and"].append(cursor_condition)
+            else:
+                query.update(cursor_condition)
 
+        # Execute query
         webs_list = list(
             Webs.find(query, {"_id": 0}).sort("updated", -1).limit(limit + 1)
         )
+
+        # Note: This count might be expensive with complex queries
         total_webs = Webs.count_documents(query)
 
         has_next_page = len(webs_list) > limit
@@ -151,13 +160,13 @@ async def get_webs(
 
         if has_next_page:
             webs_list = webs_list[:-1]
-            next_cursor = webs_list[-1]["updated"]
+            next_cursor = webs_list[-1]["updated"].isoformat()  # Convert back to string
 
         return {"result": webs_list, "nextCursor": next_cursor, "total": total_webs}
 
     except Exception as e:
         logger.error(f"Error fetching webs: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching webs {e}")
+        raise HTTPException(status_code=500, detail="Error fetching webs")
 
 
 @router.get("/popular")
@@ -187,7 +196,7 @@ def get_popular_webs(limit: int = 10, _=Depends(manager.optional)):
 
     except Exception as e:
         logger.error(f"Error fetching webs: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching webs {e}")
+        raise HTTPException(status_code=500, detail="Error fetching webs")
 
 
 @router.get("/liked/user")  # get all liked webs belonging to a user
@@ -209,7 +218,7 @@ def get_user_liked_webs(user: User = Depends(manager.required)):
 
     except Exception as e:
         logger.error(f"Error fetching webs: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching webs {e}")
+        raise HTTPException(status_code=500, detail="Error fetching webs")
 
 
 @router.post("/create")
@@ -244,7 +253,7 @@ def create_web_endpoint(
 
     except Exception as e:
         logger.error(f"Error creating web: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Error creating web")
 
 
 @router.post("/upload/image/{web_id}")
@@ -275,7 +284,7 @@ async def upload_image_to_web(
         for file in files:
             # sanitize filename
             safe_filename = secure_filename(file.filename)
-            object_name = f"files/{user.id}/{web_id}/images/{safe_filename}"
+            object_name = f"files/web-{web_id}/images/{safe_filename}"
 
             temp_dir = "/tmp/web_uploads"
             os.makedirs(temp_dir, exist_ok=True)
@@ -305,7 +314,7 @@ async def upload_image_to_web(
                 uploaded_image_urls.append(url)
 
                 result = Webs.update_one(
-                    {"webId": web_id, "userId": user.id},
+                    {"webId": web_id},
                     {
                         "$push": {"imageKeys": object_name},
                         "$set": {"updated": datetime.now(UTC)},
@@ -352,8 +361,12 @@ def delete_image(
     """
 
     try:
+        web = Webs.find_one({"webId": web_id})
+        if not web:
+            raise HTTPException(status_code=404, detail="Web not found")
 
-        filepath = f"files/{user.id}/{web_id}/images/{image_name}"
+        web = Web(**web)
+        filepath = f"files/{web.userId}/{web_id}/images/{image_name}"
 
         try:
             response = s3_session_client.head_object(
@@ -484,7 +497,7 @@ def update_web(
     web_id: str,
     update_web_payload: UpdateWeb,
     background_tasks: BackgroundTasks,
-    user: User = Depends(manager.required.OWNER),
+    user: User = Depends(manager.required.WRITE),
 ):
     """
     Update a web.

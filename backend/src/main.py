@@ -101,7 +101,7 @@ app.include_router(chat_router, prefix="/chat")
 app.include_router(process_router, prefix="/processes")
 app.include_router(payment_router, prefix="/payment")
 app.include_router(feedback_router, prefix="/feedback")
-app.include_router(contributor_router, prefix="/contributor")
+app.include_router(contributor_router, prefix="/contributors")
 
 # API V1
 app.include_router(api_v1_router, prefix="/api/v1")

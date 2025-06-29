@@ -3,155 +3,185 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
+  UseQueryResult,
 } from "@tanstack/react-query";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast"
 
-export const useInviteContributor = () => {
+export const useInviteContributor = (webId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      webId,
-      emailToInvite,
-    }: {
-      webId: string;
-      emailToInvite: string;
-    }) => {
+    mutationFn: async ({ emailToInvite }: { emailToInvite: string }) => {
       const { data } = await api.post(
-        `/contributor/invite/web/${webId}/contributor`,
+        `/contributors/invite/web/${webId}/contributor`,
         { emailToInvite }
       );
-      return data;
+      return data.result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contributor", "web"] });
-      toast({
-        title: "Success",
-        description: "Contributor invited successfully",
+      queryClient.invalidateQueries({
+        queryKey: ["contributors", "web", webId],
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
-        title: "Error",
-        description: "Failed to invite contributor",
+        title: "Error Inviting User",
+        description:
+          error?.response?.data?.detail ||
+          error.detail ||
+          "An unexpected error occurred.",
         variant: "destructive",
       });
     },
   });
 };
 
-export const useRevokeInvite = () => {
+export const useRevokeInvite = (webId: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      webId,
-      contributorId,
-    }: {
-      webId: string;
-      contributorId: string;
-    }) => {
+    mutationFn: async ({ contributorId }: { contributorId: string }) => {
       const { data } = await api.delete(
-        `/contributor/revoke/invite/web/${webId}/contributor/${contributorId}`
+        `/contributors/revoke/invite/web/${webId}/contributor/${contributorId}`
       );
-      return data;
+      return data.result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contributor", "web"] });
-      toast({
-        title: "Success",
-        description: "Invite revoked successfully",
+      queryClient.invalidateQueries({
+        queryKey: ["contributors", "web", webId],
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
-        title: "Error",
-        description: "Failed to revoke invite",
-        variant: "destructive",
-      });
+
+      })
     },
   });
 };
 
 export const useGetAllContributorsForWeb = (webId: string) => {
-  const queryClient = useQueryClient();
   return useQuery({
-    queryKey: ["contributor", "web", webId],
+    queryKey: ["contributors", "web", webId],
     queryFn: async () => {
-      const { data } = await api.get(`/contributor/all/web/${webId}`);
-      return data;
+      const { data } = await api.get(`/contributors/all/web/${webId}`);
+      return data.result;
     },
     enabled: !!webId,
+    staleTime: 30000,
+    retry: 3,
   });
 };
 
-
-export const useToggleContributorRole = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ webId, contributorId }: { webId: string; contributorId: string }) => {
-            const { data } = await api.patch(`/contributor/toggle/web/${webId}/contributor/${contributorId}`);
-            return data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["contributor", "web"] });
-            toast({
-                title: "Success",
-                description: "Contributor role toggled successfully",
-            });
-        },
-        onError: () => {
-            toast({
-                title: "Error",
-                description: "Failed to toggle contributor role",
-                variant: "destructive",
-            });
-        },
-    });
+export const useToggleContributorRole = (webId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      contributorId,
+      role,
+    }: {
+      contributorId: string;
+      role: string;
+    }) => {
+      const { data } = await api.patch(
+        `/contributors/toggle/web/${webId}/contributor/${contributorId}`,
+        { role }
+      );
+      return data.result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["contributors", "web", webId],
+      });
+    },
+    onError: (error: any) => {
+      console.error("Toggle contributor role mutation error:", error);
+    },
+  });
 };
 
-export const useDeleteContributor = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ webId, contributorId }: { webId: string; contributorId: string }) => {
-            const { data } = await api.delete(`/contributor/delete/web/${webId}/contributor/${contributorId}`);
-            return data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["contributor", "web"] });
-            toast({
-                title: "Success",
-                description: "Contributor deleted successfully",
-            });
-        },
-        onError: () => {
-            toast({
-                title: "Error",
-                description: "Failed to delete contributor",
-                variant: "destructive",
-            });
-        },
-    });
+export const useDeleteContributor = (webId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ contributorId }: { contributorId: string }) => {
+      const { data } = await api.delete(
+        `/contributors/delete/web/${webId}/contributor/${contributorId}`
+      );
+      return data.result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["contributors", "web", webId],
+      });
+    },
+    onError: (error: any) => {
+      console.error("Delete contributor mutation error:", error);
+    },
+  });
 };
 
-export const useAcceptInvite = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async ({ webId, contributorId }: { webId: string; contributorId: string }) => {
-            const { data } = await api.patch(`/contributor/accept/invite/web/${webId}/contributor/${contributorId}`);
-            return data;
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["contributor", "web"] });
-            toast({
-                title: "Success",
-                description: "Contributor accepted invite successfully",
-            });
-        },
-        onError: () => {
-            toast({
-                title: "Error",
-                description: "Failed to accept invite",
-                variant: "destructive",
-            });
-        },
-    });
+export const useAcceptInvite = (webId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId }: { userId: string }) => {
+      const { data } = await api.patch(
+        `/contributors/accept/invite/web/${webId}/contributor/${userId}`
+      );
+      return data.result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["contributors", "web", webId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["authorization", "web", webId],
+      });
+    },
+    onError: (error: any) => {
+      console.error("Accept invite mutation error:", error);
+    },
+  });
+};
+
+export const useRejectInvite = (webId: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId }: { userId: string }) => {
+      const { data } = await api.delete(
+        `/contributors/reject/invite/web/${webId}/contributor/${userId}`
+      );
+      return data.result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["contributors", "web", webId],
+      });
+    },
+    onError: (error: any) => {
+      console.error("Reject invite mutation error:", error);
+    },
+  });
+};
+
+export const useCheckAuthorizedUser = (
+  webId: string | null
+): UseQueryResult<{
+  accessLevel: string;
+  invitePending: boolean;
+  inviter: string;
+}> => {
+  return useQuery({
+    queryKey: ["authorization", "web", webId],
+    queryFn: async () => {
+      const { data } = await api.get(
+        `/contributors/check/authorized/web/${webId}`
+      );
+      console.log("Authorization data:", data);
+      return {
+        accessLevel: data.result,
+        invitePending: data.invite,
+        inviter: data.inviter,
+      };
+    },
+    enabled: !!webId,
+    staleTime: 60 * 60 * 1000, // 1 hour
+    retry: 3,
+  });
 };

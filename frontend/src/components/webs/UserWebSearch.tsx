@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { SearchInput } from "../ui/input";
 import { useSearchWebs } from "@/hooks/webs";
-import { useUser } from "@/context/UserContext";
+import { useUser } from "@/providers/UserProvider";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useOnClickOutside } from "@/hooks/general";
