@@ -5,9 +5,9 @@ import sys
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from typing import List, Callable
-from src.db.mongodb import client as mongoClient
-from src.db.neo4j import client as neo4jClient
-from src.lib.pinecone.index import client as pineconeClient
+from src.db.mongodb import client as mongo_client
+from src.db.neo4j import client as neo4j_client
+from src.lib.pinecone.index import client as pinecone_client
 
 
 class GracefulExit:
@@ -94,8 +94,8 @@ async def lifespan(app: FastAPI):
 
     def cleanup_databases():
         try:
-            mongoClient.close()
-            neo4jClient.close()
+            mongo_client.close()
+            neo4j_client.close()
             logging.info("Disconnected from MongoDB and Neo4j")
         except Exception as e:
             logging.error(f"Error during database disconnection: {e}")
@@ -107,9 +107,9 @@ async def lifespan(app: FastAPI):
 
     try:
 
-        mongoClient.server_info()
-        neo4jClient.verify_connectivity()
-        pineconeClient.index.list()
+        mongo_client.server_info()
+        neo4j_client.verify_connectivity()
+        pinecone_client.index.list()
         logging.info("Successfully connected to MongoDB, Neo4j, and Pinecone!")
 
         yield
