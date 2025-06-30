@@ -61,10 +61,9 @@ function UserProfile() {
     );
   };
 
-  const {
-    data: user,
-    isLoading: userLoading,
-  } = useFetchUserByUsername(username as string);
+  const { data: user, isLoading: userLoading } = useFetchUserByUsername(
+    username as string
+  );
 
   const {
     data: websData,
@@ -74,9 +73,7 @@ function UserProfile() {
     isFetchingNextPage,
   } = useFetchProfileWebs(user?.id || "");
 
-  const {
-    data: pinnedWebs,
-  } = useFetchPinnedWebs(user?.id);
+  const { data: pinnedWebs } = useFetchPinnedWebs(user?.id);
 
   useEffect(() => {
     if (inView && hasNextPage && user) {
@@ -137,6 +134,7 @@ function UserProfile() {
         />
       </Head>
 
+      {/* Profile header - Full Width for Mobile */}
       <div className="p-4 border-b">
         <div className="flex flex-col mb-4">
           <div className="flex lg:items-center gap-2">
@@ -190,6 +188,7 @@ function UserProfile() {
           <p className="text-sm mb-4">{user.bio || "No bio available"}</p>
 
           <div className="flex flex-col gap-2">
+            {/* Social links */}
             {user.website && (
               <div className="flex items-center gap-2">
                 <LinkIcon size={16} className="text-muted-foreground" />

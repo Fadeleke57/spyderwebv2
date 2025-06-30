@@ -160,13 +160,17 @@ async def get_webs(
             .limit(limit + 1)  # fetch one extra to check for next page
         )
 
+        total_webs = Webs.count_documents(
+            query
+        )  # this is a bit expensive but way easier to implement here
+
         has_next = len(webs_list) > limit
         next_cursor = webs_list[-1]["updated"].isoformat() if has_next else None
 
         if has_next:
             webs_list = webs_list[:-1]
 
-        return {"result": webs_list, "nextCursor": next_cursor}
+        return {"result": webs_list, "nextCursor": next_cursor, "total": total_webs}
 
     except Exception as e:
         logger.error(f"Error fetching webs: {e}")
