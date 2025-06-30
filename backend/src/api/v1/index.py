@@ -33,7 +33,7 @@ def version():
 def search_webs(
     query: str,
     scope: Literal["User.all", "All"] = Query("All", alias="scope"),
-    user_making_request=Depends(manager.required),
+    user_making_request: User = Depends(manager.required),
 ):
     """
     Search for webs based on a query and scope.
@@ -82,7 +82,7 @@ def search_memories(
     scope: Literal["Web", "User.all"] = Query("User.all", alias="scope"),
     webId: Optional[str] = Query(None, alias="webId"),
     sourceId: Optional[str] = Query(None, alias="sourceId"),
-    user_making_request=Depends(manager.required),
+    user_making_request: User = Depends(manager.required),
 ):
     """
     Search for memories based on a query and scope.
@@ -107,19 +107,19 @@ def search_memories(
                     status_code=400,
                     detail="Web ID or Source ID is required for scope Web.",
                 )
+            if webId:
+                associated_web = Webs.find_one({"webId": webId})
+                if not associated_web:
+                    raise HTTPException(status_code=404, detail="Web not found")
 
-            associated_web = Webs.find_one({"webId": webId})
-            if not associated_web:
-                raise HTTPException(status_code=404, detail="Web not found")
-
-            associated_web = Web(**associated_web)
-            if (
-                associated_web.visibility == "Private"
-                and associated_web.userId != user_making_request.id
-            ):
-                is_contributor = Contributors.find_one(
-                    {"webId": webId, "userId": user_making_request.id}
-                )
+                associated_web = Web(**associated_web)
+                if (
+                    associated_web.visibility == "Private"
+                    and associated_web.userId != user_making_request.id
+                ):
+                    is_contributor = Contributors.find_one(
+                        {"webId": webId, "userId": user_making_request.id}
+                    )
                 if not is_contributor:
                     logger.info(
                         f"User {user_making_request.id} does not have access to web {webId}. The associated web is {associated_web}."
@@ -127,8 +127,7 @@ def search_memories(
                     raise HTTPException(
                         status_code=403, detail="You do not have access to this web."
                     )
-
-            filter["webId"] = {"$eq": webId}
+                filter["webId"] = {"$eq": webId}
 
         elif scope == "User.all":
             filter["userId"] = {"$eq": user_making_request.id}
