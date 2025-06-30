@@ -120,13 +120,14 @@ def search_memories(
                     is_contributor = Contributors.find_one(
                         {"webId": webId, "userId": user_making_request.id}
                     )
-                if not is_contributor:
-                    logger.info(
-                        f"User {user_making_request.id} does not have access to web {webId}. The associated web is {associated_web}."
-                    )
-                    raise HTTPException(
-                        status_code=403, detail="You do not have access to this web."
-                    )
+                    if not is_contributor:
+                        logger.info(
+                            f"User {user_making_request.id} does not have access to web {webId}. The associated web is {associated_web}."
+                        )
+                        raise HTTPException(
+                            status_code=403,
+                            detail="You do not have access to this web.",
+                        )
                 filter["webId"] = {"$eq": webId}
 
         elif scope == "User.all":
@@ -141,7 +142,7 @@ def search_memories(
             )
             return JSONResponse(content={"result": results})
         except Exception as e:
-            logger.error(str(e))
+            logger.error(f"Error searching memories: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         logger.error(str(e))
@@ -150,7 +151,6 @@ def search_memories(
 
 @router.post("/add/memory")  # TODO: This would be the start of "feeds"
 def add_chat_to_memory(
-    user_making_request=Depends(manager.required),
+    user_making_request: User = Depends(manager.required),
 ):
-    user_making_request = User(**user_making_request)
     pass
