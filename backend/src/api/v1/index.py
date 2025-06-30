@@ -47,7 +47,6 @@ def search_webs(
         JSONResponse: A JSON response containing the search results.
     """
     try:
-        user_making_request = User(**user_making_request)
         filter = {}
         if scope == "User.all":
             filter["userId"] = {"$eq": user_making_request.id}
@@ -100,7 +99,6 @@ def search_memories(
     """
     try:
         logger.info(f"received sourceId: {sourceId}")
-        user_making_request = User(**user_making_request)
         filter = {}
 
         if scope == "Web":
