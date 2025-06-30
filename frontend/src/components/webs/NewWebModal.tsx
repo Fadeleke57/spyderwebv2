@@ -17,7 +17,6 @@ import { Textarea } from "../ui/textarea";
 import { ImageIcon, X } from "lucide-react";
 import Image from "next/image";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
-import { useIsMobile } from "@/hooks/use-mobile";
 import {
   MAX_IMAGE_SIZE,
   ALLOWED_IMAGE_TYPES,
@@ -58,8 +57,6 @@ export function NewWebModal({ children }: { children: React.ReactNode }) {
     stagedImages: [],
     stagedGifs: [],
   });
-
-  const isMobile = useIsMobile();
 
   const form = useForm<WebFormValues>({
     resolver: zodResolver(webSchema),
