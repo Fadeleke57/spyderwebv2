@@ -15,7 +15,7 @@ EMAIL_PASSWORD = (
 df = pd.read_csv("storage.csv")
 
 # Email content
-SUBJECT = "What made you interested in Spydr? (+ exciting update inside)"
+SUBJECT = "What made you interested in Spydr? (+ exciting update inside)."
 BODY_TEMPLATE = """Hey {name},
 
 I promise I don't plan on spamming haha. Thanks for signing up for Spydr, I'm reaching out personally because I'd like to figure out where the friction lies for new users. Spydr started out as a way to connect your content across different AI clients, but now it's evolving into something a bit more personalized.
