@@ -69,7 +69,7 @@ export default function Home() {
         </div>
         <div
           onClick={() => router.push("/memory")}
-          className="absolute top-30 -right-6 p-2 px-8 text-sm w-fit h-fit font-medium flex items-center justify-center bg-neon text-black hover:-translate-x-2 transition-all duration-200 cursor-pointer"
+          className="absolute top-30 -right-6 p-2 px-8 text-sm w-fit h-fit font-semibold flex items-center justify-center bg-neon text-black hover:-translate-x-2 transition-all duration-200 cursor-pointer"
           style={{
             clipPath:
               "polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%, 15px 50%)",

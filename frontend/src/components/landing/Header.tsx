@@ -32,7 +32,7 @@ function Header() {
           Your memory on the go.
         </p>
         <h1 className="relative text-4xl lg:text-9xl tracking-tight max-w-xs lg:max-w-full mb-2 sm:mb-4 font-extrabold lg:font-bold dark:text-white">
-          Don&apos;t Miss A{" "}
+          Don&apos;t miss a{" "}
           <TypingAnimation
             className="text-violet-400/80 text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tight italic"
             text="Step."
