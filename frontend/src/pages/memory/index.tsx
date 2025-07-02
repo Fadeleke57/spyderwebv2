@@ -124,7 +124,7 @@ function Index() {
           className="bg-black text-foreground rounded-lg p-4 font-mono relative group cursor-pointer"
           onClick={() =>
             handleCopy(
-              `${selectedPackageManager.command} -y @spydr/mcp-i https://memory.spydr.dev/sse --client ${selectedClient.toLowerCase()}`
+              `${selectedPackageManager.command} -y @spydr/mcp-i https://memory.spydr.dev/mcp --client ${selectedClient.toLowerCase()}`
             )
           }
         >
@@ -148,7 +148,7 @@ function Index() {
             key={`${selectedPackageManager.name}-${selectedClient}`}
           >
             {selectedPackageManager.command} -y @spydr/mcp-i
-            https://memory.spydr.dev/sse --client {selectedClient.toLowerCase()}
+            https://memory.spydr.dev/mcp --client {selectedClient.toLowerCase()}
           </div>
           <Button className="absolute top-2 right-2 h-fit w-fit p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <div className="relative w-4 h-4">
@@ -192,9 +192,9 @@ function Index() {
   "args": [
     "-y",
     "mcp-remote@latest",
-    "https://memory.spydr.dev/sse",
-    "--host",
-    "127.0.0.1"
+    "https://memory.spydr.dev/mcp",
+    "--transport",
+    "http-only"
   ]
 }`)
         }
@@ -207,9 +207,9 @@ function Index() {
   "args": [
     "-y",
     "mcp-remote@latest",
-    "https://memory.spydr.dev/sse",
-    "--host",
-    "127.0.0.1"
+    "https://memory.spydr.dev/mcp",
+    "--transport",
+    "http-only"
   ]
 }`}
             </code>
