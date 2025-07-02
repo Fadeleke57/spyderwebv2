@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from typing import Optional
 from fastapi import BackgroundTasks
 from src.service.source import service as sourceService
+from src.service.email import EmailService
 from src.lib.stytch.index import (
     client as stytch_client,
     StytchError,
@@ -27,6 +28,7 @@ from src.lib.stytch.index import (
 
 router = APIRouter()
 
+email_service = EmailService()
 
 class RegisterRequest(BaseModel):
     email: str  # better pydantic types needed
@@ -205,6 +207,13 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
         created_user = create_user(createUserPayload)
         if not created_user:
             raise HTTPException(status_code=500, detail="Failed to create user")
+        
+        # Send account creation email in the background
+        background_tasks.add_task(
+            email_service.account_creation,
+            recipient_email=registerRequest.email,
+            recipient_name=registerRequest.fullName or registerRequest.username,
+        )
 
         # Create their default web
         createWebPayload = CreateWeb(
