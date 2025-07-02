@@ -28,6 +28,7 @@ from src.lib.stytch.index import (
 
 router = APIRouter()
 
+
 class RegisterRequest(BaseModel):
     email: str  # better pydantic types needed
     password: str
@@ -99,13 +100,6 @@ def authenticate(
                 enableAIConnections=False,
                 showcase=True,
             )
-            
-            # Send account creation email in the background
-            background_tasks.add_task(
-                emailService.account_creation,
-                recipient_email=registerRequest.email,
-                recipient_name=registerRequest.fullName or registerRequest.username,
-            )
 
             try:
                 new_web_id = create_web(webToCreate=create_web_data, userId=userId)
@@ -118,6 +112,13 @@ def authenticate(
             except Exception as e:
                 logger.error(f"Error creating welcome web: {str(e)}")
                 # Don't fail the authentication if web creation fails
+
+            # Send onboarding message in the background
+            background_tasks.add_task(
+                emailService.onboarding_message,
+                recipient_email=auth_request.email,
+                recipient_name=auth_request.firstName or username,
+            )
         else:
             # Use existing user's username
             username = user.get("username", generate_username())
@@ -212,13 +213,6 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
         created_user = create_user(createUserPayload)
         if not created_user:
             raise HTTPException(status_code=500, detail="Failed to create user")
-        
-        # Send account creation email in the background
-        background_tasks.add_task(
-            emailService.account_creation,
-            recipient_email=registerRequest.email,
-            recipient_name=registerRequest.fullName or registerRequest.username,
-        )
 
         # Create their default web
         createWebPayload = CreateWeb(
@@ -244,6 +238,12 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
             # Create onboarding sources in background
             sourceService.create_onboarding_sources(
                 web_id=webId, user_id=userId, background_tasks=background_tasks
+            )
+            # Send account creation email in the background
+            background_tasks.add_task(
+                emailService.account_creation,
+                recipient_email=registerRequest.email,
+                recipient_name=registerRequest.fullName or registerRequest.username,
             )
         except Exception as e:
             logger.error(f"Error creating default web: {str(e)}")
