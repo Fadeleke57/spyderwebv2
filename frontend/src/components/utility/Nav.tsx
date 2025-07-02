@@ -8,7 +8,6 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
-import { MobileNav } from "./Mobile-Nav";
 import Image from "next/image";
 import logo from "@/assets/slogonobg.png";
 import { gsap } from "gsap";
