@@ -49,7 +49,7 @@ function Header() {
           </span>
         </p>
         <p className="text-xs sm:text-sm text-slate-500 mb-3 mt-4 dark:text-foreground italic">
-          Sync your context directly to Claude and ChatGPT.
+          Sync your info directly to Claude and ChatGPT.
         </p>
         <div className="hidden lg:block mt-6 flex flex-row space-x-4 lg:gap-4 justify-start">
           <GSAPButton
