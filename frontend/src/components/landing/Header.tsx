@@ -29,25 +29,28 @@ function Header() {
     <div className="flex flex-col gap-4 lg:flex-row items-center justify-between">
       <div className="relative mb-6 sm:mb-8 w-full lg:max-w-[44rem]">
         <p className="text-xs sm:text-sm text-slate-500 mb-3 sm:mb-4 dark:text-foreground italic">
-          Your Context On the Go.
+          Your memory on the go.
         </p>
-        <h1 className="relative text-5xl lg:text-9xl tracking-tight max-w-xs lg:max-w-full mb-2 sm:mb-4 font-extrabold lg:font-bold dark:text-white">
-          Welcome to the{" "}
+        <h1 className="relative text-4xl lg:text-9xl tracking-tight max-w-xs lg:max-w-full mb-2 sm:mb-4 font-extrabold lg:font-bold dark:text-white">
+          Don&apos;t Miss A{" "}
           <TypingAnimation
-            className="text-violet-400/80 text-5xl sm:text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tight italic"
-            text="Web."
+            className="text-violet-400/80 text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tight italic"
+            text="Step."
           />
-          <span className="absolute top-0 right-0 lg:top-4 lg:right-28 text-violet-400/80 text-sm tracking-normal font-semibold">
+          <span className="absolute top-0 right-0 lg:top-2 lg:right-16 text-violet-400/80 text-sm tracking-normal font-semibold">
             BETA
           </span>
         </h1>
         <p className="leading-7 mt-4 text-base sm:text-lg font-medium max-w-full lg:max-w-xl mx-0 text-muted-foreground dark:text-white">
-          Intake. Create. Connect. Share.{" "}
           <span className="hidden md:inline lg:inline">
-            Let AI curate your context and turn them into starting points for
-            discovery.
+            Spydr is your memory drive in the AI era. Organize, recall, and
+            search through everything you&apos;ve ever seen, said, or saved with
+            precision and ease.
           </span>
-        </p>{" "}
+        </p>
+        <p className="text-xs sm:text-sm text-slate-500 mb-3 mt-4 dark:text-foreground italic">
+          Sync your context directly to Claude and ChatGPT.
+        </p>
         <div className="hidden lg:block mt-6 flex flex-row space-x-4 lg:gap-4 justify-start">
           <GSAPButton
             label="Jump in"
