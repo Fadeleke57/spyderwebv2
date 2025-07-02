@@ -61,11 +61,11 @@ chrome.contextMenus.onClicked.addListener(async function (info, tab) {
         return;
       }
       console.log("Token for uploading:", token);
-      
+
       // Construct the API endpoint for adding a website source
       const endpoint = `${API_BASE_URL}/sources/website/${selectedWebId}`;
       console.log("Uploading to endpoint:", endpoint);
-      
+
       const options = {
         method: "POST",
         headers: {
@@ -76,10 +76,10 @@ chrome.contextMenus.onClicked.addListener(async function (info, tab) {
       };
       console.log("Request options:", options);
       console.log("Starting upload for website...");
-      
+
       const response = await fetch(endpoint, options);
       console.log("Response received, status:", response.status);
-      
+
       if (response.ok) {
         console.log("Website upload successful");
         alert("Website saved successfully!");
@@ -96,18 +96,18 @@ chrome.contextMenus.onClicked.addListener(async function (info, tab) {
     // For PDFs, use your existing logic (or update as needed)
     const endpoint = `${API_BASE_URL}/upload-pdf`;
     console.log("Uploading PDF to endpoint:", endpoint);
-    
+
     const bodyData = new FormData();
     bodyData.append("web_id", selectedWebId);
     bodyData.append("file_url", url);
-    
+
     try {
       const response = await fetch(endpoint, {
         method: "POST",
         body: bodyData
       });
       console.log("PDF upload response status:", response.status);
-      
+
       if (response.ok) {
         console.log("PDF upload successful");
         alert("PDF saved successfully!");

@@ -6,4 +6,3 @@
       window.postMessage({ type: "SPYDR_TOKEN", token: token }, "*");
     }
   })();
-  
