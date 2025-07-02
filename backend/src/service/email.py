@@ -139,3 +139,5 @@ Cheers,
 The Spydr Team"""
 
         self.send_email(recipient_email, recipient_name, subject, body)
+        
+service = EmailService()

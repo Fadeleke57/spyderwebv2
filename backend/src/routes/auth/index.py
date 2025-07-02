@@ -20,15 +20,13 @@ from pydantic import BaseModel
 from typing import Optional
 from fastapi import BackgroundTasks
 from src.service.source import service as sourceService
-from src.service.email import EmailService
+from src.service.email import service as emailService
 from src.lib.stytch.index import (
     client as stytch_client,
     StytchError,
 )
 
 router = APIRouter()
-
-email_service = EmailService()
 
 class RegisterRequest(BaseModel):
     email: str  # better pydantic types needed
@@ -100,6 +98,13 @@ def authenticate(
                 imageKeys=[],
                 enableAIConnections=False,
                 showcase=True,
+            )
+            
+            # Send account creation email in the background
+            background_tasks.add_task(
+                emailService.account_creation,
+                recipient_email=registerRequest.email,
+                recipient_name=registerRequest.fullName or registerRequest.username,
             )
 
             try:
@@ -210,7 +215,7 @@ def register(registerRequest: RegisterRequest, background_tasks: BackgroundTasks
         
         # Send account creation email in the background
         background_tasks.add_task(
-            email_service.account_creation,
+            emailService.account_creation,
             recipient_email=registerRequest.email,
             recipient_name=registerRequest.fullName or registerRequest.username,
         )
