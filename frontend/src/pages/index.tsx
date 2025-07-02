@@ -67,6 +67,16 @@ export default function Home() {
             </div>
           </footer>
         </div>
+        <div
+          onClick={() => router.push("/memory")}
+          className="absolute top-30 -right-6 p-2 px-8 text-sm w-fit h-fit font-medium flex items-center justify-center bg-neon text-black hover:-translate-x-2 transition-all duration-200 cursor-pointer"
+          style={{
+            clipPath:
+              "polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%, 15px 50%)",
+          }}
+        >
+          <span>Install the MCP Server</span>
+        </div>
       </div>
     </VortexParticleSystemExact>
   );
@@ -164,34 +174,34 @@ const VortexParticleSystemExact = ({
         attribute float index;
         uniform float time;
         varying float vOpacity;
-        
+
         void main() {
           vOpacity = opacity;
-          
+
           // Get the original position
           vec3 pos = position;
-          
+
           // Movement guided by intuition rather than rules
           float i = index;
           float speed = 0.2 + 0.2 * fract(i / 1000.0);
           float angle = time * speed + i * 0.001;
-          
+
           // Twist the vortex based on y position
           float twistAmount = sin(time * 0.3) * 0.5;
           float twist = pos.y * twistAmount;
-          
+
           // Apply twist and contraction/expansion
           float r = length(pos.xy);
           float breathe = 1.0 + sin(time * 0.5) * 0.1;
           r *= breathe;
-          
+
           float theta = atan(pos.y, pos.x) + twist;
           pos.x = r * cos(theta);
           pos.y = r * sin(theta);
-          
+
           // Add some vertical oscillation
           pos.z += sin(time * 0.2 + i * 0.01) * 0.2;
-          
+
           vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
           gl_PointSize = size * (50.0 / -mvPosition.z);
           gl_Position = projectionMatrix * mvPosition;
@@ -200,7 +210,7 @@ const VortexParticleSystemExact = ({
       fragmentShader: `
         uniform vec3 color;
         varying float vOpacity;
-        
+
         void main() {
           if (length(gl_PointCoord - vec2(0.5, 0.5)) > 0.475) discard;
           gl_FragColor = vec4(color, vOpacity);
