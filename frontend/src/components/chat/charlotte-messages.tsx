@@ -30,7 +30,7 @@ const UserMessage = ({ message }: { message: Message }) => {
     >
       <div
         className={cn(
-          "bg-foreground text-background flex gap-4 px-3 w-fit max-w-sm ml-auto py-2 rounded-xl"
+          "bg-foreground  text-background flex gap-4 px-3 w-fit max-w-sm ml-auto py-2 rounded-xl"
         )}
       >
         <div className="flex flex-col gap-2">
