@@ -18,25 +18,10 @@ import { useRouter } from "next/router";
 
 const components = [
   {
-    title: "Walkthrough Video",
-    href: "/about/howto",
+    title: "Blog",
+    href: "/blog",
     description:
       "A quick loom video showing how to get started with the app and its features.",
-  },
-  {
-    title: "API Docs",
-    href: "/",
-    description: "Still in development. Public documentation for the API.",
-  },
-  {
-    title: "Analytics",
-    href: "/",
-    description: "How are scores and relevance between articles calculated?",
-  },
-  {
-    title: "Your Contribution",
-    href: "/",
-    description: "Adding your own articles or contributing to the app.",
   },
 ];
 
@@ -44,19 +29,13 @@ function NavigationMenuFull() {
   return (
     <NavigationMenu>
       <NavigationMenuList className="hidden md:flex items-center">
-        <NavigationMenuLink
-          target="_blank"
-          className="pt-1 m-0"
-          href="https://www.producthunt.com/products/spydr-the-github-for-llm-context?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-spydr"
-        >
-          <img
-            src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=976810&theme=neutral&t=1749756938288"
-            alt="Spydr - Github&#0032;for&#0032;LLM&#0032;context&#0046;&#0032;One&#0032;memory&#0044;&#0032;infinite&#0032;possibilities&#0046; | Product Hunt"
-            style={{ width: "175px", height: "50px" }}
-            width="175"
-            height="50"
+        {components.map((component) => (
+          <ListItem
+            key={component.title}
+            title={component.title}
+            href={component.href}
           />
-        </NavigationMenuLink>
+        ))}
       </NavigationMenuList>
     </NavigationMenu>
   );
@@ -65,23 +44,20 @@ function NavigationMenuFull() {
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
   React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
+>(({ className, title, href, children, ...props }, ref) => {
   return (
     <li>
       <NavigationMenuLink asChild>
         <Link
-          href={"/"}
+          href={href || "#"}
           ref={ref}
           className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-violet-400/30 hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
             className
           )}
           {...props}
         >
           <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
         </Link>
       </NavigationMenuLink>
     </li>
@@ -132,9 +108,9 @@ export function Navbar() {
 
   const desktopNav = (
     <div
-      className={`flex items-center justify-between px-6 lg:px-10 transition ease duration-300 ${
+      className={`flex items-center justify-between transition ease duration-300 ${
         showNav ? "translate-y-0" : "-translate-y-full"
-      } bg-background py-2 fixed top-0 left-0 2xl:left-60 z-50 w-full`}
+      } bg-background py-2 fixed top-0 left-0 px-6 lg:px-10 z-50 w-full`}
     >
       <Link href="/">
         <div className="flex gap-2 items-center justify-center rounded-lg rounded-full">
