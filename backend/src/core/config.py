@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     stripe_pro_yearly_price_id: str
     stytch_project_id: str
     stytch_secret: str
+    gmail_app_password: str
 
     class Config:
         env_file = f".env"
