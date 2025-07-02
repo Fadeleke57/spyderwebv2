@@ -37,7 +37,7 @@ function Header() {
             className="text-violet-400/80 text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tight italic"
             text="Step."
           />
-          <span className="absolute top-0 right-0 lg:top-2 lg:right-16 text-violet-400/80 text-sm tracking-normal font-semibold">
+          <span className="absolute -top-2 right-0 lg:top-2 lg:right-16 text-violet-400/80 text-sm tracking-normal font-semibold">
             BETA
           </span>
         </h1>
