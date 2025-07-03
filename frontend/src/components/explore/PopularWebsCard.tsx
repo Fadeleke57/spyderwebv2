@@ -81,7 +81,7 @@ function PopularWebsCard() {
           href={`${window.location.origin}/memory`}
           className="py-[1px] px-4 text-neon cursor-pointer pr-0 mb-2 hover:underline transition-all duration-300 ease-in-out"
         >
-          MCP
+          Connect
         </Link>{" "}
         <span className="py-[1px] px-4 mb-2">&copy; 2025 Spydr.</span>
       </div>
