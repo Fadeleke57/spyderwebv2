@@ -191,7 +191,7 @@ const SpydrAI = () => {
   return (
     <div className="relative">
       <UploadStatusPopover />
-      {!isUploadingSource && (
+      {/*!isUploadingSource && (
         <div className="fixed z-50 bottom-20 lg:bottom-6 lg:right-20">
           <Popover open={open} onOpenChange={setOpen}>
             <SimpleTooltip content="Chat with Charlotte AI">
@@ -217,7 +217,7 @@ const SpydrAI = () => {
             </PopoverContent>
           </Popover>
         </div>
-      )}
+      )*/}
     </div>
   );
 };
