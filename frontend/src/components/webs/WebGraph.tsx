@@ -28,7 +28,8 @@ import WebDataModal from "./WebDataModal";
 import { useRouter } from "next/router";
 import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
 import { useFetchWebById } from "@/hooks/webs";
-import { useCheckAuthorizedUser } from "@/hooks/contributors";
+import { useAuthorization } from "@/providers/AuthorizationProvider";
+import { ACCEPTED_FILE_TYPES } from "@/lib/consts";
 
 interface GraphProps {
   hasSources: boolean;
@@ -50,10 +51,7 @@ function WebGraph({
 }: GraphProps) {
   const router = useRouter();
   const { webId } = router.query;
-  const { data: userAuthorization } = useCheckAuthorizedUser(webId as string);
-  const { accessLevel } = userAuthorization || { accessLevel: "read" };
-  const isOwner = accessLevel === "owner";
-  const canWrite = accessLevel === "write" || isOwner;
+  const { canWrite } = useAuthorization();
   const { refetch: refetchConnectionsForWeb } = useFetchAllConnectionsForWeb(
     webId as string
   );
@@ -90,76 +88,75 @@ function WebGraph({
     setIsDragging(false);
   };
 
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
+const handleDrop = async (e: React.DragEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+  setIsDragging(false);
 
-    //handle directory and file drops
-    const items = Array.from(e.dataTransfer.items);
+  const acceptedFileTypes = ACCEPTED_FILE_TYPES;
+  const isAcceptedFile = (file: File) =>
+    acceptedFileTypes.some((type) => file.name.toLowerCase().endsWith(type));
 
-    //filter for acceptable file types
-    const acceptedFileTypes = [".md", ".txt", ".pdf"];
-    const isAcceptedFile = (file: File) =>
-      acceptedFileTypes.some((type) => file.name.toLowerCase().endsWith(type));
+  const fileList: File[] = [];
 
-    //handle both files and folders
-    if (items.length > 0) {
-      const fileList: File[] = [];
+  const readAllEntries = async (directoryReader: any): Promise<any[]> => {
+    const entries: any[] = [];
+    let readEntries: any[];
+    do {
+      readEntries = await new Promise<any[]>((resolve) => {
+        directoryReader.readEntries(resolve);
+      });
+      entries.push(...readEntries);
+    } while (readEntries.length > 0);
+    return entries;
+  };
 
-      //process entries recursively to handle folders
-      const processEntry = async (entry: any) => {
-        if (entry.isFile) {
-          //handle file
-          const file = await new Promise<File>((resolve) => {
-            entry.file((file: File) => {
-              resolve(file);
-            });
-          });
+  const processEntry = async (entry: any) => {
+    if (entry.isFile) {
+      const file = await new Promise<File>((resolve) => {
+        entry.file((f: File) => resolve(f));
+      });
+      if (isAcceptedFile(file)) {
+        fileList.push(file);
+      }
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      const entries = await readAllEntries(reader);
+      for (const childEntry of entries) {
+        await processEntry(childEntry);
+      }
+    }
+  };
 
-          if (isAcceptedFile(file)) {
+  const items = Array.from(e.dataTransfer.items);
+
+  if (items.length > 0) {
+    for (const item of items) {
+      if (item.kind === "file") {
+        const entry = item.webkitGetAsEntry?.();
+        if (entry) {
+          await processEntry(entry);
+        } else {
+          const file = item.getAsFile();
+          if (file && isAcceptedFile(file)) {
             fileList.push(file);
           }
-        } else if (entry.isDirectory) {
-          //handle directory
-          const reader = entry.createReader();
-          const entries = await new Promise<any[]>((resolve) => {
-            reader.readEntries((entries: any[]) => {
-              resolve(entries);
-            });
-          });
-          for (const childEntry of entries) {
-            await processEntry(childEntry);
-          }
-        }
-      };
-
-      //process all dropped items
-      for (const item of items) {
-        if (item.kind === "file") {
-          const entry = item.webkitGetAsEntry ? item.webkitGetAsEntry() : null;
-
-          if (entry) {
-            await processEntry(entry);
-          } else {
-            const file = item.getAsFile();
-            if (file && isAcceptedFile(file)) {
-              fileList.push(file);
-            }
-          }
         }
       }
-
-      if (fileList.length > 0) {
-        const dataTransfer = new DataTransfer();
-        fileList.forEach((file) => dataTransfer.items.add(file));
-        handleFileUpload(dataTransfer.files);
-      }
-    } else if (e.dataTransfer.files.length > 0) {
-      handleFileUpload(e.dataTransfer.files);
     }
-    setIsUploadingSource(false);
-  };
+
+    if (fileList.length > 0) {
+      handleFileUpload(fileList as any);
+    }
+  } else if (e.dataTransfer.files.length > 0) {
+    const files = Array.from(e.dataTransfer.files).filter(isAcceptedFile);
+    if (files.length > 0) {
+      handleFileUpload(files as any);
+    }
+  }
+
+  setIsUploadingSource(false);
+};
 
   const trashRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);

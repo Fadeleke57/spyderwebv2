@@ -24,7 +24,7 @@ import { useRouter } from "next/router";
 import { useUser } from "@/providers/UserProvider";
 import { useFetchWebById } from "@/hooks/webs";
 import SimpleTooltip from "../utility/SimpleTooltip";
-import { useCheckAuthorizedUser } from "@/hooks/contributors";
+import { useAuthorization } from "@/providers/AuthorizationProvider";
 
 const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
 
@@ -41,13 +41,7 @@ function WebPlayground() {
     isUploadingSource,
     setIsUploadingSource,
   } = useSourceStore();
-  const { data: userAuthorization } = useCheckAuthorizedUser(webId as string);
-  const { accessLevel } = userAuthorization || { accessLevel: "read" };
-
-  const isResourceOwner = user && web && user.id === web.userId;
-  const isOwner = accessLevel === "owner";
-  const canWrite = accessLevel === "write" || isOwner;
-  const canRead = accessLevel === "read" || canWrite;
+  const { isResourceOwner, canWrite } = useAuthorization();
 
   const { mutateAsync: uploadFile, isPending: isFileUploading } = useFileUpload(
     webId as string

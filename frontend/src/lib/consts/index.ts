@@ -11,6 +11,8 @@ export const colorOptions = [
   "#f7cac9",
 ];
 
+export const ACCEPTED_FILE_TYPES = [".md", ".txt", ".pdf"];
+
 export const tagsList: WebTag[] = [
   {
     value: "Preferences",
