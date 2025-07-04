@@ -90,8 +90,9 @@ function WebPlayground() {
           title: `Uploading ${files.length} files`,
           description: "Processing...",
         });
+        refetchSources();
         refetchWeb();
-        setIsUploadingSource(true);
+        setIsUploadingSource(false);
       } else {
         try {
           const { firstSourceId: sourceId } = await uploadFile({
@@ -106,6 +107,7 @@ function WebPlayground() {
             title: "File uploaded successfully!",
             description: "Processing...",
           });
+          setIsUploadingSource(false);
         } catch (error: any) {
           console.error(error);
           toast({
@@ -113,6 +115,7 @@ function WebPlayground() {
             title: "Error uploading file(s)",
             description: error.message || "An unexpected error occurred.",
           });
+          setIsUploadingSource(false);
         }
       }
     } catch (err: any) {
@@ -122,6 +125,7 @@ function WebPlayground() {
         title: "Error uploading file(s)",
         description: err.message || "An unexpected error occurred.",
       });
+      setIsUploadingSource(false);
     }
   };
 

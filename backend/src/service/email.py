@@ -3,6 +3,7 @@ from src.core.config import settings
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.utils import formataddr
 
 
 class EmailService:
@@ -21,7 +22,7 @@ class EmailService:
         """
 
         msg = MIMEMultipart()
-        msg["From"] = self.sender_email
+        msg["From"] = formataddr(("Spydr", self.sender_email))
         msg["To"] = recipient_email
         msg["Subject"] = subject
 
@@ -40,7 +41,7 @@ class EmailService:
         Sends an HTML email using the configured SMTP server.
         """
         msg = MIMEMultipart("alternative")
-        msg["From"] = self.sender_email
+        msg["From"] = formataddr(("Spydr", self.sender_email))
         msg["To"] = recipient_email
         msg["Subject"] = subject
 
@@ -89,7 +90,12 @@ The Spydr Team"""
         self.send_email(recipient_email, recipient_name, subject, body)
 
     def user_invited_to_web(
-        self, recipient_email: str, recipient_name: str, web_name: str, web_link: str
+        self,
+        recipient_email: str,
+        recipient_name: str,
+        web_name: str,
+        web_link: str,
+        sender_name: str,
     ):
         """
         Sends an HTML email to the user when they are invited to a web, including the invitation link.
@@ -99,9 +105,9 @@ The Spydr Team"""
         <html>
           <body>
             <p>Hey {recipient_name.split()[0]},</p>
-            <p>You've been invited to join the web '<b>{web_name}</b>' on Spydr!<br>
+            <p>You've been invited to join the web '<b>{web_name}</b>' on Spydr by <b>{sender_name}</b>! Start syncing memories with ease.<br>
             Click the invitation link below to get started:</p>
-            <p><a href="{web_link}">{web_link}</a></p>
+            <p><a href="{web_link}">Check it out here!</a></p>
             <p>If you have any questions, let us know at {self.support_email}.</p>
             <p>Cheers,<br>The Spydr Team</p>
           </body>

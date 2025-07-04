@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Check, Copy, Ellipsis, Forward, Send, Trash2 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -211,6 +211,7 @@ const ContributorItem = ({ contributor }: { contributor: Contributor }) => {
             </PopoverTrigger>
             <PopoverContent className="w-fit p-0 mr-10">
               <Button
+                type="button"
                 disabled={removeContributorPending || revokeInvitePending}
                 variant="ghost"
                 hidden={contributor.pending || !isOwner}
