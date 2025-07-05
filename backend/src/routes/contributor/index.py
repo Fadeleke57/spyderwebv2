@@ -1,17 +1,18 @@
 from typing import Literal, Optional
 from fastapi import APIRouter, HTTPException, Depends
-from src.db.neo4j import client as neo4j_client
 from src.models.index import User
 from src.routes.auth.utils import manager
 from src.lib.logger.index import logger
 from src.models.index import Webs, Contributors, Contributor, Users, Web
 from src.core.config import settings
 from src.lib.stytch.index import client as stytch_client
+from src.service.email import service as email_service
 from src.models.index import PublicUser
 from pydantic import BaseModel
 from datetime import datetime
 from pytz import UTC
 import uuid
+from fastapi import BackgroundTasks
 
 router = APIRouter()
 
@@ -24,12 +25,13 @@ class InviteContributer(BaseModel):
 def invite_contributer(
     web_id: str,
     payload: InviteContributer,
-    owner: User = Depends(manager.required.OWNER),
+    background_tasks: BackgroundTasks,
+    sender: User = Depends(manager.required.OWNER),
 ):
     try:
         invite_email = payload.emailToInvite
 
-        if owner.email == invite_email:
+        if sender.email == invite_email:
             raise HTTPException(status_code=400, detail="You cannot invite yourself")
 
         # check for existing contributor relationship
@@ -69,11 +71,24 @@ def invite_contributer(
                 username=existing_user.username,
                 email=existing_user.email,
                 webId=web_id,
-                invitedBy=owner.id,
+                invitedBy=sender.id,
             )
 
             Contributors.insert_one(contributor_info.model_dump())
             logger.info(f"Contributor invited: {contributor_info.contributorId}")
+
+            # send email to user
+            web_doc = Webs.find_one({"webId": web_id}, {"_id": 0})
+            web = Web(**web_doc)
+
+            background_tasks.add_task(
+                email_service.user_invited_to_web,
+                recipient_email=invite_email,
+                recipient_name=existing_user.full_name or existing_user.username,
+                web_name=web.name,
+                web_link=f"{settings.next_url}/web/{web_id}",
+                sender_name=sender.full_name or sender.username,
+            )
             return {"result": PublicUser(**existing_user.model_dump())}
 
         elif not existing_user_doc:
@@ -108,7 +123,7 @@ def invite_contributer(
             username=None,
             email=invite_email,
             webId=web_id,
-            invitedBy=owner.id,
+            invitedBy=sender.id,
         )
 
         Contributors.insert_one(contributor_info.model_dump())

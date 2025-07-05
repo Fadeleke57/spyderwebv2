@@ -24,7 +24,7 @@ import { useRouter } from "next/router";
 import { useUser } from "@/providers/UserProvider";
 import { useFetchWebById } from "@/hooks/webs";
 import SimpleTooltip from "../utility/SimpleTooltip";
-import { useCheckAuthorizedUser } from "@/hooks/contributors";
+import { useAuthorization } from "@/providers/AuthorizationProvider";
 
 const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
 
@@ -41,13 +41,7 @@ function WebPlayground() {
     isUploadingSource,
     setIsUploadingSource,
   } = useSourceStore();
-  const { data: userAuthorization } = useCheckAuthorizedUser(webId as string);
-  const { accessLevel } = userAuthorization || { accessLevel: "read" };
-
-  const isResourceOwner = user && web && user.id === web.userId;
-  const isOwner = accessLevel === "owner";
-  const canWrite = accessLevel === "write" || isOwner;
-  const canRead = accessLevel === "read" || canWrite;
+  const { isResourceOwner, canWrite } = useAuthorization();
 
   const { mutateAsync: uploadFile, isPending: isFileUploading } = useFileUpload(
     webId as string
@@ -90,8 +84,9 @@ function WebPlayground() {
           title: `Uploading ${files.length} files`,
           description: "Processing...",
         });
+        refetchSources();
         refetchWeb();
-        setIsUploadingSource(true);
+        setIsUploadingSource(false);
       } else {
         try {
           const { firstSourceId: sourceId } = await uploadFile({
@@ -106,6 +101,7 @@ function WebPlayground() {
             title: "File uploaded successfully!",
             description: "Processing...",
           });
+          setIsUploadingSource(false);
         } catch (error: any) {
           console.error(error);
           toast({
@@ -113,6 +109,7 @@ function WebPlayground() {
             title: "Error uploading file(s)",
             description: error.message || "An unexpected error occurred.",
           });
+          setIsUploadingSource(false);
         }
       }
     } catch (err: any) {
@@ -122,6 +119,7 @@ function WebPlayground() {
         title: "Error uploading file(s)",
         description: err.message || "An unexpected error occurred.",
       });
+      setIsUploadingSource(false);
     }
   };
 

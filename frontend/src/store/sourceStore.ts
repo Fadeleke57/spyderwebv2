@@ -18,6 +18,8 @@ interface SourceState {
   setIsUploadingSource: (updating: boolean) => void;
   isWebDataModalOpen: boolean;
   setIsWebDataModalOpen: (open: boolean) => void;
+  hasDroppedFiles: boolean;
+  setHasDroppedFiles: (hasDroppedFiles: boolean) => void;
 }
 
 export const useSourceStore = create<SourceState>((set) => ({
@@ -37,4 +39,6 @@ export const useSourceStore = create<SourceState>((set) => ({
   setIsUploadingSource: (updating) => set({ isUploadingSource: updating }),
   isWebDataModalOpen: false,
   setIsWebDataModalOpen: (open) => set({ isWebDataModalOpen: open }),
+  hasDroppedFiles: false,
+  setHasDroppedFiles: (hasDroppedFiles) => set({ hasDroppedFiles }),
 }));
