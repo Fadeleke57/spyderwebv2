@@ -23,7 +23,7 @@ interface ProcessFileRequest {
 
 export const useFileUpload = (webId: string) => {
   const queryClient = useQueryClient();
-  const { setIsUploadingSource } = useSourceStore();
+  const { setIsUploadingSource, setHasDroppedFiles } = useSourceStore();
 
   // get presigned URLs from backend
   const getPresignedUrls = async (
@@ -107,7 +107,6 @@ export const useFileUpload = (webId: string) => {
   return useMutation({
     mutationFn: async ({ parseObsidianLinks, files }: UploadFilesRequest) => {
       const fileArray = Array.from(files);
-      setIsUploadingSource(true);
 
       try {
         // get presigned URLs
@@ -141,6 +140,7 @@ export const useFileUpload = (webId: string) => {
     },
     onSettled: () => {
       setIsUploadingSource(false);
+      setHasDroppedFiles(false);
     },
   });
 };

@@ -30,6 +30,7 @@ import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
 import { useFetchWebById } from "@/hooks/webs";
 import { useAuthorization } from "@/providers/AuthorizationProvider";
 import { ACCEPTED_FILE_TYPES } from "@/lib/consts";
+import { toast } from "@/components/ui/use-toast";
 
 interface GraphProps {
   hasSources: boolean;
@@ -67,6 +68,8 @@ function WebGraph({
     setSelectedSourceId,
     source: selectedSource,
     setSource: setSelectedSource,
+    hasDroppedFiles,
+    setHasDroppedFiles,
   } = useSourceStore();
 
   const [isDragging, setIsDragging] = useState(false);
@@ -88,75 +91,80 @@ function WebGraph({
     setIsDragging(false);
   };
 
-const handleDrop = async (e: React.DragEvent) => {
-  e.preventDefault();
-  e.stopPropagation();
-  setIsDragging(false);
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    setHasDroppedFiles(true);
+    toast({
+      title: "Files Dropped",
+      description: "Files have been dropped",
+    });
 
-  const acceptedFileTypes = ACCEPTED_FILE_TYPES;
-  const isAcceptedFile = (file: File) =>
-    acceptedFileTypes.some((type) => file.name.toLowerCase().endsWith(type));
+    const acceptedFileTypes = ACCEPTED_FILE_TYPES;
+    const isAcceptedFile = (file: File) =>
+      acceptedFileTypes.some((type) => file.name.toLowerCase().endsWith(type));
 
-  const fileList: File[] = [];
+    const fileList: File[] = [];
 
-  const readAllEntries = async (directoryReader: any): Promise<any[]> => {
-    const entries: any[] = [];
-    let readEntries: any[];
-    do {
-      readEntries = await new Promise<any[]>((resolve) => {
-        directoryReader.readEntries(resolve);
-      });
-      entries.push(...readEntries);
-    } while (readEntries.length > 0);
-    return entries;
-  };
+    const readAllEntries = async (directoryReader: any): Promise<any[]> => {
+      const entries: any[] = [];
+      let readEntries: any[];
+      do {
+        readEntries = await new Promise<any[]>((resolve) => {
+          directoryReader.readEntries(resolve);
+        });
+        entries.push(...readEntries);
+      } while (readEntries.length > 0);
+      return entries;
+    };
 
-  const processEntry = async (entry: any) => {
-    if (entry.isFile) {
-      const file = await new Promise<File>((resolve) => {
-        entry.file((f: File) => resolve(f));
-      });
-      if (isAcceptedFile(file)) {
-        fileList.push(file);
+    const processEntry = async (entry: any) => {
+      if (entry.isFile) {
+        const file = await new Promise<File>((resolve) => {
+          entry.file((f: File) => resolve(f));
+        });
+        if (isAcceptedFile(file)) {
+          fileList.push(file);
+        }
+      } else if (entry.isDirectory) {
+        const reader = entry.createReader();
+        const entries = await readAllEntries(reader);
+        for (const childEntry of entries) {
+          await processEntry(childEntry);
+        }
       }
-    } else if (entry.isDirectory) {
-      const reader = entry.createReader();
-      const entries = await readAllEntries(reader);
-      for (const childEntry of entries) {
-        await processEntry(childEntry);
-      }
-    }
-  };
+    };
 
-  const items = Array.from(e.dataTransfer.items);
+    const items = Array.from(e.dataTransfer.items);
 
-  if (items.length > 0) {
-    for (const item of items) {
-      if (item.kind === "file") {
-        const entry = item.webkitGetAsEntry?.();
-        if (entry) {
-          await processEntry(entry);
-        } else {
-          const file = item.getAsFile();
-          if (file && isAcceptedFile(file)) {
-            fileList.push(file);
+    if (items.length > 0) {
+      for (const item of items) {
+        if (item.kind === "file") {
+          const entry = item.webkitGetAsEntry?.();
+          if (entry) {
+            await processEntry(entry);
+          } else {
+            const file = item.getAsFile();
+            if (file && isAcceptedFile(file)) {
+              fileList.push(file);
+            }
           }
         }
       }
+
+      if (fileList.length > 0) {
+        handleFileUpload(fileList as any);
+      }
+    } else if (e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files).filter(isAcceptedFile);
+      if (files.length > 0) {
+        handleFileUpload(files as any);
+      }
     }
 
-    if (fileList.length > 0) {
-      handleFileUpload(fileList as any);
-    }
-  } else if (e.dataTransfer.files.length > 0) {
-    const files = Array.from(e.dataTransfer.files).filter(isAcceptedFile);
-    if (files.length > 0) {
-      handleFileUpload(files as any);
-    }
-  }
-
-  setIsUploadingSource(false);
-};
+    setIsUploadingSource(false);
+  };
 
   const trashRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -558,6 +566,10 @@ const handleDrop = async (e: React.DragEvent) => {
   ]);
 
   if ((connectionsLoading || sourcesLoading) && hasSources) {
+    return <LoadingPage></LoadingPage>;
+  }
+
+  if (hasDroppedFiles) {
     return <LoadingPage></LoadingPage>;
   }
 
