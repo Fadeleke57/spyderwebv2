@@ -4,6 +4,7 @@
   "version": "1.0",
   "description": "Clip YouTube videos, websites, and PDFs into Spydr Webs.",
   "permissions": [
+    "cookies",
     "activeTab",
     "storage",
     "scripting"
