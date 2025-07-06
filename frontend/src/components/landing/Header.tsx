@@ -8,10 +8,14 @@ import { useState } from "react";
 import { AuthModal } from "../auth/AuthModal";
 import Link from "next/link";
 import { useStytch } from "@stytch/nextjs";
+import { LineShadowText } from "../magicui/line-shadow-text";
+import { useTheme } from "next-themes";
 
 function Header() {
   const [open, setIsOpen] = useState(false);
   const router = useRouter();
+  const { theme } = useTheme();
+  const shadowColor = theme === "dark" ? "white" : "black";
 
   const handleButtonClick = () => {
     setIsOpen(true);
@@ -32,7 +36,13 @@ function Header() {
           Your memory on the go.
         </p>
         <h1 className="relative text-4xl lg:text-9xl tracking-tight max-w-xs lg:max-w-full mb-2 sm:mb-4 font-extrabold lg:font-bold dark:text-white">
-          Don&apos;t miss a{" "}
+          Don&apos;t{" "}
+          <LineShadowText className="italic relative" shadowColor={shadowColor}>
+            miss
+          </LineShadowText>{" "}
+          <LineShadowText className="italic relative" shadowColor={shadowColor}>
+            a
+          </LineShadowText>{" "}
           <TypingAnimation
             className="text-violet-400/80 text-4xl lg:text-9xl font-extrabold lg:font-bold tracking-tight italic"
             text="Step."
