@@ -39,6 +39,7 @@ import { useResourceUsage } from "@/hooks/usage";
 import { useUser } from "@/providers/UserProvider";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Drawer, DrawerContent } from "../ui/drawer";
+import { ACCEPTED_FILE_TYPES_MAP } from "@/lib/consts";
 
 interface UploadItem {
   id: number;
@@ -360,11 +361,7 @@ function UploadStatusPopover() {
               handleFileUpload(null);
             }
           }}
-          accept={{
-            pdf: [".pdf"],
-            markdown: [".md"],
-            txt: [".txt", ".md"],
-          }}
+          accept={ACCEPTED_FILE_TYPES_MAP}
           maxFiles={10}
           onError={(err) => {
             console.error("Dropzone error:", err);
