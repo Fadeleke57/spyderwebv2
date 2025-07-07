@@ -13,4 +13,6 @@ stripe
 pypdf
 google-genai
 stytch
-markitdown[pdf, html, docx, pptx, xlsx]
+pytest
+black
+pre-commit
