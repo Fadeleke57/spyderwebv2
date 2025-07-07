@@ -16,6 +16,7 @@ werkzeug
 youtube_transcript_api
 pydantic-to-typescript>=2
 firecrawl>=2.1.2
+pymupdfpro
 pymupdf4llm
 stripe
 google-genai
