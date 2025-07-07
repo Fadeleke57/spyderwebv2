@@ -18,7 +18,7 @@ class EmbeddingService:
 
     @staticmethod
     def _map_type_to_batch_size(
-        type: Literal["website", "youtube", "document", "note", "voice_note"]
+        type: Literal["website", "youtube", "document", "note", "voice_note"],
     ) -> int:
         return SOURCE_TYPE_BATCH_MAP.get(type, 50)
 

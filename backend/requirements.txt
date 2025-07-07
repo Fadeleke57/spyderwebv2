@@ -11,11 +11,12 @@ boto3
 requests
 werkzeug
 firecrawl>=2.1.2
-pymupdf4llm
 stripe
-pymupdf
+pypdf
 google-genai
 stytch
 pytest
 black
 pre-commit
+markitdown[all]
+markitdown[xlsx]
