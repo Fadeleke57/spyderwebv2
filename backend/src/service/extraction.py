@@ -2,7 +2,7 @@ import os
 from typing import List
 from src.lib.logger.index import logger
 import pymupdf4llm
-import pymupdf.pro
+import pymupdf
 from src.lib.youtube.index import client as youtube_client
 from src.lib.firecrawl.index import client as firecrawl_client
 from src.lib.openai.index import client as openai_client
