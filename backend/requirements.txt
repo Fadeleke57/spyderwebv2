@@ -13,4 +13,4 @@ stripe
 pypdf
 google-genai
 stytch
-textract
+markitdown[pdf]
