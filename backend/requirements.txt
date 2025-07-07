@@ -13,7 +13,7 @@ werkzeug
 firecrawl>=2.1.2
 pymupdf4llm
 stripe
-pymupdfpro
+pymupdf
 google-genai
 stytch
 pytest
