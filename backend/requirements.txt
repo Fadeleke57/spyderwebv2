@@ -2,9 +2,7 @@ fastapi
 pymongo>=4.10.1
 neo4j
 uvicorn
-python-dotenv
 pydantic-settings
-fastapi-login
 aiohttp
 python-multipart
 pinecone[grpc]
@@ -12,7 +10,6 @@ openai
 boto3
 requests
 werkzeug
-pydantic-to-typescript>=2
 firecrawl>=2.1.2
 pymupdf4llm
 stripe
