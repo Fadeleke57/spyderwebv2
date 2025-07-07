@@ -16,6 +16,7 @@ pydantic-to-typescript>=2
 firecrawl>=2.1.2
 pymupdf4llm
 stripe
+pymupdfpro
 google-genai
 stytch
 pytest
