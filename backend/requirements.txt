@@ -17,4 +17,3 @@ stytch
 pytest
 black
 pre-commit
-markitdown[pdf, xlsx, xls, pptx, docx]
