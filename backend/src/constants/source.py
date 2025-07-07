@@ -5,7 +5,18 @@ from typing import List
 from src.models.source import Source
 import json
 
-DOCUMENT_TYPES = {"document", "pdf", "ppt", "pptx", "doc", "docx"}
+DOCUMENT_TYPES = {
+    "document",
+    "pdf",
+    "ppt",
+    "pptx",
+    "doc",
+    "docx",
+    "hwp",
+    "hwpx",
+    "xls",
+    "xlsx",
+}
 AUDIO_TYPES = {"audio", "mp3", "mp4", "webm", "wav", "voice_note"}
 TEXT_TYPES = {"txt", "md", "website"}
 

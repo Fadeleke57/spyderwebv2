@@ -2,15 +2,16 @@ import os
 from typing import List
 from src.lib.logger.index import logger
 import pymupdf4llm
+import pymupdf.pro
 from src.lib.youtube.index import client as youtube_client
 from src.lib.firecrawl.index import client as firecrawl_client
 from src.lib.openai.index import client as openai_client
 
 
 class ExtractionService:
-
     def __init__(self):
-        pass
+        pymupdf.pro.unlock()
+        logger.info("EXTRACTION SERVICE INITIALIZED!")
 
     def extract_youtube_transcript(self, video_id: str):
         """
@@ -35,7 +36,7 @@ class ExtractionService:
             tuple[str, dict]: A tuple containing the extracted content and the metadata of the website.
         """
         markdown, metadata = firecrawl_client.get_markdown(url=url, with_metadata=True)
-        # markdown = cleaner_agent.clean_website_md(markdown)  # removes the noise
+
         logger.info(f"Website content extracted successfully: markdown is {markdown}")
         return markdown, metadata
 

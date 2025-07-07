@@ -279,6 +279,8 @@ function Index() {
             controls
             className="absolute border top-0 pt-6 -left-10 w-full h-full rounded-l-lg shadow-lg"
             preload="metadata"
+            autoPlay
+            muted
           >
             Your browser does not support the videos.
           </video>
