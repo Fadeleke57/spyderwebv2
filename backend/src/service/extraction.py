@@ -2,6 +2,7 @@ import os
 import requests
 from typing import List
 from src.lib.logger.index import logger
+from src.core.config import settings
 from src.lib.youtube.index import client as youtube_client
 from src.lib.firecrawl.index import client as firecrawl_client
 from src.lib.openai.index import client as openai_client
@@ -59,7 +60,7 @@ class ExtractionService:
                 "file_key": file_key,
             }
             response = requests.post(
-                url="http://localhost:4000/api/v1/convert",
+                url=f"{settings.markdown_service_url}/api/v1/convert",
                 json=convert_to_markdown_payload,
             )
             response.raise_for_status()
