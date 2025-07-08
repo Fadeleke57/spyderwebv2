@@ -13,4 +13,3 @@ stripe
 pypdf
 google-genai
 stytch
-markitdown[pdf]

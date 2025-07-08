@@ -1,13 +1,10 @@
 import os
+import requests
 from typing import List
 from src.lib.logger.index import logger
 from src.lib.youtube.index import client as youtube_client
 from src.lib.firecrawl.index import client as firecrawl_client
 from src.lib.openai.index import client as openai_client
-from markitdown import MarkItDown
-from pypdf import PdfReader
-
-md_client = MarkItDown()
 
 
 class ExtractionService:
@@ -42,41 +39,34 @@ class ExtractionService:
         return markdown, metadata
 
     def extract_document_content(
-        self, file_path: str
+        self, file_key: str
     ) -> List[dict]:  # returns a list of {"text": "", "pageNumber": int}
         """
         Extracts the content of a document from the provided file path. Documents are any office documents supported by markitdown.
 
         Args:
-            file_path (str): The file path of the document to extract content from.
+            file_key (str): The file key of the document to extract content from.
 
         Returns:
             list: The extracted content of the document.
         """
-        if not file_path or not os.path.exists(file_path):
-            raise ValueError("File path is required to process document")
-        try:
-            # extract Markdown for each page as a list of dictionaries
-            isPdf = file_path.endswith(".pdf")
-            if isPdf:
-                reader = PdfReader(file_path)
-                pages = reader.pages
-                data = []
-                for page in pages:
-                    data.append(
-                        {"text": page.extract_text(), "pageNumber": page.page_number}
-                    )
-            else:
-                data = md_client.convert(file_path)
-                logger.info(f"Document content extracted successfully: data is {data}")
-                data = [{"text": data.text_content, "pageNumber": 1}]
-                logger.info(f"Document content extracted successfully: data is {data}")
+        if not file_key:
+            raise ValueError("File key is required to process document")
 
-            os.remove(file_path)
-            if not data:
-                logger.info("No text found in document")
-                return
-            return data
+        try:
+            logger.info(f"Extracting document content from file key: {file_key}")
+            convert_to_markdown_payload = {
+                "file_key": file_key,
+            }
+            response = requests.post(
+                url="http://localhost:4000/api/v1/convert",
+                json=convert_to_markdown_payload,
+            )
+            response.raise_for_status()
+            data = response.json()
+            result = data.get("result", [])
+            logger.info(f"Document content extracted successfully: result is {result}")
+            return result
 
         except Exception as e:
             logger.error(f"Error processing document: {e}")
