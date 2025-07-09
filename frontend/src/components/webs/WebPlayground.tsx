@@ -21,7 +21,6 @@ import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
 import SearchSourceModal from "./SearchSourceModal";
 import ExportContextModal from "./ExportContextModal";
 import { useRouter } from "next/router";
-import { useUser } from "@/providers/UserProvider";
 import { useFetchWebById } from "@/hooks/webs";
 import SimpleTooltip from "../utility/SimpleTooltip";
 import { useAuthorization } from "@/providers/AuthorizationProvider";
@@ -31,7 +30,6 @@ const SOURCES_DIALOG_KEYBOARD_CSHORTCUT = "k";
 function WebPlayground() {
   const router = useRouter();
   const { webId } = router.query;
-  const { user } = useUser();
   const { data: web, refetch: refetchWeb } = useFetchWebById(webId as string);
   const {
     selectedSourceId,
@@ -58,7 +56,7 @@ function WebPlayground() {
     data: sources,
     isLoading: sourcesLoading,
     refetch: refetchSources,
-  } = useFetchSourcesForWeb(web?.webId || "");
+  } = useFetchSourcesForWeb(web && web.webId);
 
   const { data: connections, isLoading: connectionsLoading } =
     useFetchAllConnectionsForWeb(web?.webId || "");
