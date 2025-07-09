@@ -1,11 +1,11 @@
 import time
 from pinecone.grpc import PineconeGRPC as Pinecone
-from src.constants.embedding import ACCEPTED_SOURCE_KEYS, ACCEPTED_WEB_KEYS
 from src.core.config import settings
 from typing import Dict, Any, Literal, List
 from src.lib.logger.index import logger
 from src.models.index import Vector
 import traceback
+from src.constants.index import DOCUMENT_TYPES, ACCEPTED_SOURCE_KEYS, ACCEPTED_WEB_KEYS
 
 
 class PineconeClient:
@@ -20,6 +20,7 @@ class PineconeClient:
         Clean the metadata dictionary by removing any keys that are not allowed.
         """
         keys = metadata.keys()
+        source_type = metadata.get("type")
         result = {}
         for key in keys:
             if key in ACCEPTED_WEB_KEYS or key in ACCEPTED_SOURCE_KEYS:
@@ -29,6 +30,10 @@ class PineconeClient:
                     if key == "videoDescription"
                     else value
                 )
+        if source_type and source_type in DOCUMENT_TYPES:
+            if result.get("url"):
+                del result["url"]
+
         return result
 
     def embed(
