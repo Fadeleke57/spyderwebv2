@@ -611,9 +611,6 @@ function WebGraph({
       {isDrawerOpen && webId && selectedSource && (
         <WebDataModal open={isDrawerOpen} setOpen={setDrawerOpen} />
       )}
-      <div className="absolute bottom-4 right-4">
-        <SpydrAI />
-      </div>
     </div>
   );
 }
