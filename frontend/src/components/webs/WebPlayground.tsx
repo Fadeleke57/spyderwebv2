@@ -345,6 +345,7 @@ function WebPlayground() {
           value="list"
         >
           <SourceListView
+            hasSources={web?.sourceIds?.length ? true : false}
             sources={fetchedSources}
             onSourceClick={handleSourceClick}
             sourcesLoading={sourcesLoading}
