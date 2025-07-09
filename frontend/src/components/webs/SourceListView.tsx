@@ -25,12 +25,14 @@ interface SourceListViewProps {
   sources: Source[];
   onSourceClick: (sourceId: string) => void;
   sourcesLoading: boolean;
+  hasSources: boolean;
 }
 
 const SourceListView: React.FC<SourceListViewProps> = ({
   sources,
   onSourceClick,
   sourcesLoading,
+  hasSources,
 }) => {
   const { isUploadingSource, setIsUploadingSource } = useSourceStore();
   const [addIconOrientation, setAddIconOrientation] = useState<number>(0);
@@ -61,24 +63,6 @@ const SourceListView: React.FC<SourceListViewProps> = ({
       return new Date(date).toLocaleDateString();
     }
   };
-
-  if (sourcesLoading) {
-    return (
-      <div className="px-2">
-        {Array.from({ length: 10 }).map((_, index) => (
-          <Skeleton key={index} className="h-7 mb-2 w-full" />
-        ))}
-      </div>
-    );
-  }
-
-  if (!sources || sources.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-full text-muted-foreground">
-        No sources available.
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col items-end justify-end">
@@ -174,6 +158,18 @@ const SourceListView: React.FC<SourceListViewProps> = ({
               ))}
             </TableBody>
           </Table>
+          {sourcesLoading && (
+            <div className="px-2">
+              {Array.from({ length: 10 }).map((_, index) => (
+                <Skeleton key={index} className="h-8 mt-2 w-full" />
+              ))}
+            </div>
+          )}
+          {!hasSources && (
+            <div className="flex items-center p-4 justify-center w-full h-full">
+              <p className="text-muted-foreground">Nothing yet.</p>
+            </div>
+          )}
         </div>
       </ScrollArea>
     </div>
