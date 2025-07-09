@@ -2,7 +2,6 @@ import os
 from typing import List
 from src.lib.logger.index import logger
 import pymupdf4llm
-import pymupdf
 from src.lib.youtube.index import client as youtube_client
 from src.lib.firecrawl.index import client as firecrawl_client
 from src.lib.openai.index import client as openai_client
@@ -10,7 +9,6 @@ from src.lib.openai.index import client as openai_client
 
 class ExtractionService:
     def __init__(self):
-        pymupdf.pro.unlock()
         logger.info("EXTRACTION SERVICE INITIALIZED!")
 
     def extract_youtube_transcript(self, video_id: str):

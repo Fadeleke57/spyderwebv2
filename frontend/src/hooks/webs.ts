@@ -6,7 +6,6 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { toast } from "@/components/ui/use-toast";
 
 export function useFetchUserWebs(criteria?: string) {
   return useInfiniteQuery({
@@ -118,7 +117,7 @@ export const useDeleteImageFromWeb = () => {
   });
 };
 
-export function useGetAllImagesForWeb(webId: string | null) {
+export function useGetAllImagesForWeb(webId?: string | null) {
   return useQuery({
     queryKey: ["images", "web", webId],
     queryFn: async () => {
@@ -175,7 +174,7 @@ export function useFetchPublicWebs() {
       return response.data;
     },
     initialPageParam: null,
-    getNextPageParam: (lastPage, pages) => {
+    getNextPageParam: (lastPage) => {
       return lastPage.nextCursor;
     },
   });
@@ -199,7 +198,7 @@ export function useFetchProfileWebs(
       return response.data;
     },
     initialPageParam: null,
-    getNextPageParam: (lastPage, pages) => {
+    getNextPageParam: (lastPage) => {
       return lastPage.nextCursor;
     },
     enabled: !!userId,
@@ -217,10 +216,11 @@ export function useFetchPopularWebs(limit: number) {
       });
       return response.data.result;
     },
+    enabled: !!limit,
   });
 }
 
-export const useFetchWebById = (webId: string) => {
+export const useFetchWebById = (webId?: string | null) => {
   return useQuery({
     queryKey: ["web", webId],
     queryFn: async () => {
@@ -232,7 +232,7 @@ export const useFetchWebById = (webId: string) => {
   });
 };
 
-export function useLikeWeb(webId?: string | null) {
+export function useLikeWeb(webId: string) {
   return useMutation({
     mutationFn: async () => {
       if (!webId) return;
@@ -244,7 +244,7 @@ export function useLikeWeb(webId?: string | null) {
   });
 }
 
-export function useUnlikeWeb(webId?: string | null) {
+export function useUnlikeWeb(webId: string) {
   return useMutation({
     mutationFn: async () => {
       if (!webId) return;
@@ -328,7 +328,7 @@ export function useSearchWebs(query: string, filters?: SearchFilter) {
   });
 }
 
-export function useFetchContributers(webId: string) {
+export function useFetchContributers(webId?: string | null) {
   return useQuery({
     queryKey: ["webs", "contributers", webId],
     queryFn: async () => {
