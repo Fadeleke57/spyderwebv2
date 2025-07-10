@@ -1,8 +1,11 @@
 import re
+from src.models.feed import AiClientFeedType
 from src.lib.logger.index import logger
 from src.lib.youtube.index import YoutubeTranscriptSnippet
 from pydantic import BaseModel
-from typing import Union
+from src.models.index import Message
+from typing import Union, Literal
+from uuid import uuid4
 
 
 class YoutubeChunk(BaseModel):
@@ -16,7 +19,14 @@ class DocumentChunk(BaseModel):
     pageNumber: int
 
 
-Chunk = Union[str, YoutubeChunk, DocumentChunk]
+class ChatChunk(BaseModel):
+    text: str
+    chatId: str
+    messageId: str
+    role: Union[Literal["User"], AiClientFeedType]
+
+
+Chunk = Union[str, YoutubeChunk, DocumentChunk, ChatChunk]
 
 
 class ChunkingService:
@@ -187,6 +197,21 @@ class ChunkingService:
                 for chunk in page_chunks
             ]
             chunks.extend(page_chunks_with_page_number)
+        return chunks
+
+    def chunk_chat_messages(self, messages: list[Message]):
+        chunks = []
+        chatId = str(uuid4())
+        for message in messages:
+            messageId = str(uuid4())
+            message_chunks = self.chunk_cleaned_md(message.content)
+            message_chunks_with_chat_id = [
+                ChatChunk(
+                    text=chunk, chatId=chatId, role=message.role, messageId=messageId
+                )
+                for chunk in message_chunks
+            ]
+            chunks.extend(message_chunks_with_chat_id)
         return chunks
 
 

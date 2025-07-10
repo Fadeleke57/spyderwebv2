@@ -191,7 +191,7 @@ function Index() {
   "command": "npx",
   "args": [
     "-y",
-    "mcp-remote@latest",
+    "mcp-remote@0.1.17",
     "https://memory.spydr.dev/mcp",
     "--transport",
     "http-only"
@@ -206,7 +206,7 @@ function Index() {
   "command": "npx",
   "args": [
     "-y",
-    "mcp-remote@latest",
+    "mcp-remote@0.1.17",
     "https://memory.spydr.dev/mcp",
     "--transport",
     "http-only"
