@@ -15,6 +15,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   let searchTimeout = null;
   const DEBOUNCE_DELAY = 300; // ms
 
+  console.log("WORKING!!!!");
+
   // Render the dropdown list with the given items
   function renderDropdownList(items) {
     dropdownList.innerHTML = "";
