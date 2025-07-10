@@ -15,11 +15,9 @@ export const ACCEPTED_FILE_TYPES_MAP = {
   pdf: [".pdf"],
   markdown: [".md"],
   txt: [".txt", ".md"],
-  /* Uncomment when file2markdown is ready
   docs: [".doc", ".docx", ".hwp", ".hwpx"],
   powerpoint: [".ppt", ".pptx"],
   excel: [".xls", ".xlsx"],
-  */
 };
 
 export const ACCEPTED_FILE_TYPES = Object.values(

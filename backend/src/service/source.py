@@ -25,7 +25,7 @@ class SourceService:
         return Source(sourceId=sourceId, **kwargs)
 
     def process_source(
-        self, source: Source, content_to_embed: Any, file_path: Optional[str] = None
+        self, source: Source, content_to_embed: Any, file_key: Optional[str] = None
     ):
         """
         Processes a source document and embeds it into Pinecone.
@@ -36,7 +36,7 @@ class SourceService:
         Returns:
             None
         """
-        if not content_to_embed and not file_path:
+        if not content_to_embed and not file_key:
             logger.info("No content to embed...Skipping.")
             return
 
@@ -45,12 +45,12 @@ class SourceService:
         elif source.type in {"website", "note", "voice_note"}:
             chunks = chunking_service.chunk_cleaned_md(content_to_embed)
         elif source.type in DOCUMENT_TYPES:
-            if not file_path:
+            if not file_key:
                 raise HTTPException(
-                    status_code=400, detail="File path is required to process PDF"
+                    status_code=400, detail="File key is required to process PDF"
                 )
-            logger.info(f"Processing document at path: {file_path}")
-            content_to_embed = extraction_service.extract_document_content(file_path)
+            logger.info(f"Processing document at path: {file_key}")
+            content_to_embed = extraction_service.extract_document_content(file_key)
             logger.info(f"Found {len(content_to_embed)} pages in document")
             chunks = chunking_service.chunk_document_pages(content_to_embed)
             logger.info(f"Found {len(chunks)} chunks in document")

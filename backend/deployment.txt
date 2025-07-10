@@ -10,5 +10,9 @@ requests
 werkzeug
 firecrawl>=2.1.2
 stripe
+pypdf
 google-genai
 stytch
+pytest
+black
+pre-commit

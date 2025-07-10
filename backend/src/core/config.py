@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     stytch_project_id: str
     stytch_secret: str
     gmail_app_password: str
+    markdown_service_url: str
 
     class Config:
         env_file = f".env"
