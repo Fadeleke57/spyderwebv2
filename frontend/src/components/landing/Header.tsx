@@ -36,13 +36,13 @@ function Header() {
           Your memory on the go.
         </p>
         <h1 className="relative text-4xl lg:text-9xl tracking-tight max-w-xs lg:max-w-full mb-2 sm:mb-4 font-extrabold lg:font-bold dark:text-white">
-          <LineShadowText className="italic relative" shadowColor={shadowColor}>
+          <LineShadowText className="relative" shadowColor={shadowColor}>
             Don&apos;t
           </LineShadowText>{" "}
-          <LineShadowText className="italic relative" shadowColor={shadowColor}>
+          <LineShadowText className="relative" shadowColor={shadowColor}>
             miss
           </LineShadowText>{" "}
-          <LineShadowText className="italic relative" shadowColor={shadowColor}>
+          <LineShadowText className="relative" shadowColor={shadowColor}>
             a
           </LineShadowText>{" "}
           <TypingAnimation

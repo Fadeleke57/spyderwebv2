@@ -35,13 +35,10 @@ export default function TypingAnimation({
   }, [duration, i]);
 
   return (
-    <LineShadowText
-      className={cn(
-        "text-4xl font-bold drop-shadow-sm",
-        className,
-      )}
+    <span
+      className={cn("text-4xl font-bold drop-shadow-sm", className)}
     >
       {displayedText ? displayedText : text}
-    </LineShadowText>
+    </span>
   );
 }
