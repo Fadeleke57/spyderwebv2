@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
+import { LineShadowText } from "../magicui/line-shadow-text";
 
 interface TypingAnimationProps {
   text: string;
@@ -34,13 +35,13 @@ export default function TypingAnimation({
   }, [duration, i]);
 
   return (
-    <span
+    <LineShadowText
       className={cn(
         "text-4xl font-bold drop-shadow-sm",
         className,
       )}
     >
       {displayedText ? displayedText : text}
-    </span>
+    </LineShadowText>
   );
 }
