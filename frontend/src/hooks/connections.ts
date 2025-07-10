@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { CreateConnection, UpdateConnection } from "@/types/connection";
 
-export const useFetchAllConnectionsForWeb = (webId: string) => {
+export const useFetchAllConnectionsForWeb = (webId?: string | null) => {
   return useQuery({
     queryKey: ["connections", "all", "web", webId],
     queryFn: async () => {
@@ -10,12 +10,13 @@ export const useFetchAllConnectionsForWeb = (webId: string) => {
       return response.data.result;
     },
     staleTime: 1000 * 60,
+    enabled: !!webId,
   });
 };
 
 export const useFetchOutgoingConnections = (
-  webId: string,
-  sourceId: string
+  webId?: string | null,
+  sourceId?: string | null
 ) => {
   return useQuery({
     queryKey: ["connections", "outgoing", webId, sourceId],
@@ -25,12 +26,13 @@ export const useFetchOutgoingConnections = (
       );
       return response.data.result;
     },
+    enabled: !!webId && !!sourceId,
   });
 };
 
 export const useFetchIncomingConnections = (
-  webId: string,
-  sourceId: string
+  webId?: string | null,
+  sourceId?: string | null
 ) => {
   return useQuery({
     queryKey: ["connections", "incoming"],
@@ -40,10 +42,11 @@ export const useFetchIncomingConnections = (
       );
       return response.data.result;
     },
+    enabled: !!webId && !!sourceId,
   });
 };
 
-export const useGetConnection = (webId: string, connectionId: string) => {
+export const useGetConnection = (webId?: string | null, connectionId?: string | null) => {
   return useQuery({
     queryKey: ["connections", "connection", webId, connectionId],
     queryFn: async () => {
@@ -52,7 +55,8 @@ export const useGetConnection = (webId: string, connectionId: string) => {
       );
       return response.data.result;
     },
-  });
+    enabled: !!webId && !!connectionId,
+    });
 };
 
 export const useCreateConnection = () => {
@@ -77,10 +81,11 @@ export const useCreateConnection = () => {
   });
 };
 
-export const useUpdateConnection = (connectionId: string) => {
+export const useUpdateConnection = (connectionId?: string | null) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (config: UpdateConnection) => {
+      if (!connectionId) return;
       const response = await api.patch(
         `/connections/update/${connectionId}`,
         config
@@ -94,7 +99,7 @@ export const useUpdateConnection = (connectionId: string) => {
   });
 };
 
-export const useDeleteConnection = (webId: string) => {
+export const useDeleteConnection = (webId?: string | null) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (connectionId: string) => {

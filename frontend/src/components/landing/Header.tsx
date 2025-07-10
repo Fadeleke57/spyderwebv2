@@ -53,9 +53,9 @@ function Header() {
         </h1>
         <p className="leading-7 mt-4 text-base sm:text-lg font-medium max-w-full lg:max-w-xl mx-0 text-muted-foreground dark:text-white">
           <span className="hidden md:inline lg:inline">
-            Spydr is your memory drive in the AI era. Organize, recall, and
-            search through everything you&apos;ve ever seen, said, or saved with
-            precision and ease.
+            Spydr is your context engine in the AI era. Organize, recall, and
+            search through everything you&apos;ve ever seen, said, or saved,
+            directly in your favorite AI tools.
           </span>
         </p>
         <p className="text-xs sm:text-sm text-slate-500 mb-3 mt-4 dark:text-foreground italic">

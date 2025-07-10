@@ -3,7 +3,7 @@ import { api } from "@/lib/api";
 import { useSourceStore } from "@/store/sourceStore";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-export const useFetchSourcesForWeb = (webId: string) => {
+export const useFetchSourcesForWeb = (webId?: string | null) => {
   return useQuery({
     queryKey: ["sources", webId],
     queryFn: async () => {
@@ -132,8 +132,8 @@ export const useDeleteSource = (webId: string) => {
 };
 
 export const useFetchSource = (
-  webId: string,
-  sourceId: string,
+  webId?: string | null,
+  sourceId?: string | null,
   contextId?: string
 ) => {
   return useQuery({
@@ -186,7 +186,8 @@ export const useUploadImageToSource = () => {
       webId: string;
       sourceId: string;
       files: File[];
-    }) => {
+      }) => {
+      if (!webId || !sourceId) return;
       const formData = new FormData();
 
       files.forEach((file) => {
