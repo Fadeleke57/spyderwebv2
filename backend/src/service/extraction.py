@@ -3,7 +3,6 @@ import requests
 from typing import List
 from src.lib.logger.index import logger
 from src.core.config import settings
-import pymupdf4llm
 from src.lib.youtube.index import client as youtube_client
 from src.lib.firecrawl.index import client as firecrawl_client
 from src.lib.openai.index import client as openai_client
