@@ -111,7 +111,7 @@ const SourceListView: React.FC<SourceListViewProps> = ({
               {sources.map((source) => (
                 <TableRow
                   key={source.sourceId}
-                  className="hover:bg-muted/50 cursor-pointer group"
+                  className="hover:bg-muted cursor-pointer group transition-colors duration-200 ease-in-out"
                   onClick={() => onSourceClick(source.sourceId)}
                 >
                   <TableCell className="w-[50px]">
