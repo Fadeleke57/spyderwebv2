@@ -1,4 +1,6 @@
 fastapi
+python-multipart
+requests
 pymongo>=4.10.1
 neo4j
 uvicorn
