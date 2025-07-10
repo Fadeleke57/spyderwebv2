@@ -7,3 +7,4 @@ from src.models.analytics import *
 from src.models.chat import *
 from src.models.embedding import *
 from src.models.feedback import *
+from src.models.feed import *
