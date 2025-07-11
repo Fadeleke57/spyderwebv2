@@ -175,7 +175,7 @@ function WebPlayground() {
 
   return (
     <Tabs className="w-full lg:col-span-2" defaultValue="list">
-      <div className="relative flex flex-col h-full gap-0">
+      <div className="flex flex-col h-full gap-0">
         <TabsList className="rounded-none bg-background w-full flex justify-start pl-0 m-0 h-fit pb-0">
           <div>
             <TabsTrigger

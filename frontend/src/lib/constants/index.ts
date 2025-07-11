@@ -15,11 +15,9 @@ export const ACCEPTED_FILE_TYPES_MAP = {
   pdf: [".pdf"],
   markdown: [".md"],
   txt: [".txt"],
-  /* uncomment once file2markdown service is implemented
   docs: [".doc", ".docx", ".hwp", ".hwpx"],
   powerpoint: [".ppt", ".pptx"],
   excel: [".xls", ".xlsx"],
-  */
 };
 
 export const ACCEPTED_FILE_TYPES = Object.values(
@@ -69,48 +67,6 @@ export const tagsList: WebTag[] = [
   },
 ];
 
-const mcpClients = [
-  {
-    name: "Claude",
-    link: "https://claude.ai/login?returnTo=%2F%3F#features",
-    image:
-      "https://pub-4271c874f759418fbdcd18b0e5cbe024.r2.dev/Claude/claude-logo.png",
-  },
-  {
-    name: "Cascade - Windsurf",
-    link: "https://windsurf.com/",
-    image:
-      "https://exafunction.github.io//public/brand/windsurf-black-symbol.png",
-  },
-  {
-    name: "Cursor",
-    link: "https://cursor.sh/",
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrQ_CU3a6muH84mLfoP6xmM4ZJ9Z6RAXMmdA&s",
-  },
-  {
-    name: "Continue",
-    link: "https://continue.dev/",
-    image: "https://hub.continue.dev/continue-logo.png",
-  },
-  {
-    name: "Cline",
-    link: "https://cline.bot/",
-    image:
-      "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/light/cline.png",
-  },
-  {
-    name: "Witsy",
-    link: "https://witsyai.com/",
-    image: "https://witsyai.com/img/logo.png",
-  },
-  {
-    name: "Encovo",
-    link: "https://www.enconvo.com/",
-    image: "https://www.enconvo.com/logo.svg",
-  },
-];
-
 export const feedMap = {
   Claude: {
     name: "Claude",
@@ -119,6 +75,18 @@ export const feedMap = {
       "https://pub-4271c874f759418fbdcd18b0e5cbe024.r2.dev/Claude/claude-logo.png",
     description:
       "Claude is a powerful AI assistant that can help you with a wide range of tasks.",
+    category: "AI",
+    zoom: false,
+  },
+  ChatGPT: {
+    name: "ChatGPT",
+    link: "https://chat.openai.com/",
+    image:
+      "https://static.vecteezy.com/system/resources/previews/021/608/790/non_2x/chatgpt-logo-chat-gpt-icon-on-black-background-free-vector.jpg",
+    description:
+      "ChatGPT is a powerful AI assistant that can help you with a wide range of tasks.",
+    category: "AI",
+    zoom: false,
   },
   Windsurf: {
     name: "Cascade - Windsurf",
@@ -127,6 +95,8 @@ export const feedMap = {
       "https://exafunction.github.io//public/brand/windsurf-black-symbol.png",
     description:
       "Windsurf is a powerful AI assistant that can help you with a wide range of tasks.",
+    category: "AI",
+    zoom: false,
   },
   Cursor: {
     name: "Cursor",
@@ -135,6 +105,7 @@ export const feedMap = {
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrQ_CU3a6muH84mLfoP6xmM4ZJ9Z6RAXMmdA&s",
     description:
       "Cursor is a powerful AI assistant that can help you with a wide range of tasks.",
+    zoom: false,
   },
   Continue: {
     name: "Continue",
@@ -142,6 +113,8 @@ export const feedMap = {
     image: "https://hub.continue.dev/continue-logo.png",
     description:
       "Continue is a powerful AI assistant that can help you with a wide range of tasks.",
+    category: "AI",
+    zoom: true,
   },
   Cline: {
     name: "Cline",
@@ -150,33 +123,27 @@ export const feedMap = {
       "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/light/cline.png",
     description:
       "Cline is a powerful AI assistant that can help you with a wide range of tasks.",
-  },
-  Witsy: {
-    name: "Witsy",
-    link: "https://witsyai.com/",
-    image: "https://witsyai.com/img/logo.png",
-    description:
-      "Witsy is a powerful AI assistant that can help you with a wide range of tasks.",
-  },
-  Encovo: {
-    name: "Encovo",
-    link: "https://www.enconvo.com/",
-    image: "https://www.enconvo.com/logo.svg",
-    description:
-      "Encovo is a powerful AI assistant that can help you with a wide range of tasks.",
+    category: "AI",
+    zoom: true,
   },
   Tiktok: {
     name: "Tiktok",
     link: "https://www.tiktok.com/",
-    image: "https://www.tiktok.com/favicon.ico",
+    image:
+      "https://www.pagetraffic.com/blog/wp-content/uploads/2022/06/new-latest-tiktok-logo-png.png",
     description:
       "Tiktok is a social media platform that allows users to share short videos and photos.",
+    category: "Social",
+    zoom: false,
   },
   X: {
     name: "X",
     link: "https://x.com/",
-    image: "https://x.com/favicon.ico",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/X_logo.jpg/1200px-X_logo.jpg",
     description:
-      "X is a social media platform that allows users to share short videos and photos.",
+      "X is a social media platform that allows users to share photos.",
+    category: "Social",
+    zoom: false,
   },
 };

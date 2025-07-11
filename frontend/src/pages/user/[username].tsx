@@ -17,6 +17,7 @@ import {
   Link as LinkIcon,
   CircleUser,
   Edit,
+  Bookmark,
 } from "lucide-react";
 import { useFetchProfileWebs } from "@/hooks/webs";
 import { Web } from "@/types/web";
@@ -277,10 +278,10 @@ function UserProfile() {
                 Feeds
               </TabsTrigger>
               <TabsTrigger
-                value="stars"
+                value="saved"
                 className="data-[state=inactive]:border-none data-[state=active]:border-1 data-[state=active]:border-primary data-[state=active]:rounded-b-none"
               >
-                <StarIcon size={16} className="mr-2 hidden md:inline" />
+                <Bookmark size={16} className="mr-2 hidden md:inline" />
                 Saved{" "}
               </TabsTrigger>
             </TabsList>
@@ -404,7 +405,7 @@ function UserProfile() {
                 </div>
               )}
 
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {websLoading ? (
                   <div className="flex justify-center py-8">
                     <Loader size={20} className="animate-spin" />
@@ -413,7 +414,7 @@ function UserProfile() {
                   allWebs.map((web) => (
                     <div
                       key={web.webId}
-                      className="border-b pb-6 mb-6 last:border-0"
+                      className="p-6 border hover:bg-muted rounded transition-colors"
                     >
                       <div className="flex justify-between items-start">
                         <div className="">
@@ -433,7 +434,7 @@ function UserProfile() {
                               ? "secondary"
                               : "outline"
                           }
-                          className="text-xs"
+                          className="text-xs hover:bg-neon hover:text-black dark:hover:bg-neon dark:hover:text-black transition-colors duration-100 ease-in-out"
                         >
                           {web.visibility}
                         </Badge>
@@ -492,7 +493,7 @@ function UserProfile() {
 
             <TabsContent
               value="feeds"
-              className="mt-4 md:mt-6 data-[state=active]:animate-fadeIn"
+              className="mt-4 md:mt-4 data-[state=active]:animate-fadeIn"
             >
               {feedsLoading ? (
                 <div className="flex justify-center py-8">
@@ -514,7 +515,7 @@ function UserProfile() {
             </TabsContent>
 
             <TabsContent
-              value="stars"
+              value="saved"
               className="mt-4 md:mt-6 data-[state=active]:animate-fadeIn"
             >
               <div className="text-center py-12">

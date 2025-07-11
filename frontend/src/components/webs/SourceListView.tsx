@@ -165,7 +165,7 @@ const SourceListView: React.FC<SourceListViewProps> = ({
               ))}
             </div>
           )}
-          {!hasSources && (
+          {!hasSources && !sourcesLoading && (
             <div className="flex items-center p-4 justify-center w-full h-full">
               <p className="text-muted-foreground">Nothing yet.</p>
             </div>
