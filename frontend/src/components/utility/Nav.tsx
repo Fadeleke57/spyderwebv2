@@ -18,10 +18,14 @@ import { useRouter } from "next/router";
 
 const components = [
   {
+    title: "Change Log",
+    href: "https://verbose-stomach-0ea.notion.site/Spydr-Change-Log-2244df9ceafa80538389ef75a3060ee6",
+    description: "",
+  },
+  {
     title: "Blog",
     href: "/blog",
-    description:
-      "A quick loom video showing how to get started with the app and its features.",
+    description: "",
   },
 ];
 

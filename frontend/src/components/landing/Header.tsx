@@ -36,11 +36,13 @@ function Header() {
           Your memory on the go.
         </p>
         <h1 className="relative text-4xl lg:text-9xl tracking-tight max-w-xs lg:max-w-full mb-2 sm:mb-4 font-extrabold lg:font-bold dark:text-white">
-          Don&apos;t{" "}
-          <LineShadowText className="italic relative" shadowColor={shadowColor}>
+          <LineShadowText className="relative" shadowColor={shadowColor}>
+            Don&apos;t
+          </LineShadowText>{" "}
+          <LineShadowText className="relative" shadowColor={shadowColor}>
             miss
           </LineShadowText>{" "}
-          <LineShadowText className="italic relative" shadowColor={shadowColor}>
+          <LineShadowText className="relative" shadowColor={shadowColor}>
             a
           </LineShadowText>{" "}
           <TypingAnimation
@@ -53,9 +55,9 @@ function Header() {
         </h1>
         <p className="leading-7 mt-4 text-base sm:text-lg font-medium max-w-full lg:max-w-xl mx-0 text-muted-foreground dark:text-white">
           <span className="hidden md:inline lg:inline">
-            Spydr is your memory drive in the AI era. Organize, recall, and
-            search through everything you&apos;ve ever seen, said, or saved with
-            precision and ease.
+            Spydr is your context engine in the AI era. Organize, recall, and
+            search through everything you&apos;ve ever seen, said, or saved,
+            directly in your favorite AI tools.
           </span>
         </p>
         <p className="text-xs sm:text-sm text-slate-500 mb-3 mt-4 dark:text-foreground italic">

@@ -91,7 +91,7 @@ export function useClearSearchHistory() {
   return { loading, error, clearSearchHistory };
 }
 
-export function useFetchUserById(userId: string | null | undefined) {
+export function useFetchUserById(userId?: string | null) {
   return useQuery({
     queryKey: ["user", userId],
     queryFn: async () => {
@@ -107,7 +107,7 @@ export function useFetchUserById(userId: string | null | undefined) {
   });
 }
 
-export function useFetchUserByUsername(username: string) {
+export function useFetchUserByUsername(username?: string | null) {
   return useQuery({
     queryKey: ["user", username],
     queryFn: async () => {
@@ -209,7 +209,7 @@ export function usePinWeb(webId: string, userId: string | null) {
   });
 }
 
-export function useUnpinWeb(webId: string, userId: string | null) {
+export function useUnpinWeb(webId: string, userId?: string | null) {
   return useMutation({
     mutationFn: async () => {
       if (!userId) return;
@@ -223,7 +223,7 @@ export function useUnpinWeb(webId: string, userId: string | null) {
   });
 }
 
-export function useFetchPinnedWebs(userId: string) {
+export function useFetchPinnedWebs(userId?: string | null) {
   return useQuery({
     queryKey: ["user", "pinned", "webs", userId],
     queryFn: async () => {
@@ -235,7 +235,7 @@ export function useFetchPinnedWebs(userId: string) {
   });
 }
 
-export function useUnsaveWeb(webId: string) {
+export function useUnsaveWeb(webId: string | null) {
   return useMutation({
     mutationFn: async () => {
       const response = await api.patch(`/users/unsave/web/${webId}`);
@@ -248,7 +248,7 @@ export function useUnsaveWeb(webId: string) {
   });
 }
 
-export function useFetchSavedWebs(userId: string) {
+export function useFetchSavedWebs(userId?: string | null) {
   return useQuery({
     queryKey: ["user", "saved", "webs"],
     queryFn: async () => {

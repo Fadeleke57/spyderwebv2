@@ -78,6 +78,12 @@ function PopularWebsCard() {
           Support
         </Link>{" "}
         <Link
+          href="https://verbose-stomach-0ea.notion.site/Spydr-Change-Log-2244df9ceafa80538389ef75a3060ee6"
+          className="py-[1px] px-4 mb-2 border-r-[2px] border-border hover:underline transition-all duration-300 ease-in-out"
+        >
+          Change Log
+        </Link>{" "}
+        <Link
           href={`${window.location.origin}/memory`}
           className="py-[1px] px-4 text-neon cursor-pointer pr-0 mb-2 hover:underline transition-all duration-300 ease-in-out"
         >
