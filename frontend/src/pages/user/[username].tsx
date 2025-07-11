@@ -276,6 +276,9 @@ function UserProfile() {
               >
                 <Package size={16} className="mr-2 hidden md:inline" />
                 Feeds
+                <span className="ml-2 bg-foreground text-background rounded-full px-2 py-0.5 text-xs">
+                  {feedsLoading ? "..." : feeds?.length}
+                </span>
               </TabsTrigger>
               <TabsTrigger
                 value="saved"

@@ -74,7 +74,7 @@ export const feedMap = {
     image:
       "https://pub-4271c874f759418fbdcd18b0e5cbe024.r2.dev/Claude/claude-logo.png",
     description:
-      "Claude is a powerful AI assistant that can help you with a wide range of tasks.",
+      "Anthropic LLM for drafting, analyzing, and safe enterprise AI work.",
     category: "AI",
     zoom: false,
   },
@@ -84,7 +84,7 @@ export const feedMap = {
     image:
       "https://static.vecteezy.com/system/resources/previews/021/608/790/non_2x/chatgpt-logo-chat-gpt-icon-on-black-background-free-vector.jpg",
     description:
-      "ChatGPT is a powerful AI assistant that can help you with a wide range of tasks.",
+      "OpenAI GPT-4 chat assistant for questions, ideas, and coding help.",
     category: "AI",
     zoom: false,
   },
@@ -94,7 +94,7 @@ export const feedMap = {
     image:
       "https://exafunction.github.io//public/brand/windsurf-black-symbol.png",
     description:
-      "Windsurf is a powerful AI assistant that can help you with a wide range of tasks.",
+      "AI coding agent that understands codebases and automates complex refactors.",
     category: "AI",
     zoom: false,
   },
@@ -104,7 +104,7 @@ export const feedMap = {
     image:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrQ_CU3a6muH84mLfoP6xmM4ZJ9Z6RAXMmdA&s",
     description:
-      "Cursor is a powerful AI assistant that can help you with a wide range of tasks.",
+      "AI-powered editor for querying repos and rewriting code via chat.",
     zoom: false,
   },
   Continue: {
@@ -112,7 +112,7 @@ export const feedMap = {
     link: "https://continue.dev/",
     image: "https://hub.continue.dev/continue-logo.png",
     description:
-      "Continue is a powerful AI assistant that can help you with a wide range of tasks.",
+      "Open-source IDE extension adding chat, autocomplete, and custom LLM agents.",
     category: "AI",
     zoom: true,
   },
@@ -122,7 +122,7 @@ export const feedMap = {
     image:
       "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/light/cline.png",
     description:
-      "Cline is a powerful AI assistant that can help you with a wide range of tasks.",
+      "Autonomous VS Code bot that plans, executes, and commits features.",
     category: "AI",
     zoom: true,
   },
@@ -132,7 +132,7 @@ export const feedMap = {
     image:
       "https://www.pagetraffic.com/blog/wp-content/uploads/2022/06/new-latest-tiktok-logo-png.png",
     description:
-      "Tiktok is a social media platform that allows users to share short videos and photos.",
+      "Short-form video platform with highly personalized, algorithmic content feed.",
     category: "Social",
     zoom: false,
   },
@@ -142,7 +142,7 @@ export const feedMap = {
     image:
       "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/X_logo.jpg/1200px-X_logo.jpg",
     description:
-      "X is a social media platform that allows users to share photos.",
+      'Rebranded Twitter for real-time posts and Musk’s "everything-app" vision.',
     category: "Social",
     zoom: false,
   },
