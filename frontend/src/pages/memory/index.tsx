@@ -124,7 +124,7 @@ function Index() {
           className="bg-black text-foreground rounded-lg p-4 font-mono relative group cursor-pointer"
           onClick={() =>
             handleCopy(
-              `${selectedPackageManager.command} -y @spydr/mcp-i https://memory.spydr.dev/sse --client ${selectedClient.toLowerCase()}`
+              `${selectedPackageManager.command} -y @spydr/mcp-i https://memory.spydr.dev/mcp --client ${selectedClient.toLowerCase()}`
             )
           }
         >
@@ -148,7 +148,7 @@ function Index() {
             key={`${selectedPackageManager.name}-${selectedClient}`}
           >
             {selectedPackageManager.command} -y @spydr/mcp-i
-            https://memory.spydr.dev/sse --client {selectedClient.toLowerCase()}
+            https://memory.spydr.dev/mcp --client {selectedClient.toLowerCase()}
           </div>
           <Button className="absolute top-2 right-2 h-fit w-fit p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <div className="relative w-4 h-4">
@@ -191,10 +191,10 @@ function Index() {
   "command": "npx",
   "args": [
     "-y",
-    "mcp-remote@latest",
-    "https://memory.spydr.dev/sse",
-    "--host",
-    "127.0.0.1"
+    "mcp-remote@0.1.17",
+    "https://memory.spydr.dev/mcp",
+    "--transport",
+    "http-only"
   ]
 }`)
         }
@@ -206,10 +206,10 @@ function Index() {
   "command": "npx",
   "args": [
     "-y",
-    "mcp-remote@latest",
-    "https://memory.spydr.dev/sse",
-    "--host",
-    "127.0.0.1"
+    "mcp-remote@0.1.17",
+    "https://memory.spydr.dev/mcp",
+    "--transport",
+    "http-only"
   ]
 }`}
             </code>
@@ -270,18 +270,22 @@ function Index() {
         className="z-20 absolute top-20 md:top-20 lg:top-34 hidden md:block lg:w-[500px] h-[200px] -right-10"
         variants={videoVariants}
       >
-        <span className="text-sm text-muted-foreground font-bold">
-          Fine-Grained Context Orchestration
-        </span>
         <div className="relative pb-[75%] h-[200px] w-full mt-2">
-          <iframe
-            src="https://www.loom.com/embed/d8937a0121d4461281f0d26e41fe6b1f?sid=61f79e8d-96d5-4215-995e-f5ee3680a715"
-            allowFullScreen
-            className="absolute top-0 left-0 w-full h-full rounded-lg shadow-lg"
-          ></iframe>
+          <span className="text-sm -ml-4 -mb-2 text-muted-foreground font-bold">
+            Fine-Grained Context Orchestration
+          </span>
+          <video
+            src="https://spydr-user-content-prod.s3.us-east-1.amazonaws.com/assets/jul2demo.mp4"
+            controls
+            className="absolute border top-0 pt-6 -left-10 w-full h-full rounded-l-lg shadow-lg"
+            preload="metadata"
+            autoPlay
+            muted
+          >
+            Your browser does not support the videos.
+          </video>
         </div>
       </motion.div>
-
       <motion.div className="flex flex-col gap-2" variants={itemVariants}>
         <div>
           <h1 className="text-balance text-5xl font-semibold leading-none tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl">

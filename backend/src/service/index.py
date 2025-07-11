@@ -4,6 +4,7 @@ from src.service.source import service as source_service
 from src.service.extraction import service as extraction_service
 from src.service.user import service as user_service
 from src.service.web import service as web_service
+from src.service.feed import service as feed_service
 from src.service.file import FileService, FileInfo, PresignedUrlsRequestFile
 
 __all__ = [
@@ -13,6 +14,7 @@ __all__ = [
     "extraction_service",
     "user_service",
     "web_service",
+    "feed_service",
     "FileService",
     "FileInfo",
     "PresignedUrlsRequestFile",

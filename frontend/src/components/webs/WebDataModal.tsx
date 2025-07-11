@@ -114,18 +114,6 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
           />
         );
       case "pdf":
-        return (
-          <>
-            <object
-              data={presignedUrl}
-              type="application/pdf"
-              width="100%"
-              className="rounded-lg border h-full"
-            >
-              <p>Your browser does not support PDFs.</p>
-            </object>
-          </>
-        );
       case "document":
         return (
           <>
@@ -135,7 +123,7 @@ export default function WebDataModal({ open, setOpen }: WebDataModalProps) {
               width="100%"
               className="rounded-lg border h-full"
             >
-              <p>Your browser does not support PDFs.</p>
+              <p>File View Not Supported for this file type</p>
             </object>
           </>
         );

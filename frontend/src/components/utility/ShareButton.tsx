@@ -1,7 +1,25 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Check, Copy, Ellipsis, Forward, Send, Trash2 } from "lucide-react";
+import React, { useState, useCallback, useMemo } from "react";
+import {
+  Check,
+  CheckIcon,
+  Copy,
+  EllipsisIcon,
+  Forward,
+  Send,
+} from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "@/components/ui/use-toast";
@@ -27,13 +45,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRouter } from "next/router";
@@ -52,6 +63,12 @@ import { useFetchUserById } from "@/hooks/user";
 import { AccessLevel, Contributor } from "@/types/contributor";
 import { Skeleton } from "../ui/skeleton";
 import { useAuthorization } from "@/providers/AuthorizationProvider";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 const FormSchema = z.object({
   inviteContributers: z.string().email("Please enter a valid email").optional(),
@@ -163,30 +180,99 @@ const ContributorItem = ({ contributor }: { contributor: Contributor }) => {
           )}
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        <Select
-          value={contributor.accessLevel}
-          onValueChange={(value: AccessLevel) =>
-            handleRoleChange(contributor.contributorId, value)
-          }
-          disabled={
-            contributor.pending ||
-            !isOwner ||
-            removeContributorPending ||
-            toggleContributorRolePending
-          }
-        >
-          <SelectTrigger
-            className={`w-[100px] flex justify-center gap-2 items-center bg-muted text-xs h-8 ring-0 focus:ring-0 focus:ring-offset-0 ${contributor.pending || !isOwner ? "hidden" : ""}`}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="read">Read</SelectItem>
-            <SelectItem value="write">Write</SelectItem>
-            {isOwner && <SelectItem value="owner">Owner</SelectItem>}
-          </SelectContent>
-        </Select>
+      <div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className={`p-0 justify-end bg-transparent -mr-1 border-none text-xs h-8 ring-0 focus:ring-0 focus:ring-offset-0 hover:bg-transparent hover:opacity-75 ${
+                contributor.pending || !isOwner ? "hidden" : ""
+              }`}
+              disabled={
+                contributor.pending ||
+                !isOwner ||
+                removeContributorPending ||
+                toggleContributorRolePending
+              }
+            >
+              {contributor &&
+                contributor.accessLevel[0].toUpperCase() +
+                  contributor.accessLevel.slice(1)}
+              <EllipsisIcon size={14} className="ml-2" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="cursor-pointer">
+            <DropdownMenuItem
+              className="flex items-center justify-between cursor-pointer"
+              onClick={() =>
+                handleRoleChange(contributor.contributorId, "read")
+              }
+            >
+              Read
+              {contributor.accessLevel === "read" && <CheckIcon size={14} />}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="flex items-center justify-between cursor-pointer"
+              onClick={() =>
+                handleRoleChange(contributor.contributorId, "write")
+              }
+            >
+              Write
+              {contributor.accessLevel === "write" && <CheckIcon size={14} />}
+            </DropdownMenuItem>
+            {isOwner && (
+              <DropdownMenuItem
+                className="flex items-center justify-between cursor-pointer"
+                onClick={() =>
+                  handleRoleChange(contributor.contributorId, "owner")
+                }
+              >
+                Owner
+                {contributor.accessLevel === "owner" && <CheckIcon size={14} />}
+              </DropdownMenuItem>
+            )}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <DropdownMenuItem
+                  onSelect={(e) => e.preventDefault()}
+                  disabled={removeContributorPending || revokeInvitePending}
+                  className="text-red-400 cursor-pointer hover:text-red-400/80 dark:hover:text-red-400/80"
+                >
+                  {contributor && user && contributor.userId === user.id
+                    ? "Leave Project"
+                    : "Remove Access"}
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {contributor && user && contributor.userId === user.id
+                      ? "Are you sure you want to leave?"
+                      : "Are you sure you want to remove access?"}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {contributor && user && contributor.userId === user.id
+                      ? "You will lose access to this project. This action cannot be undone and you will have to ask the owner to invite you back."
+                      : `This will permanently remove ${contributor.username || "this user"}'s access to the project. They will have to wait for the owner to invite them back.`}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() =>
+                      handleRemoveContributor(contributor.contributorId)
+                    }
+                    className="bg-transparent dark:bg-transparent dark:hover:bg-transparent hover:bg-transparent text-red-400 hover:text-red-400/80 dark:text-red-400 dark:hover:text-red-400/80"
+                  >
+                    {contributor && user && contributor.userId === user.id
+                      ? "Leave"
+                      : "Remove"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {contributor.pending && isOwner && (
           <Button
@@ -194,42 +280,11 @@ const ContributorItem = ({ contributor }: { contributor: Contributor }) => {
             variant="ghost"
             size="sm"
             type="button"
-            className="text-red-400 hover:text-red-400/80 font-semibold text-xs px-2 bg-transparent dark:bg-transparent dark:hover:bg-transparent hover:bg-transparent"
+            className="text-red-400 hover:text-red-400/80 font-semibold text-xs px-2 pr-0 bg-transparent dark:bg-transparent dark:hover:bg-transparent hover:bg-transparent"
             onClick={() => handleRevokeInvite(contributor.contributorId)}
           >
             Revoke
           </Button>
-        )}
-
-        {isOwner && (
-          <Popover>
-            <PopoverTrigger
-              hidden={contributor.pending || !isOwner}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Ellipsis size={16} />
-            </PopoverTrigger>
-            <PopoverContent className="w-fit p-0 mr-10">
-              <Button
-                disabled={removeContributorPending || revokeInvitePending}
-                variant="ghost"
-                hidden={contributor.pending || !isOwner}
-                className="flex items-center gap-2 text-sm"
-                onClick={() =>
-                  handleRemoveContributor(contributor.contributorId)
-                }
-              >
-                {contributor?.userId === user?.id ? (
-                  <span>Leave Project</span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <Trash2 size={14} />
-                    Remove Access
-                  </span>
-                )}
-              </Button>
-            </PopoverContent>
-          </Popover>
         )}
       </div>
     </div>
@@ -359,7 +414,7 @@ const ShareForm = ({ form, webOwner, copied, handleCopy }: any) => {
                     onClick={handleInviteUser}
                     disabled={inviteRequestPending}
                   >
-                    <Send size={14} />
+                    <Send strokeWidth={2} size={14} />
                   </Button>
                 </div>
               </FormItem>
@@ -478,7 +533,7 @@ const SharePopover = () => {
   const { data: webData } = useFetchWebById(webId as string);
   const { data: webOwner } = useFetchUserById(webData?.userId);
   const [copied, setCopied] = useState(false);
-  const { canRead } = useAuthorization();
+  const { canWrite } = useAuthorization();
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -531,9 +586,11 @@ const SharePopover = () => {
         <DrawerContent className="px-6 pb-10 h-[85dvh]">
           <DrawerHeader>
             <DrawerTitle>Share this Web</DrawerTitle>
-            {canRead && (
+            {canWrite && (
               <DrawerDescription>
-                Manage who can view and contribute
+                <span className="text-sm text-muted-foreground font-semibold">
+                  Manage who can view and contribute
+                </span>
               </DrawerDescription>
             )}
           </DrawerHeader>
@@ -567,8 +624,8 @@ const SharePopover = () => {
       >
         <div className="flex flex-col gap-1">
           <h3 className="text-lg font-semibold">Share this Web</h3>
-          {canRead && (
-            <p className="text-sm text-muted-foreground">
+          {canWrite && (
+            <p className="text-sm text-muted-foreground font-semibold">
               Manage who can view and contribute
             </p>
           )}

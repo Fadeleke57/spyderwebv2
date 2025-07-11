@@ -11,6 +11,21 @@ export const colorOptions = [
   "#f7cac9",
 ];
 
+export const ACCEPTED_FILE_TYPES_MAP = {
+  pdf: [".pdf"],
+  markdown: [".md"],
+  txt: [".txt"],
+  /* uncomment once file2markdown service is implemented
+  docs: [".doc", ".docx", ".hwp", ".hwpx"],
+  powerpoint: [".ppt", ".pptx"],
+  excel: [".xls", ".xlsx"],
+  */
+};
+
+export const ACCEPTED_FILE_TYPES = Object.values(
+  ACCEPTED_FILE_TYPES_MAP
+).flat();
+
 export const tagsList: WebTag[] = [
   {
     value: "Preferences",

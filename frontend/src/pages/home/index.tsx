@@ -31,7 +31,6 @@ function Index() {
   }, [router]);
 
   useEffect(() => {
-    console.log("src", src);
     if (src === "mcp_auth_complete") {
       setMCPModalOpen(true);
       setTimeout(() => {

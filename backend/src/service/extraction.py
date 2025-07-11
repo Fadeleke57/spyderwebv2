@@ -1,16 +1,16 @@
 import os
+import requests
 from typing import List
 from src.lib.logger.index import logger
-import pymupdf4llm
+from src.core.config import settings
 from src.lib.youtube.index import client as youtube_client
 from src.lib.firecrawl.index import client as firecrawl_client
 from src.lib.openai.index import client as openai_client
 
 
 class ExtractionService:
-
     def __init__(self):
-        pass
+        logger.info("EXTRACTION SERVICE INITIALIZED!")
 
     def extract_youtube_transcript(self, video_id: str):
         """
@@ -35,31 +35,39 @@ class ExtractionService:
             tuple[str, dict]: A tuple containing the extracted content and the metadata of the website.
         """
         markdown, metadata = firecrawl_client.get_markdown(url=url, with_metadata=True)
-        # markdown = cleaner_agent.clean_website_md(markdown)  # removes the noise
+
         logger.info(f"Website content extracted successfully: markdown is {markdown}")
         return markdown, metadata
 
-    def extract_document_content(self, file_path: str) -> List[dict]:
+    def extract_document_content(
+        self, file_key: str
+    ) -> List[dict]:  # returns a list of {"text": "", "pageNumber": int}
         """
-        Extracts the content of a document from the provided file path. Documents are PDFs, DOCXs, and PPTXs.
+        Extracts the content of a document from the provided file path. Documents are any office documents supported by markitdown.
 
         Args:
-            file_path (str): The file path of the document to extract content from.
+            file_key (str): The file key of the document to extract content from.
 
         Returns:
             list: The extracted content of the document.
         """
-        try:
-            # extract Markdown for each page as a list of dictionaries
-            data = pymupdf4llm.to_markdown(
-                file_path, page_chunks=True
-            )  # returns a list of {"text": "", "pageNumber": int}
+        if not file_key:
+            raise ValueError("File key is required to process document")
 
-            os.remove(file_path)
-            if not data:
-                logger.info("No text found in document")
-                return
-            return data
+        try:
+            logger.info(f"Extracting document content from file key: {file_key}")
+            convert_to_markdown_payload = {
+                "file_key": file_key,
+            }
+            response = requests.post(
+                url=f"{settings.markdown_service_url}/api/v1/convert",
+                json=convert_to_markdown_payload,
+            )
+            response.raise_for_status()
+            data = response.json()
+            result = data.get("result", [])
+            logger.info(f"Document content extracted successfully: result is {result}")
+            return result
 
         except Exception as e:
             logger.error(f"Error processing document: {e}")

@@ -1,9 +1,10 @@
 import traceback
+from src.models.index import Feed, FeedContent
 from src.lib.logger.index import logger
 from src.constants.embedding import SOURCE_TYPE_BATCH_MAP
 from src.constants.source import DOCUMENT_TYPES
 from src.engine.autolinking_engine.autolinker import engine as autolinker
-from src.service.chunking import Chunk
+from src.service.chunking import ChatChunk, Chunk
 from src.lib.pinecone.index import client as pinecone_client
 from src.models.index import Source, Embeddings, EmbeddingReference, Vector, Webs, Web
 from typing import Literal, Dict, Any, List
@@ -18,7 +19,7 @@ class EmbeddingService:
 
     @staticmethod
     def _map_type_to_batch_size(
-        type: Literal["website", "youtube", "document", "note", "voice_note"]
+        type: Literal["website", "youtube", "document", "note", "voice_note"],
     ) -> int:
         return SOURCE_TYPE_BATCH_MAP.get(type, 50)
 
@@ -62,6 +63,32 @@ class EmbeddingService:
 
         elif type == "voice_note":
             metadata["voiceNoteTitle"] = source.name
+
+        return metadata
+
+    @staticmethod
+    def _generate_feed_chunk_metadata(
+        feed: Feed,
+        chunk: Chunk,
+        index: int,
+        number_of_chunks: int,
+    ) -> Dict[str, Any]:
+        feed_type = feed.feedType
+        base_metadata = {
+            "feedId": feed.feedId,
+            "userId": feed.userId,
+            "chunkIndex": index,
+            "chunkCount": number_of_chunks,
+            "type": feed_type,
+            "text": chunk.text,
+            "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+        }
+        metadata = base_metadata.copy()
+        # TODO: ADD MORE METADATA FOR MORE FEED TYPES
+        if isinstance(chunk, ChatChunk):
+            metadata["chatId"] = chunk.chatId
+            metadata["messageId"] = chunk.messageId
+            metadata["role"] = chunk.role
 
         return metadata
 
@@ -126,6 +153,46 @@ class EmbeddingService:
 
         if should_run_autolinker:
             autolinker.run()
+
+        return results
+
+    def run_feed_embedding_process(self, feed: Feed, chunks: List[Chunk]):
+        if not feed or not chunks:
+            logger.error("Feed or chunks are missing")
+            raise ValueError("Feed or chunks are missing")
+        logger.info(f"Running embedding process for {feed} feed.")
+        feed_id = feed.feedId
+        vectors: List[Vector] = []
+
+        logger.info(
+            f"Running embedding process for {feed.feedType}. It has {len(chunks)} chunks..."
+        )
+        for i, chunk in enumerate(chunks):
+            chunk_id = f"{feed_id}:chunk{i}"
+            logger.info(f"Uploading chunk: {chunk_id}")
+
+            # reference to the chunk in mongo for update and delete operations later on
+            embedding_reference = EmbeddingReference(
+                sourceId=feed_id,
+                webId=feed_id,
+                embeddingId=chunk_id,
+            )
+            Embeddings.insert_one(embedding_reference.model_dump())
+
+            metadata = self._generate_feed_chunk_metadata(
+                feed=feed,
+                chunk=chunk,
+                index=i,
+                number_of_chunks=len(chunks),
+            )
+            chunk = chunk.text
+            embedding = pinecone_client.embed(chunk)
+
+            vector = (chunk_id, embedding, metadata)
+            vectors.append(vector)
+
+        batch_size = self._map_type_to_batch_size(feed.feedType)
+        results = pinecone_client.upsert(vectors=vectors, batch_size=batch_size)
 
         return results
 

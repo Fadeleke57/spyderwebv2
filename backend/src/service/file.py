@@ -105,7 +105,7 @@ class FileService:
                         source_service.process_source,
                         source=source,
                         content_to_embed=None,
-                        file_path=temp_path,
+                        file_key=file.fileKey,
                     )
 
                 elif file_extension in TEXT_TYPES:

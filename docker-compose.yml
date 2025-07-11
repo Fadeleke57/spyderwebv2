@@ -72,6 +72,7 @@ services:
       STYTCH_PROJECT_ID: ${STYTCH_PROJECT_ID}
       STYTCH_SECRET: ${STYTCH_SECRET}
       TWELVE_LABS_API_KEY: ${TWELVE_LABS_API_KEY}
+      GMAIL_APP_PASSWORD: ${GMAIL_APP_PASSWORD}
     volumes:
       - ./backend:/app
       - ~/.aws/credentials:/home/appuser/.aws/credentials:ro

@@ -1,14 +1,17 @@
-from fastapi import APIRouter, Depends
+from src.models.feed import AIContent
+from fastapi import APIRouter, Depends, BackgroundTasks
 from src.models.user import Contributors
 from src.lib.pinecone.index import client as pinecone_client
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 from src.routes.auth.utils import manager
-from src.models.index import User, Webs, Web
+from src.models.index import User, Webs, Web, Feeds, AiClientFeedType, Message, Feed
 from typing import Optional, Literal
 from fastapi import Query
+from pydantic import BaseModel
 from src.lib.logger.index import logger
 from src.utils.context import clean_metadata
+from src.service.index import feed_service, embedding_service, chunking_service
 
 router = APIRouter()
 
@@ -73,7 +76,7 @@ def search_webs(
         return JSONResponse(content={"result": all_metadata})
     except Exception as e:
         logger.error(str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Error searching webs.")
 
 
 @router.get("/search/memories")
@@ -143,14 +146,49 @@ def search_memories(
             return JSONResponse(content={"result": results})
         except Exception as e:
             logger.error(f"Error searching memories: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e))
+            raise HTTPException(status_code=500, detail="Error searching memories.")
     except Exception as e:
         logger.error(str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Error searching memories.")
 
 
-@router.post("/add/memory")  # TODO: This would be the start of "feeds"
+class AddMemoryPayload(BaseModel):
+    client: AiClientFeedType
+    content: AIContent
+
+
+@router.post("/add/memory")
 def add_chat_to_memory(
+    payload: AddMemoryPayload,
+    background_tasks: BackgroundTasks,
     user_making_request: User = Depends(manager.required),
 ):
-    pass
+    try:
+        client = payload.client.value
+        chat_feed = Feeds.find_one(
+            {"feedType": client, "userId": user_making_request.id}
+        )
+
+        if not chat_feed:
+            chat_feed = feed_service.create_feed(
+                feed_type=client, user_id=user_making_request.id
+            )
+        else:
+            chat_feed = Feed(**chat_feed)
+
+        if isinstance(payload.content, str):
+            content = [Message(role=client, content=payload.content)]
+        else:
+            content = payload.content
+
+        chunks = chunking_service.chunk_chat_messages(messages=content)
+        logger.info(f"Created chunks {chunks} for chat.")
+        logger.info(f"Running embedding process for {chat_feed} feed.")
+        background_tasks.add_task(
+            embedding_service.run_feed_embedding_process, feed=chat_feed, chunks=chunks
+        )
+
+        return JSONResponse(content={"result": "Memory added successfully"})
+    except Exception as e:
+        logger.error(str(e))
+        raise HTTPException(status_code=500, detail="Error adding memory.")
