@@ -1,33 +1,42 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
-import { CheckCircle, ExternalLink, Settings } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ExternalLink, Settings } from "lucide-react";
 import { feedMap } from "@/lib/constants";
 import Link from "next/link";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
 export default function FeedGrid(
-  { connected }: { connected: string[] } = { connected: [] }
+  { connected, isOwner }: { connected: string[]; isOwner: boolean } = {
+    connected: [],
+    isOwner: false,
+  }
 ) {
-  console.log(connected);
+  const feedsToMap = isOwner
+    ? Object.values(feedMap)
+    : Object.values(feedMap).filter((feed: any) => {
+        return connected.includes(feed.name);
+      });
   return (
     <div>
-      <Button className="flex items-center py-1 h-fit w-fit rounded-full text-sm transition-colors duration-150 mb-3 hover:bg-neon hover:text-black dark:hover:text-black dark:hover:bg-neon">
-        <Settings size={16} className="mr-2" />
-        <span className="font-semibold">Settings</span>
-      </Button>
+      {isOwner && (
+        <Button className="flex items-center py-1 h-fit w-fit rounded-full text-sm transition-colors duration-150 mb-3 hover:bg-neon hover:text-black dark:hover:text-black dark:hover:bg-neon">
+          <Settings size={16} className="mr-2" />
+          <span className="font-semibold">Settings</span>
+        </Button>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Object.values(feedMap).map((feed: any) => {
+        {feedsToMap.map((feed: any, id: number) => {
           const isConnected = connected.includes(feed.name);
           console.log(`${feed.name} is connected: ${isConnected}`);
           return (
             <Card
-              key={feed.key}
+              key={id}
               className={`relative group transition-colors duration-150 ${feed.category === "AI" && !isConnected ? "border-muted" : ""}`}
             >
               <div className="flex flex-col justify-between h-full">
@@ -72,9 +81,9 @@ export default function FeedGrid(
                   </div>
                 )}
 
-                {!isConnected && (
+                {!isConnected && isOwner && (
                   <Link
-                    href={feed.link}
+                    href={feed.syncLink || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs font-medium text-primary hover:text-black hover:bg-neon rounded-full px-2 py-1 transition-colors duration-150"
@@ -84,7 +93,7 @@ export default function FeedGrid(
                 )}
               </div>
               <Link
-                href={feed.link}
+                href={feed.link || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="absolute bottom-2 text-muted-foreground right-2 text-xs hover:text-black hover:bg-neon rounded-full px-2 py-1 transition-colors duration-150"

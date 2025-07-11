@@ -1,3 +1,4 @@
+import { environment } from "@/environment/loadenv";
 import { WebTag } from "@/types/web";
 
 export const SHOWCASE_IMAGE =
@@ -67,10 +68,11 @@ export const tagsList: WebTag[] = [
   },
 ];
 
-export const feedMap = {
+export const feedMap : any = {
   Claude: {
     name: "Claude",
     link: "https://claude.ai/login?returnTo=%2F%3F#features",
+    syncLink: `${environment.client_url}/memory`,
     image:
       "https://pub-4271c874f759418fbdcd18b0e5cbe024.r2.dev/Claude/claude-logo.png",
     description:
@@ -81,26 +83,29 @@ export const feedMap = {
   ChatGPT: {
     name: "ChatGPT",
     link: "https://chat.openai.com/",
+    syncLink: `${environment.client_url}/memory`,
     image:
       "https://static.vecteezy.com/system/resources/previews/021/608/790/non_2x/chatgpt-logo-chat-gpt-icon-on-black-background-free-vector.jpg",
     description:
-      "OpenAI GPT-4 chat assistant for questions, ideas, and coding help.",
+      "OpenAI LLM for questions, ideas, and coding help. Used across coding agents.",
     category: "AI",
     zoom: false,
   },
   Windsurf: {
     name: "Cascade - Windsurf",
     link: "https://windsurf.com/",
+    syncLink: `${environment.client_url}/memory`,
     image:
       "https://exafunction.github.io//public/brand/windsurf-black-symbol.png",
     description:
-      "AI coding agent that understands codebases and automates complex refactors.",
+      "(Formerly Codeium) AI coding agent and IDE for quick code generation and refactoring.",
     category: "AI",
     zoom: false,
   },
   Cursor: {
     name: "Cursor",
     link: "https://cursor.sh/",
+    syncLink: `${environment.client_url}/memory`,
     image:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrQ_CU3a6muH84mLfoP6xmM4ZJ9Z6RAXMmdA&s",
     description:
@@ -110,6 +115,7 @@ export const feedMap = {
   Continue: {
     name: "Continue",
     link: "https://continue.dev/",
+    syncLink: `${environment.client_url}/memory`,
     image: "https://hub.continue.dev/continue-logo.png",
     description:
       "Open-source IDE extension adding chat, autocomplete, and custom LLM agents.",
@@ -119,6 +125,7 @@ export const feedMap = {
   Cline: {
     name: "Cline",
     link: "https://cline.bot/",
+    syncLink: `${environment.client_url}/memory`,
     image:
       "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/light/cline.png",
     description:
@@ -129,6 +136,7 @@ export const feedMap = {
   Tiktok: {
     name: "Tiktok",
     link: "https://www.tiktok.com/",
+    syncLink: null,
     image:
       "https://www.pagetraffic.com/blog/wp-content/uploads/2022/06/new-latest-tiktok-logo-png.png",
     description:
@@ -139,10 +147,11 @@ export const feedMap = {
   X: {
     name: "X",
     link: "https://x.com/",
+    syncLink: null,
     image:
       "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/X_logo.jpg/1200px-X_logo.jpg",
     description:
-      'Rebranded Twitter for real-time posts and Musk’s "everything-app" vision.',
+      'Rebranded Twitter for real-time posts and Musk\'s "everything-app" vision.',
     category: "Social",
     zoom: false,
   },

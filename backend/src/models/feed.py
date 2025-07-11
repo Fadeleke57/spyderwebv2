@@ -72,6 +72,6 @@ class PublicFeed(BaseModel):
     feedType: FeedType
     createdAt: datetime
     updatedAt: datetime
-    visibility: Literal["Public"]
+    visibility: Optional[Literal["Public"]] = "Public"
 
     model_config = ConfigDict(extra="ignore")

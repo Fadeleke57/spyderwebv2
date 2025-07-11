@@ -11,7 +11,6 @@ import {
   GitFork,
   Book,
   Package,
-  Star as StarIcon,
   Pin,
   CirclePlus,
   Link as LinkIcon,
@@ -506,13 +505,19 @@ function UserProfile() {
                 <>
                   <FeedGrid
                     connected={feeds?.map((f: Feed) => f.feedType) ?? []}
+                    isOwner={isOwner}
                   />
-                  {isOwner && feeds?.length === 0 && (
-                    <p className="text-center text-muted-foreground text-sm mt-6">
-                      You haven’t connected any feeds yet – pick one above to
-                      get started.
-                    </p>
-                  )}
+                  {feeds?.length === 0 &&
+                    (isOwner ? (
+                      <p className="text-center text-muted-foreground text-sm mt-6">
+                        You haven&apos;t connected any feeds yet - pick one
+                        above to get started.
+                      </p>
+                    ) : (
+                      <p className="text-center text-muted-foreground text-sm mt-6">
+                        This user hasn&apos;t connected any feeds yet.
+                      </p>
+                    ))}
                 </>
               )}
             </TabsContent>
