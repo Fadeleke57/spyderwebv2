@@ -2,21 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-  DialogClose,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Users, Globe, X } from "lucide-react";
+import { CheckCircle, XCircle, Users, Globe } from "lucide-react";
 import {
   useCheckAuthorizedUser,
   useAcceptInvite,
@@ -126,27 +125,13 @@ function InviteModal() {
       .toUpperCase();
   };
 
-  const handleOpenChange = (open: boolean) => {
-    setOpen(open);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        hideClose
-        className="sm:max-w-md overflow-hidden border-violet-200 dark:border-violet-200/50"
-      >
+    <AlertDialog open={open}>
+      <AlertDialogContent className="sm:max-w-md overflow-hidden border-violet-200 dark:border-violet-200/50">
         {/* Main gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-violet-400/10 via-violet-300/5 to-violet-500/10 dark:from-violet-400/20 dark:via-violet-400/10 dark:to-violet-600/20 -z-10" />
-        <Button
-          variant={"ghost"}
-          size={"icon"}
-          className="absolute top-4 right-4 rounded-full p-0 transition-all duration-200 ease-in-out"
-          onClick={() => setOpen(false)}
-        >
-          <X size={16}></X>
-        </Button>
-        <DialogHeader className="pb-2">
+
+        <AlertDialogHeader className="pb-2">
           <div className="flex items-center gap-2 mb-1">
             <Badge
               variant="outline"
@@ -156,11 +141,13 @@ function InviteModal() {
               Collaboration
             </Badge>
           </div>
-          <DialogTitle className="text-xl">Join Collaboration</DialogTitle>
-          <DialogDescription>
+          <AlertDialogTitle className="text-xl">
+            Join Collaboration
+          </AlertDialogTitle>
+          <AlertDialogDescription>
             You&apos;ve been invited to join a collaborative web
-          </DialogDescription>
-        </DialogHeader>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
 
         <div className="space-y-6 py-4">
           <div className="flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r from-violet-400/10 to-violet-500/5 dark:from-violet-400/15 dark:to-violet-500/10 border border-violet-400/20 dark:border-violet-400/30 backdrop-blur-sm">
@@ -186,27 +173,26 @@ function InviteModal() {
           </p>
         </div>
 
-        <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-2">
-          <Button
+        <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-2">
+          <AlertDialogCancel
             onClick={handleRejectInvite}
-            variant="outline"
             className="w-full sm:w-1/2 border-violet-400/30 dark:border-violet-400/40 hover:bg-violet-400/5 dark:hover:bg-violet-400/10 transition-all duration-200 bg-transparent text-violet-700 dark:text-violet-300 hover:text-violet-800 dark:hover:text-violet-200"
             disabled={rejectInviteLoading}
           >
             <XCircle className="w-4 h-4 mr-2" />
             Decline
-          </Button>
-          <Button
+          </AlertDialogCancel>
+          <AlertDialogAction
             onClick={handleAcceptInvite}
             className="w-full sm:w-1/2 bg-gradient-to-r from-violet-400/40 to-violet-500/40 dark:from-violet-400/40 dark:to-violet-500/40 border border-violet-400/50 dark:border-violet-400/50 hover:from-violet-400/60 hover:to-violet-500/60 dark:hover:from-violet-400/60 dark:hover:to-violet-500/60 transition-all duration-200 text-violet-900 dark:text-violet-100"
             disabled={acceptInviteLoading}
           >
             <CheckCircle className="w-4 h-4 mr-2" />
             Accept Invite
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
