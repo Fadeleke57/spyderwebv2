@@ -3,6 +3,7 @@
 ## Prerequisites
 
 Before getting started, ensure you have the following installed:
+- Python (version 3.10+ for markitdown dependency)
 - Node.js (version 18+)
 - MongoDB and MongoDB account
 - Neo4j and Neo4j account

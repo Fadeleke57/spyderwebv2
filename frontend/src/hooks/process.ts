@@ -1,7 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
-export const useFetchProcess = (processId: string) => {
+export const useFetchProcess = (processId?: string | null) => {
   return useQuery({
     queryKey: ["process", processId],
     queryFn: async () => {
@@ -14,7 +14,7 @@ export const useFetchProcess = (processId: string) => {
   });
 };
 
-export const useFetchAllProcesses = (webId: string) => {
+export const useFetchAllProcesses = (webId?: string | null) => {
   return useQuery({
     queryKey: ["process", "all", webId],
     queryFn: async () => {
@@ -27,7 +27,7 @@ export const useFetchAllProcesses = (webId: string) => {
   });
 };
 
-export const useCheckAutolinkerStatus = (webId: string, sourceId: string) => {
+export const useCheckAutolinkerStatus = (webId?: string | null, sourceId?: string | null) => {
   return useQuery({
     queryKey: ["process", "status", webId, sourceId],
     queryFn: async () => {
@@ -36,5 +36,6 @@ export const useCheckAutolinkerStatus = (webId: string, sourceId: string) => {
       );
       return response.data.result;
     },
+    enabled: !!webId && !!sourceId,
   })
 };
