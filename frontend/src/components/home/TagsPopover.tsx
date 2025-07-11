@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tags, Plus } from "lucide-react";
 import { WebTag } from "@/types/web";
-import { tagsList } from "@/lib/consts";
+import { tagsList } from "@/lib/constants";
 import { useRouter } from "next/router";
 import {
   useAddTagToWeb,

@@ -16,6 +16,7 @@ class FeedService:
             userId=user_id,
             createdAt=datetime.now(UTC),
             updatedAt=datetime.now(UTC),
+            visibility="Public",
         )
         Feeds.insert_one(feed.model_dump())
         return feed

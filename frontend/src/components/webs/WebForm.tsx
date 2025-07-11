@@ -25,7 +25,7 @@ import {
 import ConfirmImageModal from "../utility/ConfirmImageModal";
 import { ImageModal } from "../utility/ImageModal";
 import { DynamicTextarea } from "../utility/DynamicScrollbar";
-import { SHOWCASE_IMAGE } from "@/lib/consts";
+import { SHOWCASE_IMAGE } from "@/lib/constants";
 import { useUser } from "@/providers/UserProvider";
 import { TagsPopover } from "../home/TagsPopover";
 import SimpleTooltip from "../utility/SimpleTooltip";

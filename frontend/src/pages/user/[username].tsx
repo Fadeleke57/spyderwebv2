@@ -28,8 +28,11 @@ import { useUser } from "@/providers/UserProvider";
 import { NewWebModal } from "@/components/webs/NewWebModal";
 import { motion } from "framer-motion";
 import SimpleTooltip from "@/components/utility/SimpleTooltip";
+import { useFetchUserFeeds } from "@/hooks/feed";
+import { Feed } from "@/types/feed";
+import FeedGrid from "@/components/profile/FeedsGrid";
 
-const VALID_TABS = ["overview", "webs", "packages", "stars"];
+const VALID_TABS = ["overview", "webs", "feeds", "stars"];
 
 function UserProfile() {
   const router = useRouter();
@@ -74,6 +77,7 @@ function UserProfile() {
   } = useFetchProfileWebs(user?.id || "");
 
   const { data: pinnedWebs } = useFetchPinnedWebs(user?.id);
+  const { data: feeds, isLoading: feedsLoading } = useFetchUserFeeds(user?.id);
 
   useEffect(() => {
     if (inView && hasNextPage && user) {
@@ -82,7 +86,6 @@ function UserProfile() {
   }, [inView, hasNextPage, fetchNextPage, user]);
 
   const allWebs = websData?.pages.flatMap((page) => page.result) || [];
-
   const webCount = websData?.pages[0]?.total || 0;
   const isOwner = viewer && user && viewer.id === user.id;
 
@@ -267,7 +270,7 @@ function UserProfile() {
                 </span>
               </TabsTrigger>
               <TabsTrigger
-                value="packages"
+                value="feeds"
                 className="data-[state=inactive]:border-none data-[state=active]:border-1 data-[state=active]:border-primary data-[state=active]:rounded-b-none"
               >
                 <Package size={16} className="mr-2 hidden md:inline" />
@@ -488,15 +491,26 @@ function UserProfile() {
             </TabsContent>
 
             <TabsContent
-              value="packages"
+              value="feeds"
               className="mt-4 md:mt-6 data-[state=active]:animate-fadeIn"
             >
-              <div className="text-center py-12">
-                <h3 className="font-medium">Feeds coming soon</h3>
-                <p className="text-muted-foreground text-sm mt-1">
-                  This feature is currently in development
-                </p>
-              </div>
+              {feedsLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader className="animate-spin" size={20} />
+                </div>
+              ) : (
+                <>
+                  <FeedGrid
+                    connected={feeds?.map((f: Feed) => f.feedType) ?? []}
+                  />
+                  {isOwner && feeds?.length === 0 && (
+                    <p className="text-center text-muted-foreground text-sm mt-6">
+                      You haven’t connected any feeds yet – pick one above to
+                      get started.
+                    </p>
+                  )}
+                </>
+              )}
             </TabsContent>
 
             <TabsContent

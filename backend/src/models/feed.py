@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Union, Literal, List
+from pydantic import BaseModel, ConfigDict
+from typing import Union, Literal, List, Optional
 from src.db.mongodb import get_collection
 from datetime import datetime
 from enum import Enum
@@ -64,8 +64,14 @@ class Feed(BaseModel):
     userId: str
     createdAt: datetime
     updatedAt: datetime
+    visibility: Optional[Literal["Public", "Private"]] = "Public"
 
 
-class FeedContent(BaseModel):
+class PublicFeed(BaseModel):
     feedId: str
-    content: Content
+    feedType: FeedType
+    createdAt: datetime
+    updatedAt: datetime
+    visibility: Literal["Public"]
+
+    model_config = ConfigDict(extra="ignore")
