@@ -68,7 +68,7 @@ export const tagsList: WebTag[] = [
   },
 ];
 
-export const feedMap : any = {
+export const feedMap: any = {
   Claude: {
     name: "Claude",
     link: "https://claude.ai/login?returnTo=%2F%3F#features",
@@ -143,6 +143,7 @@ export const feedMap : any = {
       "Short-form video platform with highly personalized, algorithmic content feed.",
     category: "Social",
     zoom: false,
+    disabled: true,
   },
   X: {
     name: "X",
@@ -154,5 +155,28 @@ export const feedMap : any = {
       'Rebranded Twitter for real-time posts and Musk\'s "everything-app" vision.',
     category: "Social",
     zoom: false,
+    disabled: true,
+  },
+  Notion: {
+    name: "Notion",
+    link: "https://notion.com/",
+    syncLink: null,
+    image: "https://cdn.creazilla.com/icons/3270344/notion-icon-sm.png",
+    description:
+      "Collaborative workspace for notes, wikis, and project management.",
+    category: "Productivity",
+    zoom: true,
+    disabled: true,
+  },
+  Blackboard: {
+    name: "Blackboard",
+    link: "https://blackboard.com/",
+    syncLink: null,
+    image:
+      "https://yt3.googleusercontent.com/RnspR8_27Gm0WwXtxNuSJ0vmFg-rjelZIaY9xTNlyBNf10qQ8akrIZaZ353hhkqSZXlgL7MZZQ=s900-c-k-c0x00ffffff-no-rj",
+    description: "Online learning platform for education and training used across schools.",
+    category: "Education",
+    zoom: false,
+    disabled: true,
   },
 };

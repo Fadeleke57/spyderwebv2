@@ -289,3 +289,19 @@ export const useUploadProfileImage = () => {
     },
   });
 };
+
+export function useToggleFeedsVisibility(userId: string | null) {
+  return useMutation({
+    mutationFn: async () => {
+      if (!userId) return;
+      const response = await api.patch(
+        `/users/toggle/feeds/visibility/${userId}`
+      );
+      const data = await response.data.result;
+      return data;
+    },
+    onError: (err: any) => {
+      console.error(err);
+    },
+  });
+}

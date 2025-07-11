@@ -127,6 +127,13 @@ function UserProfile() {
 
   const joinDate = formatDate(user.created_at);
 
+  const ownerFeedsVisibility =
+    user?.feedsVisibility === undefined ||
+    user?.feedsVisibility === null ||
+    user?.feedsVisibility === true;
+
+  const canSeeFeeds = ownerFeedsVisibility || isOwner;
+
   return (
     <div className="min-h-screen px-4 lg:px-16 py-8">
       <Head>
@@ -388,7 +395,7 @@ function UserProfile() {
               className="mt-4 md:mt-6 data-[state=active]:animate-fadeIn"
             >
               {isOwner && (
-                <div className="border-b pb-4 mb-4">
+                <div className="mb-4">
                   <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-0">
                     <div className="relative flex-1">
                       <UserWebSearch />

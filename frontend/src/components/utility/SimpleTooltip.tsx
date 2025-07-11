@@ -12,16 +12,18 @@ function SimpleTooltip({
   side,
   sideOffset,
   p = 2,
+  delayDuration = 100,
 }: {
   children: React.ReactNode;
   content: string | React.ReactNode;
   side?: "top" | "right" | "bottom" | "left";
   sideOffset?: number;
   p?: number;
+  delayDuration?: number;
 }) {
   return (
     <TooltipProvider>
-      <Tooltip delayDuration={100}>
+      <Tooltip delayDuration={delayDuration || 100}>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
         <TooltipContent
           sideOffset={sideOffset || 4}

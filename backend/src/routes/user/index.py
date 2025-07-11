@@ -287,3 +287,25 @@ async def replace_profile_picture(
     except Exception as e:
         logger.error(f"Error replacing profile picture: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
+@router.patch("/toggle/feeds/visibility/{user_id}")
+def toggle_feeds_visibility(user_id: str, user: User = Depends(manager.required)):
+    authorized = user and user.id == user_id
+    if not authorized:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    if user.feedsVisibility == None:
+        Users.update_one({"id": user_id}, {"$set": {"feedsVisibility": True}})
+
+    try:
+        Users.update_one(
+            {"id": user_id}, {"$set": {"feedsVisibility": not user.feedsVisibility}}
+        )
+        logger.info(
+            f"Feeds visibility toggled for user {user_id} to {not user.feedsVisibility}"
+        )
+        return {"result": True}
+    except Exception as e:
+        logger.error(f"Error toggling feeds visibility: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")

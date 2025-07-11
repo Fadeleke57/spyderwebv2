@@ -153,7 +153,10 @@ export function ResourceUsage({
                 {mapTierToLabel(userPlan)}
               </span>
               <SimpleTooltip p={2} content="Plan details">
-                <Info size={16} className=" ml-1 mt-[1px]"></Info>
+                <Info
+                  size={16}
+                  className=" ml-1 mt-[1px] hover:text-black hover:bg-neon rounded-full dark:hover:text-black dark:hover:bg-neon transition-colors duration-150"
+                ></Info>
               </SimpleTooltip>
             </div>
           )}
@@ -168,7 +171,10 @@ export function ResourceUsage({
                   sideOffset={8}
                   content={storageMessage}
                 >
-                  <Info size={12} className="ml-1 mt-[1px]" />
+                  <Info
+                    size={12}
+                    className="ml-1 mt-[1px] hover:text-black hover:bg-neon rounded-full dark:hover:text-black dark:hover:bg-neon transition-colors duration-150"
+                  />
                 </SimpleTooltip>
               </span>
               <span className="text-xs text-foreground">
@@ -190,7 +196,10 @@ export function ResourceUsage({
                   sideOffset={8}
                   content={computationMessage}
                 >
-                  <Info size={12} className=" ml-1 mt-[1px]"></Info>
+                  <Info
+                    size={12}
+                    className="ml-1 mt-[1px] hover:text-black hover:bg-neon rounded-full dark:hover:text-black dark:hover:bg-neon transition-colors duration-150"
+                  />
                 </SimpleTooltip>
               </span>
               <span className="text-xs text-foreground">
