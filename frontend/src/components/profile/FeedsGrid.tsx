@@ -9,6 +9,7 @@ import {
 import { CheckCircle, ExternalLink, Settings } from "lucide-react";
 import { feedMap } from "@/lib/constants";
 import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 export default function FeedGrid(
   { connected }: { connected: string[] } = { connected: [] }
@@ -53,7 +54,20 @@ export default function FeedGrid(
               <div className="absolute top-3 right-4">
                 {isConnected && (
                   <div className="flex items-center text-xs font-medium text-neon">
-                    <CheckCircle size={16} className="mr-1" />
+                    <TooltipProvider>
+                      <Tooltip delayDuration={100}>
+                        <TooltipTrigger className="mr-2" asChild>
+                          <div className="relative inline-flex items-center justify-center">
+                            <div className="absolute rounded-full bg-neon/0 animate-pulse w-4 h-4 blur-sm"></div>
+                            <div className="absolute rounded-full bg-neon/20 animate-pulse w-6 h-6 blur-md"></div>
+                            <div className="relative rounded-full bg-neon w-2 h-2 flex items-center justify-center z-10"></div>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {feed.name} is connected.
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     Synced
                   </div>
                 )}

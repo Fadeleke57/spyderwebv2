@@ -326,7 +326,7 @@ function UserProfile() {
                                   ? "secondary"
                                   : "outline"
                               }
-                              className="text-xs"
+                              className={`text-xs hover:bg-muted dark:hover:bg-muted transition-colors`}
                             >
                               {web.visibility}
                             </Badge>
@@ -434,7 +434,7 @@ function UserProfile() {
                               ? "secondary"
                               : "outline"
                           }
-                          className="text-xs hover:bg-neon hover:text-black dark:hover:bg-neon dark:hover:text-black transition-colors duration-100 ease-in-out"
+                          className="text-xs hover:bg-muted dark:hover:bg-muted transition-colors duration-100 ease-in-out"
                         >
                           {web.visibility}
                         </Badge>
