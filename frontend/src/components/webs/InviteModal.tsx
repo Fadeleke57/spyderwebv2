@@ -39,7 +39,6 @@ function InviteModal() {
   const {
     data: userAuthorization,
     isLoading: userAuthorizationLoading,
-    error: userAuthorizationError,
   } = useCheckAuthorizedUser(webId as string);
 
   const { invitePending, inviter } = userAuthorization || {
@@ -50,7 +49,6 @@ function InviteModal() {
   const {
     data: invitedByUser,
     isLoading: invitedByUserLoading,
-    error: invitedByUserError,
   } = useFetchUserById(inviter);
 
   const { mutateAsync: acceptInvite, isPending: acceptInviteLoading } =

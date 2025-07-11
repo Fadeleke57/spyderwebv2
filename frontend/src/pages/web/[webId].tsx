@@ -50,7 +50,7 @@ import { AuthorizationProvider } from "@/providers/AuthorizationProvider";
 function Index() {
   const router = useRouter();
   const isMobile = useIsMobile();
-  const { webId } = router.query;
+  const { webId, src } = router.query;
   const { user } = useUser();
   const { setIsUploadingSource } = useSourceStore();
   const { mutateAsync: pinWeb, isPending: pinLoading } = usePinWeb(
@@ -79,7 +79,7 @@ function Index() {
   const { data: userAuth, isLoading: userAuthLoading } = useCheckAuthorizedUser(
     webId as string
   );
-  const { accessLevel, invitePending } = userAuth || {
+  const { accessLevel } = userAuth || {
     accessLevel: "read",
     invitePending: false,
   };
@@ -104,18 +104,18 @@ function Index() {
   const description = webLoading
     ? "Getting web details..."
     : (web && web.description) || "View and explore web details.";
-
-  const { data: webOwner, isLoading: webOwnerLoading } = useFetchUserById(
-    web && web.userId
-  );
-
+  const { data: webOwner } = useFetchUserById(web && web.userId);
   const { data: iteratedFromUser } = useFetchUserById(web && web.iteratedFrom);
 
   useEffect(() => {
+    if (src === "invite" && !user) {
+      router.push("/auth?src=invite");
+      localStorage.setItem("returnTo", window.location.href);
+    }
     if (webData) {
       setWeb(webData);
     }
-  }, [webData]);
+  }, [webData, src, user, router]);
 
   useEffect(() => {
     if (user) {

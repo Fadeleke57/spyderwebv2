@@ -107,7 +107,33 @@ The Spydr Team"""
             <p>Hey {recipient_name.split()[0]},</p>
             <p>You've been invited to join the web '<b>{web_name}</b>' on Spydr by <b>{sender_name}</b>! Start syncing memories with ease.<br>
             Click the invitation link below to get started:</p>
-            <p><a href="{web_link}">Check it out here!</a></p>
+            <p><a href="{web_link}?src=invite">Accept the Invite.</a></p>
+            <p>If you have any questions, let us know at {self.support_email}.</p>
+            <p>Cheers,<br>The Spydr Team</p>
+          </body>
+        </html>
+        """
+        self.send_email_html(recipient_email, subject, html_body)
+
+    def non_existing_user_invited_to_web(
+        self,
+        recipient_email: str,
+        web_name: str,
+        web_link: str,
+        sender_name: str,
+    ):
+        """
+        Sends an HTML email to the user when they are invited to a web, including the invitation link.
+        """
+        subject = f"You've Been Invited to Join '{web_name}' on Spydr!"
+        html_body = f"""\
+        <html>
+          <body>
+            <p>Hey there,</p>
+            <p>You've been invited to join the web '<b>{web_name}</b>' on Spydr by <b>{sender_name}</b>! Start syncing memories with ease.<br>
+            Click the invitation link below to get started:</p>
+            <p>Create an account <a href="{settings.next_url}/auth">here</a></p>
+            <p>Accept the invite <a href="{web_link}?src=newuserinvite">here</a></p>
             <p>If you have any questions, let us know at {self.support_email}.</p>
             <p>Cheers,<br>The Spydr Team</p>
           </body>
