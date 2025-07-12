@@ -39,7 +39,7 @@ import { useResourceUsage } from "@/hooks/usage";
 import { useUser } from "@/providers/UserProvider";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Drawer, DrawerContent } from "../ui/drawer";
-import { ACCEPTED_FILE_TYPES_MAP } from "@/lib/consts";
+import { ACCEPTED_FILE_TYPES_MAP } from "@/lib/constants";
 
 interface UploadItem {
   id: number;

@@ -69,7 +69,7 @@ function WebSettingsModal({ webId }: { webId: string }) {
                 >
                   AI Connections <Orbit size={16} className="ml-2" />
                 </Label>
-                <a className="text-xs text-gray-500">
+                <a className="text-xs text-muted-foreground">
                   Allow AI to connect to and interact with this web
                 </a>
               </div>
@@ -89,7 +89,7 @@ function WebSettingsModal({ webId }: { webId: string }) {
                 <div className="flex items-center mb-1">
                   Delete Web <Trash size={16} className="ml-2" />
                 </div>
-                <a className="text-xs text-gray-500">
+                <a className="text-xs text-muted-foreground">
                   Delete this web and all of its connections. <br></br>
                   This action cannot be undone.
                 </a>

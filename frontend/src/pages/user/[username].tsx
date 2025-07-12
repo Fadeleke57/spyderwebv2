@@ -11,12 +11,12 @@ import {
   GitFork,
   Book,
   Package,
-  Star as StarIcon,
   Pin,
   CirclePlus,
   Link as LinkIcon,
   CircleUser,
   Edit,
+  Bookmark,
 } from "lucide-react";
 import { useFetchProfileWebs } from "@/hooks/webs";
 import { Web } from "@/types/web";
@@ -28,8 +28,11 @@ import { useUser } from "@/providers/UserProvider";
 import { NewWebModal } from "@/components/webs/NewWebModal";
 import { motion } from "framer-motion";
 import SimpleTooltip from "@/components/utility/SimpleTooltip";
+import { useFetchUserFeeds } from "@/hooks/feed";
+import { Feed } from "@/types/feed";
+import FeedGrid from "@/components/profile/FeedsGrid";
 
-const VALID_TABS = ["overview", "webs", "packages", "stars"];
+const VALID_TABS = ["overview", "webs", "feeds", "stars"];
 
 function UserProfile() {
   const router = useRouter();
@@ -61,7 +64,7 @@ function UserProfile() {
     );
   };
 
-  const { data: user, isLoading: userLoading } = useFetchUserByUsername(
+  const { data: resourceOwner, isLoading: resourceOwnerLoading } = useFetchUserByUsername(
     username as string
   );
 
@@ -71,22 +74,41 @@ function UserProfile() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useFetchProfileWebs(user?.id || "");
+  } = useFetchProfileWebs(resourceOwner?.id || "");
 
-  const { data: pinnedWebs } = useFetchPinnedWebs(user?.id);
+  const { data: pinnedWebs } = useFetchPinnedWebs(resourceOwner?.id);
+
 
   useEffect(() => {
-    if (inView && hasNextPage && user) {
+    if (inView && hasNextPage && resourceOwner) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage, fetchNextPage, user]);
+  }, [inView, hasNextPage, fetchNextPage, resourceOwner]);
 
   const allWebs = websData?.pages.flatMap((page) => page.result) || [];
-
   const webCount = websData?.pages[0]?.total || 0;
-  const isOwner = viewer && user && viewer.id === user.id;
+  const isOwner = viewer && resourceOwner && viewer.id === resourceOwner.id;
 
-  if (userLoading) {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Unknown date";
+    try {
+      return format(new Date(dateString), "MMMM yyyy");
+    } catch (e) {
+      return "Unknown date";
+    }
+  };
+
+  const joinDate = formatDate(resourceOwner?.created_at);
+
+  const ownerFeedsVisibility =
+    resourceOwner?.feedsVisibility === undefined ||
+    resourceOwner?.feedsVisibility === null ||
+    resourceOwner?.feedsVisibility === true;
+
+  const canSeeFeeds = ownerFeedsVisibility || isOwner;
+  const { data: feeds, isLoading: feedsLoading } = useFetchUserFeeds(canSeeFeeds ? resourceOwner?.id : null);
+
+  if (resourceOwnerLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader className="animate-spin" size={20} />
@@ -94,7 +116,7 @@ function UserProfile() {
     );
   }
 
-  if (!user) {
+  if (!resourceOwner) {
     return (
       <div className="h-screen flex items-center justify-center bg-background text-foreground">
         <motion.div
@@ -114,23 +136,13 @@ function UserProfile() {
     );
   }
 
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), "MMMM yyyy");
-    } catch (e) {
-      return "Unknown date";
-    }
-  };
-
-  const joinDate = formatDate(user.created_at);
-
   return (
     <div className="min-h-screen px-4 lg:px-16 py-8">
       <Head>
-        <title>{user.username} - spydr</title>
+        <title>{resourceOwner.username} - spydr</title>
         <meta
           name="description"
-          content={`${user.full_name}'s profile on Spydr`}
+          content={`${resourceOwner.full_name}'s profile on Spydr`}
         />
       </Head>
 
@@ -156,19 +168,19 @@ function UserProfile() {
                 </div>
               )}
               <div className="hidden md:block">
-                <UserAvatar userId={user.id} dimension={96} className="mr-2" />
+                <UserAvatar userId={resourceOwner.id} dimension={96} className="mr-2" />
               </div>
               <div className="md:hidden">
-                <UserAvatar userId={user.id} dimension={48} className="mr-4" />
+                <UserAvatar userId={resourceOwner.id} dimension={48} className="mr-4" />
               </div>
             </div>
 
             <div>
               <h1 className="text-xl md:text-2xl font-bold">
-                {user.full_name}
+                {resourceOwner.full_name}
               </h1>
               <h2 className="text-base md:text-lg text-muted-foreground">
-                @{user.username}
+                @{resourceOwner.username}
               </h2>
             </div>
           </div>
@@ -185,20 +197,20 @@ function UserProfile() {
         </div>
 
         <div className="mt-4">
-          <p className="text-sm mb-4">{user.bio || "No bio available"}</p>
+          <p className="text-sm mb-4">{resourceOwner.bio || "No bio available"}</p>
 
           <div className="flex flex-col gap-2">
             {/* Social links */}
-            {user.website && (
+            {resourceOwner.website && (
               <div className="flex items-center gap-2">
                 <LinkIcon size={16} className="text-muted-foreground" />
                 <a
-                  href={user.website}
+                  href={resourceOwner.website}
                   className="text-sm hover:underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {user.website.replace(/^https?:\/\//, "")}
+                  {resourceOwner.website.replace(/^https?:\/\//, "")}
                 </a>
               </div>
             )}
@@ -232,9 +244,9 @@ function UserProfile() {
             */}
           </div>
 
-          {user.subscription_plan === "pro" && (
+          {resourceOwner.subscription_plan === "pro" && (
             <Badge variant="outline" className="mt-3">
-              {user.subscription_plan}
+              {resourceOwner.subscription_plan}
             </Badge>
           )}
         </div>
@@ -267,17 +279,20 @@ function UserProfile() {
                 </span>
               </TabsTrigger>
               <TabsTrigger
-                value="packages"
+                value="feeds"
                 className="data-[state=inactive]:border-none data-[state=active]:border-1 data-[state=active]:border-primary data-[state=active]:rounded-b-none"
               >
                 <Package size={16} className="mr-2 hidden md:inline" />
                 Feeds
+                <span className="ml-2 bg-foreground text-background rounded-full px-2 py-0.5 text-xs">
+                  {feedsLoading ? "..." : feeds?.length || 0}
+                </span>
               </TabsTrigger>
               <TabsTrigger
-                value="stars"
+                value="saved"
                 className="data-[state=inactive]:border-none data-[state=active]:border-1 data-[state=active]:border-primary data-[state=active]:rounded-b-none"
               >
-                <StarIcon size={16} className="mr-2 hidden md:inline" />
+                <Bookmark size={16} className="mr-2 hidden md:inline" />
                 Saved{" "}
               </TabsTrigger>
             </TabsList>
@@ -322,7 +337,7 @@ function UserProfile() {
                                   ? "secondary"
                                   : "outline"
                               }
-                              className="text-xs"
+                              className={`text-xs hover:bg-muted dark:hover:bg-muted transition-colors`}
                             >
                               {web.visibility}
                             </Badge>
@@ -382,7 +397,7 @@ function UserProfile() {
               className="mt-4 md:mt-6 data-[state=active]:animate-fadeIn"
             >
               {isOwner && (
-                <div className="border-b pb-4 mb-4">
+                <div className="mb-4">
                   <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-0">
                     <div className="relative flex-1">
                       <UserWebSearch />
@@ -401,7 +416,7 @@ function UserProfile() {
                 </div>
               )}
 
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {websLoading ? (
                   <div className="flex justify-center py-8">
                     <Loader size={20} className="animate-spin" />
@@ -410,7 +425,7 @@ function UserProfile() {
                   allWebs.map((web) => (
                     <div
                       key={web.webId}
-                      className="border-b pb-6 mb-6 last:border-0"
+                      className="p-6 border hover:bg-muted rounded transition-colors"
                     >
                       <div className="flex justify-between items-start">
                         <div className="">
@@ -430,7 +445,7 @@ function UserProfile() {
                               ? "secondary"
                               : "outline"
                           }
-                          className="text-xs"
+                          className="text-xs hover:bg-muted dark:hover:bg-muted transition-colors duration-100 ease-in-out"
                         >
                           {web.visibility}
                         </Badge>
@@ -488,19 +503,38 @@ function UserProfile() {
             </TabsContent>
 
             <TabsContent
-              value="packages"
-              className="mt-4 md:mt-6 data-[state=active]:animate-fadeIn"
+              value="feeds"
+              className="mt-4 md:mt-4 data-[state=active]:animate-fadeIn"
             >
-              <div className="text-center py-12">
-                <h3 className="font-medium">Feeds coming soon</h3>
-                <p className="text-muted-foreground text-sm mt-1">
-                  This feature is currently in development
-                </p>
-              </div>
+              {feedsLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader className="animate-spin" size={20} />
+                </div>
+              ) : (
+                <>
+                  <FeedGrid
+                    connected={feeds?.map((f: Feed) => f.feedType) ?? []}
+                    isOwner={isOwner}
+                  />
+                  {feeds?.length === 0 &&
+                    (isOwner ? (
+                      <p className="text-center text-muted-foreground text-sm mt-6">
+                        You haven&apos;t connected any feeds yet - pick one
+                        above to get started.
+                      </p>
+                    ) : (
+                      canSeeFeeds && (
+                        <p className="text-center text-muted-foreground text-sm mt-6">
+                          This user hasn&apos;t connected any feeds yet.
+                        </p>
+                      )
+                    ))}
+                </>
+              )}
             </TabsContent>
 
             <TabsContent
-              value="stars"
+              value="saved"
               className="mt-4 md:mt-6 data-[state=active]:animate-fadeIn"
             >
               <div className="text-center py-12">

@@ -16,6 +16,7 @@ from src.routes.index import (
     payment_router,
     feedback_router,
     contributor_router,
+    feeds_router,
 )
 from src.api.v1.index import router as api_v1_router
 
@@ -102,6 +103,7 @@ app.include_router(process_router, prefix="/processes")
 app.include_router(payment_router, prefix="/payment")
 app.include_router(feedback_router, prefix="/feedback")
 app.include_router(contributor_router, prefix="/contributors")
+app.include_router(feeds_router, prefix="/feeds")
 
 # API V1
 app.include_router(api_v1_router, prefix="/api/v1")

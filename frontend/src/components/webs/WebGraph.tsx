@@ -29,7 +29,7 @@ import { useRouter } from "next/router";
 import { useFetchAllConnectionsForWeb } from "@/hooks/connections";
 import { useFetchWebById } from "@/hooks/webs";
 import { useAuthorization } from "@/providers/AuthorizationProvider";
-import { ACCEPTED_FILE_TYPES } from "@/lib/consts";
+import { ACCEPTED_FILE_TYPES } from "@/lib/constants";
 import { toast } from "@/components/ui/use-toast";
 
 interface GraphProps {

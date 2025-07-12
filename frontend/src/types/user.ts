@@ -12,6 +12,7 @@ export interface PublicUser {
   subscription_plan: "pro" | "basic" | "free";
   caps: UsageCaps;
   created_at: string;
+  feedsVisibility?: boolean;
 }
 
 export type UpdateUser = {
@@ -20,6 +21,7 @@ export type UpdateUser = {
   email?: string;
   password?: string;
   bio?: string;
+  feedsVisibility?: boolean;
 };
 
 export interface Search {

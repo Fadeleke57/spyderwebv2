@@ -1,6 +1,6 @@
 import * as React from "react";
 import { WebTag } from "@/types/web";
-import { tagsList } from "@/lib/consts";
+import { tagsList } from "@/lib/constants";
 import { Button } from "../ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useState, useEffect } from "react";

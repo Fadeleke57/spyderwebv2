@@ -1,5 +1,5 @@
 import traceback
-from src.models.index import Feed, FeedContent
+from src.models.index import Feed
 from src.lib.logger.index import logger
 from src.constants.embedding import SOURCE_TYPE_BATCH_MAP
 from src.constants.source import DOCUMENT_TYPES

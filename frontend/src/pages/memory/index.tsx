@@ -270,22 +270,25 @@ function Index() {
         className="z-20 absolute top-20 md:top-20 lg:top-34 hidden md:block lg:w-[500px] h-[200px] -right-10"
         variants={videoVariants}
       >
-        <div className="relative pb-[75%] h-[200px] w-full mt-2">
-          <span className="text-sm -ml-4 -mb-2 text-muted-foreground font-bold">
+        <div className="flex flex-col gap-2">
+          <div className="relative pb-[75%] h-[200px] w-full mt-2">
+            <video
+              src="https://spydr-user-content-prod.s3.us-east-1.amazonaws.com/assets/jul2demo.mp4"
+              controls
+              className="absolute border top-0 -left-10 w-full h-full rounded-l-lg shadow-lg"
+              preload="metadata"
+              autoPlay
+              muted
+            >
+              Your browser does not support the videos.
+            </video>
+          </div>
+          <span className="text-sm mt-2 text-muted-foreground font-bold">
             Fine-Grained Context Orchestration
           </span>
-          <video
-            src="https://spydr-user-content-prod.s3.us-east-1.amazonaws.com/assets/jul2demo.mp4"
-            controls
-            className="absolute border top-0 pt-6 -left-10 w-full h-full rounded-l-lg shadow-lg"
-            preload="metadata"
-            autoPlay
-            muted
-          >
-            Your browser does not support the videos.
-          </video>
         </div>
       </motion.div>
+
       <motion.div className="flex flex-col gap-2" variants={itemVariants}>
         <div>
           <h1 className="text-balance text-5xl font-semibold leading-none tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl">
@@ -347,7 +350,6 @@ function Index() {
           </p>
         </div>
       </motion.div>
-
       <motion.div
         className="max-w-[300px] md:max-w-3xl"
         variants={itemVariants}

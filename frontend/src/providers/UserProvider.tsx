@@ -6,6 +6,7 @@ type UserContextType = {
   user: PublicUser | null | undefined;
   handleLogout: () => void;
   userLoading: boolean;
+  refetchUser: () => void;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -41,7 +42,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <UserContext.Provider
-      value={{ user, handleLogout: handleLogout, userLoading }}
+      value={{ user, handleLogout: handleLogout, userLoading, refetchUser }}
     >
       {children}
     </UserContext.Provider>

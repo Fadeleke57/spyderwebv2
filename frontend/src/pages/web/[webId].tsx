@@ -76,9 +76,7 @@ function Index() {
   const [isPinned, setPinned] = useState(
     user && user.websPinned.includes(webId as string)
   );
-  const { data: userAuth, isLoading: userAuthLoading } = useCheckAuthorizedUser(
-    webId as string
-  );
+  const { data: userAuth } = useCheckAuthorizedUser(webId as string);
   const { accessLevel } = userAuth || {
     accessLevel: "read",
     invitePending: false,

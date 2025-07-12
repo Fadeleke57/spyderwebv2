@@ -35,6 +35,7 @@ class User(BaseModel):
     storage_last_calculated: datetime = Field(default_factory=lambda: datetime.now(UTC))
     is_yearly: bool = False
     stripe_customer_id: Optional[str] = None
+    feedsVisibility: Optional[bool] = True
 
 
 class PublicMe(BaseModel):
@@ -50,6 +51,7 @@ class PublicMe(BaseModel):
     websSaved: list[str] = []
     websPinned: list[str] = []
     subscription_plan: str = "free"
+    feedsVisibility: Optional[bool] = True
 
     model_config = ConfigDict(extra="ignore")
 
@@ -59,10 +61,10 @@ class PublicUser(BaseModel):
     full_name: str
     username: str
     bio: str = ""
-    imageKeys: list[str] = []
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     profile_picture_url: Optional[str] = None
     subscription_plan: str = "free"
+    feedsVisibility: Optional[bool] = True
 
     model_config = ConfigDict(extra="ignore")
 
@@ -104,6 +106,7 @@ class UpdateUser(BaseModel):  # updating user
     company: Optional[str] = None
     purpose: Optional[str] = None
     interest: Optional[str] = None
+    feedsVisibility: Optional[bool] = None
 
 
 class Contributor(BaseModel):
