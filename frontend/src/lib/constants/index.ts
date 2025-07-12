@@ -170,11 +170,12 @@ export const feedMap: any = {
   },
   Blackboard: {
     name: "Blackboard",
-    link: "https://blackboard.com/",
+    link: "https://www.anthology.com/products/teaching-and-learning/learning-effectiveness/blackboard",
     syncLink: null,
     image:
       "https://yt3.googleusercontent.com/RnspR8_27Gm0WwXtxNuSJ0vmFg-rjelZIaY9xTNlyBNf10qQ8akrIZaZ353hhkqSZXlgL7MZZQ=s900-c-k-c0x00ffffff-no-rj",
-    description: "Online learning platform for education and training used across schools.",
+    description:
+      "Online learning platform for education and training used across schools.",
     category: "Education",
     zoom: false,
     disabled: true,
