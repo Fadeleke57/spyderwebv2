@@ -96,7 +96,7 @@ export default function FeedGrid(
                 key={id}
                 className={cn(
                   `relative group transition-colors duration-150 ${feed.category === "AI" && !isConnected ? "border-muted" : ""}`,
-                  feed.disabled ? "" : ""
+                  feed.disabled ? "opacity-50 cursor-not-allowed pointer-events-none" : ""
                 )}
               >
                 <div className="flex flex-col justify-between h-full">
