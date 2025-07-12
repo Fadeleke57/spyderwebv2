@@ -6,10 +6,19 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { toast } from "@/components/ui/use-toast";
 
-import { ArrowRight, Check, Copy } from "lucide-react";
+import { ArrowRight, Check, Copy, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Head from "next/head";
 import { environment } from "@/environment/loadenv";
+import SimpleTooltip from "@/components/utility/SimpleTooltip";
+
+export const feedsDefinition = (
+  <div className="font-semibold leading-relaxed">
+    Currently, custom connectors for the web version of Claude and ChatGPT are
+    limited to the &quot;Pro&quot; plan. As MCP becomes more standardized, we
+    hope they move this feature to a free tier.
+  </div>
+);
 
 function Index() {
   const { theme } = useTheme();
@@ -348,6 +357,36 @@ function Index() {
               />
             </Link>
           </p>
+          <div className="flex items-center gap-2">
+            <p className="my-4 text-muted-foreground font-semibold">
+              If using a connector in the browser, simply paste this link into
+              &quot;Remote MCP server URL&quot;.
+            </p>{" "}
+            <SimpleTooltip content={feedsDefinition} p={4} delayDuration={200}>
+              <div className="flex items-center cursor-pointer gap-2 group hover:bg-neon hover:text-black dark:hover:text-black transition-colors duration-200 rounded-full ease-in-out">
+                <Info className="rounded-full" size={16} />
+              </div>
+            </SimpleTooltip>
+          </div>
+
+          <div
+            className="bg-black w-fit text-foreground rounded-lg p-4 pr-12 font-mono relative group cursor-pointer"
+            onClick={() => handleCopy(`https://memory.spydr.dev/mcp`)}
+          >
+            <div className="text-sm">https://memory.spydr.dev/mcp</div>
+            <Button className="absolute top-2 right-2 h-fit w-fit p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="relative w-4 h-4">
+                <Copy
+                  size={16}
+                  className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-0 scale-50" : "opacity-100 scale-100"}`}
+                />
+                <Check
+                  size={16}
+                  className={`absolute inset-0 transition-all duration-300 ${isCopied ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
+                />
+              </div>
+            </Button>
+          </div>
         </div>
       </motion.div>
       <motion.div
