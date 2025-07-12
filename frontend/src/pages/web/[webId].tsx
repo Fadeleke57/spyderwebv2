@@ -257,9 +257,9 @@ function Index() {
                     <Tooltip delayDuration={100}>
                       <TooltipTrigger asChild>
                         <div className="relative inline-flex items-center justify-center">
-                          <div className="absolute rounded-full bg-violet-400/0 animate-pulse w-6 h-6 blur-sm"></div>
-                          <div className="absolute rounded-full bg-violet-400/20 animate-pulse w-8 h-8 blur-md"></div>
-                          <div className="relative rounded-full bg-violet-400 w-4 h-4 flex items-center justify-center z-10"></div>
+                          <div className="absolute rounded-full bg-violet-400/0 animate-pulse w-5 h-5 blur-sm"></div>
+                          <div className="absolute rounded-full bg-violet-400/20 animate-pulse w-6 h-6 blur-md"></div>
+                          <div className="relative rounded-full bg-violet-400 w-3 h-3 flex items-center justify-center z-10"></div>
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
