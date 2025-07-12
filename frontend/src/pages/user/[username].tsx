@@ -64,7 +64,7 @@ function UserProfile() {
     );
   };
 
-  const { data: user, isLoading: userLoading } = useFetchUserByUsername(
+  const { data: resourceOwner, isLoading: resourceOwnerLoading } = useFetchUserByUsername(
     username as string
   );
 
@@ -74,22 +74,41 @@ function UserProfile() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useFetchProfileWebs(user?.id || "");
+  } = useFetchProfileWebs(resourceOwner?.id || "");
 
-  const { data: pinnedWebs } = useFetchPinnedWebs(user?.id);
-  const { data: feeds, isLoading: feedsLoading } = useFetchUserFeeds(user?.id);
+  const { data: pinnedWebs } = useFetchPinnedWebs(resourceOwner?.id);
+
 
   useEffect(() => {
-    if (inView && hasNextPage && user) {
+    if (inView && hasNextPage && resourceOwner) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage, fetchNextPage, user]);
+  }, [inView, hasNextPage, fetchNextPage, resourceOwner]);
 
   const allWebs = websData?.pages.flatMap((page) => page.result) || [];
   const webCount = websData?.pages[0]?.total || 0;
-  const isOwner = viewer && user && viewer.id === user.id;
+  const isOwner = viewer && resourceOwner && viewer.id === resourceOwner.id;
 
-  if (userLoading) {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Unknown date";
+    try {
+      return format(new Date(dateString), "MMMM yyyy");
+    } catch (e) {
+      return "Unknown date";
+    }
+  };
+
+  const joinDate = formatDate(resourceOwner?.created_at);
+
+  const ownerFeedsVisibility =
+    resourceOwner?.feedsVisibility === undefined ||
+    resourceOwner?.feedsVisibility === null ||
+    resourceOwner?.feedsVisibility === true;
+
+  const canSeeFeeds = ownerFeedsVisibility || isOwner;
+  const { data: feeds, isLoading: feedsLoading } = useFetchUserFeeds(canSeeFeeds ? resourceOwner?.id : null);
+
+  if (resourceOwnerLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader className="animate-spin" size={20} />
@@ -97,7 +116,7 @@ function UserProfile() {
     );
   }
 
-  if (!user) {
+  if (!resourceOwner) {
     return (
       <div className="h-screen flex items-center justify-center bg-background text-foreground">
         <motion.div
@@ -117,30 +136,13 @@ function UserProfile() {
     );
   }
 
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), "MMMM yyyy");
-    } catch (e) {
-      return "Unknown date";
-    }
-  };
-
-  const joinDate = formatDate(user.created_at);
-
-  const ownerFeedsVisibility =
-    user?.feedsVisibility === undefined ||
-    user?.feedsVisibility === null ||
-    user?.feedsVisibility === true;
-
-  const canSeeFeeds = ownerFeedsVisibility || isOwner;
-
   return (
     <div className="min-h-screen px-4 lg:px-16 py-8">
       <Head>
-        <title>{user.username} - spydr</title>
+        <title>{resourceOwner.username} - spydr</title>
         <meta
           name="description"
-          content={`${user.full_name}'s profile on Spydr`}
+          content={`${resourceOwner.full_name}'s profile on Spydr`}
         />
       </Head>
 
@@ -166,19 +168,19 @@ function UserProfile() {
                 </div>
               )}
               <div className="hidden md:block">
-                <UserAvatar userId={user.id} dimension={96} className="mr-2" />
+                <UserAvatar userId={resourceOwner.id} dimension={96} className="mr-2" />
               </div>
               <div className="md:hidden">
-                <UserAvatar userId={user.id} dimension={48} className="mr-4" />
+                <UserAvatar userId={resourceOwner.id} dimension={48} className="mr-4" />
               </div>
             </div>
 
             <div>
               <h1 className="text-xl md:text-2xl font-bold">
-                {user.full_name}
+                {resourceOwner.full_name}
               </h1>
               <h2 className="text-base md:text-lg text-muted-foreground">
-                @{user.username}
+                @{resourceOwner.username}
               </h2>
             </div>
           </div>
@@ -195,20 +197,20 @@ function UserProfile() {
         </div>
 
         <div className="mt-4">
-          <p className="text-sm mb-4">{user.bio || "No bio available"}</p>
+          <p className="text-sm mb-4">{resourceOwner.bio || "No bio available"}</p>
 
           <div className="flex flex-col gap-2">
             {/* Social links */}
-            {user.website && (
+            {resourceOwner.website && (
               <div className="flex items-center gap-2">
                 <LinkIcon size={16} className="text-muted-foreground" />
                 <a
-                  href={user.website}
+                  href={resourceOwner.website}
                   className="text-sm hover:underline"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {user.website.replace(/^https?:\/\//, "")}
+                  {resourceOwner.website.replace(/^https?:\/\//, "")}
                 </a>
               </div>
             )}
@@ -242,9 +244,9 @@ function UserProfile() {
             */}
           </div>
 
-          {user.subscription_plan === "pro" && (
+          {resourceOwner.subscription_plan === "pro" && (
             <Badge variant="outline" className="mt-3">
-              {user.subscription_plan}
+              {resourceOwner.subscription_plan}
             </Badge>
           )}
         </div>
@@ -283,7 +285,7 @@ function UserProfile() {
                 <Package size={16} className="mr-2 hidden md:inline" />
                 Feeds
                 <span className="ml-2 bg-foreground text-background rounded-full px-2 py-0.5 text-xs">
-                  {feedsLoading ? "..." : feeds?.length}
+                  {feedsLoading ? "..." : feeds?.length || 0}
                 </span>
               </TabsTrigger>
               <TabsTrigger
@@ -521,9 +523,11 @@ function UserProfile() {
                         above to get started.
                       </p>
                     ) : (
-                      <p className="text-center text-muted-foreground text-sm mt-6">
-                        This user hasn&apos;t connected any feeds yet.
-                      </p>
+                      canSeeFeeds && (
+                        <p className="text-center text-muted-foreground text-sm mt-6">
+                          This user hasn&apos;t connected any feeds yet.
+                        </p>
+                      )
                     ))}
                 </>
               )}

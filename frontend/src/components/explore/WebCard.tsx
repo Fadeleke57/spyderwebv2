@@ -352,19 +352,19 @@ export function WebCard({ web, user }: { web: Web; user?: PublicUser | null }) {
                   />
                 </div>
                 <div
-                  className="flex flex-row items-center space-x-1 text-muted-foreground rounded-full hover:bg-green-300/10 hover:text-green-500 dark:hover:bg-green-400/10 p-1 transition ease-in"
+                  className="flex flex-row items-center space-x-1 text-muted-foreground rounded-full hover:bg-neon/10 hover:text-neon dark:hover:bg-neon/10 p-1 transition ease-in"
                   onClick={handleIterateWeb}
                 >
                   <p
                     className={`text-sm ${
-                      webIterated ? "text-green-500 dark:text-green-300" : ""
+                      webIterated ? "text-neon dark:text-neon" : ""
                     }`}
                   >
                     {webIterationsCount}
                   </p>
                   <IterationCcw
                     className={`${
-                      webIterated ? "text-green-500 dark:text-green-400" : ""
+                      webIterated ? "text-neon dark:text-neon" : ""
                     }`}
                     size={14}
                   />

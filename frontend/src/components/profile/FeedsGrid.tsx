@@ -44,7 +44,8 @@ export default function FeedGrid(
 ) {
   const router = useRouter();
   const { username } = router.query;
-  const { data: resourceOwner } = useFetchUserByUsername(username as string);
+  const { data: resourceOwner, isLoading: resourceOwnerLoading } =
+    useFetchUserByUsername(username as string);
   const feedsToMap = isOwner
     ? Object.values(feedMap)
     : Object.values(feedMap).filter((feed: any) => {
@@ -52,12 +53,17 @@ export default function FeedGrid(
       });
   const [feedSettingsModalOpen, setFeedSettingsModalOpen] = useState(false);
 
-  const ownerFeedsVisibility = resourceOwner &&
+  const ownerFeedsVisibility =
+    resourceOwner &&
     (resourceOwner?.feedsVisibility === undefined ||
-    resourceOwner?.feedsVisibility === null ||
-    resourceOwner?.feedsVisibility === true);
+      resourceOwner?.feedsVisibility === null ||
+      resourceOwner?.feedsVisibility === true);
 
   const canSeeFeeds = ownerFeedsVisibility || isOwner;
+
+  if (resourceOwnerLoading) return <div>Loading...</div>;
+
+  if (!canSeeFeeds) return <div className="text-center py-8 font-semibold">{resourceOwner?.full_name || "This user"} has hidden their feeds.</div>;
 
   return (
     <div>
@@ -85,7 +91,6 @@ export default function FeedGrid(
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {feedsToMap.map((feed: any, id: number) => {
             const isConnected = connected.includes(feed.name);
-            console.log(`${feed.name} is connected: ${isConnected}`);
             return (
               <Card
                 key={id}

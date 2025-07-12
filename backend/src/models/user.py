@@ -61,10 +61,10 @@ class PublicUser(BaseModel):
     full_name: str
     username: str
     bio: str = ""
-    imageKeys: list[str] = []
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     profile_picture_url: Optional[str] = None
     subscription_plan: str = "free"
+    feedsVisibility: Optional[bool] = True
 
     model_config = ConfigDict(extra="ignore")
 
