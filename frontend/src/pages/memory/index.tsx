@@ -282,7 +282,7 @@ function Index() {
         <div className="flex flex-col gap-2">
           <div className="relative pb-[75%] h-[200px] w-full mt-2">
             <video
-              src="https://spydr-user-content-prod.s3.us-east-1.amazonaws.com/assets/jul2demo.mp4"
+              src="https://spydr-assests.s3.us-east-1.amazonaws.com/memory_demo.mp4"
               controls
               className="absolute border top-0 -left-10 w-full h-full rounded-l-lg shadow-lg"
               preload="metadata"
