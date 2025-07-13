@@ -134,7 +134,7 @@ export const feedMap: FeedMapType = {
       image:
         "https://images.crunchbase.com/image/upload/c_pad,f_auto,q_auto:eco,dpr_1/c574b1be9f924cd3a758e49965eda041",
       description:
-        "AI-powered editor for querying repos and rewriting code via chat.",
+        "",
       category: "AI",
       zoom: false,
     },

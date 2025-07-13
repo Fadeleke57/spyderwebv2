@@ -14,7 +14,7 @@ import TrendingSearchItem from "./TrendingSearchItem";
 import { Web } from "@/types/web";
 
 export function TrendingSearchCarousel() {
-  const { data: webs, isLoading: loading, error } = useFetchPopularWebs(10);
+  const { data: webs, isLoading: loading} = useFetchPopularWebs(10);
   const [websRendered, setWebsRendered] = useState<boolean>(false);
 
   useEffect(() => {
@@ -46,8 +46,8 @@ export function TrendingSearchCarousel() {
                 </CarouselItem>
               ))}
         </CarouselContent>
-        <CarouselPrevious pointerPosition="right-14 -top-12" />
-        <CarouselNext pointerPosition="right-4 -top-12" />
+        <CarouselPrevious className="dark:hover:text-black dark:hover:bg-neon hover:text-black hover:bg-neon" pointerPosition="right-14 -top-12" />
+        <CarouselNext className="dark:hover:text-black dark:hover:bg-neon hover:text-black hover:bg-neon" pointerPosition="right-4 -top-12" />
       </Carousel>
     </div>
   );

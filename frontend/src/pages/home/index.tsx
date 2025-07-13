@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useState } from "react";
 import withAuth from "@/providers/WithAuth";
 import { TrendingSearchCarousel } from "@/components/home/TrendingSearchCarousel";
 import { ProjectsCarousel } from "@/components/home/ProjectsCarousel";
@@ -15,23 +14,6 @@ function Index() {
   const router = useRouter();
   const greeting = getTimeBasedGreeting("America/New_York");
   const { user } = useUser();
-  const { src } = router.query;
-
-  const [MCPModalOpen, setMCPModalOpen] = useState(false);
-
-  const removeAllQueryParams = useCallback(() => {
-    router.replace(router.pathname, undefined, { shallow: true });
-  }, [router]);
-
-  useEffect(() => {
-    if (src === "mcp_auth_complete") {
-      setMCPModalOpen(true);
-      setTimeout(() => {
-        setMCPModalOpen(false);
-        removeAllQueryParams();
-      }, 10000);
-    }
-  }, [src, removeAllQueryParams]);
 
   return (
     <div className="flex flex-col gap-12 lg:gap-16 p-6 pt-16 pb-36 lg:py-16 lg:px-16 min-h-screen overflow-x-hidden w-full mx-auto">

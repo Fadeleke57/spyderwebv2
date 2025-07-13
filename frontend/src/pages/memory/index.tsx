@@ -316,7 +316,7 @@ function Index() {
           </h1>
           <p className="max-w-3xl text-lg text-muted-foreground mt-4">
             One memory, infinite possibilities. With{" "}
-            <span className="font-bold">Spydr Memory MCP</span>, your knowledge
+            <span className="font-bold">Spydr Memory MCP</span>, your digital persona
             flows seamlessly across{" "}
             <Link
               href="https://claude.ai/download"
@@ -370,7 +370,7 @@ function Index() {
           </div>
 
           <div
-            className="bg-black w-fit text-foreground rounded-lg p-4 pr-12 font-mono relative group cursor-pointer"
+            className="bg-muted w-fit text-foreground rounded-lg p-4 pr-12 font-mono relative group cursor-pointer"
             onClick={() => handleCopy(`https://memory.spydr.dev/mcp`)}
           >
             <div className="text-sm">https://memory.spydr.dev/mcp</div>
