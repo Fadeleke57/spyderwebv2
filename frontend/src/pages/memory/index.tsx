@@ -14,9 +14,9 @@ import SimpleTooltip from "@/components/utility/SimpleTooltip";
 
 export const feedsDefinition = (
   <div className="font-semibold leading-relaxed">
-    Currently, custom connectors for the web version of Claude and ChatGPT are
-    limited to the &quot;Pro&quot; plan. As MCP becomes more standardized, we
-    hope they move this feature to a free tier.
+    Currently, custom connectors for the web versions of Claude and ChatGPT are
+    limited to their &quot;Pro&quot; plan. As MCP becomes more standardized, we
+    expect this feature to move to a free tier.
   </div>
 );
 
