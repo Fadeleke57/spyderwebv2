@@ -46,8 +46,8 @@ export function TrendingSearchCarousel() {
                 </CarouselItem>
               ))}
         </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
+        <CarouselPrevious pointerPosition="right-14 -top-12" />
+        <CarouselNext pointerPosition="right-4 -top-12" />
       </Carousel>
     </div>
   );

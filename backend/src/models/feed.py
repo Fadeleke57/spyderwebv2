@@ -20,6 +20,7 @@ class AiClientFeedType(str, Enum):
     Continue = "Continue"
     Roo_Cline = "Roo-Cline"
     Encovo = "Encovo"
+    Highlight_AI = "Highlight AI"
 
 
 class SocialFeedType(str, Enum):

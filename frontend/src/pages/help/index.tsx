@@ -20,7 +20,7 @@ type VideoType = {
   id: number;
   title: string;
   description: string;
-  embedId: string;
+  videoUrl: string;
   duration: string;
   date: string;
 };
@@ -31,7 +31,7 @@ const videosData = {
       id: 1,
       title: "Quick Intro To Webs",
       description: "A quick video showing the basics of navigating webs.",
-      embedId:
+      videoUrl:
         "6ee83a7d81fc4747bfd1dad3ecfb7cb9?sid=5e9521d4-6ddc-452a-acff-365c9424e970",
       duration: "4:06",
       date: "Jun 9, 2025",
@@ -40,7 +40,7 @@ const videosData = {
       id: 2,
       title: "Setting Up Your Profile",
       description: "How to customize your user profile and preferences",
-      embedId:
+      videoUrl:
         "83a370b6d8c04346b713e0647f2932c5?sid=166b64f0-57d3-40fb-870a-84ec3c95aa9e",
       duration: "1:00",
       date: "Jun 9, 2025",
@@ -50,7 +50,7 @@ const videosData = {
       title: "Publishing Your First Web",
       description:
         "A step-by-step guide on how to create and publish your first knowledge web",
-      embedId:
+      videoUrl:
         "54f19ce7eaf94a8ab404c24edfcbfdfe?sid=42611d9e-997f-43e1-895b-07620a05a04d",
       duration: "1:33",
       date: "Jun 9, 2025",
@@ -61,7 +61,7 @@ const videosData = {
       id: 4,
       title: "Basics of Iterating Webs",
       description: "Step-by-step guide to iterate webs and add content",
-      embedId:
+      videoUrl:
         "4419052889c545f68d77b30ccef323b8?sid=2025079f-9f58-433d-819b-b2b4e24d95d4",
       duration: "2:05",
       date: "Jun 10, 2025",
@@ -71,19 +71,19 @@ const videosData = {
       title: "Connections and the Autolinker",
       description:
         "An explanation of how connections work and how to use the autolinker",
-      embedId:
+      videoUrl:
         "4b0527e778a04aa6bc7b20ab4ad8c422?sid=b9b7192d-a727-4d54-92dd-e6d868e1f8aa",
       duration: "4:01",
       date: "Jun 10, 2025",
     },
   ],
-  advancedFeatures: [
+  connectingMCP: [
     {
       id: 7,
       title: "MCP Installation",
       description: "How to install and configure the Spydr Memory MCP",
-      embedId:
-        "e1aaaedf670a4978a8e1fbab08637ac3?sid=fee35afb-4b86-47c6-b6ec-b687b2ec0cd3",
+      videoUrl:
+        "https://spydr-assests.s3.us-east-1.amazonaws.com/installation.mp4",
       duration: "1:35",
       date: "Jun 10, 2025",
     },
@@ -91,7 +91,7 @@ const videosData = {
       id: 8,
       title: "MCP Usage Introduction",
       description: "An introduction to using the Spydr Memory MCP with Claude",
-      embedId:
+      videoUrl:
         "c8e0deb89ee84e18a5ee5c2e15d65e6d?sid=e9b96d30-8d78-478c-9dea-2ab66c5e9851",
       duration: "5:00",
       date: "Jun 10, 2025",
@@ -101,7 +101,7 @@ const videosData = {
       title: "Context Orchestation and Managment",
       description:
         "Using the Spydr Memory MCP to orchestrate contexts to fit your use case",
-      embedId:
+      videoUrl:
         "d8937a0121d4461281f0d26e41fe6b1f?sid=d2ce340c-a58c-4c01-8c24-201f09ea2ed0",
       duration: "4:43",
       date: "Jun 10, 2025",
@@ -135,12 +135,14 @@ const VideoCard = ({ video }: { video: VideoType }) => {
         </CardHeader>
         <CardContent className="p-0 aspect-video">
           <div className="relative h-full w-full">
-            <iframe
-              src={`https://www.loom.com/embed/${video.embedId}`}
-              frameBorder="0"
-              allowFullScreen
+            <video
               className="absolute top-0 left-0 w-full h-full"
-            ></iframe>
+              autoPlay
+              loop
+              muted
+              controls
+              src={video.videoUrl}
+            />
           </div>
         </CardContent>
         <CardFooter className="flex justify-between text-sm text-muted-foreground pt-4">
@@ -162,8 +164,8 @@ function Index() {
   // initialize tab based on URL parameter
   useEffect(() => {
     if (src) {
-      const validTabs = ["gettingStarted", "coreWorkflows", "advancedFeatures"];
-      const tabFromUrl = src === "mcp" ? "advancedFeatures" : (src as string);
+      const validTabs = ["gettingStarted", "coreWorkflows", "connectingMCP"];
+      const tabFromUrl = src === "mcp" ? "connectingMCP" : (src as string);
 
       if (validTabs.includes(tabFromUrl)) {
         setSelectedTab(tabFromUrl);
@@ -246,7 +248,7 @@ function Index() {
                 onBlur={() => setIsInputActive(false)}
               />
             </div>
-            <TabsList className="w-full bg-transparent mx-auto flex flex-col lg:flex-row h-fit">
+            <TabsList className="w-full bg-transparent mx-auto flex flex-col lg:flex-row lg:gap-2 h-fit">
               <TabsTrigger
                 value="gettingStarted"
                 className="truncate p-4 lg:p-2 w-full data-[state=active]:border data-[state=active]:dark:bg-violet-400/40 data-[state=active]:dark:border-violet-200"
@@ -260,10 +262,10 @@ function Index() {
                 Core Workflows
               </TabsTrigger>
               <TabsTrigger
-                value="advancedFeatures"
+                value="connectingMCP"
                 className="truncate p-4 lg:p-2 w-full data-[state=active]:border data-[state=active]:dark:bg-violet-400/40 data-[state=active]:dark:border-violet-200"
               >
-                Advanced Features
+                Connecting MCP
               </TabsTrigger>
             </TabsList>
           </div>
@@ -304,18 +306,18 @@ function Index() {
             )}
           </TabsContent>
 
-          <TabsContent value="advancedFeatures">
+          <TabsContent value="connectingMCP">
             <motion.div
               variants={container}
               initial="hidden"
               animate="show"
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              {filterVideos(videosData.advancedFeatures).map((video) => (
+              {filterVideos(videosData.connectingMCP).map((video) => (
                 <VideoCard key={video.id} video={video} />
               ))}
             </motion.div>
-            {filterVideos(videosData.advancedFeatures).length === 0 && (
+            {filterVideos(videosData.connectingMCP).length === 0 && (
               <p className="text-center py-10 text-muted-foreground">
                 No videos match your search criteria
               </p>

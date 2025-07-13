@@ -87,31 +87,8 @@ function Index() {
 
         <ProjectsCarousel />
       </div>
-      <MCPAuthCompleteModal open={MCPModalOpen} setOpen={setMCPModalOpen} />
     </div>
   );
 }
-
-const MCPAuthCompleteModal = ({
-  open,
-  setOpen,
-}: {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-}) => {
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="p-10 max-h-[90dvh]">
-        <DialogHeader>
-          <DialogTitle className="text-xl">Authentication Complete</DialogTitle>
-        </DialogHeader>
-        <DialogDescription className="text-md">
-          You have successfully authenticated with your MCP account. Feel free
-          to close this window and return to your session.
-        </DialogDescription>
-      </DialogContent>
-    </Dialog>
-  );
-};
 
 export default withAuth(Index);

@@ -155,6 +155,7 @@ def search_memories(
 class AddMemoryPayload(BaseModel):
     client: AiClientFeedType
     content: AIContent
+    connectedAppId: Optional[str] = None
 
 
 @router.post("/add/memory")
