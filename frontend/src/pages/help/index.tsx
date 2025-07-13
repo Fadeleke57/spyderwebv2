@@ -26,6 +26,7 @@ type VideoType = {
 };
 
 const videosData = {
+  /*
   gettingStarted: [
     {
       id: 1,
@@ -76,7 +77,7 @@ const videosData = {
       duration: "4:01",
       date: "Jun 10, 2025",
     },
-  ],
+  ],*/
   connectingMCP: [
     {
       id: 7,
@@ -92,7 +93,7 @@ const videosData = {
       title: "MCP Usage Introduction",
       description: "An introduction to using the Spydr Memory MCP with Claude",
       videoUrl:
-        "c8e0deb89ee84e18a5ee5c2e15d65e6d?sid=e9b96d30-8d78-478c-9dea-2ab66c5e9851",
+        "https://spydr-assests.s3.us-east-1.amazonaws.com/mcp_usage.mp4",
       duration: "5:00",
       date: "Jun 10, 2025",
     },
@@ -101,8 +102,7 @@ const videosData = {
       title: "Context Orchestation and Managment",
       description:
         "Using the Spydr Memory MCP to orchestrate contexts to fit your use case",
-      videoUrl:
-        "d8937a0121d4461281f0d26e41fe6b1f?sid=d2ce340c-a58c-4c01-8c24-201f09ea2ed0",
+      videoUrl: "https://spydr-assests.s3.us-east-1.amazonaws.com/context.mp4",
       duration: "4:43",
       date: "Jun 10, 2025",
     },
@@ -249,7 +249,7 @@ function Index() {
               />
             </div>
             <TabsList className="w-full bg-transparent mx-auto flex flex-col lg:flex-row lg:gap-2 h-fit">
-              <TabsTrigger
+              {/* <TabsTrigger
                 value="gettingStarted"
                 className="truncate p-4 lg:p-2 w-full data-[state=active]:border data-[state=active]:dark:bg-violet-400/40 data-[state=active]:dark:border-violet-200"
               >
@@ -260,7 +260,7 @@ function Index() {
                 className="truncate p-4 lg:p-2 w-full data-[state=active]:border data-[state=active]:dark:bg-violet-400/40 data-[state=active]:dark:border-violet-200"
               >
                 Core Workflows
-              </TabsTrigger>
+              </TabsTrigger>*/}
               <TabsTrigger
                 value="connectingMCP"
                 className="truncate p-4 lg:p-2 w-full data-[state=active]:border data-[state=active]:dark:bg-violet-400/40 data-[state=active]:dark:border-violet-200"
@@ -270,7 +270,7 @@ function Index() {
             </TabsList>
           </div>
 
-          <TabsContent value="gettingStarted">
+          {/* <TabsContent value="gettingStarted">
             <motion.div
               variants={container}
               initial="hidden"
@@ -304,7 +304,7 @@ function Index() {
                 No videos match your search criteria
               </p>
             )}
-          </TabsContent>
+          </TabsContent> */}
 
           <TabsContent value="connectingMCP">
             <motion.div
@@ -350,7 +350,7 @@ function Index() {
           onClick={() => {
             window.location.href = "mailto:farouk@spydr.dev";
           }}
-          className="border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60"
+          className="border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 h-fit w-fit py-2 px-2"
         >
           Contact Support
         </Button>
