@@ -9,15 +9,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { ExternalLink, Info, Settings, Lock } from "lucide-react";
+import { ExternalLink, Info, Settings } from "lucide-react";
 import { feedMap } from "@/lib/constants";
 import Link from "next/link";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
 import SimpleTooltip from "../utility/SimpleTooltip";
 import { cn } from "@/lib/utils";
 import { environment } from "@/environment/loadenv";
@@ -86,18 +80,11 @@ function FeedCarouselItem({
       <div className="absolute top-3 right-4">
         {isConnected && (
           <div className="flex items-center text-xs font-medium text-neon">
-            <TooltipProvider>
-              <Tooltip delayDuration={100}>
-                <TooltipTrigger className="mr-2" asChild>
-                  <div className="relative inline-flex items-center justify-center">
-                    <div className="absolute rounded-full bg-neon/0 animate-pulse w-4 h-4 blur-sm"></div>
-                    <div className="absolute rounded-full bg-neon/20 animate-pulse w-6 h-6 blur-md"></div>
-                    <div className="relative rounded-full bg-neon w-2 h-2 flex items-center justify-center z-10"></div>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>{feed.name} is connected.</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className="relative inline-flex items-center justify-center mr-2">
+              <div className="absolute rounded-full bg-neon/0 animate-pulse w-4 h-4 blur-sm"></div>
+              <div className="absolute rounded-full bg-neon/20 animate-pulse w-6 h-6 blur-md"></div>
+              <div className="relative rounded-full bg-neon w-2 h-2 flex items-center justify-center z-10"></div>
+            </div>
             Synced
           </div>
         )}
@@ -142,13 +129,6 @@ function CategoryCarousel({
   connected: string[];
   isOwner: boolean;
 }) {
-  const categoryEmojis = {
-    AI: "🤖",
-    Social: "💬",
-    Productivity: "📊",
-    Education: "🎓",
-  };
-
   return (
     <div className="mb-6 ml-2">
       <h3 className="text-md font-semibold text-foreground mb-4 flex items-center gap-2">
@@ -162,8 +142,14 @@ function CategoryCarousel({
       >
         {feeds.length > 4 && (
           <>
-            <CarouselPrevious className="dark:hover:text-black dark:hover:bg-neon hover:text-black hover:bg-neon" pointerPosition="right-14 -top-12" />
-            <CarouselNext className="dark:hover:text-black dark:hover:bg-neon hover:text-black hover:bg-neon" pointerPosition="right-4 -top-12" />
+            <CarouselPrevious
+              className="dark:hover:text-black dark:hover:bg-neon hover:text-black hover:bg-neon"
+              pointerPosition="right-14 -top-12"
+            />
+            <CarouselNext
+              className="dark:hover:text-black dark:hover:bg-neon hover:text-black hover:bg-neon"
+              pointerPosition="right-4 -top-12"
+            />
           </>
         )}
         <CarouselContent>
