@@ -180,7 +180,7 @@ function WebPlayground() {
           <div>
             <TabsTrigger
               value="list"
-              className="rounded-t-md rounded-b-none data-[state=active]:dark:bg-violet-400/40 data-[state=active]:dark:border-violet-200"
+              className="rounded-t-md rounded-b-none data-[state=inactive]:border-0 data-[state=active]:dark:bg-muted/50 data-[state=active]:bg-muted/50 data-[state=active]:border-muted/50"
               onClick={() => {
                 setIsUploadingSource(false);
                 setSelectedTab("list");
@@ -190,7 +190,7 @@ function WebPlayground() {
             </TabsTrigger>
             <TabsTrigger
               value="graph"
-              className="rounded-t-md rounded-b-none data-[state=active]:dark:bg-violet-400/40 data-[state=active]:dark:border-violet-200"
+              className="rounded-t-md rounded-b-none data-[state=inactive]:border-0 data-[state=active]:dark:bg-muted/50 data-[state=active]:bg-muted/50 data-[state=active]:border-muted/50"
               onClick={() => {
                 setIsUploadingSource(false);
                 setSelectedTab("graph");

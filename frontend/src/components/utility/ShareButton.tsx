@@ -578,7 +578,7 @@ const SharePopover = () => {
         <DrawerTrigger asChild>
           <Button
             size="sm"
-            className="ml-auto gap-1.5 border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 text-sm"
+            className="ml-auto gap-1.5 border dark:bg-violet-400/50 dark:hover:bg-violet-400/60 text-sm"
           >
             <Forward size={16} /> <span>Share</span>
           </Button>
@@ -612,7 +612,7 @@ const SharePopover = () => {
       <PopoverTrigger asChild>
         <Button
           size="sm"
-          className="ml-auto gap-1.5 border dark:bg-violet-400/40 dark:border-violet-200 dark:hover:bg-violet-400/60 text-sm"
+          className="ml-auto gap-1.5 border dark:bg-violet-400/50 dark:hover:bg-violet-400/60 text-sm"
         >
           <Forward size={16} />{" "}
           <span className="hidden md:inline lg:inline">Share</span>

@@ -41,7 +41,13 @@ class AdministriviaFeedType(str, Enum):
     Github_Pull_Requests = "Github Pull Requests"
 
 
-FeedType = Union[AiClientFeedType, SocialFeedType, AdministriviaFeedType]
+class ProductivityFeedType(str, Enum):
+    Raycast = "Raycast"
+
+
+FeedType = Union[
+    AiClientFeedType, SocialFeedType, AdministriviaFeedType, ProductivityFeedType
+]
 
 # -------------------------------------------------- Chat Messages --------------------------------------------------
 

@@ -36,7 +36,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import MobileWebView from "@/components/webs/MobileWebForm";
-import { useConfigureChat } from "@/hooks/chats";
 import { toast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import FeedbackModal from "@/components/utility/FeedbackModal";
@@ -67,7 +66,6 @@ function Index() {
     error: webError,
   } = useFetchWebById(webId as string);
 
-  const { mutateAsync: configureCharlotte } = useConfigureChat();
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [showIterateModal, setShowIterateModal] = useState(false);
   const [web, setWeb] = useState<Web | null>(null);
@@ -124,9 +122,8 @@ function Index() {
   useEffect(() => {
     if (webId) {
       setIsUploadingSource(false);
-      configureCharlotte(webId as string);
     }
-  }, [webId, configureCharlotte, setIsUploadingSource]);
+  }, [webId, setIsUploadingSource]);
 
   const handlePinToggle = async () => {
     if (!user) {
