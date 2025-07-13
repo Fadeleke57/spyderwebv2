@@ -68,14 +68,17 @@ export const tagsList: WebTag[] = [
   },
 ];
 
+type ClientType = "Claude" | "ChatGPT" | "Cascade - Windsurf" | "Cursor" | "Highlight AI" | "Continue" | "Cline" | "Tiktok" | "X" | "Notion" | "Blackboard" | "Raycast";
+type FeedCategoryType = "AI" | "Social" | "Productivity" | "Education" | "Other";
+
 export type FeedMapType = {
   [key: string]: {
-    name: "Claude" | "ChatGPT" | "Cascade - Windsurf" | "Cursor" | "Highlight AI" | "Continue" | "Cline" | "Tiktok" | "X" | "Notion" | "Blackboard";
+    name: ClientType;
     link: string;
     syncLink: string | null;
     image: string;
     description: string;
-    category: string;
+    category: FeedCategoryType;
     zoom: boolean;
     disabled?: boolean;
   }[];
@@ -112,7 +115,7 @@ export const feedMap: FeedMapType = {
       image:
         "https://exafunction.github.io//public/brand/windsurf-black-symbol.png",
       description:
-        "(Formerly Codeium) AI coding agent and IDE for quick code generation and refactoring.",
+        "AI coding agent and IDE for quick code generation and refactoring.",
       category: "AI",
       zoom: false,
     },
@@ -197,6 +200,16 @@ export const feedMap: FeedMapType = {
       category: "Productivity",
       zoom: true,
       disabled: true,
+    },
+    {
+      name: "Raycast",
+      link: "https://raycast.com/",
+      syncLink: "https://www.raycast.com/EvanZhouDev/mcp",
+      image: "https://avatars.githubusercontent.com/u/58117316?s=200&v=4",
+      description: "Desktop app for productivity and automation.",
+      category: "Productivity",
+      zoom: false,
+      disabled: false,
     },
   ],
   Education: [

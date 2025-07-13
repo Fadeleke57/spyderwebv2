@@ -21,7 +21,7 @@ import { useRouter } from "next/router";
 
 export const feedsDefinition = (
   <div className="font-base leading-relaxed">
-    For AI feeds, if the{" "}
+    For feeds supporting MCP, if the{" "}
     <a
       href={`${environment.client_url}/memory`}
       className="hover:underline text-neon"
@@ -32,8 +32,8 @@ export const feedsDefinition = (
     <span className="font-semibold bg-muted text-violet-400/80 p-1 rounded">
       AddToMemory
     </span>{" "}
-    tool will automatically sync that client to your profile. Otherwise, all
-    other apps require your explicit action to sync.
+    tool will automatically sync that feed to your profile. Otherwise, all
+    other feeds require your explicit action to sync.
   </div>
 );
 
