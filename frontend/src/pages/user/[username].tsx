@@ -146,7 +146,6 @@ function UserProfile() {
         />
       </Head>
 
-      {/* Profile header - Full Width for Mobile */}
       <div className="p-4 border-b">
         <div className="flex flex-col mb-4">
           <div className="flex lg:items-center gap-2">
@@ -200,7 +199,7 @@ function UserProfile() {
           <p className="text-sm mb-4">{resourceOwner.bio || "No bio available"}</p>
 
           <div className="flex flex-col gap-2">
-            {/* Social links */}
+
             {resourceOwner.website && (
               <div className="flex items-center gap-2">
                 <LinkIcon size={16} className="text-muted-foreground" />

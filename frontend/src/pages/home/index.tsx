@@ -10,13 +10,6 @@ import { User } from "lucide-react";
 import sLogo from "@/assets/slogonobg.png";
 import { getTimeBasedGreeting } from "@/lib/utils";
 import Image from "next/image";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 function Index() {
   const router = useRouter();
