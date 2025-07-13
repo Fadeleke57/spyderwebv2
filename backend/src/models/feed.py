@@ -61,6 +61,7 @@ Content = Union[AIContent]
 
 class Feed(BaseModel):
     feedId: str
+    clientId: Optional[str] = None  # reference to the stytch connected app client id
     feedType: FeedType
     userId: str
     createdAt: datetime
@@ -70,6 +71,7 @@ class Feed(BaseModel):
 
 class PublicFeed(BaseModel):
     feedId: str
+    clientId: Optional[str] = None  # reference to the stytch connected app client id
     feedType: FeedType
     createdAt: datetime
     updatedAt: datetime

@@ -134,7 +134,7 @@ export const feedMap: FeedMapType = {
       image:
         "https://images.crunchbase.com/image/upload/c_pad,f_auto,q_auto:eco,dpr_1/c574b1be9f924cd3a758e49965eda041",
       description:
-        "",
+        "Desktop AI assistant that brings LLM capabilities directly to your workflow",
       category: "AI",
       zoom: false,
     },

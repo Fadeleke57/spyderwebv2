@@ -85,6 +85,9 @@ def search_memories(
     scope: Literal["Web", "User.all"] = Query("User.all", alias="scope"),
     webId: Optional[str] = Query(None, alias="webId"),
     sourceId: Optional[str] = Query(None, alias="sourceId"),
+    client_id: Optional[str] = Query(
+        None, alias="client_id"
+    ),  # Don't do anything with this for now, it will be used to track which clients are making which searches
     user_making_request: User = Depends(manager.required),
 ):
     """
@@ -95,6 +98,7 @@ def search_memories(
         scope (Literal["Web", "User.all"]: The scope of the search.
         webId (Optional[str]): The ID of the web to search within.
         sourceId (Optional[str]): The ID of the source to search within.
+        client_id (Optional[str]): The ID of the client to search within.
         user_making_request (User): The user making the request.
 
     Returns:
@@ -155,7 +159,7 @@ def search_memories(
 class AddMemoryPayload(BaseModel):
     client: AiClientFeedType
     content: AIContent
-    connectedAppId: Optional[str] = None
+    clientId: Optional[str] = None  # reference to the stytch connected app client id
 
 
 @router.post("/add/memory")
@@ -170,14 +174,30 @@ def add_chat_to_memory(
             {"feedType": client, "userId": user_making_request.id}
         )
 
-        if not chat_feed:
+        if not chat_feed:  # start of a new feed
             chat_feed = feed_service.create_feed(
                 feed_type=client, user_id=user_making_request.id
             )
         else:
             chat_feed = Feed(**chat_feed)
+            if (
+                not chat_feed.clientId
+            ):  # since we are migrating to storing the connected app client id, some feeds may not have a client id yet
+                Feeds.update_one(
+                    {"feedId": chat_feed.feedId},
+                    {"$set": {"clientId": payload.clientId}},
+                )
+            elif (
+                chat_feed.clientId != payload.clientId
+            ):  # if the client id has changed somehow (or if clients are segmented by web version and desktop version), create a new feed with the new client id but same feed type
+                # create a new feed with the same feedType but a new clientId
+                chat_feed = feed_service.create_feed(
+                    feed_type=client,
+                    user_id=user_making_request.id,
+                    client_id=payload.clientId,
+                )
 
-        if isinstance(payload.content, str):
+        if isinstance(payload.content, str):  # convert lazy string to message
             content = [Message(role=client, content=payload.content)]
         else:
             content = payload.content

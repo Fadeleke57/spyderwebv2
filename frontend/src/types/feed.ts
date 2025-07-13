@@ -2,8 +2,9 @@
 
 export type Feed = {
     feedId: string;
+    clientId?: string;
     feedType: string;
     createdAt: string;
     updatedAt: string;
-    visibility: string;
+    visibility: "Public" | "Private";
 };
