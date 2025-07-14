@@ -205,7 +205,7 @@ function WebPlayground() {
           className={`mt-0 ${
             isExpanded
               ? "absolute inset-0 z-50 h-[100dvh] w-full bg-neutral-800"
-              : "h-full flex-col lg:col-span-2 bg-muted/50 rounded-xl rounded-tl-none"
+              : `h-full flex-col lg:col-span-2 bg-muted/50 rounded-xl rounded-tl-${selectedTab === "list" ? "none" : "xl"} transition-all duration-100 ease-in-out`
           }`}
         >
           <div className="relative h-full w-full">
