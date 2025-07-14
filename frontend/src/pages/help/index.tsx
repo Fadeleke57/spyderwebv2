@@ -101,8 +101,9 @@ const videosData = {
       id: 9,
       title: "Context Orchestation and Managment",
       description:
-        "Using the Spydr Memory MCP to orchestrate contexts to fit your use case",
-      videoUrl: "https://spydr-assests.s3.us-east-1.amazonaws.com/context.mp4",
+        "Using the Spydr Memory MCP to orchestrate contexts to fit your use case", // TODO:update description and video
+      videoUrl:
+        "https://spydr-assests.s3.us-east-1.amazonaws.com/memory_demo.mp4",
       duration: "4:43",
       date: "Jun 10, 2025",
     },
