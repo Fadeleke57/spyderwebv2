@@ -68,10 +68,32 @@ export const tagsList: WebTag[] = [
   },
 ];
 
-type ClientType = "Claude" | "ChatGPT" | "Cascade - Windsurf" | "Cursor" | "Highlight AI" | "Continue" | "Cline" | "Tiktok" | "X" | "Notion" | "Blackboard" | "Raycast";
-type FeedCategoryType = "AI" | "Social" | "Productivity" | "Education" | "Other";
+type ClientType =
+  | "Claude"
+  | "ChatGPT"
+  | "Cascade - Windsurf"
+  | "Cursor"
+  | "Highlight AI"
+  | "Continue"
+  | "Cline"
+  | "Tiktok"
+  | "X"
+  | "Reddit"
+  | "Youtube"
+  | "Notion"
+  | "Blackboard"
+  | "Raycast"
+  | "Shopify"
+  | "Amazon";
+type FeedCategoryType =
+  | "AI"
+  | "Social"
+  | "Ecommerce"
+  | "Productivity"
+  | "Education"
+  | "Other";
 
-export type FeedMapType = {
+export type PossibleFeed = {
   [key: string]: {
     name: ClientType;
     link: string;
@@ -84,7 +106,7 @@ export type FeedMapType = {
   }[];
 };
 
-export const feedMap: FeedMapType = {
+export const feedMap: PossibleFeed = {
   AI: [
     {
       name: "Claude",
@@ -185,6 +207,43 @@ export const feedMap: FeedMapType = {
       description:
         'Rebranded Twitter for real-time posts and Musk\'s "everything-app" vision.',
       category: "Social",
+      zoom: false,
+      disabled: true,
+    },
+    {
+      name: "Reddit",
+      link: "https://www.reddit.com/",
+      syncLink: null,
+      image:
+        "https://pngdownload.io/wp-content/uploads/2023/12/Reddit-Logo-emblem-of-the-online-platform-transparent-png-image-jpg.webp",
+      description:
+        "Social news and discussion website where users submit content and vote on it.",
+      category: "Social",
+      zoom: false,
+      disabled: true,
+    },
+    {
+      name: "Youtube",
+      link: "https://www.youtube.com/",
+      syncLink: null,
+      image:
+        "https://img.freepik.com/premium-vector/red-youtube-logo-social-media-logo_197792-1803.jpg?semt=ais_hybrid&w=740",
+      description: "Video platform for sharing and consuming videos.",
+      category: "Social",
+      zoom: false,
+      disabled: true,
+    },
+  ],
+  Ecommerce: [
+    {
+      name: "Amazon",
+      link: "https://amazon.com/",
+      syncLink: null,
+      image:
+        "https://i.pinimg.com/originals/01/ca/da/01cada77a0a7d326d85b7969fe26a728.jpg",
+      description:
+        "Ecommerce platform for selling and shopping products online.",
+      category: "Ecommerce",
       zoom: false,
       disabled: true,
     },

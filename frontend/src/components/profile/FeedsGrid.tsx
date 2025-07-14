@@ -10,7 +10,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { ExternalLink, Info, Settings } from "lucide-react";
-import { feedMap } from "@/lib/constants";
+import { feedMap, PossibleFeed } from "@/lib/constants";
 import Link from "next/link";
 import SimpleTooltip from "../utility/SimpleTooltip";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,20 @@ import { environment } from "@/environment/loadenv";
 import FeedsSettingsModal from "../feeds/FeedsSettings";
 import { useFetchUserByUsername } from "@/hooks/user";
 import { useRouter } from "next/router";
+import { useFetchUserFeeds, useRevokeFeedAccess } from "@/hooks/feed";
+import { usePopupStore } from "@/store/popupStore";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
+import { toast } from "../ui/use-toast";
+import { ConnectedFeed } from "@/types/feed";
 
 export const feedsDefinition = (
   <div className="font-base leading-relaxed">
@@ -32,20 +46,27 @@ export const feedsDefinition = (
     <span className="font-semibold bg-muted text-violet-400/80 p-1 rounded">
       AddToMemory
     </span>{" "}
-    tool will automatically sync that feed to your profile. Otherwise, all
-    other feeds require your explicit action to sync.
+    tool will automatically sync that feed to your profile. Otherwise, all other
+    feeds require your explicit action to sync.
   </div>
 );
 
 function FeedCarouselItem({
   feed,
   isConnected,
+  connected,
   isOwner,
+  revokeFeedAccessPending,
 }: {
   feed: any;
   isConnected: boolean;
+  connected: ConnectedFeed[];
   isOwner: boolean;
+  revokeFeedAccessPending: boolean;
 }) {
+  const { setSelectedClientId, setIsConfirmDisconnectPopupOpen } =
+    usePopupStore();
+  const clientId = connected.find((c) => c.feedType === feed.name)?.clientId;
   return (
     <Card
       className={cn(
@@ -79,13 +100,29 @@ function FeedCarouselItem({
 
       <div className="absolute top-3 right-4">
         {isConnected && (
-          <div className="flex items-center text-xs font-medium text-neon">
-            <div className="relative inline-flex items-center justify-center mr-2">
-              <div className="absolute rounded-full bg-neon/0 animate-pulse w-4 h-4 blur-sm"></div>
-              <div className="absolute rounded-full bg-neon/20 animate-pulse w-6 h-6 blur-md"></div>
-              <div className="relative rounded-full bg-neon w-2 h-2 flex items-center justify-center z-10"></div>
+          <div className="flex flex-col items-end gap-2 text-xs font-medium text-neon">
+            <div className="flex flex-row items-center gap-2">
+              <div className="relative inline-flex items-center justify-center">
+                <div className="absolute rounded-full bg-neon/0 animate-pulse w-4 h-4 blur-sm"></div>
+                <div className="absolute rounded-full bg-neon/20 animate-pulse w-6 h-6 blur-md"></div>
+                <div className="relative rounded-full bg-neon w-2 h-2 flex items-center justify-center z-10"></div>
+              </div>
+              Synced
             </div>
-            Synced
+            <div className="flex flex-row items-center gap-2">
+              <Button
+                variant={"ghost"}
+                onClick={() => {
+                  if (!clientId) return;
+                  setSelectedClientId(clientId);
+                  setIsConfirmDisconnectPopupOpen(true);
+                }}
+                disabled={revokeFeedAccessPending}
+                className="text-xs text-blue-500 dark:text-blue-500 hover:text-blue-500/80 dark:hover:text-blue-500/80 bg-transparent hover:bg-transparent font-medium rounded-full h-fit w-fit p-0 transition-colors duration-150"
+              >
+                {revokeFeedAccessPending ? "Disconnecting..." : "Disconnect"}
+              </Button>
+            </div>
           </div>
         )}
 
@@ -101,7 +138,7 @@ function FeedCarouselItem({
               Sync
             </Link>
           ) : (
-            <div className="text-xs font-semibold bg-violet-400/40 border border-foreground rounded-full px-2 py-1">
+            <div className="text-xs font-semibold text-violet-400 rounded-full px-2 py-1">
               Beta Access Only
             </div>
           ))}
@@ -123,11 +160,13 @@ function CategoryCarousel({
   feeds,
   connected,
   isOwner,
+  revokeFeedAccessPending,
 }: {
   category: string;
-  feeds: any[];
-  connected: string[];
+  feeds: PossibleFeed[string];
+  connected: ConnectedFeed[];
   isOwner: boolean;
+  revokeFeedAccessPending: boolean;
 }) {
   return (
     <div className="mb-6 ml-2">
@@ -154,7 +193,7 @@ function CategoryCarousel({
         )}
         <CarouselContent>
           {feeds.map((feed, index) => {
-            const isConnected = connected.includes(feed.name);
+            const isConnected = connected.some((c) => c.feedType === feed.name);
             return (
               <CarouselItem
                 key={index}
@@ -163,7 +202,9 @@ function CategoryCarousel({
                 <FeedCarouselItem
                   feed={feed}
                   isConnected={isConnected}
+                  connected={connected}
                   isOwner={isOwner}
+                  revokeFeedAccessPending={revokeFeedAccessPending}
                 />
               </CarouselItem>
             );
@@ -175,15 +216,58 @@ function CategoryCarousel({
 }
 
 export default function FeedGrid(
-  { connected, isOwner }: { connected: string[]; isOwner: boolean } = {
+  {
+    connected,
+    isOwner,
+    refetchConnectedFeeds,
+  }: {
+    connected: ConnectedFeed[];
+    isOwner: boolean;
+    refetchConnectedFeeds: () => void;
+  } = {
     connected: [],
     isOwner: false,
+    refetchConnectedFeeds: () => {},
   }
 ) {
   const router = useRouter();
   const { username } = router.query;
   const { data: resourceOwner, isLoading: resourceOwnerLoading } =
     useFetchUserByUsername(username as string);
+  const {
+    isConfirmDisconnectPopupOpen,
+    selectedClientId,
+    setSelectedClientId,
+    setIsConfirmDisconnectPopupOpen,
+  } = usePopupStore();
+
+  const { mutateAsync: revokeFeedAccess, isPending: revokeFeedAccessPending } =
+    useRevokeFeedAccess();
+
+  const handleDisconnect = async () => {
+    try {
+      if (!selectedClientId || !resourceOwner?.id) return;
+      await revokeFeedAccess({
+        clientId: selectedClientId,
+        userId: resourceOwner.id,
+      });
+      setIsConfirmDisconnectPopupOpen(false);
+      setSelectedClientId(null);
+      toast({
+        title: "Success",
+        description: "Feed disconnected successfully.",
+      });
+      refetchConnectedFeeds();
+    } catch (error) {
+      console.error("Error revoking feed access:", error);
+      toast({
+        title: "Error",
+        description: "Failed to disconnect feed.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const [feedSettingsModalOpen, setFeedSettingsModalOpen] = useState(false);
 
   const ownerFeedsVisibility =
@@ -247,6 +331,7 @@ export default function FeedGrid(
         <div>
           {Object.entries(feedsByCategory).map(([category, feeds]) => (
             <CategoryCarousel
+              revokeFeedAccessPending={revokeFeedAccessPending}
               key={category}
               category={category}
               feeds={feeds}
@@ -261,6 +346,32 @@ export default function FeedGrid(
         open={feedSettingsModalOpen}
         setOpen={setFeedSettingsModalOpen}
       />
+
+      <AlertDialog
+        open={isConfirmDisconnectPopupOpen}
+        onOpenChange={setIsConfirmDisconnectPopupOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Once disconnected, you will have to manually accept the consent
+              screen to reconnect. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="h-fit w-fit py-2 px-2">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="dark:bg-blue-500 dark:text-white bg-blue-500 text-white hover:bg-blue-500/80 dark:hover:bg-blue-500/80 h-fit w-fit py-2 px-2"
+              onClick={() => handleDisconnect()}
+            >
+              Disconnect
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -159,7 +159,7 @@ def search_memories(
 class AddMemoryPayload(BaseModel):
     client: AiClientFeedType
     content: AIContent
-    clientId: Optional[str] = None  # reference to the stytch connected app client id
+    clientId: str  # reference to the stytch connected app client id
 
 
 @router.post("/add/memory")
@@ -171,31 +171,19 @@ def add_chat_to_memory(
     try:
         client = payload.client.value
         chat_feed = Feeds.find_one(
-            {"feedType": client, "userId": user_making_request.id}
+            {"clientId": payload.clientId, "userId": user_making_request.id}
         )
 
         if not chat_feed:  # start of a new feed
             chat_feed = feed_service.create_feed(
-                feed_type=client, user_id=user_making_request.id
+                feed_type=client,
+                user_id=user_making_request.id,
+                client_id=payload.clientId,
             )
         else:
             chat_feed = Feed(**chat_feed)
-            if (
-                not chat_feed.clientId
-            ):  # since we are migrating to storing the connected app client id, some feeds may not have a client id yet
-                Feeds.update_one(
-                    {"feedId": chat_feed.feedId},
-                    {"$set": {"clientId": payload.clientId}},
-                )
-            elif (
-                chat_feed.clientId != payload.clientId
-            ):  # if the client id has changed somehow (or if clients are segmented by web version and desktop version), create a new feed with the new client id but same feed type
-                # create a new feed with the same feedType but a new clientId
-                chat_feed = feed_service.create_feed(
-                    feed_type=client,
-                    user_id=user_making_request.id,
-                    client_id=payload.clientId,
-                )
+            if chat_feed.disabled:
+                raise HTTPException(status_code=403, detail="Feed is disabled")
 
         if isinstance(payload.content, str):  # convert lazy string to message
             content = [Message(role=client, content=payload.content)]

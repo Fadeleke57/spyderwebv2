@@ -27,26 +27,28 @@ class SocialFeedType(str, Enum):
     Youtube = "Youtube"
     Twitter = "X"
     TikTok = "TikTok"
-    Instagram = "Instagram"
     Reddit = "Reddit"
 
 
 class AdministriviaFeedType(str, Enum):
     BlackBoard = "BlackBoard"
-    Google_Drive = "Google Drive"
-    Dropbox = "Dropbox"
-    OneDrive = "OneDrive"
-    Slack = "Slack"
-    Github_Issues = "Github Issues"
-    Github_Pull_Requests = "Github Pull Requests"
 
 
 class ProductivityFeedType(str, Enum):
     Raycast = "Raycast"
 
 
+class EcommerceFeedType(str, Enum):
+    Shopify = "Shopify"
+    Amazon = "Amazon"
+
+
 FeedType = Union[
-    AiClientFeedType, SocialFeedType, AdministriviaFeedType, ProductivityFeedType
+    AiClientFeedType,
+    SocialFeedType,
+    AdministriviaFeedType,
+    ProductivityFeedType,
+    EcommerceFeedType,
 ]
 
 # -------------------------------------------------- Chat Messages --------------------------------------------------
@@ -73,6 +75,7 @@ class Feed(BaseModel):
     createdAt: datetime
     updatedAt: datetime
     visibility: Optional[Literal["Public", "Private"]] = "Public"
+    disabled: Optional[bool] = False
 
 
 class PublicFeed(BaseModel):
@@ -82,5 +85,6 @@ class PublicFeed(BaseModel):
     createdAt: datetime
     updatedAt: datetime
     visibility: Optional[Literal["Public"]] = "Public"
+    disabled: Optional[bool] = False
 
     model_config = ConfigDict(extra="ignore")

@@ -1,11 +1,15 @@
 import { create } from "zustand";
 
 interface PopupState {
-    isMCPPopupOpen: boolean;
-    setIsMCPPopupOpen: (open: boolean) => void;
+    selectedClientId: string | null;
+    setSelectedClientId: (clientId: string | null) => void;
+    isConfirmDisconnectPopupOpen: boolean;
+    setIsConfirmDisconnectPopupOpen: (open: boolean) => void;
 }
 
 export const usePopupStore = create<PopupState>((set) => ({
-    isMCPPopupOpen: false,
-    setIsMCPPopupOpen: (open) => set({ isMCPPopupOpen: open }),
+    selectedClientId: null,
+    setSelectedClientId: (clientId) => set({ selectedClientId: clientId }),
+    isConfirmDisconnectPopupOpen: false,
+    setIsConfirmDisconnectPopupOpen: (open) => set({ isConfirmDisconnectPopupOpen: open }),
 }));
