@@ -100,7 +100,7 @@ export const feedMap: FeedMapType = {
     {
       name: "ChatGPT",
       link: "https://chat.openai.com/",
-      syncLink: `${environment.client_url}/memory`,
+      syncLink: `https://help.openai.com/en/articles/11487775-connectors-in-chatgpt`,
       image:
         "https://static.vecteezy.com/system/resources/previews/021/608/790/non_2x/chatgpt-logo-chat-gpt-icon-on-black-background-free-vector.jpg",
       description:
@@ -133,7 +133,7 @@ export const feedMap: FeedMapType = {
     {
       name: "Highlight AI",
       link: "https://highlight.ai/",
-      syncLink: `${environment.client_url}/memory`,
+      syncLink: `https://docs.highlightai.com/plugins/overview`,
       image:
         "https://images.crunchbase.com/image/upload/c_pad,f_auto,q_auto:eco,dpr_1/c574b1be9f924cd3a758e49965eda041",
       description:
@@ -144,7 +144,7 @@ export const feedMap: FeedMapType = {
     {
       name: "Continue",
       link: "https://continue.dev/",
-      syncLink: `${environment.client_url}/memory`,
+      syncLink: `https://docs.continue.dev/customize/deep-dives/mcp`,
       image: "https://hub.continue.dev/continue-logo.png",
       description:
         "Open-source IDE extension adding chat, autocomplete, and custom LLM agents.",
