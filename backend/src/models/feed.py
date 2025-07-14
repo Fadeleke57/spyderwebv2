@@ -36,6 +36,8 @@ class AdministriviaFeedType(str, Enum):
 
 class ProductivityFeedType(str, Enum):
     Raycast = "Raycast"
+    Otter_ai = "Otter.ai"
+    Fireflies = "Fireflies"
 
 
 class EcommerceFeedType(str, Enum):
