@@ -107,15 +107,19 @@ async def lifespan(app: FastAPI):
 
     try:
 
-        mongo_client.server_info()
+        info = mongo_client.server_info()
+        logging.info(f"SUCCESS: CONNECTED TO MONGODB: {info}")
         neo4j_client.verify_connectivity()
-        pinecone_client.index.list()
-        logging.info("Successfully connected to MongoDB, Neo4j, and Pinecone!")
-
+        logging.info(
+            f"SUCCESS: CONNECTED TO NEO4J: {neo4j_client.driver.verify_connectivity()}"
+        )
+        indexes = pinecone_client.index.list()
+        logging.info(f"SUCCESS: CONNECTED TO PINECONE: {indexes}")
+        logging.info(f"SUCCESS: CONNECTED TO ALL DATABASES")
         yield
 
     except Exception as e:
-        logging.error(f"Failed to connect to databases: {str(e)}")
+        logging.error(f"ERROR: Failed to connect to databases: {str(e)}")
         raise e
 
     finally:
