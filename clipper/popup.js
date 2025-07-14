@@ -96,14 +96,13 @@ document.addEventListener("DOMContentLoaded", async function () {
   // Fetch all webs for the signed-in user
   async function fetchAllWebs(page = 1, pageSize = 10) {
     try {
-      const token = await getAuthToken();
-      console.log('[DEBUG] fetchAllWebs: token:', token);
+      // No token needed, use cookie-based session
       const response = await fetch(
         `${API_BASE_URL}/webs/all/user?page=${page}&page_size=${pageSize}`,
         {
           method: "GET",
+          credentials: "include", // Send cookies for auth
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -133,7 +132,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   // Search webs using semantic search endpoint
   async function searchWebs(query) {
     try {
-      const token = await getAuthToken();
       const user = await getSignedInUser();
 
       // Use semantic search endpoint with userId filter
@@ -143,8 +141,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         )}&userId=${user.id}`,
         {
           method: "GET",
+          credentials: "include",
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
@@ -162,30 +160,17 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   }
 
-  // Retrieve auth token from chrome storage
-  async function getAuthToken() {
-    return new Promise((resolve) => {
-      chrome.storage.local.get(["token"], (result) => {
-        resolve(result.token || null);
-      });
-    });
-  }
-
   async function getSignedInUser() {
     console.log("Getting signed in user");
 
     const url = `${API_BASE_URL}/auth/me`;
 
-    const token = await getAuthToken();
-
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    };
-
     const response = await fetch(url, {
       method: "GET",
-      headers: headers,
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     if (!response.ok) {
@@ -249,12 +234,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
-    const currentToken = await getAuthToken();
-    if (!currentToken) {
-      console.error("No authentication token");
-      return;
-    }
-
+    // No token needed, use cookie-based session
     showLoading();
 
     try {
@@ -264,9 +244,9 @@ document.addEventListener("DOMContentLoaded", async function () {
           `${API_BASE_URL}/sources/website/${selectedWebId}`,
           {
             method: "POST",
+            credentials: "include",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${currentToken}`,
             },
             body: JSON.stringify({ url: detectedContent.data }),
           }
@@ -282,9 +262,8 @@ document.addEventListener("DOMContentLoaded", async function () {
           `${API_BASE_URL}/sources/youtube/${selectedWebId}/${detectedContent.videoId}`,
           {
             method: "POST",
-            headers: {
-              Authorization: `Bearer ${currentToken}`,
-            },
+            credentials: "include",
+            headers: {},
           }
         );
       } else {
