@@ -97,12 +97,7 @@ function UserProfile() {
   };
 
   const joinDate = formatDate(resourceOwner?.created_at);
-
-  const ownerFeedsVisibility =
-    resourceOwner?.feedsVisibility === undefined ||
-    resourceOwner?.feedsVisibility === null ||
-    resourceOwner?.feedsVisibility === true;
-
+  const ownerFeedsVisibility = !(resourceOwner?.feedsVisibility === false);
   const canSeeFeeds = ownerFeedsVisibility || isOwner;
   const {
     data: connectedFeedsData,
@@ -531,7 +526,11 @@ function UserProfile() {
                 </div>
               ) : (
                 <>
-                  <FeedGrid connected={connectedFeeds} refetchConnectedFeeds={refetchConnectedFeeds} isOwner={isOwner} />
+                  <FeedGrid
+                    connected={connectedFeeds}
+                    refetchConnectedFeeds={refetchConnectedFeeds}
+                    isOwner={isOwner}
+                  />
                   {connectedFeeds.length === 0 &&
                     (isOwner ? (
                       <p className="text-center text-muted-foreground text-sm mt-6">

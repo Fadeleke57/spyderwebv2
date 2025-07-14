@@ -84,7 +84,9 @@ type ClientType =
   | "Blackboard"
   | "Raycast"
   | "Shopify"
-  | "Amazon";
+  | "Amazon"
+  | "Otter.ai"
+  | "Fireflies";
 type FeedCategoryType =
   | "AI"
   | "Social"
@@ -269,6 +271,30 @@ export const feedMap: PossibleFeed = {
       category: "Productivity",
       zoom: false,
       disabled: false,
+    },
+    {
+      name: "Otter.ai",
+      link: "https://otter.ai/",
+      syncLink: null,
+      image:
+        "https://play-lh.googleusercontent.com/BrV1ZP-M05BdwSVugvOm-0OIjH54ZNGIrZrJe55SJlYwZwpIUVggcNQlCSwzHJQJhb4",
+      description:
+        "AI-powered meeting assistant for sales, marketing, and more.",
+      category: "Productivity",
+      zoom: false,
+      disabled: true,
+    },
+    {
+      name: "Fireflies",
+      link: "https://fireflies.ai/",
+      syncLink: null,
+      image:
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQt4s4zH41DnCV7GfbcS3EZAirCdDkE1QCd9w&s",
+      description:
+        "AI-powered meeting assistant for sales, marketing, and more.",
+      category: "Productivity",
+      zoom: false,
+      disabled: true,
     },
   ],
   Education: [
