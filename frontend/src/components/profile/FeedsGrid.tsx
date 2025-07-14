@@ -57,7 +57,7 @@ function FeedCarouselItem({
       <div className="flex flex-col justify-between h-full">
         <CardHeader className="flex flex-col justify-start gap-2 pb-3">
           <div
-            className={`h-16 w-16 group-hover:border-neon overflow-hidden border rounded flex items-center justify-center ${
+            className={`h-14 w-14 group-hover:border-neon overflow-hidden border rounded flex items-center justify-center ${
               feed.name === "Tiktok" ? "bg-black" : "bg-foreground"
             } ${feed.zoom ? "p-2" : ""} transition-colors ease-in-out duration-150`}
           >
