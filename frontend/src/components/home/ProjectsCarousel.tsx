@@ -17,11 +17,7 @@ import { NewWebModal } from "../webs/NewWebModal";
 export function ProjectsCarousel() {
   const {
     data: webData,
-    fetchNextPage,
-    fetchPreviousPage,
     isFetching,
-    isFetchingNextPage,
-    isFetchingPreviousPage,
   } = useFetchUserWebs();
   const [webs, setWebs] = React.useState<any[]>([]);
   const router = useRouter();
@@ -97,8 +93,8 @@ export function ProjectsCarousel() {
               ))}
         </CarouselContent>
 
-        <CarouselPrevious />
-        <CarouselNext />
+        <CarouselPrevious className="dark:hover:text-black dark:hover:bg-neon hover:text-black hover:bg-neon" pointerPosition="right-14 -top-12" />
+        <CarouselNext className="dark:hover:text-black dark:hover:bg-neon hover:text-black hover:bg-neon" pointerPosition="right-4 -top-12" />
       </Carousel>
     </div>
   );

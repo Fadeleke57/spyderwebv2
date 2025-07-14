@@ -79,7 +79,7 @@ function SearchSourceModal({
             <TabsTrigger
               key={value}
               value={value}
-              className="flex-1 data-[state=inactive]:border-none data-[state=active]:border-1 data-[state=active]:border-primary data-[state=active]:rounded-b-none"
+              className="flex-1 rounded-b-none -mb-2 first:-ml-1"
             >
               {label}
             </TabsTrigger>
@@ -107,7 +107,7 @@ function SearchSourceModal({
                       setOpen(false);
                       setIsUploadingSource(true);
                     }}
-                    className="h-10 w-full lg:w-auto border dark:bg-violet-400/30 dark:border-violet-200 dark:hover:bg-violet-400/40 rounded-lg"
+                    className="h-10 w-full lg:w-auto border dark:bg-violet-400/40 dark:hover:bg-violet-400/50 rounded-lg"
                   >
                     <CirclePlus size={12} className="mr-1" /> Add{" "}
                     {value === "files" ? "file" : "link"}{" "}
@@ -160,7 +160,7 @@ function SearchSourceModal({
               </DrawerTrigger>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Search sources</p>
+              <p>Search memories</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -168,7 +168,7 @@ function SearchSourceModal({
           {" "}
           <DrawerTitle className="flex items-center p-4">
             <Search size={16} className="mr-2"></Search>
-            <span className="font-semibold">Sources</span>
+            <span className="font-semibold">Memories</span>
           </DrawerTitle>
           <Separator className="my-2" />
           <div className="p-4 px-0">{content}</div>
@@ -194,7 +194,7 @@ function SearchSourceModal({
             </DialogTrigger>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Search sources</p>
+            <p>Search memories</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -202,7 +202,7 @@ function SearchSourceModal({
         <DialogHeader className="px-4">
           <DialogTitle className="flex items-center text-lg">
             <i className="hn hn-search mr-2"></i>{" "}
-            <span className="font-base">Sources</span>
+            <span className="font-base">Memories</span>
           </DialogTitle>
         </DialogHeader>
         <Separator className="my-2" />

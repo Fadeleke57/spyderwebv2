@@ -3,24 +3,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "@/components/ui/use-toast";
 import { Message } from "ai";
 
-export const useConfigureChat = () => {
-  return useMutation({
-    mutationFn: async (webId: string) => {
-      const response = await api.post(`/chat/configure/${webId}`);
-      const data = await response.data.result;
-      return data;
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-    retry: true,
-  });
-};
-
 export const useSaveChat = (chatId: string) => {
   return useMutation({
     mutationFn: async ({ messages }: { messages: Message[] }) => {

@@ -590,11 +590,11 @@ function WebGraph({
         <div ref={trashRef} className="absolute left-3 top-3 cursor-pointer">
           <TooltipProvider delayDuration={100}>
             <Tooltip>
-              <TooltipTrigger className="p-0 m-0 bg-red-600 dark:bg-transparent dark:hover:bg-red-500 rounded-full p-2 transition-colors ease-in">
-                <Trash size={20} className="text-white dark:text-foreground" />
+              <TooltipTrigger className="p-0 m-0 dark:bg-transparent dark:hover:bg-red-400 dark:hover:text-foreground rounded-full p-2 transition-colors ease-in">
+                <Trash size={16} />
               </TooltipTrigger>
               <TooltipContent>
-                <p>Drag sources here to delete</p>
+                <p>Drag memories here to delete</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

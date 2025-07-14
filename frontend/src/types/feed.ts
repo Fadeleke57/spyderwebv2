@@ -1,9 +1,11 @@
 
 
-export type Feed = {
+export type ConnectedFeed = {
     feedId: string;
+    clientId: string;
     feedType: string;
     createdAt: string;
     updatedAt: string;
-    visibility: string;
+    disabled: boolean;
+    visibility: "Public" | "Private";
 };

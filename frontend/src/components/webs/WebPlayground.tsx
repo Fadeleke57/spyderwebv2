@@ -180,7 +180,7 @@ function WebPlayground() {
           <div>
             <TabsTrigger
               value="list"
-              className="rounded-t-md rounded-b-none data-[state=active]:dark:bg-violet-400/40 data-[state=active]:dark:border-violet-200"
+              className="rounded-t-md rounded-b-none data-[state=inactive]:border-0 data-[state=active]:dark:bg-muted/50 data-[state=active]:bg-muted/50 data-[state=active]:border-muted/50"
               onClick={() => {
                 setIsUploadingSource(false);
                 setSelectedTab("list");
@@ -190,7 +190,7 @@ function WebPlayground() {
             </TabsTrigger>
             <TabsTrigger
               value="graph"
-              className="rounded-t-md rounded-b-none data-[state=active]:dark:bg-violet-400/40 data-[state=active]:dark:border-violet-200"
+              className="rounded-t-md rounded-b-none data-[state=inactive]:border-0 data-[state=active]:dark:bg-muted/50 data-[state=active]:bg-muted/50 data-[state=active]:border-muted/50"
               onClick={() => {
                 setIsUploadingSource(false);
                 setSelectedTab("graph");
@@ -205,7 +205,7 @@ function WebPlayground() {
           className={`mt-0 ${
             isExpanded
               ? "absolute inset-0 z-50 h-[100dvh] w-full bg-neutral-800"
-              : "h-full flex-col lg:col-span-2 bg-muted/50 rounded-xl rounded-tl-none"
+              : `h-full flex-col lg:col-span-2 bg-muted/50 rounded-xl rounded-tl-${selectedTab === "list" ? "none" : "xl"} transition-all duration-100 ease-in-out`
           }`}
         >
           <div className="relative h-full w-full">

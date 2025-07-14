@@ -15,8 +15,6 @@ export default function PaymentSuccessPage() {
   const [error, setError] = useState<string | null>(null);
   const {
     mutateAsync: processSuccessPayment,
-    isPending: isProcessing,
-    error: paymentError,
   } = useProcessPayment();
 
   useEffect(() => {

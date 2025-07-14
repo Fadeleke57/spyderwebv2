@@ -29,7 +29,7 @@ import { NewWebModal } from "@/components/webs/NewWebModal";
 import { motion } from "framer-motion";
 import SimpleTooltip from "@/components/utility/SimpleTooltip";
 import { useFetchUserFeeds } from "@/hooks/feed";
-import { Feed } from "@/types/feed";
+import { ConnectedFeed } from "@/types/feed";
 import FeedGrid from "@/components/profile/FeedsGrid";
 
 const VALID_TABS = ["overview", "webs", "feeds", "stars"];
@@ -64,9 +64,8 @@ function UserProfile() {
     );
   };
 
-  const { data: resourceOwner, isLoading: resourceOwnerLoading } = useFetchUserByUsername(
-    username as string
-  );
+  const { data: resourceOwner, isLoading: resourceOwnerLoading } =
+    useFetchUserByUsername(username as string);
 
   const {
     data: websData,
@@ -77,7 +76,6 @@ function UserProfile() {
   } = useFetchProfileWebs(resourceOwner?.id || "");
 
   const { data: pinnedWebs } = useFetchPinnedWebs(resourceOwner?.id);
-
 
   useEffect(() => {
     if (inView && hasNextPage && resourceOwner) {
@@ -106,7 +104,18 @@ function UserProfile() {
     resourceOwner?.feedsVisibility === true;
 
   const canSeeFeeds = ownerFeedsVisibility || isOwner;
-  const { data: feeds, isLoading: feedsLoading } = useFetchUserFeeds(canSeeFeeds ? resourceOwner?.id : null);
+  const {
+    data: connectedFeedsData,
+    isLoading: connectedFeedsDataLoading,
+    refetch: refetchConnectedFeeds,
+  } = useFetchUserFeeds(canSeeFeeds && resourceOwner ? resourceOwner.id : null);
+  const [connectedFeeds, setConnectedFeeds] = useState<ConnectedFeed[]>([]);
+
+  useEffect(() => {
+    if (connectedFeedsData) {
+      setConnectedFeeds(connectedFeedsData);
+    }
+  }, [connectedFeedsData]);
 
   if (resourceOwnerLoading) {
     return (
@@ -146,7 +155,6 @@ function UserProfile() {
         />
       </Head>
 
-      {/* Profile header - Full Width for Mobile */}
       <div className="p-4 border-b">
         <div className="flex flex-col mb-4">
           <div className="flex lg:items-center gap-2">
@@ -168,10 +176,18 @@ function UserProfile() {
                 </div>
               )}
               <div className="hidden md:block">
-                <UserAvatar userId={resourceOwner.id} dimension={96} className="mr-2" />
+                <UserAvatar
+                  userId={resourceOwner.id}
+                  dimension={96}
+                  className="mr-2"
+                />
               </div>
               <div className="md:hidden">
-                <UserAvatar userId={resourceOwner.id} dimension={48} className="mr-4" />
+                <UserAvatar
+                  userId={resourceOwner.id}
+                  dimension={48}
+                  className="mr-4"
+                />
               </div>
             </div>
 
@@ -197,10 +213,11 @@ function UserProfile() {
         </div>
 
         <div className="mt-4">
-          <p className="text-sm mb-4">{resourceOwner.bio || "No bio available"}</p>
+          <p className="text-sm mb-4">
+            {resourceOwner.bio || "No bio available"}
+          </p>
 
           <div className="flex flex-col gap-2">
-            {/* Social links */}
             {resourceOwner.website && (
               <div className="flex items-center gap-2">
                 <LinkIcon size={16} className="text-muted-foreground" />
@@ -285,7 +302,9 @@ function UserProfile() {
                 <Package size={16} className="mr-2 hidden md:inline" />
                 Feeds
                 <span className="ml-2 bg-foreground text-background rounded-full px-2 py-0.5 text-xs">
-                  {feedsLoading ? "..." : feeds?.length || 0}
+                  {connectedFeedsDataLoading
+                    ? "..."
+                    : connectedFeeds?.length || 0}
                 </span>
               </TabsTrigger>
               <TabsTrigger
@@ -506,17 +525,14 @@ function UserProfile() {
               value="feeds"
               className="mt-4 md:mt-4 data-[state=active]:animate-fadeIn"
             >
-              {feedsLoading ? (
+              {connectedFeedsDataLoading ? (
                 <div className="flex justify-center py-8">
                   <Loader className="animate-spin" size={20} />
                 </div>
               ) : (
                 <>
-                  <FeedGrid
-                    connected={feeds?.map((f: Feed) => f.feedType) ?? []}
-                    isOwner={isOwner}
-                  />
-                  {feeds?.length === 0 &&
+                  <FeedGrid connected={connectedFeeds} refetchConnectedFeeds={refetchConnectedFeeds} isOwner={isOwner} />
+                  {connectedFeeds.length === 0 &&
                     (isOwner ? (
                       <p className="text-center text-muted-foreground text-sm mt-6">
                         You haven&apos;t connected any feeds yet - pick one

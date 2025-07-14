@@ -89,7 +89,7 @@ const SourceListView: React.FC<SourceListViewProps> = ({
           </Button>
         </SimpleTooltip>
       )}
-      <ScrollArea className="h-[65dvh] lg:h-[78dvh] w-full">
+      <ScrollArea className="h-[65dvh] mt-2 lg:h-[78dvh] w-full">
         <div className="p-4 pt-0">
           <Table>
             <TableHeader>

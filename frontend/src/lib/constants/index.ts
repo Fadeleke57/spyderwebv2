@@ -68,116 +68,237 @@ export const tagsList: WebTag[] = [
   },
 ];
 
-export const feedMap: any = {
-  Claude: {
-    name: "Claude",
-    link: "https://claude.ai/login?returnTo=%2F%3F#features",
-    syncLink: `${environment.client_url}/memory`,
-    image:
-      "https://pub-4271c874f759418fbdcd18b0e5cbe024.r2.dev/Claude/claude-logo.png",
-    description:
-      "Anthropic LLM for drafting, analyzing, and safe enterprise AI work.",
-    category: "AI",
-    zoom: false,
-  },
-  ChatGPT: {
-    name: "ChatGPT",
-    link: "https://chat.openai.com/",
-    syncLink: `${environment.client_url}/memory`,
-    image:
-      "https://static.vecteezy.com/system/resources/previews/021/608/790/non_2x/chatgpt-logo-chat-gpt-icon-on-black-background-free-vector.jpg",
-    description:
-      "OpenAI LLM for questions, ideas, and coding help. Used across coding agents.",
-    category: "AI",
-    zoom: false,
-  },
-  Windsurf: {
-    name: "Cascade - Windsurf",
-    link: "https://windsurf.com/",
-    syncLink: `${environment.client_url}/memory`,
-    image:
-      "https://exafunction.github.io//public/brand/windsurf-black-symbol.png",
-    description:
-      "(Formerly Codeium) AI coding agent and IDE for quick code generation and refactoring.",
-    category: "AI",
-    zoom: false,
-  },
-  Cursor: {
-    name: "Cursor",
-    link: "https://cursor.sh/",
-    syncLink: `${environment.client_url}/memory`,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrQ_CU3a6muH84mLfoP6xmM4ZJ9Z6RAXMmdA&s",
-    description:
-      "AI-powered editor for querying repos and rewriting code via chat.",
-    zoom: false,
-  },
-  Continue: {
-    name: "Continue",
-    link: "https://continue.dev/",
-    syncLink: `${environment.client_url}/memory`,
-    image: "https://hub.continue.dev/continue-logo.png",
-    description:
-      "Open-source IDE extension adding chat, autocomplete, and custom LLM agents.",
-    category: "AI",
-    zoom: true,
-  },
-  Cline: {
-    name: "Cline",
-    link: "https://cline.bot/",
-    syncLink: `${environment.client_url}/memory`,
-    image:
-      "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/light/cline.png",
-    description:
-      "Autonomous VS Code bot that plans, executes, and commits features.",
-    category: "AI",
-    zoom: true,
-  },
-  Tiktok: {
-    name: "Tiktok",
-    link: "https://www.tiktok.com/",
-    syncLink: null,
-    image:
-      "https://www.pagetraffic.com/blog/wp-content/uploads/2022/06/new-latest-tiktok-logo-png.png",
-    description:
-      "Short-form video platform with highly personalized, algorithmic content feed.",
-    category: "Social",
-    zoom: false,
-    disabled: true,
-  },
-  X: {
-    name: "X",
-    link: "https://x.com/",
-    syncLink: null,
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/X_logo.jpg/1200px-X_logo.jpg",
-    description:
-      'Rebranded Twitter for real-time posts and Musk\'s "everything-app" vision.',
-    category: "Social",
-    zoom: false,
-    disabled: true,
-  },
-  Notion: {
-    name: "Notion",
-    link: "https://notion.com/",
-    syncLink: null,
-    image: "https://cdn.creazilla.com/icons/3270344/notion-icon-sm.png",
-    description:
-      "Collaborative workspace for notes, wikis, and project management.",
-    category: "Productivity",
-    zoom: true,
-    disabled: true,
-  },
-  Blackboard: {
-    name: "Blackboard",
-    link: "https://www.anthology.com/products/teaching-and-learning/learning-effectiveness/blackboard",
-    syncLink: null,
-    image:
-      "https://yt3.googleusercontent.com/RnspR8_27Gm0WwXtxNuSJ0vmFg-rjelZIaY9xTNlyBNf10qQ8akrIZaZ353hhkqSZXlgL7MZZQ=s900-c-k-c0x00ffffff-no-rj",
-    description:
-      "Online learning platform for education and training used across schools.",
-    category: "Education",
-    zoom: false,
-    disabled: true,
-  },
+type ClientType =
+  | "Claude"
+  | "ChatGPT"
+  | "Cascade - Windsurf"
+  | "Cursor"
+  | "Highlight AI"
+  | "Continue"
+  | "Cline"
+  | "Tiktok"
+  | "X"
+  | "Reddit"
+  | "Youtube"
+  | "Notion"
+  | "Blackboard"
+  | "Raycast"
+  | "Shopify"
+  | "Amazon";
+type FeedCategoryType =
+  | "AI"
+  | "Social"
+  | "Ecommerce"
+  | "Productivity"
+  | "Education"
+  | "Other";
+
+export type PossibleFeed = {
+  [key: string]: {
+    name: ClientType;
+    link: string;
+    syncLink: string | null;
+    image: string;
+    description: string;
+    category: FeedCategoryType;
+    zoom: boolean;
+    disabled?: boolean;
+  }[];
+};
+
+export const feedMap: PossibleFeed = {
+  AI: [
+    {
+      name: "Claude",
+      link: "https://claude.ai/login?returnTo=%2F%3F#features",
+      syncLink: `${environment.client_url}/memory`,
+      image:
+        "https://pub-4271c874f759418fbdcd18b0e5cbe024.r2.dev/Claude/claude-logo.png",
+      description:
+        "Anthropic LLM for drafting, analyzing, and safe enterprise AI work.",
+      category: "AI",
+      zoom: false,
+    },
+    {
+      name: "ChatGPT",
+      link: "https://chat.openai.com/",
+      syncLink: `https://help.openai.com/en/articles/11487775-connectors-in-chatgpt`,
+      image:
+        "https://static.vecteezy.com/system/resources/previews/021/608/790/non_2x/chatgpt-logo-chat-gpt-icon-on-black-background-free-vector.jpg",
+      description:
+        "OpenAI LLM for questions, ideas, and coding help. Used across coding agents.",
+      category: "AI",
+      zoom: false,
+    },
+    {
+      name: "Cascade - Windsurf",
+      link: "https://windsurf.com/",
+      syncLink: `${environment.client_url}/memory`,
+      image:
+        "https://exafunction.github.io//public/brand/windsurf-black-symbol.png",
+      description:
+        "AI coding agent and IDE for quick code generation and refactoring.",
+      category: "AI",
+      zoom: false,
+    },
+    {
+      name: "Cursor",
+      link: "https://cursor.sh/",
+      syncLink: `${environment.client_url}/memory`,
+      image:
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrQ_CU3a6muH84mLfoP6xmM4ZJ9Z6RAXMmdA&s",
+      description:
+        "AI-powered editor for querying repos and rewriting code via chat.",
+      category: "AI",
+      zoom: false,
+    },
+    {
+      name: "Highlight AI",
+      link: "https://highlight.ai/",
+      syncLink: `https://docs.highlightai.com/plugins/overview`,
+      image:
+        "https://images.crunchbase.com/image/upload/c_pad,f_auto,q_auto:eco,dpr_1/c574b1be9f924cd3a758e49965eda041",
+      description:
+        "Desktop AI assistant that brings LLM capabilities directly to your workflow",
+      category: "AI",
+      zoom: false,
+    },
+    {
+      name: "Continue",
+      link: "https://continue.dev/",
+      syncLink: `https://docs.continue.dev/customize/deep-dives/mcp`,
+      image: "https://hub.continue.dev/continue-logo.png",
+      description:
+        "Open-source IDE extension adding chat, autocomplete, and custom LLM agents.",
+      category: "AI",
+      zoom: true,
+    },
+    {
+      name: "Cline",
+      link: "https://cline.bot/",
+      syncLink: `${environment.client_url}/memory`,
+      image:
+        "https://registry.npmmirror.com/@lobehub/icons-static-png/latest/files/light/cline.png",
+      description:
+        "Autonomous VS Code bot that plans, executes, and commits features.",
+      category: "AI",
+      zoom: true,
+    },
+  ],
+  Social: [
+    {
+      name: "Tiktok",
+      link: "https://www.tiktok.com/",
+      syncLink: null,
+      image:
+        "https://www.pagetraffic.com/blog/wp-content/uploads/2022/06/new-latest-tiktok-logo-png.png",
+      description:
+        "Short-form video platform with highly personalized, algorithmic content feed.",
+      category: "Social",
+      zoom: false,
+      disabled: true,
+    },
+    {
+      name: "X",
+      link: "https://x.com/",
+      syncLink: null,
+      image:
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/X_logo.jpg/1200px-X_logo.jpg",
+      description:
+        'Rebranded Twitter for real-time posts and Musk\'s "everything-app" vision.',
+      category: "Social",
+      zoom: false,
+      disabled: true,
+    },
+    {
+      name: "Reddit",
+      link: "https://www.reddit.com/",
+      syncLink: null,
+      image:
+        "https://pngdownload.io/wp-content/uploads/2023/12/Reddit-Logo-emblem-of-the-online-platform-transparent-png-image-jpg.webp",
+      description:
+        "Social news and discussion website where users submit content and vote on it.",
+      category: "Social",
+      zoom: false,
+      disabled: true,
+    },
+    {
+      name: "Youtube",
+      link: "https://www.youtube.com/",
+      syncLink: null,
+      image:
+        "https://img.freepik.com/premium-vector/red-youtube-logo-social-media-logo_197792-1803.jpg?semt=ais_hybrid&w=740",
+      description: "Video platform for sharing and consuming videos.",
+      category: "Social",
+      zoom: false,
+      disabled: true,
+    },
+  ],
+  Ecommerce: [
+    {
+      name: "Amazon",
+      link: "https://amazon.com/",
+      syncLink: null,
+      image:
+        "https://i.pinimg.com/originals/01/ca/da/01cada77a0a7d326d85b7969fe26a728.jpg",
+      description:
+        "Ecommerce platform for selling and shopping products online.",
+      category: "Ecommerce",
+      zoom: false,
+      disabled: true,
+    },
+  ],
+  Productivity: [
+    {
+      name: "Notion",
+      link: "https://notion.com/",
+      syncLink: null,
+      image: "https://cdn.creazilla.com/icons/3270344/notion-icon-sm.png",
+      description:
+        "Collaborative workspace for notes, wikis, and project management.",
+      category: "Productivity",
+      zoom: true,
+      disabled: true,
+    },
+    {
+      name: "Raycast",
+      link: "https://raycast.com/",
+      syncLink: "https://www.raycast.com/EvanZhouDev/mcp",
+      image: "https://avatars.githubusercontent.com/u/58117316?s=200&v=4",
+      description: "Desktop app for productivity and automation.",
+      category: "Productivity",
+      zoom: false,
+      disabled: false,
+    },
+  ],
+  Education: [
+    {
+      name: "Blackboard",
+      link: "https://www.anthology.com/products/teaching-and-learning/learning-effectiveness/blackboard",
+      syncLink: null,
+      image:
+        "https://yt3.googleusercontent.com/RnspR8_27Gm0WwXtxNuSJ0vmFg-rjelZIaY9xTNlyBNf10qQ8akrIZaZ353hhkqSZXlgL7MZZQ=s900-c-k-c0x00ffffff-no-rj",
+      description:
+        "Online learning platform for education and training used across schools.",
+      category: "Education",
+      zoom: false,
+      disabled: true,
+    },
+  ],
+};
+
+export const getAllFeeds = () => {
+  return Object.values(feedMap).flat();
+};
+
+export const getFeedsByCategory = (category: string) => {
+  return feedMap[category] || [];
+};
+
+export const getFeedByName = (name: string) => {
+  for (const category of Object.values(feedMap)) {
+    const feed = category.find((f) => f.name === name);
+    if (feed) return feed;
+  }
+  return null;
 };

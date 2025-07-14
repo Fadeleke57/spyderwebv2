@@ -31,7 +31,6 @@ import {
 import { useChat } from "@ai-sdk/react";
 import { cn } from "@/lib/utils";
 import {
-  useConfigureChat,
   useDeleteChat,
   useFetchChat,
   useFetchChats,
@@ -40,7 +39,6 @@ import {
 import type { Message } from "ai";
 import { motion } from "framer-motion";
 import { formatDate } from "date-fns";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { PreviewMessage, ThinkingMessage } from "../chat/charlotte-messages";
 import SimpleTooltip from "./SimpleTooltip";
 import { useScrollToBottom } from "@/hooks/general";
@@ -101,13 +99,8 @@ const SpydrAI = () => {
   const [previouslySelectedChat, setPreviouslySelectedChat] = useState<
     string | null
   >(null);
-  const { isUploadingSource } = useSourceStore();
-
-  const { mutateAsync: configureCharlotte, isPending: isConfiguring } =
-    useConfigureChat();
 
   const router = useRouter();
-  const { webId } = router.query;
   const isMobile = useIsMobile();
 
   const mapViewToComponent = () => {
@@ -153,19 +146,6 @@ const SpydrAI = () => {
         );
     }
   };
-
-  useEffect(() => {
-    if (!router.isReady || !webId) return;
-
-    // call it once immediately
-    configureCharlotte(webId as string);
-
-    const interval = setInterval(() => {
-      configureCharlotte(webId as string);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [router.isReady, webId, configureCharlotte]);
 
   if (isMobile) {
     return (

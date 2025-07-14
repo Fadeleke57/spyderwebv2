@@ -1,26 +1,41 @@
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ExternalLink, Info, Settings } from "lucide-react";
-import { feedMap } from "@/lib/constants";
-import Link from "next/link";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { ExternalLink, Info, Settings } from "lucide-react";
+import { feedMap, PossibleFeed } from "@/lib/constants";
+import Link from "next/link";
 import SimpleTooltip from "../utility/SimpleTooltip";
 import { cn } from "@/lib/utils";
 import { environment } from "@/environment/loadenv";
 import FeedsSettingsModal from "../feeds/FeedsSettings";
-import { useState } from "react";
 import { useFetchUserByUsername } from "@/hooks/user";
 import { useRouter } from "next/router";
+import { useFetchUserFeeds, useRevokeFeedAccess } from "@/hooks/feed";
+import { usePopupStore } from "@/store/popupStore";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
+import { toast } from "../ui/use-toast";
+import { ConnectedFeed } from "@/types/feed";
 
 export const feedsDefinition = (
   <div className="font-base leading-relaxed">
-    For AI feeds, if the{" "}
+    For feeds supporting MCP, if the{" "}
     <a
       href={`${environment.client_url}/memory`}
       className="hover:underline text-neon"
@@ -31,26 +46,228 @@ export const feedsDefinition = (
     <span className="font-semibold bg-muted text-violet-400/80 p-1 rounded">
       AddToMemory
     </span>{" "}
-    tool will automatically sync that client to your profile. Otherwise, all
-    other apps require your explicit action to sync.
+    tool will automatically sync that feed to your profile. Otherwise, all other
+    feeds require your explicit action to sync.
   </div>
 );
 
+function FeedCarouselItem({
+  feed,
+  isConnected,
+  connected,
+  isOwner,
+  revokeFeedAccessPending,
+}: {
+  feed: any;
+  isConnected: boolean;
+  connected: ConnectedFeed[];
+  isOwner: boolean;
+  revokeFeedAccessPending: boolean;
+}) {
+  const { setSelectedClientId, setIsConfirmDisconnectPopupOpen } =
+    usePopupStore();
+  const clientId = connected.find((c) => c.feedType === feed.name)?.clientId;
+  return (
+    <Card
+      className={cn(
+        `relative group transition-all duration-150 h-full`,
+        feed.category === "AI" && !isConnected ? "border-muted" : "",
+        feed.disabled ? "opacity-50 cursor-not-allowed pointer-events-none" : ""
+      )}
+    >
+      <div className="flex flex-col justify-between h-full">
+        <CardHeader className="flex flex-col justify-start gap-2 pb-3">
+          <div
+            className={`h-14 w-14 group-hover:border-neon overflow-hidden border rounded flex items-center justify-center ${
+              feed.name === "Tiktok" ? "bg-black" : "bg-foreground"
+            } ${feed.zoom ? "p-2" : ""} transition-colors ease-in-out duration-150`}
+          >
+            <Image
+              src={feed.image}
+              alt={feed.name}
+              width={64}
+              height={64}
+              className="object-cover"
+            />
+          </div>
+
+          <div className="font-medium ">{feed.name}</div>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground max-w-[97%]">
+          {feed.description}
+        </CardContent>
+      </div>
+
+      <div className="absolute top-3 right-4">
+        {isConnected && (
+          <div className="flex flex-col items-end gap-2 text-xs font-medium text-neon">
+            <div className="flex flex-row items-center gap-2">
+              <div className="relative inline-flex items-center justify-center">
+                <div className="absolute rounded-full bg-neon/0 animate-pulse w-4 h-4 blur-sm"></div>
+                <div className="absolute rounded-full bg-neon/20 animate-pulse w-6 h-6 blur-md"></div>
+                <div className="relative rounded-full bg-neon w-2 h-2 flex items-center justify-center z-10"></div>
+              </div>
+              Synced
+            </div>
+            <div className="flex flex-row items-center gap-2">
+              <Button
+                variant={"ghost"}
+                onClick={() => {
+                  if (!clientId) return;
+                  setSelectedClientId(clientId);
+                  setIsConfirmDisconnectPopupOpen(true);
+                }}
+                disabled={revokeFeedAccessPending}
+                className="text-xs text-blue-500 dark:text-blue-500 hover:text-blue-500/80 dark:hover:text-blue-500/80 bg-transparent hover:bg-transparent font-medium rounded-full h-fit w-fit p-0 transition-colors duration-150"
+              >
+                {revokeFeedAccessPending ? "Disconnecting..." : "Disconnect"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {!isConnected &&
+          isOwner &&
+          (!feed.disabled ? (
+            <Link
+              href={feed.syncLink || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-medium text-primary hover:text-black hover:bg-neon rounded-full px-2 py-1 transition-colors duration-150"
+            >
+              Sync
+            </Link>
+          ) : (
+            <div className="text-xs font-semibold text-violet-400 rounded-full px-2 py-1">
+              Beta Access Only
+            </div>
+          ))}
+      </div>
+      <Link
+        href={feed.link || "#"}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute bottom-2 text-muted-foreground right-2 text-xs hover:text-black hover:bg-neon rounded-full px-2 py-1 transition-colors duration-150"
+      >
+        <ExternalLink size={16} />
+      </Link>
+    </Card>
+  );
+}
+
+function CategoryCarousel({
+  category,
+  feeds,
+  connected,
+  isOwner,
+  revokeFeedAccessPending,
+}: {
+  category: string;
+  feeds: PossibleFeed[string];
+  connected: ConnectedFeed[];
+  isOwner: boolean;
+  revokeFeedAccessPending: boolean;
+}) {
+  return (
+    <div className="mb-6 ml-2">
+      <h3 className="text-md font-semibold text-foreground mb-4 flex items-center gap-2">
+        {category}
+      </h3>
+      <Carousel
+        opts={{
+          align: "start",
+        }}
+        className="w-full px-4 ml-2"
+      >
+        {feeds.length > 4 && (
+          <>
+            <CarouselPrevious
+              className="dark:hover:text-black dark:hover:bg-neon hover:text-black hover:bg-neon"
+              pointerPosition="right-14 -top-12"
+            />
+            <CarouselNext
+              className="dark:hover:text-black dark:hover:bg-neon hover:text-black hover:bg-neon"
+              pointerPosition="right-4 -top-12"
+            />
+          </>
+        )}
+        <CarouselContent>
+          {feeds.map((feed, index) => {
+            const isConnected = connected.some((c) => c.feedType === feed.name);
+            return (
+              <CarouselItem
+                key={index}
+                className="basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4 pl-4"
+              >
+                <FeedCarouselItem
+                  feed={feed}
+                  isConnected={isConnected}
+                  connected={connected}
+                  isOwner={isOwner}
+                  revokeFeedAccessPending={revokeFeedAccessPending}
+                />
+              </CarouselItem>
+            );
+          })}
+        </CarouselContent>
+      </Carousel>
+    </div>
+  );
+}
+
 export default function FeedGrid(
-  { connected, isOwner }: { connected: string[]; isOwner: boolean } = {
+  {
+    connected,
+    isOwner,
+    refetchConnectedFeeds,
+  }: {
+    connected: ConnectedFeed[];
+    isOwner: boolean;
+    refetchConnectedFeeds: () => void;
+  } = {
     connected: [],
     isOwner: false,
+    refetchConnectedFeeds: () => {},
   }
 ) {
   const router = useRouter();
   const { username } = router.query;
   const { data: resourceOwner, isLoading: resourceOwnerLoading } =
     useFetchUserByUsername(username as string);
-  const feedsToMap = isOwner
-    ? Object.values(feedMap)
-    : Object.values(feedMap).filter((feed: any) => {
-        return connected.includes(feed.name);
+  const {
+    isConfirmDisconnectPopupOpen,
+    selectedClientId,
+    setSelectedClientId,
+    setIsConfirmDisconnectPopupOpen,
+  } = usePopupStore();
+
+  const { mutateAsync: revokeFeedAccess, isPending: revokeFeedAccessPending } =
+    useRevokeFeedAccess();
+
+  const handleDisconnect = async () => {
+    try {
+      if (!selectedClientId || !resourceOwner?.id) return;
+      await revokeFeedAccess({
+        clientId: selectedClientId,
+        userId: resourceOwner.id,
       });
+      setIsConfirmDisconnectPopupOpen(false);
+      setSelectedClientId(null);
+      toast({
+        title: "Success",
+        description: "Feed disconnected successfully.",
+      });
+      refetchConnectedFeeds();
+    } catch (error) {
+      console.error("Error revoking feed access:", error);
+      toast({
+        title: "Error",
+        description: "Failed to disconnect feed.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const [feedSettingsModalOpen, setFeedSettingsModalOpen] = useState(false);
 
   const ownerFeedsVisibility =
@@ -61,16 +278,39 @@ export default function FeedGrid(
 
   const canSeeFeeds = ownerFeedsVisibility || isOwner;
 
+  // filter feeds by category based on ownership and connections
+  const feedsByCategory = useMemo(() => {
+    const filteredCategories: Record<string, any[]> = {};
+
+    Object.entries(feedMap).forEach(([category, feeds]) => {
+      const filteredFeeds = isOwner
+        ? feeds
+        : feeds.filter((feed: any) => connected.includes(feed.name));
+
+      if (filteredFeeds.length > 0) {
+        filteredCategories[category] = filteredFeeds;
+      }
+    });
+
+    return filteredCategories;
+  }, [isOwner, connected]);
+
   if (resourceOwnerLoading) return <div>Loading...</div>;
 
-  if (!canSeeFeeds) return <div className="text-center py-8 font-semibold">{resourceOwner?.full_name || "This user"} has hidden their feeds.</div>;
+  if (!canSeeFeeds) {
+    return (
+      <div className="text-center py-8 font-semibold">
+        {resourceOwner?.full_name || "This user"} has hidden their feeds.
+      </div>
+    );
+  }
 
   return (
     <div>
-      <div className="flex flew-row row-reverse justify-between items-center gap-2 mb-3">
+      <div className="flex flex-row justify-between items-center gap-2 mb-6">
         <SimpleTooltip content={feedsDefinition} p={4} delayDuration={200}>
           <div className="flex items-center cursor-pointer gap-2 group hover:bg-neon hover:text-black dark:hover:text-black transition-colors duration-200 rounded-full px-2 ease-in-out">
-            <span className="font-semibold py-1 text-sm ">
+            <span className="font-semibold py-1 text-sm">
               How are feeds synced?
             </span>
             <Info className="rounded-full" size={16} />
@@ -88,93 +328,50 @@ export default function FeedGrid(
       </div>
 
       {canSeeFeeds && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {feedsToMap.map((feed: any, id: number) => {
-            const isConnected = connected.includes(feed.name);
-            return (
-              <Card
-                key={id}
-                className={cn(
-                  `relative group transition-colors duration-150 ${feed.category === "AI" && !isConnected ? "border-muted" : ""}`,
-                  feed.disabled ? "opacity-50 cursor-not-allowed pointer-events-none" : ""
-                )}
-              >
-                <div className="flex flex-col justify-between h-full">
-                  <CardHeader className="flex flex-col justify-start gap-2">
-                    <div
-                      className={`h-16 w-16 group-hover:border-neon overflow-hidden border rounded flex items-center justify-center ${feed.name === "Tiktok" ? "bg-black" : "bg-foreground"} ${feed.zoom ? "p-2" : ""} transition-colors ease-in-out duration-150`}
-                    >
-                      <Image
-                        src={feed.image}
-                        alt={feed.name}
-                        width={64}
-                        height={64}
-                        className="object-cover"
-                      />
-                    </div>
-
-                    <div className="font-medium">{feed.name}</div>
-                  </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground">
-                    {feed.description}
-                  </CardContent>
-                </div>
-
-                <div className="absolute top-3 right-4">
-                  {isConnected && (
-                    <div className="flex items-center text-xs font-medium text-neon">
-                      <TooltipProvider>
-                        <Tooltip delayDuration={100}>
-                          <TooltipTrigger className="mr-2" asChild>
-                            <div className="relative inline-flex items-center justify-center">
-                              <div className="absolute rounded-full bg-neon/0 animate-pulse w-4 h-4 blur-sm"></div>
-                              <div className="absolute rounded-full bg-neon/20 animate-pulse w-6 h-6 blur-md"></div>
-                              <div className="relative rounded-full bg-neon w-2 h-2 flex items-center justify-center z-10"></div>
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {feed.name} is connected.
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                      Synced
-                    </div>
-                  )}
-
-                  {!isConnected &&
-                    isOwner &&
-                    (!feed.disabled ? (
-                      <Link
-                        href={feed.syncLink || "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs font-medium text-primary hover:text-black hover:bg-neon rounded-full px-2 py-1 transition-colors duration-150"
-                      >
-                        Sync
-                      </Link>
-                    ) : (
-                      <div className="text-xs font-semibold bg-violet-400/40 border border-foreground rounded-full px-2 py-1">
-                        Beta Access Only
-                      </div>
-                    ))}
-                </div>
-                <Link
-                  href={feed.link || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="absolute bottom-2 text-muted-foreground right-2 text-xs hover:text-black hover:bg-neon rounded-full px-2 py-1 transition-colors duration-150"
-                >
-                  <ExternalLink size={16} />
-                </Link>
-              </Card>
-            );
-          })}
+        <div>
+          {Object.entries(feedsByCategory).map(([category, feeds]) => (
+            <CategoryCarousel
+              revokeFeedAccessPending={revokeFeedAccessPending}
+              key={category}
+              category={category}
+              feeds={feeds}
+              connected={connected}
+              isOwner={isOwner}
+            />
+          ))}
         </div>
       )}
+
       <FeedsSettingsModal
         open={feedSettingsModalOpen}
         setOpen={setFeedSettingsModalOpen}
       />
+
+      <AlertDialog
+        open={isConfirmDisconnectPopupOpen}
+        onOpenChange={setIsConfirmDisconnectPopupOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Once disconnected, you will have to manually accept the consent
+              screen to reconnect. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="h-fit w-fit py-2 px-2">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="dark:bg-blue-500 dark:text-white bg-blue-500 text-white hover:bg-blue-500/80 dark:hover:bg-blue-500/80 h-fit w-fit py-2 px-2"
+              onClick={() => handleDisconnect()}
+            >
+              Disconnect
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
