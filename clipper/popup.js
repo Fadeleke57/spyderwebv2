@@ -97,6 +97,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   async function fetchAllWebs(page = 1, pageSize = 10) {
     try {
       const token = await getAuthToken();
+      console.log('[DEBUG] fetchAllWebs: token:', token);
       const response = await fetch(
         `${API_BASE_URL}/webs/all/user?page=${page}&page_size=${pageSize}`,
         {
@@ -107,13 +108,23 @@ document.addEventListener("DOMContentLoaded", async function () {
           },
         }
       );
-
+      console.log('[DEBUG] fetchAllWebs: fetch status:', response.status);
+      let data = null;
+      try {
+        data = await response.clone().json();
+        console.log('[DEBUG] fetchAllWebs: fetch data:', data);
+      } catch (jsonErr) {
+        const text = await response.text();
+        console.log('[DEBUG] fetchAllWebs: response not JSON, text:', text);
+      }
       if (!response.ok) {
         throw new Error("Failed to fetch webs");
       }
-
-      const data = await response.json();
-      webs = data.items;
+      if (data && data.items) {
+        webs = data.items;
+      } else {
+        webs = [];
+      }
     } catch (error) {
       console.error("Error fetching webs:", error);
     }
@@ -209,6 +220,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         detectedContent = { type: "Website", data: currentURL };
       }
       detectedType.textContent = `Detected: ${detectedContent.type}`;
+      detectedUrl.textContent = detectedContent.data ? detectedContent.data : '';
       saveButton.textContent = `Save ${detectedContent.type}`;
     });
   }
@@ -227,6 +239,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   await fetchAllWebs();
+  renderDropdownList(webs); // Show webs in dropdown on load
   showDetectedContent();
 
   // Save content when the button is clicked
