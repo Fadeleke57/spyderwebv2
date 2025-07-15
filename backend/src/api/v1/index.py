@@ -174,7 +174,6 @@ def add_chat_to_memory(
         chat_feed = Feeds.find_one(
             {"clientId": payload.clientId, "userId": user_making_request.id}
         )
-
         if not chat_feed:  # start of a new feed
             logger.info(f"No feed found for client: {client}")
             logger.info(f"Creating new feed for client: {client}")
@@ -185,10 +184,14 @@ def add_chat_to_memory(
             )
         else:
             logger.info(f"Feed found for client: {client}")
+            # if it got to this point, it means the feed is enabled
             chat_feed = Feed(**chat_feed)
             if chat_feed.disabled:
-                logger.info(f"Feed is disabled for client: {client}")
-                raise HTTPException(status_code=403, detail="Feed is disabled")
+                logger.info(f"Feed is disabled for client..Re-enabling: {client}")
+                Feeds.update_one(
+                    {"clientId": payload.clientId, "userId": user_making_request.id},
+                    {"$set": {"disabled": False}},
+                )
 
         if isinstance(payload.content, str):  # convert lazy string to message
             logger.info(f"Converting lazy string to message for client: {client}")

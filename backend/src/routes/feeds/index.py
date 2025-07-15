@@ -3,8 +3,19 @@ from src.routes.auth.utils import manager
 from src.models.index import User, Feeds, Feed, PublicFeed
 from src.lib.stytch.index import connected_apps_client
 from src.lib.logger.index import logger
+from pydantic import BaseModel, ConfigDict
 
 router = APIRouter()
+
+
+class ConnectedApp(BaseModel):
+    client_id: str
+    client_name: str
+    client_description: str
+    client_secret: str
+    status: str
+
+    model_config = ConfigDict(extra="ignore")
 
 
 @router.get("/all/{user_id}")
@@ -52,11 +63,18 @@ def revoke_feed_access(
             )
             raise HTTPException(status_code=404, detail="Feed client id not found")
 
-        response = connected_apps_client.revoke_connected_app(
+        response = connected_apps_client.revoke_connected_app_access(
             user_id=user_making_request.id, connected_app_id=clientId
         )
         if response:
-            Feeds.update_one({"clientId": client_id}, {"$set": {"disabled": True}})
+            result = Feeds.update_one(
+                {"clientId": client_id}, {"$set": {"disabled": True}}
+            )
+            if result.modified_count == 0:
+                logger.error(
+                    f"Feed not found for client id {client_id} and user id {user_id}"
+                )
+                raise HTTPException(status_code=404, detail="Feed not found")
 
         logger.info(
             f"Revoked feed access for client id {client_id} and user id {user_id}"
