@@ -78,6 +78,7 @@ type ClientType =
   | "Cline"
   | "Tiktok"
   | "X"
+  | "Spotify"
   | "Reddit"
   | "Youtube"
   | "Notion"
@@ -208,6 +209,18 @@ export const feedMap: PossibleFeed = {
         "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/X_logo.jpg/1200px-X_logo.jpg",
       description:
         'Rebranded Twitter for real-time posts and Musk\'s "everything-app" vision.',
+      category: "Social",
+      zoom: false,
+      disabled: true,
+    },
+    {
+      name: "Spotify",
+      link: "https://www.spotify.com/",
+      syncLink: null,
+      image:
+        "https://cdn.pixabay.com/photo/2016/10/22/00/15/spotify-1759471_1280.jpg",
+      description:
+        "Music streaming service with personalized playlists and social features.",
       category: "Social",
       zoom: false,
       disabled: true,

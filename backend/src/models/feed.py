@@ -26,6 +26,7 @@ class AiClientFeedType(str, Enum):
 class SocialFeedType(str, Enum):
     Youtube = "Youtube"
     Twitter = "X"
+    Spotify = "Spotify"
     TikTok = "TikTok"
     Reddit = "Reddit"
 
