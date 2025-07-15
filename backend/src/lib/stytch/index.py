@@ -22,7 +22,8 @@ logger.info(f"STYTCH CLIENT INITIALIZED")
 
 class StytchConnectedAppsClient:
     def __init__(self):
-        self.base_url = "https://test.stytch.com/v1/users/"
+        stytch_env = "test" if settings.fastapi_env == "dev" else "api"
+        self.base_url = f"https://{stytch_env}.stytch.com/v1/users/"
         project_id = settings.stytch_project_id
         secret = settings.stytch_secret
         credentials = f"{project_id}:{secret}".encode("utf-8")
