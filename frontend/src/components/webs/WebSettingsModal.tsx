@@ -15,9 +15,11 @@ import DeleteModal from "../utility/DeleteModal";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/router";
 import SimpleTooltip from "../utility/SimpleTooltip";
+import { useUser } from "@/providers/UserProvider";
 
 function WebSettingsModal({ webId }: { webId: string }) {
   const [open, setOpen] = React.useState(false);
+  const { user } = useUser();
   const router = useRouter();
   const { data: web, refetch: refetchWeb } = useFetchWebById(webId);
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
@@ -34,7 +36,7 @@ function WebSettingsModal({ webId }: { webId: string }) {
     try {
       await deleteWeb(web.webId);
       setOpen(false);
-      router.push("/home");
+      router.push(`/user/${user?.username}`);
     } catch (error) {
       console.error(error as Error);
       toast({
@@ -43,7 +45,7 @@ function WebSettingsModal({ webId }: { webId: string }) {
         variant: "destructive",
       });
     }
-  }, [deleteWeb, router, web.webId]);
+  }, [deleteWeb, router, web.webId, user?.username]);
 
   return (
     <>

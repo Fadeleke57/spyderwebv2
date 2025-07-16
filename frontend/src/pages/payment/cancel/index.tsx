@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { XCircle } from "lucide-react";
 import Link from "next/link";
+import { useUser } from "@/providers/UserProvider";
 
 export default function PaymentCancelPage() {
+  const { user } = useUser();
   return (
     <div className="flex items-center justify-center h-screen p-4">
       <div className="text-center max-w-md">
@@ -15,7 +17,7 @@ export default function PaymentCancelPage() {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button asChild>
-            <Link href="/home?loginSource=payment-cancel">Return to Home</Link>
+            <Link href={`/user/${user?.username}`}>Return to Profile</Link>
           </Button>
         </div>
       </div>

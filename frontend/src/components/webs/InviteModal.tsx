@@ -84,7 +84,7 @@ function InviteModal() {
     try {
       rejectInvite({ userId: user.id });
       refetchContributors();
-      router.push(`/home`);
+      router.push(`/user/${user.username}`);
     } catch (error) {
       console.error("Failed to reject invite:", error);
     }

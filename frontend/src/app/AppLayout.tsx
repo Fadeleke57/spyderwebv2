@@ -2,9 +2,8 @@ import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 import { AppSidebar } from "@/components/utility/AppSideBar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { SIDEBAR_COOKIE_NAME } from "@/components/ui/sidebar";
-import useMediaQuery from "@/hooks/general";
-import { CirclePlus, Home, LayoutGrid, User } from "lucide-react";
+import  useMediaQuery from "@/hooks/general";
+import { CirclePlus, Home, User } from "lucide-react";
 import { NewWebModal } from "@/components/webs/NewWebModal";
 import { useRouter } from "next/router";
 import slogo from "@/assets/s_logo.jpg";
@@ -17,7 +16,6 @@ import { useUser } from "@/providers/UserProvider";
 export default function AppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const isSidebarOpen = localStorage.getItem(SIDEBAR_COOKIE_NAME) === "true";
   const [isAuthModalOpen, setAuthModalOpen] = useState(false);
   const { user } = useUser();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -64,8 +62,11 @@ export default function AppLayout({
             />
           </Link>
           <div className="flex flex-row gap-4 items-center">
+            {" "}
+            {/*
             <div onClick={() => router.push("/")}>
               <div className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none">
+
                 <LayoutGrid
                   className={cn(
                     "size-5",
@@ -90,9 +91,9 @@ export default function AppLayout({
                     isActivePage("/") ? "bg-primary" : "bg-transparent"
                   )}
                 />
-              </div>
-            </div>
 
+              </div>
+            </div>  */}
             <div onClick={() => handleButtonClick(`/user/${user?.username}`)}>
               <div className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none">
                 <User

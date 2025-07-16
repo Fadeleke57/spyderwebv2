@@ -121,11 +121,7 @@ export default function OnboardingFlow({
 
       if (result) {
         // redirect to home page or the welcome web
-        if (defaultWebId) {
-          router.push(`/web/${defaultWebId}?welcome=true`);
-        } else {
-          router.push("/home");
-        }
+        router.push(`/user/${username}`);
       } else {
         console.error("Failed to submit onboarding data");
       }
@@ -135,11 +131,7 @@ export default function OnboardingFlow({
   };
 
   const skipRegistration = () => {
-    if (defaultWebId) {
-      router.push(`/web/${defaultWebId}`);
-    } else {
-      router.push("/home");
-    }
+    router.push(`/user/${username}`);
   };
 
   // readonly if it's provided
