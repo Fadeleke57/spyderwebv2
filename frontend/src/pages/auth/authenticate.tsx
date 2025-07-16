@@ -6,12 +6,14 @@ import { useCompleteOauth } from "@/hooks/auth";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/router";
 import { LoaderIcon } from "lucide-react";
+import { useUser } from "@/providers/UserProvider";
 
 const GoogleCallback = () => {
   const client = useStytch();
   const { mutateAsync: completeOauth } = useCompleteOauth();
   const router = useRouter();
-  const { stytch_token_type, token } = router.query;
+  const { token } = router.query;
+  const { user } = useUser();
   const [isProcessing, setIsProcessing] = useState(false);
   const hasProcessed = useRef(false);
 
@@ -64,7 +66,7 @@ const GoogleCallback = () => {
         } else if (redirectUrl) {
           window.location.href = redirectUrl;
         } else {
-          window.location.href = "/home?src=oauth";
+          window.location.href = user ? `/user/${user.username}?src=oauth` : "/home";
         }
       } else {
         throw new Error("No session or user returned from Stytch");
@@ -84,14 +86,14 @@ const GoogleCallback = () => {
         window.location.href = "/";
       }, 2000);
     }
-  }, [client, completeOauth, token, router, isProcessing]);
+  }, [client, completeOauth, token, router, isProcessing, user]);
 
   useEffect(() => {
     if (router.isReady && token && !hasProcessed.current) {
       console.log("Router ready, triggering authentication");
       authenticate();
     }
-  }, [router.isReady, token, authenticate]);
+  }, [router.isReady, token, authenticate, user]);
 
   return (
     <div className="w-full h-[90dvh] flex justify-center items-center">

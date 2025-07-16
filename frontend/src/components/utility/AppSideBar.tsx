@@ -46,8 +46,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   useEffect(() => {
     if (router.pathname.startsWith("/home")) {
       setSelectedButton("home");
-    } else if (router.pathname.startsWith("/explore")) {
-      setSelectedButton("explore");
     } else if (user && router.asPath.startsWith(`/user/${user.username}`)) {
       setSelectedButton("user");
     } else {
@@ -76,7 +74,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer rounded-full flex flex-row gap-2 items-center"
-              onClick={() => router.push("/explore")}
+              onClick={() => router.push("/home")}
               deactive
             >
               <div className="flex flex-row aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground rounded-full">
@@ -131,6 +129,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuButton>
           <SidebarIndicator show={selectedButton === "home"} />
         </div>
+        {/*
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"
@@ -162,6 +161,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuButton>
           <SidebarIndicator show={selectedButton === "explore"} />
         </div>
+        */}
         <div className="relative px-2">
           <SidebarMenuButton
             size="sm"

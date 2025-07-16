@@ -5,15 +5,15 @@ import { ReactElement } from "react";
 import { useRouter } from "next/router";
 import * as THREE from "three";
 import Link from "next/link";
-import { useStytchUser } from "@stytch/nextjs";
+import { useUser } from "@/providers/UserProvider";
 
 export default function Home() {
-  const { user } = useStytchUser();
+  const { user } = useUser();
   const router = useRouter();
 
   useEffect(() => {
     if (user) {
-      router.push("/explore");
+      router.push(`/user/${user.username}`);
     }
   }, [router, user]);
 

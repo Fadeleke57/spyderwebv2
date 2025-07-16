@@ -57,7 +57,7 @@ export default function PaymentSuccessPage() {
           <h1 className="text-2xl font-bold mb-2">Something went wrong</h1>
           <p className="text-muted-foreground mb-6">{error}</p>
           <Button asChild>
-            <Link href="/home">Go to Home</Link>
+            <Link href={`/user/${user?.username}`}>Go to Profile</Link>
           </Button>
         </div>
       </div>
@@ -79,10 +79,10 @@ export default function PaymentSuccessPage() {
         {!isLoading && (
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild>
-              <Link href="/home">Go to Home</Link>
+              <Link href={`/user/${user?.username}`}>Go to Profile</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link href={`/user/${user?.username}`}>Start Creating</Link>
+              <Link href={`/user/${user?.username}?tab=feeds`}>Start Creating</Link>
             </Button>
           </div>
         )}

@@ -12,12 +12,11 @@ import { AnimatedStarButton } from "../explore/AnimatedStar";
 import { useUser } from "@/providers/UserProvider";
 import AuthModal from "../auth/AuthModal";
 import { TagsPopover } from "../home/TagsPopover";
-import { useCheckAuthorizedUser } from "@/hooks/contributors";
 import { useAuthorization } from "@/providers/AuthorizationProvider";
 
 function PublicWebView({ webId }: { webId: string }) {
   const { data: web } = useFetchWebById(webId);
-  const { data: imageUrls, isLoading: imagesLoading } = useGetAllImagesForWeb(
+  const { data: imageUrls } = useGetAllImagesForWeb(
     web && web.webId
   );
   const { user } = useUser();

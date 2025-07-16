@@ -302,6 +302,7 @@ function UserProfile() {
                     : connectedFeeds?.length || 0}
                 </span>
               </TabsTrigger>
+              {/*
               <TabsTrigger
                 value="saved"
                 className="data-[state=inactive]:border-none data-[state=active]:border-1 data-[state=active]:border-primary data-[state=active]:rounded-b-none"
@@ -309,6 +310,7 @@ function UserProfile() {
                 <Bookmark size={16} className="mr-2 hidden md:inline" />
                 Saved{" "}
               </TabsTrigger>
+              */}
             </TabsList>
           </div>
 
@@ -548,7 +550,7 @@ function UserProfile() {
               )}
             </TabsContent>
 
-            <TabsContent
+            {/*<TabsContent
               value="saved"
               className="mt-4 md:mt-6 data-[state=active]:animate-fadeIn"
             >
@@ -558,7 +560,7 @@ function UserProfile() {
                   This feature is currently in development
                 </p>
               </div>
-            </TabsContent>
+            </TabsContent> */}
           </div>
         </Tabs>
       </div>

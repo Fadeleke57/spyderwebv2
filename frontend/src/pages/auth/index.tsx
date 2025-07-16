@@ -13,6 +13,7 @@ import { useStytch } from "@stytch/nextjs";
 import { useToast } from "@/components/ui/use-toast";
 import { useCheckEmailExists } from "@/hooks/user";
 import { useSubmitRegister } from "@/hooks/auth";
+import { useUser } from "@/providers/UserProvider";
 
 const emailSchema = z.object({ email: z.string().email() });
 const loginSchema = z.object({
@@ -34,9 +35,9 @@ export const SESSION_MINUTES = 10080;
 function AuthPage() {
   const [step, setStep] = useState("email");
   const [userEmail, setUserEmail] = useState("");
-  const router = useRouter();
   const client = useStytch();
   const { toast } = useToast();
+  const { user } = useUser();
 
   const { mutateAsync: checkEmailExists, isPending: isCheckingEmail } =
     useCheckEmailExists();
@@ -87,7 +88,7 @@ function AuthPage() {
           localStorage.removeItem("returnTo");
           window.location.href = returnTo;
         } else {
-          window.location.href = "/home?src=login";
+          window.location.href = `/user/${user?.username}`;
         }
       }
     } catch (err: any) {

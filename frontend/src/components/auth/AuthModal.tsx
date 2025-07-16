@@ -14,9 +14,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useStytch } from "@stytch/nextjs";
-import { useRouter } from "next/router";
 import { useCheckEmailExists } from "@/hooks/user";
 import { useSubmitRegister } from "@/hooks/auth";
+import { useUser } from "@/providers/UserProvider";
 
 const emailSchema = z.object({
   email: z.string().email(),
@@ -50,7 +50,7 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
   const [step, setStep] = useState("email");
   const [userEmail, setUserEmail] = useState("");
   const { toast } = useToast();
-  const router = useRouter();
+  const { user } = useUser();
   const client = useStytch();
 
   const { mutateAsync: checkEmailExists, isPending: isCheckingEmail } =
@@ -106,7 +106,7 @@ export function AuthModal({ open, setOpen }: AuthModalProps) {
           localStorage.removeItem("returnTo");
           window.location.href = returnTo;
         } else {
-          window.location.href = "/home?src=login";
+          window.location.href = `/user/${user?.username}`;
         }
       }
     } catch (err: any) {

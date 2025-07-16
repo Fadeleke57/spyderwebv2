@@ -140,7 +140,7 @@ def authenticate(
             redirect = "/auth/onboarding"
             params = f"?firstName={first_name}&lastName={last_name}&username={username}&isGoogleSignup=true&defaultWebId={new_web_id}"
         else:
-            redirect = "/home"
+            redirect = f"/user/{username}"
             params = "?src=oauth"
 
         full_redirect_url = f"{settings.next_url}{redirect}{params}"
