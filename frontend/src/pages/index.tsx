@@ -13,7 +13,7 @@ export default function Home() {
 
   useEffect(() => {
     if (user) {
-      router.push("/explore");
+      router.push("/home");
     }
   }, [router, user]);
 

@@ -32,9 +32,10 @@ export default function AppLayout({
   };
 
   const isActivePage = (path: string) => {
+    /*
     if (path === "/explore") {
       return router.asPath.startsWith("/explore");
-    }
+    }*/
     if (path === "/user") {
       return user && router.asPath.startsWith(`/user/${user.username}`);
     }
@@ -52,7 +53,7 @@ export default function AppLayout({
         )}
       >
         <div className="fixed left-0 top-0 z-50 h-[75px] w-[101vw] border-b bg-background dark:bg-background flex flex-row items-center justify-between px-5 border">
-          <Link href="/explore">
+          <Link href="/">
             <Image
               src={slogo}
               alt="logo"
@@ -63,12 +64,12 @@ export default function AppLayout({
             />
           </Link>
           <div className="flex flex-row gap-4 items-center">
-            <div onClick={() => router.push("/explore")}>
+            <div onClick={() => router.push("/")}>
               <div className="flex flex-col gap-2 items-center justify-center rounded-lg bg-none">
                 <LayoutGrid
                   className={cn(
                     "size-5",
-                    isActivePage("/explore")
+                    isActivePage("/")
                       ? "text-primary"
                       : "text-slate-500 dark:text-foreground"
                   )}
@@ -76,7 +77,7 @@ export default function AppLayout({
                 <span
                   className={cn(
                     "text-xs font-semibold",
-                    isActivePage("/explore")
+                    isActivePage("/")
                       ? "text-primary"
                       : "text-slate-500 dark:text-foreground"
                   )}
@@ -86,7 +87,7 @@ export default function AppLayout({
                 <div
                   className={cn(
                     "h-1 w-6 rounded-full transition-all duration-200",
-                    isActivePage("/explore") ? "bg-primary" : "bg-transparent"
+                    isActivePage("/") ? "bg-primary" : "bg-transparent"
                   )}
                 />
               </div>

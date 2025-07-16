@@ -10,11 +10,13 @@ import Link from "next/link";
 import { useStytch } from "@stytch/nextjs";
 import { LineShadowText } from "../magicui/line-shadow-text";
 import { useTheme } from "next-themes";
+import { useUser } from "@/providers/UserProvider";
 
 function Header() {
   const [open, setIsOpen] = useState(false);
   const router = useRouter();
   const { theme } = useTheme();
+  const { user } = useUser();
   const shadowColor = theme === "dark" ? "white" : "black";
 
   const handleButtonClick = () => {
@@ -68,7 +70,7 @@ function Header() {
             label="Jump in"
             variant="outline"
             classname="text-sm font-medium"
-            onClick={() => router.push("/explore")}
+            onClick={() => router.push(user ? "/home" : "/auth")}
           />
           <GSAPButton
             label="If you're new"

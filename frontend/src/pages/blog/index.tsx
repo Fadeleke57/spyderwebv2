@@ -8,6 +8,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Head from "next/head";
+import { useUser } from "@/providers/UserProvider";
 
 const blogPosts = [
   {
@@ -37,7 +38,6 @@ const blogPosts = [
 ];
 
 function Index() {
-  // Use the first blog post as the featured post
   const featuredPost = blogPosts[0];
   const otherPosts = blogPosts.slice(1);
   const router = useRouter();
@@ -46,7 +46,6 @@ function Index() {
     router.push(url);
   };
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -87,6 +86,8 @@ function Index() {
     },
   };
 
+  const { user } = useUser();
+
   return (
     <div className="min-h-screen">
       <Head>
@@ -120,7 +121,7 @@ function Index() {
           <motion.p variants={textVariants}>
             We&apos;re proud to annouce the launch of our{" "}
             <Link
-              href={"/explore"}
+              href={user ? "/home" : "/auth"}
               className="hover:underline transition-all duration-300 text-violet-400/80 ease-in"
             >
               <span className="text-violet-400/80">beta!</span>
@@ -128,7 +129,6 @@ function Index() {
           </motion.p>
         </motion.div>
 
-        {/* Mobile view - All posts same size in a single column */}
         <motion.div
           className="lg:hidden space-y-8"
           variants={containerVariants}
@@ -167,9 +167,7 @@ function Index() {
           ))}
         </motion.div>
 
-        {/* Desktop view - Featured post with sticky positioning and side panel */}
         <div className="hidden lg:flex flex-row gap-8">
-          {/* Main content area - Featured Post */}
           <motion.div
             className="w-2/3"
             variants={itemVariants}
@@ -177,7 +175,6 @@ function Index() {
             animate="visible"
           >
             <div className="relative">
-              {/* Large featured image that stays fixed when scrolling */}
               <div className="sticky top-24">
                 <div
                   className="relative aspect-[16/9] w-full overflow-hidden rounded-lg cursor-pointer"
@@ -208,7 +205,6 @@ function Index() {
             </div>
           </motion.div>
 
-          {/* Side panel - Other posts */}
           <motion.div
             className="w-1/3 space-y-8"
             variants={containerVariants}
