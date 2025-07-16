@@ -172,7 +172,6 @@ class SourceService:
                     if not source.type == "youtube"
                     else MEMORY_TRANSCRIPT
                 ),
-                file_path=None,
             )
 
         source_ids = [source.sourceId for source in sources_to_insert]

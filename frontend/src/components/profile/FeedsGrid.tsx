@@ -285,7 +285,9 @@ export default function FeedGrid(
     Object.entries(feedMap).forEach(([category, feeds]) => {
       const filteredFeeds = isOwner
         ? feeds
-        : feeds.filter((feed: any) => connected.includes(feed.name));
+        : feeds.filter((feed: any) =>
+            connected.some((c) => c.feedType === feed.name)
+          );
 
       if (filteredFeeds.length > 0) {
         filteredCategories[category] = filteredFeeds;

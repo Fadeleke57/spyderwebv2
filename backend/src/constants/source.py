@@ -946,31 +946,9 @@ ONBOARDING_SOURCES = [
             "### Some things to know:\n"
             "- Spydr is your universal context store, a centralized hub where all your context lives and can be accessed by ANY AI model, anywhere.\n"
             "- We're building toward an interoperable future where instead of paying for siloed apps, you store your memory centrally and bring it to whichever AI platform is most convenient.\n"
-            "- Our platform transforms how you interact with information by creating dynamic 'webs' of knowledge that mirror your unique thought processes.\n"
             "- Share and collaborate with ease to aid in democratizing access to structured insights and context across all AI interactions.\n"
             "- Spydr bridges human understanding and AI reliability, positioning you ahead of the paradigm shift toward standardized AI tool and data integration.\n"
             "- Our Philosophy: Everything is Linkable.\n"
-        ),
-        "url": None,
-        "type": "note",
-    },
-    {
-        "name": "How to use Spydr and Charlotte AI",
-        "content": (
-            "### Create a new web:\n"
-            "1. Create a new web on the sidebar (navbar if on mobile) by clicking the plus icon or '⌘ + x' on Mac ('^ + x' on Windows).\n"
-            "2. Your AI assistant has access to all aspects of your web, so try to keep the title and description relevant and descriptive as possible.\n"
-            "3. Using the '+' button, add any number of sources to your web.\n"
-            "4. The Autolinker will automatically find relevant connections for your sources.\n"
-            "5. You can also manually link sources as you see fit.\n"
-            "**We are adding the ability to index a lot more types of content soon! Stay tuned.**\n"
-            "### Iterate on other webs:\n"
-            "1. Click on the 'iterate' button or icon (next to the like button) to iterate on it.\n"
-            "2. This will create a copy of the original web that you can use as a starting point for a new context.\n"
-            "### Charlotte\n"
-            "- Charlotte is your personal AI assistant. She's here to help you understand, explore, and leverage your memory stores.\n"
-            "- She is located in the bottom right corner of the screen.\n"
-            "- Click on her to start a conversation.\n"
         ),
         "url": None,
         "type": "note",
